@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+                                         "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+ <session-factory>
+  <property name="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</property>
+  <property name="hibernate.c3p0.acquire_increment">1</property>
+  <property name="hibernate.c3p0.idle_test_period">3000</property>
+  <property name="hibernate.c3p0.max_size">20</property>
+  <property name="hibernate.c3p0.max_statements">50</property>
+  <property name="hibernate.c3p0.min_size">10</property>
+  <property name="hibernate.c3p0.timeout">1800</property>
+  <property name="hibernate.show_sql">true</property>
+  <property name="hibernate.use_sql_comments">false</property>
+  <property name="hibernate.format_sql">false</property>
+  <property name="hibernate.default_entity_mode">pojo</property>
+  <property name="hibernate.hbm2ddl.auto">update</property>
+  <property name="hibernate.connection.isolation">2</property>
+  <property name="hibernate.temp.use_jdbc_metadata_defaults">false</property>
+  <mapping resource="com/scdeco/model/Employee.hbm.xml"/>
+ </session-factory>
+</hibernate-configuration>
