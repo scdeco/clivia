@@ -1,0 +1,208 @@
+package com.scdeco.dao;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.List;
+
+import org.hibernate.Criteria;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+public abstract class GenericDaoImpl<T, PK extends java.io.Serializable> implements GenericDao<T, PK> {
+	
+	private Class<T> entityClass;
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public GenericDaoImpl(){
+	       Type type = getClass().getGenericSuperclass();  
+	       Type[] pt = ((ParameterizedType) type).getActualTypeArguments();  
+	       entityClass = (Class) pt[0]; 
+	}
+
+	protected SessionFactory sessionFactory;
+	public void setSessionFactory(SessionFactory sessionFactory){
+		this.sessionFactory=sessionFactory;
+	}
+	
+	protected Session getSession(){
+		return sessionFactory.getCurrentSession();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
+	@Override
+	public PK save(T entity) {
+		return (PK) getSession().save(entity);
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
+	@Override
+	public void saveOrUpdate(T entity) {
+		getSession().saveOrUpdate(entity);
+		
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
+	@Override
+	public void update(T entity) {
+		getSession().update(entity); 
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
+	@Override
+	public void merge(T entity) {
+		getSession().merge(entity); 
+		
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
+	@Override
+	public void deleteById(PK id) {
+		getSession().delete(this.findById(id));
+
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
+	@Override
+	public void delete(T entity) {
+		getSession().delete(entity);
+		
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
+	@Override
+	public void deleteAll(Collection<T> entities) {
+	       if (entities == null)  
+	            return;  
+	        for (T entity : entities) {  
+	            getSession().delete(entity);  
+	        }  		
+	}
+
+	@Override
+	public boolean exists(PK id) {
+	       return findById(id) != null; 
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public T load(PK id) {
+        return (T) getSession().load(this.entityClass, id);  
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public T findById(PK id) {
+		 return (T) getSession().get(this.entityClass, id); 
+	}
+	
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<T> findList() {
+		return createCriteria().list();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<T> findList(Criteria criteria) {
+		return criteria.list();
+	}
+
+	@SuppressWarnings({ "unchecked", "hiding" })
+	@Override
+	public <T> List<T> findList(DetachedCriteria criteria) {
+		return (List<T>) findList(criteria.getExecutableCriteria(getSession())); 
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<T> findList(String orderBy, boolean isAsc) {
+        Criteria criteria = createCriteria();  
+        if (isAsc) {  
+            criteria.addOrder(Order.asc(orderBy));  
+        } else {  
+            criteria.addOrder(Order.desc(orderBy));  
+        }  
+        return criteria.list();  
+	}
+
+	public List<T> findList(String propertyName, Object value) {
+        Criterion criterion = Restrictions  
+                .like(propertyName, "%" + value + "%");  
+        return findList(criterion);  
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<T> findList(Criterion criterion) {
+        Criteria criteria = createCriteria();  
+        criteria.add(criterion);  
+        return criteria.list();  
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<T> findList(Criterion... criterions) {
+        return createCriteria(criterions).list();  
+	}
+
+	@SuppressWarnings("unchecked")
+	public T findUniqueResult(String propertyName, Object value) {
+        Criterion criterion = Restrictions.eq(propertyName, value);  
+        return (T) createCriteria(criterion).uniqueResult();  
+	}
+
+	@SuppressWarnings("unchecked")
+	public T findUniqueResult(Criteria criteria) {
+		return (T) criteria.uniqueResult();
+	}
+
+	public T findUniqueResult(Criterion... criterions) {
+	    Criteria criteria = createCriteria(criterions);  
+        return findUniqueResult(criteria);  
+	}
+	
+	@Override
+	public int findCount() {
+        Criteria criteria = createCriteria();  
+        return Integer.valueOf(criteria.setProjection(Projections.rowCount())  
+                .uniqueResult().toString());  
+	}
+
+	public int findCount(Criteria criteria) {
+        return Integer.valueOf(criteria.setProjection(Projections.rowCount())  
+                .uniqueResult().toString());  
+	}
+
+
+	
+	public void flush() {
+	      getSession().flush();  
+		
+	}
+
+	public void clear() {
+	       getSession().clear();  
+		
+	}
+
+	public Criteria createCriteria() {
+	    return getSession().createCriteria(entityClass);  
+	}
+
+	public Criteria createCriteria(Criterion... criterions) {
+	    Criteria criteria = createCriteria();  
+        for (Criterion c : criterions) {  
+            criteria.add(c);  
+        }  
+        return criteria;  
+	}
+
+}
