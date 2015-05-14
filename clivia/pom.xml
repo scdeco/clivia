@@ -6,6 +6,7 @@
   <packaging>pom</packaging>
   <modules>
   	<module>miniata</module>
+  	<module>miniatarcp</module>
   </modules>
   <dependencies>
   	<dependency>
