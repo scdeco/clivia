@@ -3,6 +3,7 @@
 	<name>miniatarcp</name>
 	<comment></comment>
 	<projects>
+		<project>miniata</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
