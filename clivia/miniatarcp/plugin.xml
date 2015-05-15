@@ -93,28 +93,28 @@
          point="org.eclipse.ui.views">
       <view
             class="com.scdeco.miniatarcp.view.ContactView"
-            icon="src/main/resources/icons/userbook.ico"
+            icon="icons/userbook.ico"
             id="com.scdeco.miniatarcp.view.contact"
             name="Contact"
             restorable="true">
       </view>
       <view
             class="com.scdeco.miniatarcp.view.CategoryView"
-            icon="src/main/resources/icons/box.ico"
+            icon="icons/box.ico"
             id="com.scdeco.miniatarcp.view.category"
             name="Category"
             restorable="true">
       </view>
       <view
             class="com.scdeco.miniatarcp.view.HistoryView"
-            icon="src/main/resources/icons/07223.ico"
+            icon="icons/07223.ico"
             id="com.scdeco.miniatarcp.view.history"
             name="History"
             restorable="true">
       </view>
       <view
             class="com.scdeco.miniatarcp.view.TaskView"
-            icon="src/main/resources/icons/clock4.ico"
+            icon="icons/clock4.ico"
             id="com.scdeco.miniatarcp.view.task"
             name="Task"
             restorable="true">

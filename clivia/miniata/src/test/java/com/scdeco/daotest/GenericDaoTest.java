@@ -1,6 +1,7 @@
 package com.scdeco.daotest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -14,6 +15,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.scdeco.dao.EmployeeDao;
 import com.scdeco.model.Employee;
+import com.scdeco.service.LoginService;
+import com.scdeco.util.CliviaUtils;
 
 public class GenericDaoTest {
 	
@@ -23,7 +26,7 @@ public class GenericDaoTest {
 	//use @BeforeClass to manage expensive resource,run once only
 	@BeforeClass
 	public static void setUpClass() throws Exception {
-		context=new ClassPathXmlApplicationContext("spring-dao.xml");
+		context=CliviaUtils.getContext();
 		employeeDao=(EmployeeDao) context.getBean("employeeDao");
 		List<Employee> list=employeeDao.findList();
 		employeeDao.deleteAll(list);
@@ -69,6 +72,14 @@ public class GenericDaoTest {
 		}
 		assertTrue(employeeDao.findByUsername("zhang").getId()>0);
 		assertNull(employeeDao.findByUsername("zhan"));
+		
+		LoginService loginService=(LoginService) context.getBean("loginService");
+		try{
+			loginService.authenticate("zhang","1234");
+		}
+		catch(RuntimeException ex){
+			System.out.println(ex.getMessage());
+		}
 	}
 
 	@After

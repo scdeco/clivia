@@ -2,7 +2,10 @@ package com.scdeco.miniatarcp.editor;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -10,15 +13,21 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.scdeco.service.LoginService;
+import com.scdeco.util.CliviaUtils;
+
  
 public class UserEditor extends EditorPart {
  
   public static final String ID = "com.scdeco.miniatarcp.editor.user";
+  private  ClassPathXmlApplicationContext springDaoContext;
   private Text txtUserName;
-  private Text txtEmail;
+  private Text txtPassword;
  
   public UserEditor() {
- 
+      springDaoContext=CliviaUtils.getContext(); 
   }
  
   @Override
@@ -43,6 +52,9 @@ public class UserEditor extends EditorPart {
       }
       setSite(site);
       setInput(input);
+
+
+
   }
  
   @Override
@@ -66,13 +78,32 @@ public class UserEditor extends EditorPart {
       
       Label lblEmail = new Label(body, SWT.NONE);
       lblEmail.setBounds(26, 31, 55, 15);
-      lblEmail.setText("Email:");
+      lblEmail.setText("Password:");
       
       txtUserName = new Text(body, SWT.BORDER);
       txtUserName.setBounds(112, 7, 174, 21);
       
-      txtEmail = new Text(body, SWT.BORDER);
-      txtEmail.setBounds(112, 31, 174, 21);
+      txtPassword = new Text(body, SWT.BORDER | SWT.PASSWORD);
+      txtPassword.setBounds(112, 31, 174, 21);
+      
+      
+      Button btnLogin = new Button(body, SWT.CENTER);
+      btnLogin.addSelectionListener(new SelectionAdapter() {
+      	@Override
+      	public void widgetSelected(SelectionEvent e) {
+      		
+      		LoginService loginService=(LoginService)springDaoContext.getBean("loginService");
+      		try{
+      			loginService.authenticate(txtUserName.getText(), txtPassword.getText());
+      		}
+      		catch(RuntimeException ex)
+      		{
+      			System.out.println(ex.getMessage());
+      		}
+      	}
+      });
+      btnLogin.setBounds(229, 112, 75, 25);
+      btnLogin.setText("Login");
   	
   }
  
