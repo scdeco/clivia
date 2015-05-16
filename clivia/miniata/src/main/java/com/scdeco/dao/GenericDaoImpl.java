@@ -13,6 +13,7 @@ import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,10 +29,8 @@ public abstract class GenericDaoImpl<T, PK extends java.io.Serializable> impleme
 	       entityClass = (Class) pt[0]; 
 	}
 
+	@Autowired
 	protected SessionFactory sessionFactory;
-	public void setSessionFactory(SessionFactory sessionFactory){
-		this.sessionFactory=sessionFactory;
-	}
 	
 	protected Session getSession(){
 		return sessionFactory.getCurrentSession();

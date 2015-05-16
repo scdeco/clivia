@@ -16,7 +16,7 @@ import org.eclipse.ui.part.EditorPart;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.scdeco.service.LoginService;
-import com.scdeco.util.CliviaUtils;
+//import com.scdeco.util.CliviaUtils;
 
  
 public class UserEditor extends EditorPart {
@@ -27,7 +27,7 @@ public class UserEditor extends EditorPart {
   private Text txtPassword;
  
   public UserEditor() {
-      springDaoContext=CliviaUtils.getContext(); 
+//      springDaoContext=CliviaUtils.getContext(); 
   }
  
   @Override
