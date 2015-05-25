@@ -5,12 +5,34 @@
   <artifactId>clivia</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
+  
   <modules>
   	<module>miniata</module>
   	<module>miniatarcp</module>
     <module>miniataweb</module>
   </modules>
+  
   <dependencies>
+    <dependency>
+  		<groupId>org.hibernate</groupId>
+  		<artifactId>hibernate-core</artifactId>
+  		<version>4.3.9.Final</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.hibernate</groupId>
+  		<artifactId>hibernate-c3p0</artifactId>
+  		<version>4.3.9.Final</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>net.sourceforge.jtds</groupId>
+  		<artifactId>jtds</artifactId>
+  		<version>1.3.1</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>mysql</groupId>
+  		<artifactId>mysql-connector-java</artifactId>
+  		<version>5.1.8</version>
+  	</dependency>
   	<dependency>
   		<groupId>junit</groupId>
   		<artifactId>junit</artifactId>
@@ -46,5 +68,13 @@
   		<artifactId>spring-web</artifactId>
   		<version>4.1.6.RELEASE</version>
   	</dependency>
+  	<dependency>
+  		<groupId>org.springframework</groupId>
+  		<artifactId>spring-webmvc</artifactId>
+  		<version>4.1.6.RELEASE</version>
+  	</dependency>
   </dependencies>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 </project>

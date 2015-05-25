@@ -5,7 +5,6 @@
     <artifactId>clivia</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <groupId>com.scdeco.miniatarcp</groupId>
   <artifactId>miniatarcp</artifactId>
   <dependencies>
   	<dependency>

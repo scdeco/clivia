@@ -16,7 +16,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.scdeco.dao.EmployeeDao;
 import com.scdeco.model.Employee;
 import com.scdeco.service.LoginService;
-import com.scdeco.util.CliviaUtils;
 
 public class GenericDaoTest {
 	
@@ -26,7 +25,7 @@ public class GenericDaoTest {
 	//use @BeforeClass to manage expensive resource,run once only
 	@BeforeClass
 	public static void setUpClass() throws Exception {
-		context=CliviaUtils.getContext();
+		context=new ClassPathXmlApplicationContext("spring-dao.xml") ;//CliviaUtils.getContext();
 		employeeDao=(EmployeeDao) context.getBean("employeeDao");
 		List<Employee> list=employeeDao.findList();
 		employeeDao.deleteAll(list);
