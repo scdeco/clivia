@@ -4,7 +4,7 @@
 <!-- Generated Apr 24, 2015 2:03:44 PM by Hibernate Tools 4.3.1 -->
 
 <hibernate-mapping>
-    <class name="com.scdeco.model.Employee" table="EMPLOYEE" optimistic-lock="version">
+    <class name="com.scdeco.model.Employee" table="EMPLOYEE" optimistic-lock="version" lazy="false">
         <id name="id" type="int">
             <column name="ID" />
             <generator class="native" />

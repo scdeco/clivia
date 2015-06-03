@@ -28,6 +28,8 @@ public interface GenericDao<T, PK extends java.io.Serializable>{
 	<T> List<T> findList(DetachedCriteria criteria);
     List<T> findList(String orderBy, boolean isAsc);
     List<T> findList(String propertyName, Object value);
+    
+    
     List<T> findList(Criterion criterion);
     List<T> findList(Criterion... criterions);   
     

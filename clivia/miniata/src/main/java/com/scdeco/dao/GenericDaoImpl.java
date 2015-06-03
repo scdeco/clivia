@@ -124,6 +124,7 @@ public abstract class GenericDaoImpl<T, PK extends java.io.Serializable> impleme
 	}
 
 	@SuppressWarnings("unchecked")
+	@Override
 	public List<T> findList(String orderBy, boolean isAsc) {
         Criteria criteria = createCriteria();  
         if (isAsc) {  
@@ -134,13 +135,16 @@ public abstract class GenericDaoImpl<T, PK extends java.io.Serializable> impleme
         return criteria.list();  
 	}
 
+	@Override
 	public List<T> findList(String propertyName, Object value) {
         Criterion criterion = Restrictions  
                 .like(propertyName, "%" + value + "%");  
         return findList(criterion);  
 	}
 	
+	
 	@SuppressWarnings("unchecked")
+	@Override
 	public List<T> findList(Criterion criterion) {
         Criteria criteria = createCriteria();  
         criteria.add(criterion);  
@@ -148,21 +152,25 @@ public abstract class GenericDaoImpl<T, PK extends java.io.Serializable> impleme
 	}
 
 	@SuppressWarnings("unchecked")
+	@Override
 	public List<T> findList(Criterion... criterions) {
         return createCriteria(criterions).list();  
 	}
 
 	@SuppressWarnings("unchecked")
+	@Override
 	public T findUniqueResult(String propertyName, Object value) {
         Criterion criterion = Restrictions.eq(propertyName, value);  
         return (T) createCriteria(criterion).uniqueResult();  
 	}
 
 	@SuppressWarnings("unchecked")
+	@Override
 	public T findUniqueResult(Criteria criteria) {
 		return (T) criteria.uniqueResult();
 	}
 
+	@Override
 	public T findUniqueResult(Criterion... criterions) {
 	    Criteria criteria = createCriteria(criterions);  
         return findUniqueResult(criteria);  
@@ -175,27 +183,31 @@ public abstract class GenericDaoImpl<T, PK extends java.io.Serializable> impleme
                 .uniqueResult().toString());  
 	}
 
+	@Override
 	public int findCount(Criteria criteria) {
         return Integer.valueOf(criteria.setProjection(Projections.rowCount())  
                 .uniqueResult().toString());  
 	}
 
 
-	
+	@Override
 	public void flush() {
 	      getSession().flush();  
 		
 	}
 
+	@Override
 	public void clear() {
 	       getSession().clear();  
 		
 	}
 
+	@Override
 	public Criteria createCriteria() {
 	    return getSession().createCriteria(entityClass);  
 	}
 
+	@Override
 	public Criteria createCriteria(Criterion... criterions) {
 	    Criteria criteria = createCriteria();  
         for (Criterion c : criterions) {  

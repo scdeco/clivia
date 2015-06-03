@@ -11,28 +11,16 @@ public class LoginServiceImpl implements LoginService {
 	@Autowired
 	private EmployeeDao employeeDao;
 
-	private Employee user;
-	private boolean isAuthenticated;
+	@Override
+	public Employee authenticate(String username, String password){
 
-	@Override
-	public void authenticate(String username, String password) throws RuntimeException{
-		
-		if (StringUtils.isBlank(username)) throw(new RuntimeException("Username can not be empty."));
-		user=employeeDao.findByUsername(username);
-		isAuthenticated=user!=null && user.getPassword()==password;
-		if(!isAuthenticated) throw(new RuntimeException("Can not find usename or password doesn't match."));
-	}
-	
-	@Override
-	public Employee getUser(){
-		
+		Employee user=null;
+		if (!StringUtils.isBlank(username)){
+			user=employeeDao.findByUsername(username);
+			if(user==null || !password.equals(user.getPassword()))
+				user=null;
+		}
 		return user;
 	}
 	
-	@Override
-	public boolean isAuthenticated(){
-		
-		return isAuthenticated;
-	}
-
 }

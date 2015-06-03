@@ -1,5 +1,6 @@
 package com.scdeco.daotest;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -73,12 +74,8 @@ public class GenericDaoTest {
 		assertNull(employeeDao.findByUsername("zhan"));
 		
 		LoginService loginService=(LoginService) context.getBean("loginService");
-		try{
-			loginService.authenticate("zhang","1234");
-		}
-		catch(RuntimeException ex){
-			System.out.println(ex.getMessage());
-		}
+		Employee emp=loginService.authenticate("zhang","123456");
+		assertNotNull(emp);
 	}
 
 	@After

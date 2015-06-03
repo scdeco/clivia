@@ -17,6 +17,8 @@
   <property name="hibernate.hbm2ddl.auto">update</property>
   <property name="hibernate.connection.isolation">2</property>
   <property name="hibernate.temp.use_jdbc_metadata_defaults">false</property>
-  <mapping resource="com/scdeco/model/Employee.hbm.xml"/>
+  
+  <mapping resource="com\scdeco\model\Employee.hbm.xml"/>  
+  
  </session-factory>
 </hibernate-configuration>
