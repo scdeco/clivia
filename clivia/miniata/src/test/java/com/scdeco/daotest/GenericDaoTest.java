@@ -26,10 +26,10 @@ public class GenericDaoTest {
 	//use @BeforeClass to manage expensive resource,run once only
 	@BeforeClass
 	public static void setUpClass() throws Exception {
-		context=new ClassPathXmlApplicationContext("spring-dao.xml") ;//CliviaUtils.getContext();
+		context=new ClassPathXmlApplicationContext("spring-miniata.xml") ;//CliviaUtils.getContext();
 		employeeDao=(EmployeeDao) context.getBean("employeeDao");
-		List<Employee> list=employeeDao.findList();
-		employeeDao.deleteAll(list);
+//		List<Employee> list=employeeDao.findList();
+//		employeeDao.deleteAll(list);
 	}
 	
 	//use @Before to setup, repeat for every @Test method

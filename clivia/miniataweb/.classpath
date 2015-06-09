@@ -29,6 +29,5 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="src/main/webapp/WEB-INF/lib/kendo-taglib-2015.1.429.jar"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/miniata"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
