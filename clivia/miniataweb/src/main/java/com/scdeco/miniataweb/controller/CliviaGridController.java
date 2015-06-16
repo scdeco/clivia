@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.scdeco.miniataweb.dao.DataSourceRequest;
 import com.scdeco.miniataweb.dao.DataSourceResult;
+import com.scdeco.miniataweb.dao.EmployeeDao;
 import com.scdeco.miniataweb.dao.GridColumnDao;
 import com.scdeco.miniataweb.dao.GridInfoDao;
+import com.scdeco.miniataweb.model.Employee;
 import com.scdeco.miniataweb.model.GridColumn;
 import com.scdeco.miniataweb.model.GridInfo;
 
@@ -23,13 +25,15 @@ import com.scdeco.miniataweb.model.GridInfo;
 public class CliviaGridController {
 
 	@Autowired
-	private GridInfoDao gridInfoDao;
+	GridInfoDao gridInfoDao;
 	
 	@Autowired
-	private GridColumnDao gridColumnDao;
+	GridColumnDao gridColumnDao;
 	
+	@Autowired
+	EmployeeDao employeeDao;	
 	
-	@RequestMapping(value="/create",method=RequestMethod.GET)
+	@RequestMapping(method=RequestMethod.GET)
 	public String create(@RequestParam("gridNo") String gridNo, Model model){
  
 
@@ -37,7 +41,9 @@ public class CliviaGridController {
 		
 		if(gridInfo==null)
 			return "login/login";
+		
 		List<GridColumn> gridColumnList=gridColumnDao.findColumnListByGridId(gridInfo.getId()); 
+		
 		if(gridColumnList.isEmpty())
 			return "login/login";
 
@@ -46,6 +52,10 @@ public class CliviaGridController {
 		model.addAttribute("gridInfo",gridInfo);
 		model.addAttribute("gridColumnList",gridColumnList);
 		model.addAttribute("gridData",gridData);
+		model.addAttribute("version","10003");
+		
+		List<Employee> list=employeeDao.findList();
+		model.addAttribute("users", list);
 		return "cliviagrid/CliviaGrid";
 	}
 	

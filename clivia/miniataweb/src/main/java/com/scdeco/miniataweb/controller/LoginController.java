@@ -1,5 +1,7 @@
 package com.scdeco.miniataweb.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,11 +23,13 @@ public class LoginController {
 	@Autowired
 	EmployeeDao employeeDao;
 	 
-	@RequestMapping(method=RequestMethod.GET)
+	private String version="0036";
+	
+	@RequestMapping( method=RequestMethod.GET)
 	public String login(Model model) {
 		   model.addAttribute("username", "zhang");
-		   model.addAttribute("password", "01");
-		   //returns the view name
+		   model.addAttribute("password", "");
+		   model.addAttribute("version",version);
 		   return "login/login";
 		 
 		 }
@@ -38,7 +42,11 @@ public class LoginController {
 		model.addAttribute("password", "");
 		Employee user=loginService.authenticate(username, password); 
 		if(user !=null){
-			model.addAttribute("users", employeeDao.findList());
+			
+			List<Employee> list=employeeDao.findList();
+			model.addAttribute("users", list);
+			model.addAttribute("version",version);
+			
 			return "login/loginSucceed";
 
 		}

@@ -3,6 +3,8 @@
 <%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
 
 <shared:header></shared:header>
+<div id="version"><h2>Version:${version}</h2></div>
+<div id="login">
 	<form name="form1" action="login" method="post">
 		<table width="300" border="0">
 		    <tr>
@@ -17,7 +19,7 @@
 		    </tr>
 		    <tr>
 		            <td>Password:</td>
-		            <td><input type="password" name="password" value="${password}" size="20"></td>
+		            <td><input type="text" name="password" value="${password}" size="20"></td>
 		    </tr>
 		    <tr>
 		    	    <td colspan="2"><input type="submit" name="submit" value="Login"> </td>
@@ -38,6 +40,7 @@
 		    </tr>
 		</table>
 	</form>
+</div>
 	
 <shared:footer></shared:footer>
 	

@@ -120,7 +120,7 @@ public abstract class GenericDaoImpl<T, PK extends java.io.Serializable> impleme
 	@SuppressWarnings({ "unchecked", "hiding" })
 	@Override
 	public <T> List<T> findList(DetachedCriteria criteria) {
-		return (List<T>) findList(criteria.getExecutableCriteria(getSession())); 
+		return (List<T>) findList(criteria.getExecutableCriteria(getSession()));  
 	}
 
 	@SuppressWarnings("unchecked")
@@ -156,6 +156,12 @@ public abstract class GenericDaoImpl<T, PK extends java.io.Serializable> impleme
 	public List<T> findList(Criterion... criterions) {
         return createCriteria(criterions).list();  
 	}
+	
+    @Override
+    public DataSourceResult findListByRequest(DataSourceRequest request) {
+        return request.toDataSourceResult(getSession(), this.entityClass);
+    }
+	
 
 	@SuppressWarnings("unchecked")
 	@Override

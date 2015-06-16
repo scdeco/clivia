@@ -4,7 +4,9 @@
 
 
 <shared:header></shared:header>
-    <kendo:grid name="grid" pageable="true" sortable="true" filterable="true">
+<div id="version"><h2>Version:${version}</h2></div>
+
+    <kendo:grid name="grid" pageable="${pageable}" sortable="${sortable}" filterable="${filterable}" editable="${editable}" resizable="true" >
     	<kendo:grid-scrollable />    	
         <kendo:grid-columns>
             <kendo:grid-column title="Username" field="username" />
@@ -24,8 +26,10 @@
                 </kendo:dataSource-schema-model>
             </kendo:dataSource-schema>
         </kendo:dataSource>
-        <kendo:grid-pageable input="true" numeric="false" />
     </kendo:grid>
+"${users}"
+
+    
     <style>
     #grid .k-grid-content{
     	height: 430px; 	

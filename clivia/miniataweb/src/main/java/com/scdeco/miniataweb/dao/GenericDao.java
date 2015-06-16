@@ -33,6 +33,8 @@ public interface GenericDao<T, PK extends java.io.Serializable>{
     List<T> findList(Criterion criterion);
     List<T> findList(Criterion... criterions);   
     
+    DataSourceResult findListByRequest(DataSourceRequest request);
+    
     int findCount();
     int findCount(Criteria criteria);
   

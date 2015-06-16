@@ -6,12 +6,13 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
+	<classpathentry kind="src" output="target/classes" path="src/main/resources">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry excluding="resources/js/|resources/js/cultures/|resources/js/messages/|resources/styles/|resources/styles/Black/|resources/styles/BlueOpal/|resources/styles/Bootstrap/|resources/styles/Default/|resources/styles/Fiori/|resources/styles/Flat/|resources/styles/fonts/DejaVu/|resources/styles/HighContrast/|resources/styles/images/|resources/styles/Material/|resources/styles/MaterialBlack/|resources/styles/Metro/|resources/styles/MetroBlack/|resources/styles/Moonlight/|resources/styles/Office365/|resources/styles/Silver/|resources/styles/textures/|resources/styles/Uniform/" kind="src" path="src/main/webapp"/>
+	<classpathentry excluding="**" kind="src" path="src/test/java"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>

@@ -19,6 +19,8 @@
   <property name="hibernate.temp.use_jdbc_metadata_defaults">false</property>
   
   <mapping resource="com\scdeco\miniataweb\model\Employee.hbm.xml"/>  
+  <mapping resource="com\scdeco\miniataweb\model\GridInfo.hbm.xml"/>  
+  <mapping resource="com\scdeco\miniataweb\model\GridColumn.hbm.xml"/>  
   
  </session-factory>
 </hibernate-configuration>
