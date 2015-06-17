@@ -5,13 +5,13 @@
 
 
 <shared:header></shared:header>
-<div id="version"><h2>Version:${version}122233</h2></div>
+<div id="version"><h2>Version:${version}122244</h2></div>
 
     <kendo:grid name="grid"  resizable="true" >
     	<kendo:grid-scrollable/>
         <kendo:grid-columns>
-        	<c:forEach var="gridColumn" items="${gridColumnList.}">
-	            <kendo:grid-column field="${gridColumn.columnName}" title="${gridColumn.title}"  width="${gridColumn.width}" />
+        	<c:forEach var="gridColumn" items="${gridColumnList}">
+	            <kendo:grid-column field="${gridColumn.columnName}" title="${gridColumn.title}"  width="${gridColumn.width}px" />
 	        </c:forEach>
         </kendo:grid-columns>
     

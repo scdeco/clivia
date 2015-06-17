@@ -56,7 +56,7 @@ public class CliviaGridController {
 		
 		List<Employee> list=employeeDao.findList();
 		model.addAttribute("users", list);
-		return "cliviagrid/CliviaGrid";
+		return "cliviagrid/CliviaGridTest";
 	}
 	
 	

@@ -25,7 +25,6 @@ public class GridColumn{
 	private String comboList;
 	private String dataMap;
 	
-	
 	public int getId() {
 		return id;
 	}
@@ -134,20 +133,17 @@ public class GridColumn{
 	public void setDataMap(String dataMap) {
 		this.dataMap = dataMap;
 	}
-
-	
 	@Override
 	public String toString() {
 		return "GridColumn [id=" + id + ", gridId=" + gridId + ", orderBy="
-				+ orderBy + ", columnName=" + columnName + ", title="
-				+ title + ", width=" + width + ", visible=" + visible
-				+ ", editable=" + editable + ", chooseable=" + chooseable
-				+ ", sortable=" + sortable + ", filterable=" + filterable
-				+ ", dataType=" + dataType + ", textAlignFixed="
-				+ textAlignFixed + ", textAlign=" + textAlign
-				+ ", displayFormat=" + displayFormat + ", editMask=" + editMask
-				+ ", comboList=" + comboList + ", dataMap=" + dataMap + "]";
+				+ orderBy + ", columnName=" + columnName + ", title=" + title
+				+ ", width=" + width + ", visible=" + visible + ", editable="
+				+ editable + ", chooseable=" + chooseable + ", sortable="
+				+ sortable + ", filterable=" + filterable + ", dataType="
+				+ dataType + ", textAlignFixed=" + textAlignFixed
+				+ ", textAlign=" + textAlign + ", displayFormat="
+				+ displayFormat + ", editMask=" + editMask + ", comboList="
+				+ comboList + ", dataMap=" + dataMap + "]";
 	}
 
-	
 }

@@ -6,7 +6,7 @@
 <div id="version"><h2>Version:${version}</h2></div>
 <div id="login">
 	<form name="form1" action="login" method="post">
-		<table width="300" border="0">
+		<table >
 		    <tr>
 			        <td colspan="2">Please login</td>
 		    </tr>

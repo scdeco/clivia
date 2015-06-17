@@ -15,7 +15,6 @@ public class GridInfo{
 	private boolean filterable;
 	private boolean editable;
 	
-	
 	public int getId() {
 		return id;
 	}
@@ -36,7 +35,6 @@ public class GridInfo{
 	public void setGridName(String gridName) {
 		this.gridName = gridName;
 	}
-	
 	public int getFixedColumnCount() {
 		return fixedColumnCount;
 	}

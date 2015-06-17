@@ -19,6 +19,7 @@ public class Employee {
 	public int getId() {
 		return id;
 	}
+
 	public void setId(int id) {
 		this.id = id;
 	}
@@ -67,9 +68,19 @@ public class Employee {
 	}
 
 	@Override
+	public String toString() {
+		return "Employee [id=" + id + ", firstName=" + firstName
+				+ ", lastName=" + lastName + ", alias=" + alias + ", sex="
+				+ sex + ", birthDate=" + birthDate + ", username=" + username
+				+ ", password=" + password + "]";
+	}
+
+	
+/*	
+	@Override
 	public String toString(){
 		return id+" "+firstName+" "+lastName+" "+sex+" "+birthDate.toString()+" "+username;
 	}
-	
+*/	
 
 }
