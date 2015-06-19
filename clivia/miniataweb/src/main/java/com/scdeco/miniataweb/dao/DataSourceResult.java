@@ -11,9 +11,6 @@ public class DataSourceResult {
     
     private Map<String, Object> aggregates;
 
-    public DataSourceResult(){
-    	System.out.println("2222222222222222222222222222222222"); 
-    }
     public long getTotal() {
         return total;
     }
@@ -37,4 +34,12 @@ public class DataSourceResult {
     public void setAggregates(Map<String, Object> aggregates) {
         this.aggregates = aggregates;
     }
+
+	@Override
+	public String toString() {
+		return "DataSourceResult [total=" + total + ", data=" + data
+				+ ", aggregates=" + aggregates + "]";
+	}
+    
+    
 }

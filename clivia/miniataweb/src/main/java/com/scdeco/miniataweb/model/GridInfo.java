@@ -1,10 +1,15 @@
 package com.scdeco.miniataweb.model;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
+
+@Entity
 public class GridInfo{
-	public GridInfo(){
-	}
 	
+	@Id
+	@GeneratedValue
 	private int id;
 	private String gridNo;
 	private String gridName;
@@ -14,6 +19,10 @@ public class GridInfo{
 	private boolean sortable;
 	private boolean filterable;
 	private boolean editable;
+	
+
+	public GridInfo(){
+	}
 	
 	public int getId() {
 		return id;

@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.jackson.annotate.JsonAnySetter;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -25,6 +24,8 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.SimpleExpression;
 import org.hibernate.transform.ResultTransformer;
+
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 public class DataSourceRequest {
     private int page;
@@ -39,7 +40,6 @@ public class DataSourceRequest {
     private FilterDescriptor filter;
     
     public DataSourceRequest() {
-        System.out.println("111111111111111111111111111111111111111111111111111111111111111111");       
         filter = new FilterDescriptor();
         data = new HashMap<String, Object>();
         

@@ -2,9 +2,20 @@ package com.scdeco.miniataweb.model;
 
 import java.util.Date;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+
+@Entity
 public class Employee {
 
+	@Id
+	@GeneratedValue
 	private int id;
+	
 	private String firstName;
 	private String lastName;
 	private String alias;
@@ -12,6 +23,7 @@ public class Employee {
 	private Date birthDate;
 	private String username;
 	private String password;
+	
 	
 	public Employee(){
 	}
@@ -48,6 +60,8 @@ public class Employee {
 	public void setSex(String sex) {
 		this.sex = sex;
 	}
+	
+	@JsonSerialize(using=IsoDateJsonSerializer.class)
 	public Date getBirthDate() {
 		return birthDate;
 	}

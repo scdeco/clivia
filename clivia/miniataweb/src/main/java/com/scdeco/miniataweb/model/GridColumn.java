@@ -1,11 +1,15 @@
 package com.scdeco.miniataweb.model;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
+
+@Entity
 public class GridColumn{
 	
-	public GridColumn(){
-	}
-	
+	@Id
+	@GeneratedValue
 	private int id;
 	private int gridId;
 	private String orderBy;
@@ -25,6 +29,9 @@ public class GridColumn{
 	private String comboList;
 	private String dataMap;
 	
+	public GridColumn(){
+	}
+
 	public int getId() {
 		return id;
 	}

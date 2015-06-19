@@ -5,18 +5,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.scdeco.miniataweb.dao.DataSourceRequest;
-import com.scdeco.miniataweb.dao.DataSourceResult;
 import com.scdeco.miniataweb.dao.EmployeeDao;
 import com.scdeco.miniataweb.dao.GridColumnDao;
 import com.scdeco.miniataweb.dao.GridInfoDao;
-import com.scdeco.miniataweb.model.Employee;
 import com.scdeco.miniataweb.model.GridColumn;
 import com.scdeco.miniataweb.model.GridInfo;
 
@@ -52,23 +48,14 @@ public class CliviaGridController {
 		model.addAttribute("gridInfo",gridInfo);
 		model.addAttribute("gridColumnList",gridColumnList);
 		model.addAttribute("gridData",gridData);
-		model.addAttribute("version","10003");
+		model.addAttribute("version","10004");
 		
-		List<Employee> list=employeeDao.findList();
-		model.addAttribute("users", list);
-		return "cliviagrid/CliviaGridTest";
+		return "cliviagrid/cliviagrid";
 	}
 	
 	
-    @RequestMapping(value = "/read", method = RequestMethod.POST)
-//    @ResponseBody
-    public  String read() {
-    	//DataSourceResult
-        System.out.println("clivia/read"); 
-  //     DataSourceRequest request;
-  //     DataSourceResult result=gridInfoDao.findListByRequest(request);
- //      System.out.println(result); 
-   	
-       return "";
+    @RequestMapping(value="/read",method = RequestMethod.GET)
+    public  @ResponseBody  List<GridInfo> read(){
+       return gridInfoDao.findList();
     }
 }
