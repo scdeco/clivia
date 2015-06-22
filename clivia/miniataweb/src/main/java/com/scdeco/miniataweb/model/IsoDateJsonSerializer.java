@@ -15,7 +15,6 @@ public class IsoDateJsonSerializer extends JsonSerializer<Date> {
     @Override
     public void serialize(Date date, JsonGenerator json, SerializerProvider provider) throws IOException {
         // The client side will handle presentation, we just want it accurate
-        System.out.println("serialize-----------------");
 
     	DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));

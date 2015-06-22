@@ -5,16 +5,21 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.scdeco.miniataweb.dao.EmployeeDao;
+import com.scdeco.miniataweb.dao.DataSourceRequest;
+import com.scdeco.miniataweb.dao.DataSourceResult;
+import com.scdeco.miniataweb.dao.GenericDao;
 import com.scdeco.miniataweb.dao.GridColumnDao;
 import com.scdeco.miniataweb.dao.GridInfoDao;
 import com.scdeco.miniataweb.model.GridColumn;
 import com.scdeco.miniataweb.model.GridInfo;
+import com.scdeco.miniataweb.util.CliviaApplicationContext;
 
 @Controller
 @RequestMapping("/cliviagrid")
@@ -27,35 +32,27 @@ public class CliviaGridController {
 	GridColumnDao gridColumnDao;
 	
 	@Autowired
-	EmployeeDao employeeDao;	
+	CliviaApplicationContext cliviaApplicationContext;
 	
 	@RequestMapping(method=RequestMethod.GET)
-	public String create(@RequestParam("gridNo") String gridNo, Model model){
- 
+	public String get(@RequestParam("gridNo") String gridNo, Model model){
 
 		GridInfo gridInfo=gridInfoDao.findByGridNo(gridNo);
-		
-		if(gridInfo==null)
-			return "login/login";
-		
 		List<GridColumn> gridColumnList=gridColumnDao.findColumnListByGridId(gridInfo.getId()); 
-		
-		if(gridColumnList.isEmpty())
-			return "login/login";
-
-		List<GridInfo> gridData=gridInfoDao.findList();
 		
 		model.addAttribute("gridInfo",gridInfo);
 		model.addAttribute("gridColumnList",gridColumnList);
-		model.addAttribute("gridData",gridData);
-		model.addAttribute("version","10004");
+		model.addAttribute("version","10006");
 		
 		return "cliviagrid/cliviagrid";
 	}
 	
-	
-    @RequestMapping(value="/read",method = RequestMethod.GET)
-    public  @ResponseBody  List<GridInfo> read(){
-       return gridInfoDao.findList();
+    @SuppressWarnings("rawtypes")
+	@RequestMapping(value="/read/{daoName}",method = RequestMethod.POST)
+    public  @ResponseBody  DataSourceResult  read(@RequestBody DataSourceRequest request,@PathVariable String daoName){
+    	System.out.println(request);
+    	DataSourceResult result=((GenericDao)cliviaApplicationContext.getBean(daoName)).findListByRequest(request);
+    	System.out.println(result);
+       return result;
     }
 }

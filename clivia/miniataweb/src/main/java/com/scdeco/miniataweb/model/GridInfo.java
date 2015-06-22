@@ -13,9 +13,10 @@ public class GridInfo{
 	private int id;
 	private String gridNo;
 	private String gridName;
+	private String daoName;
 	private int fixedColumnCount;
 	private String remark;
-	private boolean pageable;
+	private int pageSize;
 	private boolean sortable;
 	private boolean filterable;
 	private boolean editable;
@@ -44,6 +45,14 @@ public class GridInfo{
 	public void setGridName(String gridName) {
 		this.gridName = gridName;
 	}
+	public String getDaoName() {
+		return daoName;
+	}
+
+	public void setDaoName(String daoName) {
+		this.daoName = daoName;
+	}
+
 	public int getFixedColumnCount() {
 		return fixedColumnCount;
 	}
@@ -56,11 +65,11 @@ public class GridInfo{
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-	public boolean isPageable() {
-		return pageable;
+	public int getPageSize() {
+		return pageSize;
 	}
-	public void setPageable(boolean pageable) {
-		this.pageable = pageable;
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
 	}
 	public boolean isSortable() {
 		return sortable;
@@ -84,7 +93,7 @@ public class GridInfo{
 	public String toString() {
 		return "GridInfo [id=" + id + ", gridNo=" + gridNo + ", gridName="
 				+ gridName + ", fixedColumnCount=" + fixedColumnCount
-				+ ", remark=" + remark + ", pageable=" + pageable
+				+ ", remark=" + remark + ", pageable=" + pageSize
 				+ ", sortable=" + sortable + ", filterable=" + filterable
 				+ ", editable=" + editable + "]";
 	}

@@ -6,12 +6,14 @@
 
 <shared:header></shared:header>
 
-<c:url var="readUrl" value="cliviagrid/read" />
+<c:url var="readUrl" value="cliviagrid/read/${gridInfo.daoName}" />
+
+<c:if test="${gridInfo.pageSize>0}" var="gridPageable"  scope="page"/>
 
 <div id="version"><h2>Version:${version}1222436</h2></div>
 
-    <kendo:grid name="grid" pageable="${gridInfo.pageable}" sortable="${gridInfo.sortable}" filterable="${gridInfo.filterable}" editable="${gridInfo.editable}"  resizable="true" >
-    	<kendo:grid-scrollable/>
+
+    <kendo:grid name="grid" pageable="${gridPageable}" sortable="${gridInfo.sortable}" filterable="${gridInfo.filterable}" editable="${gridInfo.editable}" scrollable="true" resizable="true" >
     	
         <kendo:grid-columns>
         	<c:forEach var="gridColumn" items="${gridColumnList}">
@@ -19,13 +21,28 @@
 	        </c:forEach>
         </kendo:grid-columns>
         
-        <kendo:dataSource pageSize="10"  batch="true">        
+        <kendo:dataSource pageSize="${gridInfo.pageSize}"  batch="true"  serverFiltering="true">         
       
 	        <kendo:dataSource-transport>
-	            <kendo:dataSource-transport-read url="${readUrl}" dataType="json"  contentType="application/json" />
-	        </kendo:dataSource-transport>      
-        
-            <kendo:dataSource-schema>
+	            <kendo:dataSource-transport-read url="${readUrl}" type="post" dataType="json" contentType="application/json" />
+				<kendo:dataSource-transport-parameterMap>
+ 						function(options){return JSON.stringify(options);}
+                </kendo:dataSource-transport-parameterMap>
+            </kendo:dataSource-transport>      
+	        <kendo:dataSource-filter >
+
+		        	<kendo:dataSource-filterItem logic="and">
+
+			        	<kendo:dataSource-filterItem logic="or">
+				        	<kendo:dataSource-filterItem field="gridId" operator="eq" value="3"/>
+				        	<kendo:dataSource-filterItem field="gridId" operator="eq" value="2"/>
+			        	</kendo:dataSource-filterItem>
+		    	    	<kendo:dataSource-filterItem field="columnName" operator="startswith" value="f"/>
+
+		        	</kendo:dataSource-filterItem>
+
+	        </kendo:dataSource-filter>
+            <kendo:dataSource-schema data="data" total="total">
                 <kendo:dataSource-schema-model id="id" >
                     <kendo:dataSource-schema-model-fields>
 				        	<c:forEach var="gridColumn" items="${gridColumnList}">

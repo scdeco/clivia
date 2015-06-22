@@ -90,11 +90,4 @@ public class Employee {
 	}
 
 	
-/*	
-	@Override
-	public String toString(){
-		return id+" "+firstName+" "+lastName+" "+sex+" "+birthDate.toString()+" "+username;
-	}
-*/	
-
 }

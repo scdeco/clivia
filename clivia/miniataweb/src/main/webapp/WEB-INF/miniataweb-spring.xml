@@ -33,10 +33,11 @@
     
     <tx:annotation-driven transaction-manager="transactionManager"/>
  
-    <bean id="employeeDao" class="com.scdeco.miniataweb.dao.EmployeeDaoImpl"/>
     <bean id="gridInfoDao" class="com.scdeco.miniataweb.dao.GridInfoDaoImpl"/>
     <bean id="gridColumnDao" class="com.scdeco.miniataweb.dao.GridColumnDaoImpl"/>
+    <bean id="employeeDao" class="com.scdeco.miniataweb.dao.EmployeeDaoImpl"/>
     
     <bean id="loginService" class="com.scdeco.miniataweb.service.LoginServiceImpl"/>
+    <bean id="cliviaApplicationContext" class="com.scdeco.miniataweb.util.CliviaApplicationContext" />
 
 </beans>

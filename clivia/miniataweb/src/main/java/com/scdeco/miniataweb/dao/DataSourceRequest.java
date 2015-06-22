@@ -28,7 +28,15 @@ import org.hibernate.transform.ResultTransformer;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 public class DataSourceRequest {
-    private int page;
+    @Override
+	public String toString() {
+		return "DataSourceRequest [page=" + page + ", pageSize=" + pageSize
+				+ ", take=" + take + ", skip=" + skip + ", sort=" + sort
+				+ ", group=" + group + ", aggregate=" + aggregate + ", data="
+				+ data + ", filter=" + filter + "]";
+	}
+
+	private int page;
     private int pageSize;
     private int take;
     private int skip;
@@ -575,5 +583,14 @@ public class DataSourceRequest {
         public List<FilterDescriptor> getFilters() {
             return filters;
         }
+
+		@Override
+		public String toString() {
+			return "FilterDescriptor [logic=" + logic + ", filters=" + filters
+					+ ", field=" + field + ", value=" + value + ", operator="
+					+ operator + ", ignoreCase=" + ignoreCase + "]";
+		}
+        
+        
     }
 }
