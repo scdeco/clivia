@@ -8,7 +8,10 @@ import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
 
 public interface GenericDao<T, PK extends java.io.Serializable>{
- 
+
+	Class<T> getEntityClass();
+
+	T create();
 	PK save(T entity);
     void saveOrUpdate(T entity);
     void update(T entity);  

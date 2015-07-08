@@ -1,5 +1,6 @@
 package com.scdeco.miniataweb.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -8,25 +9,67 @@ import javax.persistence.Id;
 @Entity
 public class GridColumn{
 	
+
 	@Id
 	@GeneratedValue
+	@Column(name="id")
 	private int id;
+	
+	@Column(name="GridId")
 	private int gridId;
+	
+	@Column(name="OrderBy",length=4)
 	private String orderBy;
+	
+	@Column(name="ColumnName",length=255)
 	private String columnName;
+	
+	@Column(name="Title",length=255)
 	private String title;
+	
+	@Column(name="width")
 	private int width;
-	private boolean visible;
-	private boolean editable;
-	private boolean chooseable;
-	private boolean sortable;
-	private boolean filterable;
-	private String dataType;
+	
+	@Column(name="ColumnVisible")
+	private boolean columnVisible;
+	
+	@Column(name="ColumnEditable")
+	private boolean columnEditable;
+	
+	@Column(name="ColumnChooseable")
+	private boolean columnChooseable;
+	
+	@Column(name="ColumnSortable")
+	private boolean columnSortable;
+	
+	@Column(name="ColumnFilterable")
+	private boolean columnFilterable;
+	
+	@Column(name="ColumnLocked")
+	private boolean columnLocked;
+	
+	@Column(name="Columnlockable")
+	private boolean columnLockable;
+	
+	@Column(name="ColumnDataType",length=15)
+	private String columnDataType;
+	
+	@Column(name="TextAlignFixed",length=15)
 	private String textAlignFixed;
+	
+	@Column(name="TextAlign",length=15)
 	private String textAlign;
+	
+	@Column(name="DisplayFormat",length=50)
 	private String displayFormat;
+	
+	@Column(name="EditMask",length=50)
 	private String editMask;
+	
+	@Column(name="ComboList",length=50)
 	private String comboList;
+	
+	@Column(name="DataMap",length=50)
 	private String dataMap;
 	
 	public GridColumn(){
@@ -35,122 +78,178 @@ public class GridColumn{
 	public int getId() {
 		return id;
 	}
+
 	public void setId(int id) {
 		this.id = id;
 	}
+
 	public int getGridId() {
 		return gridId;
 	}
+
 	public void setGridId(int gridId) {
 		this.gridId = gridId;
 	}
+
 	public String getOrderBy() {
 		return orderBy;
 	}
+
 	public void setOrderBy(String orderBy) {
 		this.orderBy = orderBy;
 	}
+
 	public String getColumnName() {
 		return columnName;
 	}
+
 	public void setColumnName(String columnName) {
 		this.columnName = columnName;
 	}
+
 	public String getTitle() {
-		return this.title;
+		return title;
 	}
+
 	public void setTitle(String title) {
 		this.title = title;
 	}
+
 	public int getWidth() {
 		return width;
 	}
+
 	public void setWidth(int width) {
 		this.width = width;
 	}
-	public boolean isVisible() {
-		return visible;
+
+	public boolean isColumnVisible() {
+		return columnVisible;
 	}
-	public void setVisible(boolean visible) {
-		this.visible = visible;
+
+	public void setColumnVisible(boolean columnVisible) {
+		this.columnVisible = columnVisible;
 	}
-	public boolean isEditable() {
-		return editable;
+
+	public boolean isColumnEditable() {
+		return columnEditable;
 	}
-	public void setEditable(boolean editable) {
-		this.editable = editable;
+
+	public void setColumnEditable(boolean columnEditable) {
+		this.columnEditable = columnEditable;
 	}
-	public boolean isChooseable() {
-		return chooseable;
+
+	public boolean isColumnChooseable() {
+		return columnChooseable;
 	}
-	public void setChooseable(boolean chooseable) {
-		this.chooseable = chooseable;
+
+	public void setColumnChooseable(boolean columnChooseable) {
+		this.columnChooseable = columnChooseable;
 	}
-	public boolean isSortable() {
-		return sortable;
+
+	public boolean isColumnFilterable() {
+		return columnFilterable;
 	}
-	public void setSortable(boolean sortable) {
-		this.sortable = sortable;
+
+	public void setColumnFilterable(boolean columnFilterable) {
+		this.columnFilterable = columnFilterable;
 	}
-	public boolean isFilterable() {
-		return filterable;
+
+	public boolean isColumnLocked() {
+		return columnLocked;
 	}
-	public void setFilterable(boolean filterable) {
-		this.filterable = filterable;
+
+	public void setColumnLocked(boolean columnLocked) {
+		this.columnLocked = columnLocked;
 	}
-	public String getDataType() {
-		return dataType;
+
+	public boolean isColumnLockable() {
+		return columnLockable;
 	}
-	public void setDataType(String dataType) {
-		this.dataType = dataType;
+
+	public void setColumnLockable(boolean columnLockable) {
+		this.columnLockable = columnLockable;
 	}
+
+	public String getColumnDataType() {
+		return columnDataType;
+	}
+
+	public void setColumnDataType(String columnDataType) {
+		this.columnDataType = columnDataType;
+	}
+
 	public String getTextAlignFixed() {
 		return textAlignFixed;
 	}
+
 	public void setTextAlignFixed(String textAlignFixed) {
 		this.textAlignFixed = textAlignFixed;
 	}
+
 	public String getTextAlign() {
 		return textAlign;
 	}
+
 	public void setTextAlign(String textAlign) {
 		this.textAlign = textAlign;
 	}
+
 	public String getDisplayFormat() {
 		return displayFormat;
 	}
+
 	public void setDisplayFormat(String displayFormat) {
 		this.displayFormat = displayFormat;
 	}
+
 	public String getEditMask() {
 		return editMask;
 	}
+
 	public void setEditMask(String editMask) {
 		this.editMask = editMask;
 	}
+
 	public String getComboList() {
 		return comboList;
 	}
+
 	public void setComboList(String comboList) {
 		this.comboList = comboList;
 	}
+
 	public String getDataMap() {
 		return dataMap;
 	}
+
 	public void setDataMap(String dataMap) {
 		this.dataMap = dataMap;
 	}
+
+	public boolean isColumnSortable() {
+		return columnSortable;
+	}
+
+	public void setColumnSortable(boolean columnSortable) {
+		this.columnSortable = columnSortable;
+	}
+
+	
 	@Override
 	public String toString() {
 		return "GridColumn [id=" + id + ", gridId=" + gridId + ", orderBy="
 				+ orderBy + ", columnName=" + columnName + ", title=" + title
-				+ ", width=" + width + ", visible=" + visible + ", editable="
-				+ editable + ", chooseable=" + chooseable + ", sortable="
-				+ sortable + ", filterable=" + filterable + ", dataType="
-				+ dataType + ", textAlignFixed=" + textAlignFixed
-				+ ", textAlign=" + textAlign + ", displayFormat="
-				+ displayFormat + ", editMask=" + editMask + ", comboList="
-				+ comboList + ", dataMap=" + dataMap + "]";
+				+ ", width=" + width + ", columnVisible=" + columnVisible
+				+ ", columnEditable=" + columnEditable + ", columnChooseable="
+				+ columnChooseable + ", columnSortable=" + columnSortable
+				+ ", columnFilterable=" + columnFilterable + ", columnLocked="
+				+ columnLocked + ", columnLockable=" + columnLockable
+				+ ", columnDataType=" + columnDataType + ", textAlignFixed="
+				+ textAlignFixed + ", textAlign=" + textAlign
+				+ ", displayFormat=" + displayFormat + ", editMask=" + editMask
+				+ ", comboList=" + comboList + ", dataMap=" + dataMap + "]";
 	}
+
 
 }

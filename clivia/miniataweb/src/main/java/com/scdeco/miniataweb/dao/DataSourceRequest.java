@@ -499,6 +499,11 @@ public class DataSourceRequest {
         public void setDir(String dir) {
             this.dir = dir;
         }
+
+		@Override
+		public String toString() {
+			return "SortDescriptor [field=" + field + ", dir=" + dir + "]";
+		}
     }
     
     public static class GroupDescriptor extends SortDescriptor {        
@@ -514,7 +519,8 @@ public class DataSourceRequest {
     }
     
     public static class AggregateDescriptor {
-        private String field;
+
+		private String field;
         private String aggregate;
         
         public String getField() {
@@ -531,6 +537,11 @@ public class DataSourceRequest {
         public void setAggregate(String aggregate) {
             this.aggregate = aggregate;
         }
+        @Override
+		public String toString() {
+			return "AggregateDescriptor [field=" + field + ", aggregate="
+					+ aggregate + "]";
+		}
     }
     
     public static class FilterDescriptor {

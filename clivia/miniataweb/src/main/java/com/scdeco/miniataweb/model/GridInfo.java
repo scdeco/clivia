@@ -1,5 +1,6 @@
 package com.scdeco.miniataweb.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -10,17 +11,36 @@ public class GridInfo{
 	
 	@Id
 	@GeneratedValue
+	@Column(name = "id")
 	private int id;
-	private String gridNo;
-	private String gridName;
-	private String daoName;
-	private int fixedColumnCount;
-	private String remark;
-	private int pageSize;
-	private boolean sortable;
-	private boolean filterable;
-	private boolean editable;
 	
+	@Column(name = "GridNo",length=4)
+	private String gridNo;
+	
+	@Column(name = "GridName",length=255)
+	private String gridName;
+	
+	@Column(name = "GridDaoName",length=255)
+	private String gridDaoName;
+	
+	@Column(name = "Remark",length=255)
+	private String remark;
+	
+	@Column(name = "GridPageSize")
+	private int gridPageSize;
+	
+	@Column(name = "GridSortable")
+	private boolean gridSortable;
+	
+	@Column(name = "GridFilterable")
+	private boolean gridFilterable;
+	
+	@Column(name = "GridEditable")
+	private boolean gridEditable;
+	
+	@Column(name = "GridSortDescriptor",length=255)
+	private String gridSortDescriptor;
+	 
 
 	public GridInfo(){
 	}
@@ -45,57 +65,59 @@ public class GridInfo{
 	public void setGridName(String gridName) {
 		this.gridName = gridName;
 	}
-	public String getDaoName() {
-		return daoName;
+	public String getGridDaoName() {
+		return gridDaoName;
 	}
 
-	public void setDaoName(String daoName) {
-		this.daoName = daoName;
+	public void setGridDaoName(String gridDaoName) {
+		this.gridDaoName = gridDaoName;
 	}
 
-	public int getFixedColumnCount() {
-		return fixedColumnCount;
-	}
-	public void setFixedColumnCount(int fixedColumnCount) {
-		this.fixedColumnCount = fixedColumnCount;
-	}
 	public String getRemark() {
 		return remark;
 	}
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-	public int getPageSize() {
-		return pageSize;
+	public int getGridPageSize() {
+		return gridPageSize;
 	}
-	public void setPageSize(int pageSize) {
-		this.pageSize = pageSize;
+	public void setGridPageSize(int gridPageSize) {
+		this.gridPageSize = gridPageSize;
 	}
-	public boolean isSortable() {
-		return sortable;
+	public boolean isGridSortable() {
+		return gridSortable;
 	}
-	public void setSortable(boolean sortable) {
-		this.sortable = sortable;
+	public void setGridSortable(boolean gridSortable) {
+		this.gridSortable = gridSortable;
 	}
-	public boolean isFilterable() {
-		return filterable;
+	public boolean isGridFilterable() {
+		return gridFilterable;
 	}
-	public void setFilterable(boolean filterable) {
-		this.filterable = filterable;
+	public void setGridFilterable(boolean gridFilterable) {
+		this.gridFilterable = gridFilterable;
 	}
-	public boolean isEditable() {
-		return editable;
+	public boolean isGridEditable() {
+		return gridEditable;
 	}
-	public void setEditable(boolean editable) {
-		this.editable = editable;
+	public void setGridEditable(boolean gridEditable) {
+		this.gridEditable = gridEditable;
 	}
+
+	public String getGridSortDescriptor() {
+		return gridSortDescriptor;
+	}
+
+	public void setSGridortDescriptor(String gridSortDescriptor) {
+		this.gridSortDescriptor = gridSortDescriptor;
+	}
+
 	@Override
 	public String toString() {
 		return "GridInfo [id=" + id + ", gridNo=" + gridNo + ", gridName="
-				+ gridName + ", fixedColumnCount=" + fixedColumnCount
-				+ ", remark=" + remark + ", pageable=" + pageSize
-				+ ", sortable=" + sortable + ", filterable=" + filterable
-				+ ", editable=" + editable + "]";
+				+ gridName + ", daoName=" + gridDaoName + ", remark=" + remark + ", pageSize="
+				+ gridPageSize + ", sortable=" + gridSortable + ", filterable="
+				+ gridFilterable + ", editable=" + gridEditable + ", sortDescriptor=" + gridSortDescriptor + "]";
 	}
 	
 }

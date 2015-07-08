@@ -20,7 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 public abstract class GenericDaoImpl<T, PK extends java.io.Serializable> implements GenericDao<T, PK> {
 	
-	private Class<T> entityClass;
+	private  Class<T> entityClass;
+	
+	@Override
+	public Class<T> getEntityClass(){
+		return entityClass;
+	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public GenericDaoImpl(){
@@ -34,6 +39,21 @@ public abstract class GenericDaoImpl<T, PK extends java.io.Serializable> impleme
 	
 	protected Session getSession(){
 		return sessionFactory.getCurrentSession();
+	}
+	
+	@Override
+	public T create(){
+		T newPojo=null;
+		try {
+			newPojo=entityClass.newInstance();
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return newPojo;
 	}
 	
 	@SuppressWarnings("unchecked")
