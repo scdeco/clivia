@@ -1,4 +1,4 @@
-package com.scdeco.miniataweb.dao;
+package com.scdeco.miniataweb.util;
 
 import java.util.List;
 import java.util.Map;

@@ -1,11 +1,13 @@
 package com.scdeco.miniataweb.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.scdeco.miniataweb.dao.EmployeeDao;
 import com.scdeco.miniataweb.model.Employee;
 import com.scdeco.miniataweb.util.StringUtils;
 
+@Service ("loginService")
 public class LoginServiceImpl implements LoginService {
 	
 	@Autowired

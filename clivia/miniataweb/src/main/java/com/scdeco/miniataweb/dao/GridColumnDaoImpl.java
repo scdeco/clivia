@@ -4,9 +4,12 @@ import java.util.List;
 
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.stereotype.Repository;
 
 import com.scdeco.miniataweb.model.GridColumn;
 
+
+@Repository ("gridColumnDao")
 public class GridColumnDaoImpl extends GenericDaoImpl<GridColumn, Integer> implements GridColumnDao {
 	
 	@Override

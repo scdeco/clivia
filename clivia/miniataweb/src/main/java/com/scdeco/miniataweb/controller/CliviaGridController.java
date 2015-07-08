@@ -18,14 +18,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.scdeco.miniataweb.dao.DataSourceRequest;
-import com.scdeco.miniataweb.dao.DataSourceResult;
 import com.scdeco.miniataweb.dao.GenericDao;
 import com.scdeco.miniataweb.dao.GridColumnDao;
 import com.scdeco.miniataweb.dao.GridInfoDao;
 import com.scdeco.miniataweb.model.GridColumn;
 import com.scdeco.miniataweb.model.GridInfo;
 import com.scdeco.miniataweb.util.CliviaApplicationContext;
+import com.scdeco.miniataweb.util.DataSourceRequest;
+import com.scdeco.miniataweb.util.DataSourceResult;
 
 @Controller
 @RequestMapping("/cliviagrid")
@@ -37,8 +37,6 @@ public class CliviaGridController {
 	@Autowired
 	GridColumnDao gridColumnDao;
 	
-	@Autowired
-	CliviaApplicationContext cliviaApplicationContext;
 	
 	@RequestMapping(method=RequestMethod.GET)
 	public String get(Model model,
@@ -62,7 +60,7 @@ public class CliviaGridController {
 	@RequestMapping(value="/{daoName}/read",method = RequestMethod.POST)
     public  @ResponseBody  DataSourceResult  read(@RequestBody DataSourceRequest request,@PathVariable String daoName){
     	System.out.println("request:"+request);
-    	DataSourceResult result=((GenericDao)cliviaApplicationContext.getBean(daoName)).findListByRequest(request);
+    	DataSourceResult result=((GenericDao)CliviaApplicationContext.getBean(daoName)).findListByRequest(request);
        return result;
     }
     
@@ -70,7 +68,7 @@ public class CliviaGridController {
 	@RequestMapping(value={"/{daoName}/create","/{daoName}/update"},method = RequestMethod.POST)
     public  @ResponseBody  List<?> create(@RequestBody ArrayList<Map<String, Object>> models,@PathVariable String daoName){
 		
-		GenericDao genericDao=(GenericDao)cliviaApplicationContext.getBean(daoName);
+		GenericDao genericDao=(GenericDao)CliviaApplicationContext.getBean(daoName);
 		Class entityClass=genericDao.getEntityClass();
 		
 	    List<Object> items=new ArrayList<Object>(); 
@@ -125,7 +123,7 @@ public class CliviaGridController {
 	@RequestMapping(value="/{daoName}/destroy",method = RequestMethod.POST)
     public @ResponseBody List<?> destroy(@RequestBody ArrayList<Map<String, Object>> models,@PathVariable String daoName) {
 		System.out.println("Delete started");
-		GenericDao genericDao=(GenericDao)cliviaApplicationContext.getBean(daoName);
+		GenericDao genericDao=(GenericDao)CliviaApplicationContext.getBean(daoName);
 	    List<Object> items=new ArrayList<Object>(); 
         for (Map<String, Object> model : models) {
         	int id=(int)model.get("id");

@@ -7,18 +7,18 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 public class CliviaApplicationContext implements ApplicationContextAware {
-	private  ApplicationContext applicationContext; 
+	private  static ApplicationContext ctx; 
     
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
+		ctx = applicationContext;
 	}
 
-	public  ApplicationContext getApplicationContext() {
-		return this.applicationContext;
+	public static ApplicationContext getApplicationContext() {
+		return ctx;
 	}
-	public  Object getBean(String name) throws BeansException {
-		return applicationContext.getBean(name);
+	public  static Object getBean(String name) throws BeansException {
+		return ctx.getBean(name);
 	}
 
 /*
@@ -27,13 +27,13 @@ public class CliviaApplicationContext implements ApplicationContextAware {
 	}
 
 */
-	public  boolean containsBean(String name) {
-		return applicationContext.containsBean(name);
+	public  static boolean containsBean(String name) {
+		return ctx.containsBean(name);
 	}
 
 
-	public  boolean isSingleton(String name) throws NoSuchBeanDefinitionException {
-		return applicationContext.isSingleton(name);
+	public  static boolean isSingleton(String name) throws NoSuchBeanDefinitionException {
+		return ctx.isSingleton(name);
 	}
 
 /*
@@ -42,7 +42,7 @@ public class CliviaApplicationContext implements ApplicationContextAware {
 	}
 */
 
-	public  String[] getAliases(String name) throws NoSuchBeanDefinitionException {
-		return applicationContext.getAliases(name);
+	public  static String[] getAliases(String name) throws NoSuchBeanDefinitionException {
+		return ctx.getAliases(name);
 	}
 }

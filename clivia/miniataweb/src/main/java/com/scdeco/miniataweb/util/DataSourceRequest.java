@@ -1,4 +1,4 @@
-package com.scdeco.miniataweb.dao;
+package com.scdeco.miniataweb.util;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;

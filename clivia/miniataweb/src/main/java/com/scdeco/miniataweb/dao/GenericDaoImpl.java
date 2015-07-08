@@ -17,6 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.scdeco.miniataweb.util.DataSourceRequest;
+import com.scdeco.miniataweb.util.DataSourceResult;
+
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 public abstract class GenericDaoImpl<T, PK extends java.io.Serializable> implements GenericDao<T, PK> {
 	

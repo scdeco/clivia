@@ -7,6 +7,9 @@ import org.hibernate.Criteria;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
 
+import com.scdeco.miniataweb.util.DataSourceRequest;
+import com.scdeco.miniataweb.util.DataSourceResult;
+
 public interface GenericDao<T, PK extends java.io.Serializable>{
 
 	Class<T> getEntityClass();
