@@ -11,10 +11,11 @@
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.1.xsd">
 
 
-	<context:annotation-config/>
+<!-- <context:annotation-config/> -->	
 	
  	<context:component-scan base-package="com.scdeco.miniataweb.dao" />
  	<context:component-scan base-package="com.scdeco.miniataweb.service" />
+ 	<context:component-scan base-package="com.scdeco.miniataweb.util" />
 	
 	<bean id="dataSource"
 		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
@@ -37,6 +38,5 @@
     
     <tx:annotation-driven transaction-manager="transactionManager"/>
  
-    <bean id="cliviaApplicationContext" class="com.scdeco.miniataweb.util.CliviaApplicationContext" />
 
 </beans>

@@ -38,6 +38,14 @@ public class GridInfo{
 	@Column(name = "GridEditable")
 	private boolean gridEditable;
 	
+	@Column(name="ColumnResizable")
+	private boolean columnResizable;
+	
+	@Column(name="ColumnMovable")
+	private boolean columnMovable;
+	
+	
+	
 	@Column(name = "GridSortDescriptor",length=255)
 	private String gridSortDescriptor;
 	 
@@ -103,12 +111,26 @@ public class GridInfo{
 	public void setGridEditable(boolean gridEditable) {
 		this.gridEditable = gridEditable;
 	}
-
+	
+	public boolean isColumnResizable() {
+		return columnResizable;
+	}
+	public void setColumnResizable(boolean columnResizable) {
+		this.columnResizable = columnResizable;
+	}
+	
+	public boolean isColumnMovable() {
+		return columnMovable;
+	}
+	public void setColumnMovable(boolean columnMovable) {
+		this.columnMovable = columnMovable;
+	}
+	
 	public String getGridSortDescriptor() {
 		return gridSortDescriptor;
 	}
 
-	public void setSGridortDescriptor(String gridSortDescriptor) {
+	public void setGridSortDescriptor(String gridSortDescriptor) {
 		this.gridSortDescriptor = gridSortDescriptor;
 	}
 
