@@ -13,13 +13,14 @@
        <required>true</required>
     </attribute>
     <attribute>
-       <name>divid</name>
+       <name>name</name>
        <required>true</required>
     </attribute>
     <attribute>
        <name>filter</name>
        <required>false</required>
     </attribute>
+
   </tag>
   
 </taglib>

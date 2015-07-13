@@ -1,6 +1,7 @@
 package com.scdeco.miniataweb.tag;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -28,9 +29,9 @@ public class CliviaGridTag extends SimpleTagSupport {
 		this.gridno = gridno;
 	}
 	
-	private String divid;
-	public void setDivid(String divid) {
-		this.divid = divid;
+	private String name;
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 	private String filter;
@@ -39,8 +40,11 @@ public class CliviaGridTag extends SimpleTagSupport {
 	}
  
 	@Override
-	  public void doTag() throws JspException, IOException {
+	public void doTag() throws JspException, IOException {
 		String prefix;
+		List<String> editorList=new ArrayList<String>();
+		String dataFilter="";
+		
 		PageContext pageContext = (PageContext) this.getJspContext(); 
 		ServletContext servletContext = pageContext.getServletContext(); 
 		WebApplicationContext wac = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext); 
@@ -51,22 +55,35 @@ public class CliviaGridTag extends SimpleTagSupport {
 	    JspWriter out = getJspContext().getOut();
 	    StringBuilder sb=new StringBuilder();
 	    
-	    if(divid==null) divid="grid";
 	    if(gridno!=null){
 
 	    	GridInfo gridInfo=gridInfoDao.findByGridNo(gridno);
 			List<GridColumn> gridColumnList=gridColumnDao.findColumnListByGridId(gridInfo.getId());
-			
-sb.append( "<script> $(document).ready(function() {");
-sb.append("var crudServiceBaseUrl=\"http://192.6.2.108:8080/miniataweb/cliviagrid/"+gridInfo.getGridDaoName()+"/\",");
 
-sb.append("dataSource=new kendo.data.DataSource({");
+			String crudServiceBaseUrl="*:{url:\"http://192.6.2.108:8080/miniataweb/cliviagrid/"+gridInfo.getGridDaoName()+
+					"/*\",type:\"post\",dataType: \"json\",contentType:\"application/json\"},";
+			
+//			sb.append( "<script> $(document).ready(function() {");
+
+
+			//create filter variable for javascript
+			if(filter!=null && !filter.isEmpty()){
+				dataFilter=createFilter(filter);
+				sb.append("var "+name+"Filter="+dataFilter+";");
+			}
+			
+sb.append("var "+name+"DataSource=new kendo.data.DataSource({");
 
 sb.append("transport:{");
-sb.append("read:{url:crudServiceBaseUrl+\"read\",type:\"post\",dataType: \"json\",contentType:\"application/json\"},");  //+crudServiceBaseUrl+\"read\"+daoName
-sb.append("update:{url:crudServiceBaseUrl+\"update\",type:\"post\",dataType: \"json\",contentType:\"application/json\"},");		
-sb.append("create:{url:crudServiceBaseUrl+\"create\",type:\"post\",dataType: \"json\",contentType:\"application/json\"},");
-sb.append("destroy:{url:crudServiceBaseUrl+\"destroy\",type:\"post\",dataType: \"json\",contentType:\"application/json\"},");
+
+sb.append(crudServiceBaseUrl.replace("*", "read"));
+sb.append(crudServiceBaseUrl.replace("*", "update"));		
+sb.append(crudServiceBaseUrl.replace("*", "create"));
+sb.append(crudServiceBaseUrl.replace("*", "destroy"));
+//System.out.println("crudServiceBaseUrl:"+ crudServiceBaseUrl);
+
+//System.out.println("crudServiceBaseUrl:"+ crudServiceBaseUrl.replace("*", "read"));
+
 sb.append("parameterMap: function(options, operation) {"
 				+"if (operation === \"read\"){"
 				+ 	"return JSON.stringify(options);"
@@ -75,30 +92,11 @@ sb.append("parameterMap: function(options, operation) {"
 			+"},");
 sb.append("error: function (e) {alert(\"Status:\" + e.status + \"; Error message: \" + e.errorThrown);},");
 
-/* create filter from tag's filter attribute:
- * format:
-filter: {
-    // leave data items which are "Food" or "Tea"
-    logic: "and",
-    filters: [
-      { field: "category", operator: "eq", value: "Food" },
-      { field: "name", operator: "eq", value: "Tea" }
-    ]
-  }
-  */
-if(filter!=null){
-	String[] filters=filter.split(";");
-	sb.append("filter:[");
-	prefix="";
-	for(String entry:filters){
-		String[] items=entry.split(",");
-		sb.append(prefix+"{ field:\""+items[0]+"\", operator:\""+items[1]+"\",value:\""+items[2]+"\"}");
-		prefix=",";
-	}
-	sb.append("],");
-		
-}
-
+/*creat filter
+ *  
+ */
+if(!dataFilter.isEmpty())
+	sb.append("filter:" +dataFilter+",");
 
 /*create sort descriptor
  * 
@@ -134,8 +132,9 @@ sb.append("}}}});");
 //end of dataSource
 
 //create kendogrid
-sb.append("$(\"#"+divid+"\").kendoGrid({");
-sb.append("dataSource:dataSource,");
+sb.append("var "+name+"=$(\"#"+name+"\").kendoGrid({");
+sb.append("dataSource:"+name+"DataSource,");
+sb.append("selectable: true,");
 sb.append("navigatable: true,");
 sb.append("resizable: "+gridInfo.isColumnResizable()+",");
 sb.append("reorderable: "+gridInfo.isColumnMovable()+",");
@@ -148,7 +147,7 @@ for(GridColumn gridColumn:gridColumnList){
 	sb.append("field:\""+gridColumn.getColumnName()+"\",");
 	sb.append("title:\""+gridColumn.getTitle()+"\",");
 	if(!gridColumn.isColumnVisible())
-		sb.append("hidden: false,");
+		sb.append("hidden: true,");
 	if(gridColumn.isColumnLocked())
 		sb.append("locked: true,");
 	if(gridColumn.isColumnLockable())
@@ -159,33 +158,91 @@ for(GridColumn gridColumn:gridColumnList){
 		
 		String s="template:\"<input type='checkbox' disabled='disabled' value='#= "
 				+gridColumn.getColumnName()+" #' #= "+gridColumn.getColumnName()+" ? 'checked=\\\\'checked\\\\'' : '' # />\",";
-		System.out.println(s);
+//		System.out.println(s);
 		sb.append(s);
 	}
 	
+	String editorDescription=gridColumn.getComboList();
+	if(editorDescription!=null&&!editorDescription.isEmpty()){
+//       	 System.out.println("test============"+editorDescription);
+
+		String[] elements=editorDescription.split(":");
+//      	 System.out.println("elements============"+elements[0]+"==="+elements[1]);
+		if("dropdownlist".equalsIgnoreCase(elements[0])){
+//	       	 System.out.println("elements============"+elements[1]);
+			String editorName=gridColumn.getColumnName()+"ColumnEditor";
+			sb.append("editor:"+editorName+",");
+			StringBuilder eb=new StringBuilder();
+			eb.append("function "+editorName+"(container, options) {");
+            eb.append("$('<input class=\"grid-editor\" style=\"{height: 16px;font-size: 12px; padding: 1px;}\" required  data-bind=\"value:' + options.field + '\"/>')");  //data-text-field="CategoryName" data-value-field="CategoryID"
+            eb.append(".appendTo(container).kendoDropDownList({");
+            eb.append("autoBind: false,");
+            eb.append("dataSource: { data:[\""+elements[1].replace(",","\",\"")+"\"]}});}");
+            editorList.add(eb.toString());
+            
+ //           System.out.println(eb);
+		}
+		
+	}
 	sb.append("width:"+gridColumn.getWidth());
 	sb.append("},");
 }
 
-sb.append("{ command:\"destroy\", title:\"&nbsp;\",width:120}]," );
+
+sb.append("{ command:\"destroy\", title:\"&nbsp;\"}]," );
 sb.append("editable:true");
 sb.append("});");
-sb.append("});");
-sb.append("</script>");
+//sb.append("});");
 
+for(String editor:editorList)
+	sb.append(editor);
+
+
+//sb.append("</script>");
+
+/*
 sb.append("<style>");
 
-sb.append("div.k-grid td,th{line-height: 13px;font-size: 11px; padding: 1px 5px;	white-space: nowrap;}");
-//sb.append(".k-grid-header th.k-header {	padding:1px 5px;}");
-//sb.append(".k-grid-header-wrap th {font-size: 12px;}");  
+//adjust height of grid's header and rows
+sb.append("div.k-grid td,th{line-height: 25px;font-size: 12px; padding: 1px 5px; white-space: nowrap;}");
+ 
+//adjust button size, such as buttons in grid toolbar
 sb.append(".k-button{ font-size: 12px; padding: 1px 5px; }");
-sb.append(".k-grid-pager  {height: 12px;}");
-sb.append(".k-pager-nav, k-pager-info {font:12px; height: 12px;}");
-sb.append("</style>");
 
+sb.append(".k-grid-pager{font-size:12px; height: 15px;}");
+sb.append(".k-pager-nav, .k-pager-info {padding:1px;  vertical-align: text-top;}");
+sb.append(".k-pager-numbers {transform:scale(0.7,0.7);}");
+sb.append("</style>");
+*/
 System.out.println(sb.toString());
 	    out.println(sb.toString());
 	  }
 	}
 
+
+/* create filter from tag's filter attribute:
+ * format:
+			filter: {  <---need append from outside of this function
+			    logic: "and",
+			    filters: [
+			      { field: "category", operator: "eq", value: "Food" },
+			      { field: "name", operator: "eq", value: "Tea" }
+			    ]
+			  }        <---need append from outside of this function
+*/
+	
+	private String createFilter(String filter) {
+		StringBuilder sb=new StringBuilder();
+		String[] filters=filter.split(";");
+		sb.append("[");
+		String prefix="";
+		for(String entry:filters){
+			String[] items=entry.split(",");
+			sb.append(prefix+"{ field: \""+items[0]+"\", operator: \""+items[1]+"\",value: "+items[2]+"}");
+			prefix=",";
+		}
+		sb.append("]");
+		return sb.toString();
+	}
+	
 } 

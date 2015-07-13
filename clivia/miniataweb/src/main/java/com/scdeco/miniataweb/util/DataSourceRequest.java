@@ -50,8 +50,6 @@ public class DataSourceRequest {
     public DataSourceRequest() {
         filter = new FilterDescriptor();
         data = new HashMap<String, Object>();
-        
-        
     }
     
     public HashMap<String, Object> getData() {
@@ -61,6 +59,7 @@ public class DataSourceRequest {
     @JsonAnySetter
     public void handleUnknown(String key, Object value) {
         data.put(key, value);
+        System.out.println("key:"+key+"    value:"+value);
     }
     
     public int getPage() {
@@ -112,6 +111,7 @@ public class DataSourceRequest {
     }
 
     private static void restrict(Junction junction, FilterDescriptor filter, Class<?> clazz) {
+    	
         String operator = filter.getOperator();
         String field = filter.getField();
         Object value = filter.getValue();
@@ -196,6 +196,7 @@ public class DataSourceRequest {
     
     private static void filter(Criteria criteria, FilterDescriptor filter, Class<?> clazz) {
         if (filter != null) {
+        	
             List<FilterDescriptor> filters = filter.filters;
             
             if (!filters.isEmpty()) {

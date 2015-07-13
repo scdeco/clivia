@@ -1,12 +1,33 @@
-<%@ taglib prefix="ex" uri="/WEB-INF/miniataweb-tags.tld"%>
+
+
+<%@taglib prefix="ex" uri="/WEB-INF/miniataweb-tags.tld"%>
 <%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
 <%@taglib prefix="kendo" uri="http://www.kendoui.com/jsp/tags"%>
-
 <shared:header/>
 
-<ex:clivia-grid gridno="901" divid="grid"/>
-<ex:clivia-grid gridno="902" divid="myGrid" filter="gridId,eq,1"/>
-<ex:clivia-grid gridno="101" divid="employeeGrid"/>
+
+
+<script>
+	$(document).ready(function() {
+		
+		<ex:clivia-grid gridno="901" name="infogrid" />
+		<ex:clivia-grid gridno="902" name="columngrid" filter="gridId,eq,-1" />
+		<ex:clivia-grid gridno="101" name="employeegrid" />
+	
+		var infogridCurrentRowId=-1;
+		$("#infogrid").data("kendoGrid").bind("change", function(e){
+			//Getting selected item
+			
+			var selectedItem=this.dataItem(this.select());
+			if(selectedItem.id!==infogridCurrentRowId){
+				infogridCurrentRowId=selectedItem.id;
+				columngridFilter[0].value=infogridCurrentRowId;
+			    columngridDataSource.filter(columngridFilter);
+			}
+		});
+		
+	});
+</script> 
 
 
 
@@ -20,12 +41,12 @@
 						<kendo:splitter-panes >
 							<kendo:splitter-pane id="top-pane" collapsible="true">
 								<kendo:splitter-pane-content>
-								  	<div id="grid" class=grid></div>
+								  	<div id="infogrid" class=grid></div>
 								</kendo:splitter-pane-content>
 							</kendo:splitter-pane>
 							<kendo:splitter-pane id="bottom-pane" collapsible="true">
 								<kendo:splitter-pane-content>
-								  	<div id="myGrid" class=grid></div>
+								  	<div id="columngrid" class=grid></div>
 								</kendo:splitter-pane-content>
 							</kendo:splitter-pane>
 						</kendo:splitter-panes>
@@ -36,7 +57,7 @@
         <kendo:tabStrip-item text="Employee">
             <kendo:tabStrip-item-content>
 				<div class="test">
-	                <div id="employeeGrid" class=grid></div>
+	                <div id="employeegrid" class=grid></div>
 	            </div>
             </kendo:tabStrip-item-content>    
         </kendo:tabStrip-item>
@@ -44,9 +65,7 @@
      </kendo:tabStrip-items>
  
 </kendo:tabStrip>
-
-
-  	 
+	 
     
     
 <style>
@@ -67,7 +86,6 @@
 		height: 100%; 	
 	}
 </style>
-    
     
 
 <shared:footer/>
