@@ -1,7 +1,6 @@
 package com.scdeco.miniataweb.tag;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -21,9 +20,11 @@ import com.scdeco.miniataweb.model.GridInfo;
 public class CliviaGridTag extends SimpleTagSupport {
 
 	GridInfoDao gridInfoDao;
-	
 	GridColumnDao gridColumnDao;
 	
+	GridInfo gridInfo;
+	List<GridColumn> gridColumnList;
+
 	private String gridno;
 	public void setGridno(String gridno) {
 		this.gridno = gridno;
@@ -38,12 +39,30 @@ public class CliviaGridTag extends SimpleTagSupport {
 	public void setFilter(String filter){
 		this.filter=filter;
 	}
- 
+	
+	private boolean editable;
+	public void setEditable(boolean editable){
+		this.editable=editable;
+	}
+	
+	private boolean inscript;
+	public void setInscript(boolean inscript){
+		this.inscript=inscript;
+	}
+
+	private boolean hidelineno;
+	public void setHidelineno(boolean hidelineno){
+		this.hidelineno=hidelineno;
+	}
+	
+	
+	private StringBuilder before;
+    private StringBuilder main;
+    private StringBuilder after;
+	
+	
 	@Override
 	public void doTag() throws JspException, IOException {
-		String prefix;
-		List<String> editorList=new ArrayList<String>();
-		String dataFilter="";
 		
 		PageContext pageContext = (PageContext) this.getJspContext(); 
 		ServletContext servletContext = pageContext.getServletContext(); 
@@ -53,172 +72,233 @@ public class CliviaGridTag extends SimpleTagSupport {
 		gridColumnDao=(GridColumnDao)wac.getBean("gridColumnDao");
 		
 	    JspWriter out = getJspContext().getOut();
-	    StringBuilder sb=new StringBuilder();
+
 	    
-	    if(gridno!=null){
+	    if(gridno.isEmpty()) return;
 
-	    	GridInfo gridInfo=gridInfoDao.findByGridNo(gridno);
-			List<GridColumn> gridColumnList=gridColumnDao.findColumnListByGridId(gridInfo.getId());
-
-			String crudServiceBaseUrl="*:{url:\"http://192.6.2.108:8080/miniataweb/cliviagrid/"+gridInfo.getGridDaoName()+
-					"/*\",type:\"post\",dataType: \"json\",contentType:\"application/json\"},";
-			
-//			sb.append( "<script> $(document).ready(function() {");
-
-
-			//create filter variable for javascript
-			if(filter!=null && !filter.isEmpty()){
-				dataFilter=createFilter(filter);
-				sb.append("var "+name+"Filter="+dataFilter+";");
-			}
-			
-sb.append("var "+name+"DataSource=new kendo.data.DataSource({");
-
-sb.append("transport:{");
-
-sb.append(crudServiceBaseUrl.replace("*", "read"));
-sb.append(crudServiceBaseUrl.replace("*", "update"));		
-sb.append(crudServiceBaseUrl.replace("*", "create"));
-sb.append(crudServiceBaseUrl.replace("*", "destroy"));
-//System.out.println("crudServiceBaseUrl:"+ crudServiceBaseUrl);
-
-//System.out.println("crudServiceBaseUrl:"+ crudServiceBaseUrl.replace("*", "read"));
-
-sb.append("parameterMap: function(options, operation) {"
-				+"if (operation === \"read\"){"
-				+ 	"return JSON.stringify(options);"
-				+ 	"} else {"
-				+ 	"return JSON.stringify(options.models);}}"
-			+"},");
-sb.append("error: function (e) {alert(\"Status:\" + e.status + \"; Error message: \" + e.errorThrown);},");
-
-/*creat filter
- *  
- */
-if(!dataFilter.isEmpty())
-	sb.append("filter:" +dataFilter+",");
-
-/*create sort descriptor
- * 
- */
-String gridSortDescrptor=gridInfo.getGridSortDescriptor()==null?"":(gridInfo.getGridSortDescriptor());
-if(!gridSortDescrptor.isEmpty()){
-	String[] sorters=gridSortDescrptor.split(";");
-	sb.append("sort:[");
-	prefix="";
-	for(String sorter:sorters){
-		String[] items=sorter.split(",");
-		sb.append(prefix+"{ field:\""+items[0]+"\",dir:\""+items[1]+"\" }");
-		prefix=",";
-	}
-	sb.append("],");
-}
-
-sb.append("batch:true,");
-sb.append("pageSize:"+gridInfo.getGridPageSize()+",");
-sb.append("serverPaging: true,");
-sb.append("serverFiltering: true,");
-sb.append("serverSorting: true,");
-sb.append("schema:{ data:\"data\", total:\"total\",model:{id:\"id\",fields:{");	
-prefix="";
-for(GridColumn gridColumn:gridColumnList){
-	sb.append(prefix+gridColumn.getColumnName()+": { ");
-	sb.append("type:\""+gridColumn.getColumnDataType()+"\",");
-	sb.append("editable:"+gridColumn.isColumnEditable()+"}");
-	prefix=",";
-}
-sb.append("}}}});");
-
-//end of dataSource
-
-//create kendogrid
-sb.append("var "+name+"=$(\"#"+name+"\").kendoGrid({");
-sb.append("dataSource:"+name+"DataSource,");
-sb.append("selectable: true,");
-sb.append("navigatable: true,");
-sb.append("resizable: "+gridInfo.isColumnResizable()+",");
-sb.append("reorderable: "+gridInfo.isColumnMovable()+",");
-sb.append("pageable: "+(gridInfo.getGridPageSize()>0?"true":"false")+",");
-sb.append("toolbar: [\"create\", \"save\", \"cancel\"],");
-sb.append("columns:[");
-
-for(GridColumn gridColumn:gridColumnList){
-	sb.append("{");
-	sb.append("field:\""+gridColumn.getColumnName()+"\",");
-	sb.append("title:\""+gridColumn.getTitle()+"\",");
-	if(!gridColumn.isColumnVisible())
-		sb.append("hidden: true,");
-	if(gridColumn.isColumnLocked())
-		sb.append("locked: true,");
-	if(gridColumn.isColumnLockable())
-		sb.append("lockable: true,");
-	if(gridColumn.getDisplayFormat()!=null&&!gridColumn.getDisplayFormat().isEmpty())
-		sb.append("format: \""+gridColumn.getDisplayFormat()+"\",");
-	if("boolean".equals(gridColumn.getColumnDataType())){
+    	gridInfo=gridInfoDao.findByGridNo(gridno);
+		gridColumnList=gridColumnDao.findColumnListByGridId(gridInfo.getId());
 		
-		String s="template:\"<input type='checkbox' disabled='disabled' value='#= "
-				+gridColumn.getColumnName()+" #' #= "+gridColumn.getColumnName()+" ? 'checked=\\\\'checked\\\\'' : '' # />\",";
-//		System.out.println(s);
-		sb.append(s);
-	}
-	
-	String editorDescription=gridColumn.getComboList();
-	if(editorDescription!=null&&!editorDescription.isEmpty()){
-//       	 System.out.println("test============"+editorDescription);
+		before=new StringBuilder();
+	    main=new StringBuilder();
+	    after=new StringBuilder();
+	    
+	    StringBuilder outScript=new StringBuilder();
 
-		String[] elements=editorDescription.split(":");
-//      	 System.out.println("elements============"+elements[0]+"==="+elements[1]);
-		if("dropdownlist".equalsIgnoreCase(elements[0])){
-//	       	 System.out.println("elements============"+elements[1]);
-			String editorName=gridColumn.getColumnName()+"ColumnEditor";
-			sb.append("editor:"+editorName+",");
-			StringBuilder eb=new StringBuilder();
-			eb.append("function "+editorName+"(container, options) {");
-            eb.append("$('<input class=\"grid-editor\" style=\"{height: 16px;font-size: 12px; padding: 1px;}\" required  data-bind=\"value:' + options.field + '\"/>')");  //data-text-field="CategoryName" data-value-field="CategoryID"
-            eb.append(".appendTo(container).kendoDropDownList({");
-            eb.append("autoBind: false,");
-            eb.append("dataSource: { data:[\""+elements[1].replace(",","\",\"")+"\"]}});}");
-            editorList.add(eb.toString());
-            
- //           System.out.println(eb);
+	    createDataSource();
+		createKendoGrid();
+		
+		if (!inscript){
+			outScript.append( "<script>");
+			outScript.append("$(document).ready(function() {");
 		}
 		
-	}
-	sb.append("width:"+gridColumn.getWidth());
-	sb.append("},");
-}
-
-
-sb.append("{ command:\"destroy\", title:\"&nbsp;\"}]," );
-sb.append("editable:true");
-sb.append("});");
-//sb.append("});");
-
-for(String editor:editorList)
-	sb.append(editor);
-
-
-//sb.append("</script>");
-
-/*
-sb.append("<style>");
-
-//adjust height of grid's header and rows
-sb.append("div.k-grid td,th{line-height: 25px;font-size: 12px; padding: 1px 5px; white-space: nowrap;}");
- 
-//adjust button size, such as buttons in grid toolbar
-sb.append(".k-button{ font-size: 12px; padding: 1px 5px; }");
-
-sb.append(".k-grid-pager{font-size:12px; height: 15px;}");
-sb.append(".k-pager-nav, .k-pager-info {padding:1px;  vertical-align: text-top;}");
-sb.append(".k-pager-numbers {transform:scale(0.7,0.7);}");
-sb.append("</style>");
-*/
-System.out.println(sb.toString());
-	    out.println(sb.toString());
-	  }
+		outScript.append(before);
+		outScript.append(main);
+		outScript.append(after);
+	
+		if (!inscript){
+			outScript.append("});");
+			outScript.append("</script>");
+		}
+		
+		System.out.println(outScript.toString());
+	    out.println(outScript.toString());
+	  
 	}
 
+
+	private void createKendoGrid(){
+		
+		
+		main.append("var "+name+"KendoGrid=$(\"#"+name+"\").kendoGrid({");
+		
+		createToolbar();
+		
+		createGridColumns();
+		
+		if(!hidelineno)
+			enableShowLineNo();
+		
+		main.append("dataSource:"+name+"DataSource,");
+		main.append("selectable: true,");
+		main.append("navigatable: true,");
+		main.append("resizable: "+gridInfo.isColumnResizable()+",");
+		main.append("reorderable: "+gridInfo.isColumnMovable()+",");
+		
+		if (gridInfo.getGridPageSize()>0)
+			main.append("pageable: { refresh: true, pageSizes: true, buttonCount: 5 },");
+		
+		main.append("editable: "+editable);
+		
+		main.append("}).data(\"kendoGrid\");");
+
+		
+	}	//end of createKendoGrid
+	
+	private void createGridColumns(){
+		main.append("columns:[");			//begin of columns
+		if(!hidelineno)
+			main.append("{title: \"#\", template: \"#= ++"+name+"LineNo #\", locked: true, width: 30},");
+
+		for(GridColumn gridColumn:gridColumnList){
+			main.append("{");
+			main.append("field:\""+gridColumn.getColumnName()+"\",");
+			main.append("title:\""+gridColumn.getTitle()+"\",");
+			
+			if(!gridColumn.isColumnVisible())
+				main.append("hidden: true,");
+			if(gridColumn.isColumnLocked())
+				main.append("locked: true,");
+			if(gridColumn.isColumnLockable())
+				main.append("lockable: true,");
+			if(gridColumn.getDisplayFormat()!=null&&!gridColumn.getDisplayFormat().isEmpty())
+				main.append("format: \""+gridColumn.getDisplayFormat()+"\",");
+			
+			if("boolean".equals(gridColumn.getColumnDataType())){
+				
+				String s=" template:\"<input type='checkbox' disabled='disabled' value='#= "
+						+gridColumn.getColumnName()+" #' #= "+gridColumn.getColumnName()+" ? 'checked=\\\\'checked\\\\'' : '' # />\",";
+				
+//				System.out.println(s);
+				main.append(s);
+			}
+			 
+			String editor=gridColumn.getColumnEditor();
+			if(editor!=null&&!editor.isEmpty()){
+
+				//String[] elements=editorDescription.split(":");
+				String editorName=gridColumn.getColumnName()+"ColumnEditor";
+				String editorDescriptor=gridColumn.getEditorDescriptor();
+				
+				main.append("editor:"+editorName+",");
+				
+				after.append("function "+editorName+"(container, options) {");   //required before data-bind
+				after.append("$('<input class=\"grid-editor\" style=\"{height: 16px;font-size: 12px; padding: 1px;}\"   data-bind=\"value:' + options.field + '\"/>')");  //data-text-field="CategoryName" data-value-field="CategoryID"
+				after.append(".appendTo(container).kendo"+editor+"({");
+				after.append("autoBind: false,");
+				after.append("dataSource: { data:[\""+editorDescriptor.replace(",","\",\"")+"\"]}});}");
+			}
+			
+			main.append("width:"+gridColumn.getWidth());
+			main.append("},");
+		}
+
+		main.append("]," );  //end of columns
+	}
+
+	private void createDataSource(){
+	
+//		String crudServiceBaseUrl="*:{url:\"http://192.6.2.108:8080/miniataweb/cliviagrid/"+gridInfo.getGridDaoName()+
+//				"/*\",type:\"post\",dataType: \"json\",contentType:\"application/json\"},";
+
+		String crudServiceBaseUrl="*:{url: 'http://'+window.location.host"+"+'/miniataweb/cliviagrid/"+gridInfo.getGridDaoName()+
+				"/*',type:'post',dataType: 'json',contentType:'application/json'},";
+			
+		//create filter variable for javascript
+		String dataFilter="";
+		
+		if(filter!=null && !filter.isEmpty()){
+			dataFilter=createFilter(filter);
+			main.append("var "+name+"Filter="+dataFilter+";");
+		}
+		
+		main.append("var "+name+"DataSource=new kendo.data.DataSource({");
+
+		main.append("transport:{");
+
+		main.append(crudServiceBaseUrl.replace("*", "read"));
+		main.append(crudServiceBaseUrl.replace("*", "update"));		
+		main.append(crudServiceBaseUrl.replace("*", "create"));
+		main.append(crudServiceBaseUrl.replace("*", "destroy"));
+
+		//System.out.println("crudServiceBaseUrl:"+ crudServiceBaseUrl.replace("*", "read"));
+
+		main.append("parameterMap: function(options, operation) {"
+						+"if (operation === \"read\"){"
+						+ 	"return JSON.stringify(options);"
+						+ 	"} else {"
+						+ 	"return JSON.stringify(options.models);}}"
+					+"},");
+		
+		main.append("error: function (e) {alert(\"Status:\" + e.status + \"; Error message: \" + e.errorThrown);},");
+
+		/*creat filter
+		 *  
+		 */
+		if(!dataFilter.isEmpty())
+			main.append("filter:" +dataFilter+",");
+
+		/*create sort descriptor
+		 * 
+		 */
+		String gridSortDescrptor=gridInfo.getGridSortDescriptor()==null?"":(gridInfo.getGridSortDescriptor());
+		if(!gridSortDescrptor.isEmpty()){
+			String[] sorters=gridSortDescrptor.split(";");
+			main.append("sort:[");
+			for(String sorter:sorters){
+				String[] items=sorter.split(",");
+				main.append("{ field:\""+items[0]+"\",dir:\""+items[1]+"\" },");
+			}
+			main.append("],");
+		}
+
+		main.append("batch:true,");
+		main.append("pageSize:"+gridInfo.getGridPageSize()+",");
+		main.append("serverPaging: true,");
+		main.append("serverFiltering: true,");
+		main.append("serverSorting: true,");
+
+		main.append("schema:{ data:\"data\", total:\"total\",model:{id:\"id\",fields:{");	
+		for(GridColumn gridColumn:gridColumnList){
+			main.append(gridColumn.getColumnName()+": { ");
+			main.append("type:\""+gridColumn.getColumnDataType()+"\",");
+			main.append("editable:"+gridColumn.isColumnEditable()+"},");
+		}
+		main.append("}}}});");
+		
+	} //end of dataSource
+	
+	private void enableShowLineNo(){
+		before.append(" "+name+"LineNo=0;");
+		main.append("dataBinding: function() { "+name+"LineNo = (this.dataSource.page() -1) * this.dataSource.pageSize();},");	
+	}
+	
+	private void createToolbar(){
+		main.append("toolbar: [");
+
+		main.append("{name:\"create\",text:\"Add\"},");
+		main.append("{name:\"save\",text:\"Save\"},");
+		main.append("{name:\"cancel\",text:\"Cancel\"},"); 
+		
+		main.append("{name:\"destroy\",text:\"Delete\"},");
+		
+		//e.preventDefault();
+		after.append("$('#"+name+" .k-grid-toolbar a.k-grid-delete').click(function (e) {"+
+							"var selectedItem="+name+"KendoGrid.dataItem("+name+"KendoGrid.select());"+
+							"if (selectedItem!=null) { "+
+								"if (confirm('Please confirm to delete the selected row.')){"
+										+ name+"DataSource.remove(selectedItem);}"+
+							"}else{"+
+								"alert('Please select a  row first.');"+
+							"}"+
+							
+							"});");	
+
+		
+		main.append("{template: '<a class=\"k-button\"  onclick=\"on"+name+"ClickChooseCommand()\">Choose Columns</a>'}");
+		
+		after.append("on"+name+"ClickChooseCommand=function () { "+
+				"var selectedRow="+name+"KendoGrid.select();"+
+				"var selected= "+name+"KendoGrid.dataItem(selectedRow);"+
+				" if(selected!=null){"+			   
+				"alert('Toolbar command is clicked!'+selected.id);"+
+			  	"} else { "+
+				"alert('Toolbar command is clicked!');}"+
+				"};");
+
+		main.append("],"); //end of creating toolbar
+	}
 
 /* create filter from tag's filter attribute:
  * format:
@@ -229,17 +309,15 @@ System.out.println(sb.toString());
 			      { field: "name", operator: "eq", value: "Tea" }
 			    ]
 			  }        <---need append from outside of this function
-*/
+*/ 
 	
 	private String createFilter(String filter) {
 		StringBuilder sb=new StringBuilder();
 		String[] filters=filter.split(";");
 		sb.append("[");
-		String prefix="";
 		for(String entry:filters){
 			String[] items=entry.split(",");
-			sb.append(prefix+"{ field: \""+items[0]+"\", operator: \""+items[1]+"\",value: "+items[2]+"}");
-			prefix=",";
+			sb.append("{ field: \""+items[0]+"\", operator: \""+items[1]+"\",value: "+items[2]+"},");
 		}
 		sb.append("]");
 		return sb.toString();

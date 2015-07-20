@@ -59,7 +59,6 @@ public class DataSourceRequest {
     @JsonAnySetter
     public void handleUnknown(String key, Object value) {
         data.put(key, value);
-        System.out.println("key:"+key+"    value:"+value);
     }
     
     public int getPage() {

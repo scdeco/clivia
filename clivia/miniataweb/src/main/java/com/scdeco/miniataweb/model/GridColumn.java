@@ -66,11 +66,12 @@ public class GridColumn{
 	@Column(name="EditMask",length=50)
 	private String editMask;
 	
-	@Column(name="ComboList",length=50)
-	private String comboList;
+	@Column(name="ColumnEditor",length=50)
+	private String columnEditor;
 	
-	@Column(name="DataMap",length=50)
-	private String dataMap;
+	@Column(name="EditorDescriptor",length=50)
+	private String editorDescriptor;
+	
 	
 	public GridColumn(){
 	}
@@ -211,20 +212,20 @@ public class GridColumn{
 		this.editMask = editMask;
 	}
 
-	public String getComboList() {
-		return comboList;
+	public String getColumnEditor() {
+		return columnEditor;
 	}
 
-	public void setComboList(String comboList) {
-		this.comboList = comboList;
+	public void setColumnEditor(String columnEditor) {
+		this.columnEditor = columnEditor;
+	}
+	
+	public String getEditorDescriptor() {
+		return editorDescriptor;
 	}
 
-	public String getDataMap() {
-		return dataMap;
-	}
-
-	public void setDataMap(String dataMap) {
-		this.dataMap = dataMap;
+	public void setEditorDescriptor(String editorDescriptor) {
+		this.editorDescriptor = editorDescriptor;
 	}
 
 	public boolean isColumnSortable() {
@@ -248,7 +249,7 @@ public class GridColumn{
 				+ ", columnDataType=" + columnDataType + ", textAlignFixed="
 				+ textAlignFixed + ", textAlign=" + textAlign
 				+ ", displayFormat=" + displayFormat + ", editMask=" + editMask
-				+ ", comboList=" + comboList + ", dataMap=" + dataMap + "]";
+				+ ", columnEditor=" + columnEditor + ", editorDescriptor=" + editorDescriptor + "]";
 	}
 
 

@@ -8,14 +8,17 @@
 
 
 <script>
+
+			
 	$(document).ready(function() {
+			
+		var infogridCurrentRowId=-1;		
 		
-		<ex:clivia-grid gridno="901" name="infogrid" />
-		<ex:clivia-grid gridno="902" name="columngrid" filter="gridId,eq,-1" />
-		<ex:clivia-grid gridno="101" name="employeegrid" />
-	
-		var infogridCurrentRowId=-1;
-		$("#infogrid").data("kendoGrid").bind("change", function(e){
+		<ex:clivia-grid gridno="901" name="infogrid" editable="true" inscript="true" />
+		<ex:clivia-grid gridno="902" name="columngrid" editable="true" filter="gridId,eq,-1" inscript="true" hidelineno="true" />
+		
+		
+		infogridKendoGrid.bind("change", function(e){
 			//Getting selected item
 			
 			var selectedItem=this.dataItem(this.select());
@@ -26,8 +29,17 @@
 			}
 		});
 		
+		columngridKendoGrid.bind("edit", function(e) {
+		    if (e.model.isNew()&&!e.model.dirty) {
+		            e.model.set("gridId", infogridCurrentRowId); 
+	        }
+		 });	
+		
 	});
+	
 </script> 
+
+<ex:clivia-grid gridno="101" name="employeegrid" editable="true"/>
 
 
 
@@ -36,7 +48,7 @@
 	<kendo:tabStrip-items>
 	    <kendo:tabStrip-item text="Grid" selected="true">
 			<kendo:tabStrip-item-content>
-				<div class="test">
+				<div class="tabPage">
 					<kendo:splitter name="vertical" orientation="vertical" style="height:100%;">
 						<kendo:splitter-panes >
 							<kendo:splitter-pane id="top-pane" collapsible="true">
@@ -56,7 +68,7 @@
 	    </kendo:tabStrip-item>
         <kendo:tabStrip-item text="Employee">
             <kendo:tabStrip-item-content>
-				<div class="test">
+				<div class="tabPage">
 	                <div id="employeegrid" class=grid></div>
 	            </div>
             </kendo:tabStrip-item-content>    
@@ -66,26 +78,29 @@
  
 </kendo:tabStrip>
 	 
-    
+   
     
 <style>
 	#tabStrip{
-		width: 80%;
-		height:900px;
+		width: 95%;
+		height:860px;
 		margin-left:auto;
 		margin-right:auto;
 	}
+	
 	#vertical{
 		overflow:hidden;	
-		}
-	.test{
-	height:700px;
 	}
 	
-	.grid{
-		height: 100%; 	
+	.tabPage{
+		height:800px;
 	}
-</style>
-    
+	.k-grid {height:100%; }
+ 	
+ 	.k-grid td{ white-space: nowrap;} 
+ 	
+
+	
+</style>    
 
 <shared:footer/>

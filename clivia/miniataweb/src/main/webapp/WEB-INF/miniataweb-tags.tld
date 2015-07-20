@@ -20,7 +20,19 @@
        <name>filter</name>
        <required>false</required>
     </attribute>
-
+    <attribute>
+       <name>editable</name>
+       <required>false</required>
+    </attribute>
+    <attribute>
+    	<name>inscript</name>
+    	<required>false</required>
+    </attribute>
+    <attribute>
+    	<name>hidelineno</name>
+    	<required>false</required>
+    </attribute>
+    
   </tag>
   
 </taglib>
