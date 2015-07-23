@@ -82,22 +82,24 @@
     
 <style>
 	#tabStrip{
-		width: 95%;
+		width: 100%;
 		height:860px;
 		margin-left:auto;
 		margin-right:auto;
 	}
 	
-	#vertical{
+	.k-splitter .k-scrollable{
 		overflow:hidden;	
 	}
 	
 	.tabPage{
 		height:800px;
 	}
+	
 	.k-grid {height:100%; }
  	
  	.k-grid td{ white-space: nowrap;} 
+
  	
 
 	

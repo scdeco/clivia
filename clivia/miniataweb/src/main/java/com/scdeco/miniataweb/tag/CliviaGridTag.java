@@ -129,7 +129,8 @@ public class CliviaGridTag extends SimpleTagSupport {
 		if (gridInfo.getGridPageSize()>0)
 			main.append("pageable: { refresh: true, pageSizes: true, buttonCount: 5 },");
 		
-		main.append("editable: "+editable);
+		main.append("filterable: true,");
+		main.append("editable: 'popup'");  //+editable
 		
 		main.append("}).data(\"kendoGrid\");");
 
@@ -152,6 +153,10 @@ public class CliviaGridTag extends SimpleTagSupport {
 				main.append("locked: true,");
 			if(gridColumn.isColumnLockable())
 				main.append("lockable: true,");
+			
+			if(!gridColumn.isColumnFilterable())
+				main.append("filterable: false,");		
+			
 			if(gridColumn.getDisplayFormat()!=null&&!gridColumn.getDisplayFormat().isEmpty())
 				main.append("format: \""+gridColumn.getDisplayFormat()+"\",");
 			
@@ -265,6 +270,7 @@ public class CliviaGridTag extends SimpleTagSupport {
 	}
 	
 	private void createToolbar(){
+		
 		main.append("toolbar: [");
 
 		main.append("{name:\"create\",text:\"Add\"},");
@@ -274,13 +280,13 @@ public class CliviaGridTag extends SimpleTagSupport {
 		main.append("{name:\"destroy\",text:\"Delete\"},");
 		
 		//e.preventDefault();
-		after.append("$('#"+name+" .k-grid-toolbar a.k-grid-delete').click(function (e) {"+
+		after.append("$('#"+name+" .k-grid-toolbar a.k-grid-delete').click(function (e) {e.preventDefault();"+
 							"var selectedItem="+name+"KendoGrid.dataItem("+name+"KendoGrid.select());"+
-							"if (selectedItem!=null) { "+
+							"if (selectedItem!==null) { "+
 								"if (confirm('Please confirm to delete the selected row.')){"
 										+ name+"DataSource.remove(selectedItem);}"+
 							"}else{"+
-								"alert('Please select a  row first.');"+
+								"alert('Please select a  row to delete.');"+
 							"}"+
 							
 							"});");	
