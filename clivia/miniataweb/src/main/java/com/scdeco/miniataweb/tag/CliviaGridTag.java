@@ -130,7 +130,7 @@ public class CliviaGridTag extends SimpleTagSupport {
 			main.append("pageable: { refresh: true, pageSizes: true, buttonCount: 5 },");
 		
 		main.append("filterable: true,");
-		main.append("editable: 'popup'");  //+editable
+		main.append("editable: "+editable);
 		
 		main.append("}).data(\"kendoGrid\");");
 

@@ -1,9 +1,14 @@
 package com.scdeco.miniataweb.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 
 @Entity
@@ -14,13 +19,13 @@ public class GridInfo{
 	@Column(name = "id")
 	private int id;
 	
-	@Column(name = "GridNo",length=4)
+	@Column(name = "GridNo",length=4,unique=true,nullable=false)
 	private String gridNo;
 	
-	@Column(name = "GridName",length=255)
+	@Column(name = "GridName",length=50,nullable=false)
 	private String gridName;
 	
-	@Column(name = "GridDaoName",length=255)
+	@Column(name = "GridDaoName",length=50,nullable=false)
 	private String gridDaoName;
 	
 	@Column(name = "Remark",length=255)
@@ -44,12 +49,12 @@ public class GridInfo{
 	@Column(name="ColumnMovable")
 	private boolean columnMovable;
 	
-	
-	
 	@Column(name = "GridSortDescriptor",length=255)
 	private String gridSortDescriptor;
-	 
-
+	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "gridInfo")
+	private List<GridColumn> gridColumnList = new ArrayList<GridColumn>();	
+	
 	public GridInfo(){
 	}
 	
