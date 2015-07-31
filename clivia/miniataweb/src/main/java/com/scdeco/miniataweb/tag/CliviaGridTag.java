@@ -1,6 +1,7 @@
 package com.scdeco.miniataweb.tag;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -12,10 +13,12 @@ import javax.servlet.jsp.tagext.SimpleTagSupport;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
+import com.scdeco.miniataweb.dao.GenericDao;
 import com.scdeco.miniataweb.dao.GridColumnDao;
 import com.scdeco.miniataweb.dao.GridInfoDao;
 import com.scdeco.miniataweb.model.GridColumn;
 import com.scdeco.miniataweb.model.GridInfo;
+import com.scdeco.miniataweb.util.CliviaApplicationContext;
 
 public class CliviaGridTag extends SimpleTagSupport {
 
@@ -107,11 +110,10 @@ public class CliviaGridTag extends SimpleTagSupport {
 	  
 	}
 
-
 	private void createKendoGrid(){
 		
 		
-		main.append("var "+name+"KendoGrid=$(\"#"+name+"\").kendoGrid({");
+		main.append("$(\"#"+name+"\").kendoGrid({");
 		
 		createToolbar();
 		
@@ -129,11 +131,10 @@ public class CliviaGridTag extends SimpleTagSupport {
 		if (gridInfo.getGridPageSize()>0)
 			main.append("pageable: { refresh: true, pageSizes: true, buttonCount: 5 },");
 		
-		main.append("filterable: true,");
+		main.append("filterable: "+gridInfo.isGridFilterable()+",");
 		main.append("editable: "+editable);
-		
-		main.append("}).data(\"kendoGrid\");");
-
+		main.append("});");
+		main.append("var "+name+"KendoGrid=$('#"+name+"').data('kendoGrid');");
 		
 	}	//end of createKendoGrid
 	
@@ -164,25 +165,12 @@ public class CliviaGridTag extends SimpleTagSupport {
 				
 				String s=" template:\"<input type='checkbox' disabled='disabled' value='#= "
 						+gridColumn.getColumnName()+" #' #= "+gridColumn.getColumnName()+" ? 'checked=\\\\'checked\\\\'' : '' # />\",";
-				
-//				System.out.println(s);
+
 				main.append(s);
 			}
 			 
-			String editor=gridColumn.getColumnEditor();
-			if(editor!=null&&!editor.isEmpty()){
-
-				//String[] elements=editorDescription.split(":");
-				String editorName=gridColumn.getColumnName()+"ColumnEditor";
-				String editorDescriptor=gridColumn.getEditorDescriptor();
-				
-				main.append("editor:"+editorName+",");
-				
-				after.append("function "+editorName+"(container, options) {");   //required before data-bind
-				after.append("$('<input class=\"grid-editor\" style=\"{height: 16px;font-size: 12px; padding: 1px;}\"   data-bind=\"value:' + options.field + '\"/>')");  //data-text-field="CategoryName" data-value-field="CategoryID"
-				after.append(".appendTo(container).kendo"+editor+"({");
-				after.append("autoBind: false,");
-				after.append("dataSource: { data:[\""+editorDescriptor.replace(",","\",\"")+"\"]}});}");
+			if(gridColumn.getColumnEditor()!=null&&!gridColumn.getColumnEditor().isEmpty()){
+				createEditor(gridColumn);
 			}
 			
 			main.append("width:"+gridColumn.getWidth());
@@ -193,9 +181,6 @@ public class CliviaGridTag extends SimpleTagSupport {
 	}
 
 	private void createDataSource(){
-	
-//		String crudServiceBaseUrl="*:{url:\"http://192.6.2.108:8080/miniataweb/cliviagrid/"+gridInfo.getGridDaoName()+
-//				"/*\",type:\"post\",dataType: \"json\",contentType:\"application/json\"},";
 
 		String crudServiceBaseUrl="*:{url: 'http://'+window.location.host"+"+'/miniataweb/cliviagrid/"+gridInfo.getGridDaoName()+
 				"/*',type:'post',dataType: 'json',contentType:'application/json'},";
@@ -222,7 +207,7 @@ public class CliviaGridTag extends SimpleTagSupport {
 		main.append("parameterMap: function(options, operation) {"
 						+"if (operation === \"read\"){"
 						+ 	"return JSON.stringify(options);"
-						+ 	"} else {"
+						+ 	"} else { "
 						+ 	"return JSON.stringify(options.models);}}"
 					+"},");
 		
@@ -279,7 +264,7 @@ public class CliviaGridTag extends SimpleTagSupport {
 		
 		main.append("{name:\"destroy\",text:\"Delete\"},");
 		
-		//e.preventDefault();
+		
 		after.append("$('#"+name+" .k-grid-toolbar a.k-grid-delete').click(function (e) {e.preventDefault();"+
 							"var selectedItem="+name+"KendoGrid.dataItem("+name+"KendoGrid.select());"+
 							"if (selectedItem!==null) { "+
@@ -327,6 +312,101 @@ public class CliviaGridTag extends SimpleTagSupport {
 		}
 		sb.append("]");
 		return sb.toString();
+	}
+	
+	private void createEditor(GridColumn gridColumn){
+	
+		String editor=gridColumn.getColumnEditor();
+		String editorDescriptor=gridColumn.getEditorDescriptor();
+		
+		if("Values".equals(editor)){
+			before.append(gridColumn.getColumnName()+"ColumnValues=[");		
+			
+			if(editorDescriptor.startsWith("Dict:")){
+				String elements[]=editorDescriptor.substring(5).split(",");
+				before.append(createColumnValues(elements[0]+"Dao",elements[1],elements[2]).toString());
+			} 
+			else {
+				before.append("{value:");
+				before.append(editorDescriptor.replace(",",",text:'").replace(";","'}, {value:"));
+				before.append("'}");					
+			}
+			before.append("];");
+			main.append("values: "+gridColumn.getColumnName()+"ColumnValues,");
+			
+		} 
+		else {
+			
+			String dataSource="";
+
+			if(editorDescriptor.startsWith("Dict:")){
+				String elements[]=editorDescriptor.substring(5).split(",");
+				System.out.println("---editor---");
+				dataSource="data:["+createColumnValues(elements[0]+"Dao","",elements[1]).toString()+"]";
+				System.out.println(dataSource);
+				
+			} 
+			else {
+				dataSource="data:['"+editorDescriptor.replace(",","','")+"']";
+			}
+	
+			String editorName=gridColumn.getColumnName()+"ColumnEditor";
+			main.append("editor:"+editorName+",");
+			after.append("function "+editorName+"(container, options) {");   //required before data-bind
+			after.append("$('<input class=\"grid-editor\"  data-bind=\"value:' + options.field + '\"/>')");  
+			after.append(".appendTo(container).kendo"+editor+"({");
+			after.append("autoBind: false,");
+			after.append("dataSource: { "+dataSource+" }});}");
+				
+		}
+	}
+					
+	
+	
+	private StringBuilder createColumnValues(String daoName,String valueFieldName,String textFieldName){
+		StringBuilder sb=new StringBuilder();
+    	@SuppressWarnings("rawtypes")
+		GenericDao genericDao=(GenericDao)CliviaApplicationContext.getBean(daoName);
+		List<?> items=genericDao.findList();
+		
+		if (items.isEmpty()) return sb; 
+
+    	@SuppressWarnings("rawtypes")
+		Class entityClass=genericDao.getEntityClass();
+    	Field valueField=null,textField=null;
+		try {
+			if(!valueFieldName.isEmpty()){
+				valueField=entityClass.getDeclaredField(valueFieldName);
+				valueField.setAccessible(true);
+			}
+			textField=entityClass.getDeclaredField(textFieldName);
+			textField.setAccessible(true);
+			try {
+				
+				if(!valueFieldName.isEmpty())
+					for(Object item:items)
+						sb.append("{text:'"+textField.get(item).toString()+"', value:'"+valueField.get(item)+"'},");
+				else 
+					for(Object item:items)
+						sb.append("'"+textField.get(item).toString()+"',");
+
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		} catch (NoSuchFieldException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return sb;
 	}
 	
 } 

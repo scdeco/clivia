@@ -9,7 +9,6 @@ import javax.persistence.Id;
 @Entity
 public class GridColumn{
 	
-
 	@Id
 	@GeneratedValue
 	@Column(name="id")

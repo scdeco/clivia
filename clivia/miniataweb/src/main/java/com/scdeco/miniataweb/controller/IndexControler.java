@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 @RequestMapping("/testtag")
-public class TestControler {
+public class IndexControler {
 	@RequestMapping(method=RequestMethod.GET)
 	public String get(){
 		return "testtag";

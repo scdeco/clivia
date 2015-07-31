@@ -37,13 +37,13 @@ public class CliviaGridController {
 	@Autowired
 	GridColumnDao gridColumnDao;
 	
-	
 	@RequestMapping(method=RequestMethod.GET)
 	public String get(Model model,
 			@RequestParam(value="gridNo",required=true) String gridNo,
 			@RequestParam(value="filter",required=false) String filter){
 
 		System.out.println("Grid#:"+gridNo+"   filter:"+filter);
+		
 		GridInfo gridInfo=gridInfoDao.findByGridNo(gridNo);
 		List<GridColumn> gridColumnList=gridColumnDao.findColumnListByGridId(gridInfo.getId()); 
 		
@@ -51,7 +51,6 @@ public class CliviaGridController {
 		model.addAttribute("cliviaGridColumnList",gridColumnList);
 		model.addAttribute("dataFilter",filter);
 		model.addAttribute("version","10008js");
-		
 		
 		return 	"cliviagrid/cliviagrid";
 	}
@@ -66,7 +65,7 @@ public class CliviaGridController {
     
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping(value={"/{daoName}/create","/{daoName}/update"},method = RequestMethod.POST)
-    public  @ResponseBody  List<?> create(@RequestBody ArrayList<Map<String, Object>> models,@PathVariable String daoName){
+    public  @ResponseBody  DataSourceResult create(@RequestBody ArrayList<Map<String, Object>> models,@PathVariable String daoName){
 		
 		GenericDao genericDao=(GenericDao)CliviaApplicationContext.getBean(daoName);
 		Class entityClass=genericDao.getEntityClass();
@@ -86,19 +85,27 @@ public class CliviaGridController {
             System.out.println("Fields:");
             for(Field field:fields){
         		String fieldName = field.getName();
+				String fieldType=field.getType().getSimpleName();
+
         		if(model.containsKey(fieldName)){
-        			System.out.println(fieldName+"--"+field.getType().getSimpleName()+"--");
+        			
+        			System.out.print(fieldName+":"+fieldType+":"+	model.get(fieldName)+",");
+        			
                 	field.setAccessible(true);
-                	
 					try {
-						if("Date".equals(field.getType().getSimpleName())){
-							SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-							Date date=formatter.parse((String) model.get(fieldName));
-							field.set(item,date);
+						switch(fieldType){
+							case "Date":
+									SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+									Date date=formatter.parse((String) model.get(fieldName));
+									field.set(item,date);
+									break;
+							case "Double":
+									System.out.println("Double------------"+Double.valueOf(model.get(fieldName).toString()));
+									field.set(item, Double.valueOf(model.get(fieldName).toString()));
+									break;
+							default:
+								field.set(item, model.get(fieldName));
 						}
-						else
-							field.set(item, model.get(fieldName));
-						System.out.println(model.get(fieldName)+",");
 					} catch (IllegalArgumentException e) {
 						e.printStackTrace();
 					} catch (IllegalAccessException e) {
@@ -114,14 +121,16 @@ public class CliviaGridController {
             
             genericDao.saveOrUpdate(item);
             items.add(item);
+            System.out.println("After Add or Update:"+item);
         }
-	        
-        return items;
+        DataSourceResult result = new DataSourceResult();
+        result.setData(items);
+        return result;
     }
         
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping(value="/{daoName}/destroy",method = RequestMethod.POST)
-    public @ResponseBody List<?> destroy(@RequestBody ArrayList<Map<String, Object>> models,@PathVariable String daoName) {
+    public @ResponseBody DataSourceResult destroy(@RequestBody ArrayList<Map<String, Object>> models,@PathVariable String daoName) {
 		System.out.println("Delete started");
 		GenericDao genericDao=(GenericDao)CliviaApplicationContext.getBean(daoName);
 	    List<Object> items=new ArrayList<Object>(); 
@@ -135,7 +144,9 @@ public class CliviaGridController {
         		items.add(item);
         	}
         }
-        return items;
+        DataSourceResult result = new DataSourceResult();
+        result.setData(items);
+        return result;
     }    
 	
 }
