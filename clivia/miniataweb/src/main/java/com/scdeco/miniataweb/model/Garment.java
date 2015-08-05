@@ -36,10 +36,10 @@ public class Garment  {
 	@Column(name="Gender", length=10)
 	private String gender;
 	
-	@Column(name="Colourway",length=50)
+	@Column(name="Colourway",length=250)
 	private String colourway;
 	
-	@Column(name="SizeRange",length=50)
+	@Column(name="SizeRange",length=150)
 	private String sizeRange;
 	
 	@Column(name="TotalQtyInStock")
