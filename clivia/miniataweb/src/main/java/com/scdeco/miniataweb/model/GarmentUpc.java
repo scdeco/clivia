@@ -21,10 +21,10 @@ public class GarmentUpc {
 	private String upcNumber;
 
 	
-	@Column(name="ColourCode",length=10)
-	private String colourCode;
+	@Column(name="Colour",length=50)
+	private String colour;
 	
-	@Column(name="Size",length=10)
+	@Column(name="Size",length=20)
 	private String size;
 	
 	@Column(name="QtyInStock",length=6)
@@ -60,12 +60,12 @@ public class GarmentUpc {
 		this.upcNumber = upcNumber;
 	}
 
-	public String getColourCode() {
-		return colourCode;
+	public String getColour() {
+		return colour;
 	}
 
-	public void setColour(String colourCode) {
-		this.colourCode = colourCode;
+	public void setColour(String colour) {
+		this.colour = colour;
 	}
 
 	public String getSize() {

@@ -1,10 +1,13 @@
-
-<%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@taglib prefix="kendo" uri="http://www.kendoui.com/jsp/tags"%>
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
-<shared:header></shared:header>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Grid Declare</title>
+	<%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+	<%@taglib prefix="kendo" uri="http://www.kendoui.com/jsp/tags"%>
+	<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+	<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+	<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
+</head>
 
 <%-- pass daoName as a path parameter--%>
 <c:url var="readUrl" value="cliviagrid/read/${cliviaGridInfo.gridDaoName}" />

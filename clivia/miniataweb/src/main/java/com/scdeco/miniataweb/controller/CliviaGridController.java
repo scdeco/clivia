@@ -28,7 +28,7 @@ import com.scdeco.miniataweb.util.DataSourceRequest;
 import com.scdeco.miniataweb.util.DataSourceResult;
 
 @Controller
-@RequestMapping("/cliviagrid")
+@RequestMapping("/cliviagrid/*")
 public class CliviaGridController {
 
 	@Autowired
@@ -37,7 +37,7 @@ public class CliviaGridController {
 	@Autowired
 	GridColumnDao gridColumnDao;
 	
-	@RequestMapping(method=RequestMethod.GET)
+	@RequestMapping(value="grid",method=RequestMethod.GET)
 	public String get(Model model,
 			@RequestParam(value="gridNo",required=true) String gridNo,
 			@RequestParam(value="filter",required=false) String filter){
@@ -54,6 +54,14 @@ public class CliviaGridController {
 		
 		return 	"cliviagrid/cliviagrid";
 	}
+	
+	
+	@RequestMapping(value="define",method=RequestMethod.GET)
+	public String get(){
+		return "cliviagrid/define";
+	}
+	
+	
 	
     @SuppressWarnings("rawtypes")
 	@RequestMapping(value="/{daoName}/read",method = RequestMethod.POST)

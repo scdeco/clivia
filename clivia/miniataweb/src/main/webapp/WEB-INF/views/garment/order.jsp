@@ -1,14 +1,41 @@
-
-<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
-<%@taglib prefix="kendo" uri="http://www.kendoui.com/jsp/tags"%>
-<%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
-<shared:header/>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Garment Order</title>
+	<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
+	<%@taglib prefix="kendo" uri="http://www.kendoui.com/jsp/tags"%>
+	<%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+	<shared:header/>
+</head>
 <div>
 
 </div>
+<div>
+<form action="" method="get">
+<table>
+  <tr>
+    <td class="header-field-label"><label for="customer">Customer:</label></td>
+    <td class="header-field-value"><input type="text" id="customer" /></td>
+   	<td class="header-field-label"><label for="buyer">Buyer:</label></td>
+    <td class="header-field-value"><input type="text" id="buyer" /></td>
+  </tr>
+  <tr>
+    <td class="header-field-label"><label for="jobName">Job Name:</label></td>
+    <td class="header-field-value"><input type="text" id="jobName" /></td>
+   	<td class="header-field-label"><label for="poNumber">P.O.#:</label></td>
+    <td class="header-field-value"><input type="text" id="poNumber" /></td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  </table>
+</form>  
+</div>
 
 <div>
-<form:form commandName="editForm" method="post">
 	<kendo:splitter name="mainSplitter" orientation="horizontal">
 		<kendo:splitter-panes >
 		
@@ -48,7 +75,6 @@
 			
 		</kendo:splitter-panes>
 	</kendo:splitter>
-</form:form>
 </div>
 
 <style>
@@ -56,8 +82,29 @@
 		width: 100%;
 		height:800px;
 		}
-</style>
+		
+	table {
+		width:100%;
+		border:0px;
+		
+	}
 
+	.header-field-label{
+		width:90px;
+		text-align: right;
+	}
+	
+	.header-field-value{
+		width:auto;
+	}
+	
+	table tr td input{
+		width:100%;
+	}
+	
+
+	
+</style>
 
 
 <shared:footer/>

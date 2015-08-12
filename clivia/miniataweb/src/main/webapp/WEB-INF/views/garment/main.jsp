@@ -1,10 +1,12 @@
-
-
-<%@taglib prefix="ex" uri="/WEB-INF/miniataweb-tags.tld"%>
-<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
-<%@taglib prefix="kendo" uri="http://www.kendoui.com/jsp/tags"%>
-<shared:header/>
-
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Garment</title>
+	<%@taglib prefix="ex" uri="/WEB-INF/miniataweb-tags.tld"%>
+	<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
+	<%@taglib prefix="kendo" uri="http://www.kendoui.com/jsp/tags"%>
+	<shared:header/> 
+</head>
 
 <script>
 			

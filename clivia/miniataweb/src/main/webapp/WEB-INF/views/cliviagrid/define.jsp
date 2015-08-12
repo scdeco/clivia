@@ -1,11 +1,15 @@
 
-
-<%@taglib prefix="ex" uri="/WEB-INF/miniataweb-tags.tld"%>
-<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
-<%@taglib prefix="kendo" uri="http://www.kendoui.com/jsp/tags"%>
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
-<shared:header/>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Clivia Grid</title>
+	<%@taglib prefix="ex" uri="/WEB-INF/miniataweb-tags.tld"%>
+	<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
+	<%@taglib prefix="kendo" uri="http://www.kendoui.com/jsp/tags"%>
+	<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+	
+	<shared:header/>
+</head>
 
 <span id="undo" style="display:none" class="k-button">Click here to add or edit.</span>
 <c:url value="http://192.6.2.108:8080/miniataweb/garment/edit" var="remoteUrl" />
