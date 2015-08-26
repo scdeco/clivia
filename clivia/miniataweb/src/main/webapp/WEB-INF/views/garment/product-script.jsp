@@ -2,21 +2,29 @@
 
 angular.module("app", ["kendo.directives"])	.controller("MyCtrl",["$scope","$http",function($scope,$http) {
 
-	
 	var baseUrl="/miniataweb/garment/";
+	
+	$scope.currentStyleNumber="";
+	$scope.searchStyleNumber="";
+
 	$scope.mainSplitterOrientation="horizontal";
 	$scope.pageModel={};
 	
-	$scope.dictColourway=["red","blue"];
-	$scope.dictSizeRange=["xs","s"];
+	$scope.dictColourway=[];
+	$scope.dictSizeRange=[];
 	
 	$scope.newGarment=function(){
 		$scope.pageModel.product={};
 		$scope.pageModel.product.styleNumber="";
 		$scope.pageModel.productUPCs=[{}];
+		$scope.currentStyleNumber="";
+		
+	//	$scope.productForm.$setPristine();
+			
 	}
 
 	$scope.newGarment();
+	
 	$scope.$watch("pageModel.product.colourway",function(){
     	$scope.dictColourway=String($scope.pageModel.product.colourway).split(',');
 	});
@@ -25,25 +33,33 @@ angular.module("app", ["kendo.directives"])	.controller("MyCtrl",["$scope","$htt
 	});
 	
 	$scope.getGarment=function(){
-		if(!!$scope.pageModel.product.styleNumber){
-			var url=baseUrl+"product?style="+$scope.pageModel.product.styleNumber;
+		
+		if(!!$scope.searchStyleNumber){
+			$scope.newGarment();
+			
+			var url=baseUrl+"get-product?style="+$scope.searchStyleNumber;
 			$http.get(url).
-			  success(function(data, status, headers, config) {
-			    	$scope.pageModel.product=data;
-
-			    	$scope.upcGridOptions.dataSource.filter=[{
-		    	        field: "garmentId",
-		    	        operator: "eq",
-		    	        value:	(!!$scope.pageModel.product.id)?$scope.pageModel.product.id:-1
-		    	    }];
-			    	
-			    	
-			  }).
-			  error(function(data, status, headers, config) {
+				success(function(data, status, headers, config) {
+				    if(data){
+				    	
+				    	$scope.pageModel.product=data;
+	
+				    	$scope.upcGridOptions.dataSource.filter=[{
+			    	        field: "garmentId",
+			    	        operator: "eq",
+			    	        value:	(!!$scope.pageModel.product.id)?$scope.pageModel.product.id:-1
+			    	    }];
+				    	$scope.currentStyleNumber=$scope.pageModel.product.styleNumber;
+				    } else {
+				    	alert("Can not found style:"+$scope.searchStyleNumber+".");
+				    }
+				    
+			    	$scope.searchStyleNumber="";
+				    
+			   }).
+  			   error(function(data, status, headers, config) {
 				  alert( "failure message: " + JSON.stringify({data: data}));
-				  $scope.newGarment();
-			  });	
-
+			   });	
 
 		}
 		else{
@@ -55,7 +71,7 @@ angular.module("app", ["kendo.directives"])	.controller("MyCtrl",["$scope","$htt
 	 
 	$scope.saveGarment=function(){
  		if (validGarment()){
-			var url=baseUrl+"save";
+			var url=baseUrl+"save-product";
 			$http.post(url,$scope.pageModel.product).
 			  success(function(data, status, headers, config) {
 			    	$scope.pageModel.product=data;
@@ -67,8 +83,8 @@ angular.module("app", ["kendo.directives"])	.controller("MyCtrl",["$scope","$htt
 	}
 	
 	$scope.deleteGarment=function(){
-		if(!!$scope.pageModel.product.id){
-			var url=baseUrl+"delete";
+		if(!!$scope.pageModel.product.id && confirm("Please confirm to delete this product.")){
+			var url=baseUrl+"delete-product";
 			$http.post(url,$scope.pageModel.product).
 			  success(function(data, status, headers, config) {
 				  $scope.newGarment();
@@ -125,10 +141,7 @@ angular.module("app", ["kendo.directives"])	.controller("MyCtrl",["$scope","$htt
 	        text: "Save"
 	    }, {
 	        name: "cancel",
-	        text: "Cancel"
-	    }, {
-	        name: "destroy",
-	        text: "Delete"
+	        text: "Cancel",
     }]; 
 	
 	var upcColourwayEditor=function(container, options) {
@@ -150,30 +163,44 @@ angular.module("app", ["kendo.directives"])	.controller("MyCtrl",["$scope","$htt
 	};	
 	
 	
+	$scope.searchOptions={
+			dataSource:{
+ 	    	    transport: {
+	    	        read: {
+	    	            url: '/miniataweb/dict/list?from=garment&textField=styleNumber',
+	    	            type: 'get',
+	    	            dataType: 'json',
+ 	    	            contentType: 'application/json'
+	    	        }
+			} }
+	};
+	
+	upcGridLineNumber=0;
+	var upcDataUrl="/miniataweb/data/garmentUpcDao/";
 	$scope.upcGridOptions = {
 			toolbar:upcGridToolbar,
 	        dataSource: {
 	    	    transport: {
 	    	        read: {
-	    	            url: 'http://' + window.location.host + '/miniataweb/cliviagrid/garmentUpcDao/read',
+	    	            url: upcDataUrl+'read',
 	    	            type: 'post',
 	    	            dataType: 'json',
 	    	            contentType: 'application/json'
 	    	        },
 	    	        update: {
-	    	            url: 'http://' + window.location.host + '/miniataweb/cliviagrid/garmentUpcDao/update',
+	    	            url: upcDataUrl+'update',
 	    	            type: 'post',
 	    	            dataType: 'json',
 	    	            contentType: 'application/json'
 	    	        },
 	    	        create: {
-	    	            url: 'http://' + window.location.host + '/miniataweb/cliviagrid/garmentUpcDao/create',
+	    	            url: upcDataUrl+'create',
 	    	            type: 'post',
 	    	            dataType: 'json',
 	    	            contentType: 'application/json'
 	    	        },
 	    	        destroy: {
-	    	            url: 'http://' + window.location.host + '/miniataweb/cliviagrid/garmentUpcDao/destroy',
+	    	            url: upcDataUrl+'destroy',
 	    	            type: 'post',
 	    	            dataType: 'json',
 	    	            contentType: 'application/json'
@@ -199,7 +226,7 @@ angular.module("app", ["kendo.directives"])	.controller("MyCtrl",["$scope","$htt
 	    	        dir: "asc"
 	    	    }],
 	    	    batch: true,
-	    	    pageSize: 0,
+	    	    pageSize: 16,
 	    	    serverPaging: true,
 	    	    serverFiltering: true,
 	    	    serverSorting: true,
@@ -247,6 +274,11 @@ angular.module("app", ["kendo.directives"])	.controller("MyCtrl",["$scope","$htt
 	    	}, //end of dataSource,
 	    	
 	        columns: [{
+	            title: " ",
+	            template: "#= ++upcGridLineNumber #",
+	            locked: true,
+	            width: 30
+				}, {
 				    field: "id",
 				    title: "Id",
 				    hidden: true,
@@ -262,7 +294,7 @@ angular.module("app", ["kendo.directives"])	.controller("MyCtrl",["$scope","$htt
 				    field: "upcNumber",
 				    title: "UPC#",
 				    locked: true,
-				    width: 60
+				    width: 120
 				}, {
 				    field: "colour",
 				    title: "Colour",
@@ -284,7 +316,14 @@ angular.module("app", ["kendo.directives"])	.controller("MyCtrl",["$scope","$htt
 				}, {
 				    field: "remark",
 				    title: "Remark",
-				    width: 120
+				    width: 80
+				}, {
+					command: {
+						name:"destroy",
+						template: "<a class='k-grid-delete k-button'  style='width: 22px; height: 22px; vertical-align: middle; text-align: center;'><span style='margin: 2px;' class='k-icon k-i-close'></span></a>"
+						},
+					title: "&nbsp;",
+					width:38,
  			}],  //end of columns
 	        
 	        selectable: true,
@@ -293,17 +332,22 @@ angular.module("app", ["kendo.directives"])	.controller("MyCtrl",["$scope","$htt
 	        reorderable: true,
 	        pageable: {
 	            refresh: true,
-	            pageSizes: true,
-	            buttonCount: 5
+	            pageSizes: ["all",2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],
+	            buttonCount: 5,
+	           
 	        },
 	        filterable: false,
-	        editable: true,
+	        sortable:true,
+	        editable: {confirmation:false},
 	        edit:function(e) {
 	    	    if (e.model.isNew()&&!e.model.dirty) {
 	    	            e.model.set("garmentId", $scope.pageModel.product.id); 
 	    	    }
-	    	 }
-	    };
+	    	 },
+	    	 dataBinding: function() {
+	             upcGridLineNumber = (this.dataSource.page() - 1) * this.dataSource.pageSize();
+	         }
+	    }; //end of 
 
 }]);  //end of controller
 

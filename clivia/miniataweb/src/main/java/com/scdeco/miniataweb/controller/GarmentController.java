@@ -19,29 +19,33 @@ public class GarmentController {
 	@Autowired
 	GarmentDao garmentDao;
 	
+
 	
 	@RequestMapping(value="/",method=RequestMethod.GET)
 	public String main(Model model) {
 
 		return "garment/main";
-		 
 	}
 
-	@RequestMapping(value="edit",method=RequestMethod.GET)
+	@RequestMapping(value="product",method=RequestMethod.GET)
 	public String  edit(){
-		return "garment/edit-product";
+		return "garment/product";
 	}
 	
-	@RequestMapping(value="product",method=RequestMethod.GET)
+	@RequestMapping(value="get-product",method=RequestMethod.GET)
 	public @ResponseBody  Garment getGarment(@RequestParam("style") String styleNumber){
-		System.out.println("request:"+styleNumber);
-			return garmentDao.FindByStyleNumber(styleNumber);
+		return garmentDao.FindByStyleNumber(styleNumber);
 	}
 
-	@RequestMapping(value="save",method=RequestMethod.POST)
+	@RequestMapping(value="save-product",method=RequestMethod.POST)
 	public @ResponseBody  Garment saveGarment(@RequestBody Garment garment){
-		System.out.println("request:"+garment);
 		garmentDao.saveOrUpdate(garment);
+		return garment;
+	}
+	
+	@RequestMapping(value="delete-product",method=RequestMethod.POST)
+	public @ResponseBody  Garment deleteGarment(@RequestBody Garment garment){
+		garmentDao.DeleteGarment(garment);
 		return garment;
 	}
 	
@@ -50,5 +54,5 @@ public class GarmentController {
 		return "garment/order";
 	}
 
-	
+
 }

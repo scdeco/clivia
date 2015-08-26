@@ -8,58 +8,31 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.scdeco.miniataweb.dao.GenericDao;
-import com.scdeco.miniataweb.dao.GridColumnDao;
-import com.scdeco.miniataweb.dao.GridInfoDao;
-import com.scdeco.miniataweb.model.GridColumn;
-import com.scdeco.miniataweb.model.GridInfo;
 import com.scdeco.miniataweb.util.CliviaApplicationContext;
 import com.scdeco.miniataweb.util.DataSourceRequest;
 import com.scdeco.miniataweb.util.DataSourceResult;
 
 @Controller
-@RequestMapping("/cliviagrid/*")
-public class CliviaGridController {
+@RequestMapping("/data/*")
+public class DataController {
 
-	@Autowired
-	GridInfoDao gridInfoDao;
-	
-	@Autowired
-	GridColumnDao gridColumnDao;
-	
-	@RequestMapping(value="grid",method=RequestMethod.GET)
-	public String get(Model model,
-			@RequestParam(value="gridNo",required=true) String gridNo,
-			@RequestParam(value="filter",required=false) String filter){
-
-		System.out.println("Grid#:"+gridNo+"   filter:"+filter);
-		
-		GridInfo gridInfo=gridInfoDao.findByGridNo(gridNo);
-		List<GridColumn> gridColumnList=gridColumnDao.findColumnListByGridId(gridInfo.getId()); 
-		
-		model.addAttribute("cliviaGridInfo",gridInfo);
-		model.addAttribute("cliviaGridColumnList",gridColumnList);
-		model.addAttribute("dataFilter",filter);
-		model.addAttribute("version","10008js");
-		
-		return 	"cliviagrid/cliviagrid";
-	}
 	
 	
-	@RequestMapping(value="define",method=RequestMethod.GET)
-	public String get(){
-		return "cliviagrid/define";
-	}
+    @SuppressWarnings("rawtypes")
+	@RequestMapping(value="/{daoName}/read",method = RequestMethod.GET)
+    public  @ResponseBody  List  get(@PathVariable String daoName){
+    	
+    	
+       return ((GenericDao)CliviaApplicationContext.getBean(daoName)).findList();
+    }
 	
 	
 	
@@ -70,6 +43,10 @@ public class CliviaGridController {
     	DataSourceResult result=((GenericDao)CliviaApplicationContext.getBean(daoName)).findListByRequest(request);
        return result;
     }
+
+    
+    
+    
     
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping(value={"/{daoName}/create","/{daoName}/update"},method = RequestMethod.POST)
@@ -155,7 +132,6 @@ public class CliviaGridController {
         DataSourceResult result = new DataSourceResult();
         result.setData(items);
         return result;
-    }    
+    }
 	
 }
-

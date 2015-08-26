@@ -17,6 +17,6 @@
   <property name="hibernate.hbm2ddl.auto">update</property>
   <property name="hibernate.connection.isolation">2</property>
   <property name="hibernate.temp.use_jdbc_metadata_defaults">false</property>
-    
+  <property name="jadira.usertype.autoRegisterUserTypes">true</property>
  </session-factory>
 </hibernate-configuration>

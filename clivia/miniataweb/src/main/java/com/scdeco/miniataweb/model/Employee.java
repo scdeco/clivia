@@ -1,17 +1,22 @@
 package com.scdeco.miniataweb.model;
 
-import java.util.Date;
+import java.io.Serializable;
+import java.time.LocalDate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 
 @Entity
-public class Employee {
+public class Employee implements Serializable{
+
+
+	private static final long serialVersionUID = 1115318630793728713L;
 
 	@Id
 	@GeneratedValue
@@ -29,8 +34,10 @@ public class Employee {
 	@Column(name="Sex",length=10)
 	private String sex;
 	
+	@JsonSerialize(using=IsoDateJsonSerializer.class)
+	@JsonDeserialize(using = IsoDateJsonDeserializer.class)
 	@Column(name="BirthDate")
-	private Date birthDate;
+	private LocalDate birthDate;
 	
 	@Column(name="Username",length=20)
 	private String username;
@@ -78,11 +85,10 @@ public class Employee {
 		this.sex = sex;
 	}
 	
-	@JsonSerialize(using=IsoDateJsonSerializer.class)
-	public Date getBirthDate() {
+	public LocalDate getBirthDate() {
 		return birthDate;
 	}
-	public void setBirthDate(Date birthDate) {
+	public void setBirthDate(LocalDate birthDate) {
 		this.birthDate = birthDate;
 	}
 	public String getUsername() {
