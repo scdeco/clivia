@@ -6,10 +6,13 @@ import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.scdeco.miniataweb.util.CliviaLocalDateJsonDeserializer;
+import com.scdeco.miniataweb.util.CliviaLocalDateJsonSerializer;
 
 
 @Entity
@@ -19,7 +22,7 @@ public class Employee implements Serializable{
 	private static final long serialVersionUID = 1115318630793728713L;
 
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
 	@Column(name="FirstName",length=50)
@@ -34,8 +37,8 @@ public class Employee implements Serializable{
 	@Column(name="Sex",length=10)
 	private String sex;
 	
-	@JsonSerialize(using=IsoDateJsonSerializer.class)
-	@JsonDeserialize(using = IsoDateJsonDeserializer.class)
+	@JsonSerialize(using=CliviaLocalDateJsonSerializer.class)
+	@JsonDeserialize(using = CliviaLocalDateJsonDeserializer.class)
 	@Column(name="BirthDate")
 	private LocalDate birthDate;
 	

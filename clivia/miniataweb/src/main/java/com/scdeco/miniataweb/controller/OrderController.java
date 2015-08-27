@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.scdeco.miniataweb.dao.CliviaOrderDao;
-import com.scdeco.miniataweb.model.CliviaOrder;
+import com.scdeco.miniataweb.dao.OrderMainDao;
+import com.scdeco.miniataweb.model.OrderMain;
 
 
 @Controller
@@ -20,7 +20,7 @@ public class OrderController {
 	
 	
 	@Autowired
-	CliviaOrderDao orderDao;
+	OrderMainDao orderDao;
 
 	@RequestMapping(value="/",method=RequestMethod.GET)
 	public String main(Model model) {
@@ -29,23 +29,23 @@ public class OrderController {
 	}
 
 	@RequestMapping(value="get-order",method=RequestMethod.GET)
-	public @ResponseBody  CliviaOrder getOrder(@RequestParam("number") String orderNumber){
+	public @ResponseBody  OrderMain getOrder(@RequestParam("number") String orderNumber){
 		return orderDao.findByOrderNumber(orderNumber);
 	}
 
 	@RequestMapping(value="save-order",method=RequestMethod.POST)
-	public @ResponseBody  CliviaOrder saveOrder(@RequestBody CliviaOrder cliviaOrder){
-		System.out.println("Order:"+cliviaOrder);
-		orderDao.saveOrUpdate(cliviaOrder);
-		System.out.println("Order:"+cliviaOrder);
-		return cliviaOrder;
+	public @ResponseBody  OrderMain saveOrder(@RequestBody OrderMain orderMain){
+		System.out.println("Order:"+orderMain);
+		orderDao.saveOrUpdate(orderMain);
+		System.out.println("Order:"+orderMain);
+		return orderMain;
 		
 	}
 	
 	@RequestMapping(value="delete-order",method=RequestMethod.POST)
-	public @ResponseBody  CliviaOrder deleteOrder(@RequestBody CliviaOrder cliviaOrder){
-		orderDao.deleteOrder(cliviaOrder);
-		return cliviaOrder;
+	public @ResponseBody  OrderMain deleteOrder(@RequestBody OrderMain orderMain){
+		orderDao.deleteOrder(orderMain);
+		return orderMain;
 	}
 	
 }

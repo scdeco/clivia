@@ -3,7 +3,8 @@
 	<link href="/miniataweb/resources/styles/kendo.uniform.min.css" rel="stylesheet" />
 	<script src="/miniataweb/resources/js/jquery.min.js"></script>
  	<script src="/miniataweb/resources/js/angular.min.js"></script>
- 	<script src="/miniataweb/resources/js/kendo.all.min.js"></script>
+	<script src="/miniataweb/resources/js/kendo.all.min.js"></script>
+
 	<style>
 		html {font-family: Arial, Helvetica, sans-serif; }	
 		
@@ -18,4 +19,16 @@
    		
     		
 
+	<!--get from http://dojo.telerik.com/ISima/90
 	
+	<link rel="stylesheet" href="http://cdn.kendostatic.com/2014.2.716/styles/kendo.common.min.css">
+ 
+    <link rel="stylesheet" href="http://cdn.kendostatic.com/2014.2.716/styles/kendo.default.min.css">
+    <link rel="stylesheet" href="http://cdn.kendostatic.com/2014.2.716/styles/kendo.dataviz.min.css">
+    <link rel="stylesheet" href="http://cdn.kendostatic.com/2014.2.716/styles/kendo.dataviz.default.min.css">
+
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular.min.js"></script>
+
+    <script src="http://cdn.kendostatic.com/2014.2.716/js/kendo.all.min.js"></script> 
+    -->

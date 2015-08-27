@@ -28,10 +28,10 @@ public class GarmentUpc {
 	@Column(name="Size",length=20)
 	private String size;
 	
-	@Column(name="QtyInStock",length=6)
+	@Column(name="QtyInStock")
 	private Integer qtyInStock;
 	
-	@Column(name="QtyInOrder",length=6)
+	@Column(name="QtyInOrder")
 	private Integer qtyInOrder;
 
 	@Column(name="Remark",length=250)

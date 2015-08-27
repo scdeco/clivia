@@ -3,13 +3,14 @@ package com.scdeco.miniataweb.model;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
 public class Garment  {
 
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 		
 	@Column(name="StyleNumber", length=20,unique=true,nullable=false)
