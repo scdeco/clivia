@@ -1,7 +1,10 @@
 package com.scdeco.miniataweb.dao;
 
+import org.springframework.stereotype.Repository;
+
 import com.scdeco.miniataweb.model.DictGarmentSize;
 
-public interface DictGarmentSizeDao extends GenericDao<DictGarmentSize, Integer> {
+@Repository("dictGarmentSizeDao")
+public class DictGarmentSizeDao extends GenericDao<DictGarmentSize, Integer>  {
 
 }

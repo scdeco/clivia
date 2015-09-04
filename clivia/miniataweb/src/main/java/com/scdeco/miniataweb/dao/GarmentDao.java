@@ -1,10 +1,34 @@
 package com.scdeco.miniataweb.dao;
 
-import com.scdeco.miniataweb.model.Garment;
+import java.util.List;
 
-public interface GarmentDao extends GenericDao<Garment , Integer> {
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.scdeco.miniataweb.model.Garment;
+import com.scdeco.miniataweb.model.GarmentUpc;
+
+@Repository ("garmentDao")
+public class GarmentDao extends GenericDao<Garment , Integer> {
+
+	@Autowired
+	GarmentUpcDao garmentUpcDao;
 	
-	Garment FindByStyleNumber(String styleNumber);
+	public Garment FindByStyleNumber(String styleNumber) {
+		List<Garment> list=this.findList(super.createCriteria().add(Restrictions.eq("styleNumber", styleNumber)));
+		return list.isEmpty()?null:list.get(0);
+	}
+
+	//all dependencies of garment and itself will be deleted
+	public void DeleteGarment(Garment garment) {
+		List<GarmentUpc> list=garmentUpcDao.FindListByGarmentId(garment.getId());
+		if (!list.isEmpty())
+			garmentUpcDao.deleteAll(list);
+		this.delete(garment);
+	}
 	
-	void DeleteGarment(Garment garment);
+	
+	
+
 }

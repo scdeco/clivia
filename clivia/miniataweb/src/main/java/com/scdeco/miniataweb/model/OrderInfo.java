@@ -17,12 +17,15 @@ import com.scdeco.miniataweb.util.CliviaLocalTimeJsonDeserializer;
 import com.scdeco.miniataweb.util.CliviaLocalTimeJsonSerializer;
 
 @Entity
-public class OrderMain {
+public class OrderInfo {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 		
+	@Column(name="OrderId")
+	private int orderId;
+	
 	@Column(name="OrderNumber", length=20, unique=true, nullable=false)
 	private String orderNumber;
 
@@ -78,7 +81,6 @@ public class OrderMain {
 	@Column(name="InvoiceBy")
 	private Integer invoiceBy;
 
-	
 	public int getId() {
 		return id;
 	}
@@ -87,7 +89,14 @@ public class OrderMain {
 		this.id = id;
 	}
 
-	
+	public int getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(int orderId) {
+		this.orderId = orderId;
+	}
+
 	public String getOrderNumber() {
 		return orderNumber;
 	}
@@ -124,7 +133,6 @@ public class OrderMain {
 		return customerPO;
 	}
 
-
 	public void setCustomerPO(String customerPO) {
 		this.customerPO = customerPO;
 	}
@@ -136,7 +144,6 @@ public class OrderMain {
 	public void setOrderStatus(Integer orderStatus) {
 		this.orderStatus = orderStatus;
 	}
-
 
 	public LocalDate getRequireDate() {
 		return requireDate;
@@ -170,8 +177,7 @@ public class OrderMain {
 		this.createBy = createBy;
 	}
 
-
-	public LocalDate getFinisheDate() {
+	public LocalDate getFinishDate() {
 		return finishDate;
 	}
 
@@ -205,17 +211,15 @@ public class OrderMain {
 
 	@Override
 	public String toString() {
-		return "CliviaOrder [id=" + id + ", orderNumber=" + orderNumber
-				+ ", orderName=" + orderName + ", customerId=" + customerId
-				+ ", buyer=" + buyer + ", customerPO=" + customerPO
-				+ ", orderStatus=" + orderStatus + ", requireDate="
-				+ requireDate + ", requireTime=" + requireTime + ", orderDate="
-				+ orderDate + ", createBy=" + createBy + ", finishDate="
-				+ finishDate + ", finishBy=" + finishBy + ", invoiceDate="
-				+ invoiceDate + ", invoiceBy=" + invoiceBy + "]";
+		return "OrderMain [id=" + id + ", orderId=" + orderId
+				+ ", orderNumber=" + orderNumber + ", orderName=" + orderName
+				+ ", customerId=" + customerId + ", buyer=" + buyer
+				+ ", customerPO=" + customerPO + ", orderStatus=" + orderStatus
+				+ ", requireDate=" + requireDate + ", requireTime="
+				+ requireTime + ", orderDate=" + orderDate + ", createBy="
+				+ createBy + ", finishDate=" + finishDate + ", finishBy="
+				+ finishBy + ", invoiceDate=" + invoiceDate + ", invoiceBy="
+				+ invoiceBy + "]";
 	}
-	
-
-	
 
 }

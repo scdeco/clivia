@@ -1,7 +1,9 @@
 package com.scdeco.miniataweb.dao;
+import org.springframework.stereotype.Repository;
 
 import com.scdeco.miniataweb.model.Company;
 
-public interface CompanyDao extends GenericDao<Company, Integer> {
-	
+@Repository ("companyDao")
+public class CompanyDao extends GenericDao<Company, Integer>  {
+
 }

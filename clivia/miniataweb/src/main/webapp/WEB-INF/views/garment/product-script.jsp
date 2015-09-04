@@ -1,6 +1,7 @@
 <script>
 
-angular.module("app", ["kendo.directives"])	.controller("MyCtrl",["$scope","$http",function($scope,$http) {
+angular.module("app", ["kendo.directives"])	
+	.controller("MyCtrl",["$scope","$http",function($scope,$http) {
 
 	var baseUrl="/miniataweb/garment/";
 	
