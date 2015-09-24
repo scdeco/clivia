@@ -49,10 +49,11 @@ public class GarmentController {
 		return garment;
 	}
 	
-	@RequestMapping(value="order",method=RequestMethod.GET)
+/*	no use, can be delete @RequestMapping(value="order",method=RequestMethod.GET)
 	public String  order(){
 		return "garment/order";
 	}
 
+	*/
 
 }

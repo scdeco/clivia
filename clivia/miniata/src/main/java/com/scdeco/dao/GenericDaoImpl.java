@@ -92,13 +92,13 @@ public abstract class GenericDaoImpl<T, PK extends java.io.Serializable> impleme
 	       return findById(id) != null; 
 	}
 
-	@SuppressWarnings("unchecked")
+	
 	@Override
 	public T load(PK id) {
         return (T) getSession().load(this.entityClass, id);  
 	}
 
-	@SuppressWarnings("unchecked")
+
 	@Override
 	public T findById(PK id) {
 		 return (T) getSession().get(this.entityClass, id); 

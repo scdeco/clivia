@@ -50,6 +50,14 @@ public class OrderController {
 		return "order/lineitem";
 		
 	}
+
+	@RequestMapping(value="orderimage",method=RequestMethod.GET)
+	public String OrderImage() {
+
+		return "order/orderimage";
+		
+	}
+	
 	
 	@RequestMapping(value="get-order",method=RequestMethod.GET)
 	public @ResponseBody  OrderClivia getOrder(@RequestParam("number") String orderNumber){
@@ -60,7 +68,7 @@ public class OrderController {
 	@RequestMapping(value="save-order",method=RequestMethod.POST)
 	public @ResponseBody  OrderClivia saveOrder(@RequestBody OrderClivia order){
 		System.out.println("Order:"+order);
-		orderDao.saveOrUpdate(order);
+		orderDao.save(order);
 		System.out.println("Order:"+order);
 		return order;
 	}

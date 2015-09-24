@@ -1,6 +1,8 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
  	<link href="/miniataweb/resources/styles/kendo.common.min.css" rel="stylesheet" />
-	<link href="/miniataweb/resources/styles/kendo.uniform.min.css" rel="stylesheet" />
+	<link href="/miniataweb/resources/styles/kendo.bootstrap.min.css" rel="stylesheet" />
+
+
 	<script src="/miniataweb/resources/js/jquery.min.js"></script>
 
     <script data-require="angular.js@*" data-semver="1.3.5" src="https://code.angularjs.org/1.3.5/angular.js"></script>

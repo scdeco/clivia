@@ -1,12 +1,13 @@
-<!-- 	<div kendo-grid="lineitems" k-options="lineitemsOptions" k-rebind="lineitemsOptions.dataSource.filter"></div> -->
-
 <div >
-	<h4>This is a test Line Items: {{uu.orderItemId}}</h4>
-	<div kendo-toolbar k-options="toolbarOptions"></div>
-	<div kendo-grid="lineItemGrid" k-options="lineItemGridOptions"></div>
-	
-<pre>
-	{{uu.datasource|json}}
-</pre>
+	<div>
+	    <label>Brand:</label>
+	    <input kendo-dropdownlist style="width:140px;" ng-model="lineItemBrand" k-options="lineitemBrandOptions">
+    </div>
+    
+    <div kendo-toolbar="lineItemToolbar" id="lineItemToolbar" k-options="lineItemToolbarOptions"></div>
+	<div kendo-grid="lineItemGrid" k-options="lineItemGridOptions" 
+				k-on-change="onLineItemGridChange(dataItem,columns)"
+				k-on-save="onLineItemGridSave(kendoEvent)">
+	</div>
 </div>
 
