@@ -1,24 +1,16 @@
 <script>
 orderApp.controller("orderItemCtrl", ["$scope","$state",function($scope,$state) {
 	
-    $scope.addOrderItem = function(type) {
+    $scope.addOrderItem = function(type,title) {
     	var orderItemId= $scope.order.orderItems.length+1;
     	var orderItem={
    			orderId:$scope.order.orderInfo.orderId ,
    			orderItemId:orderItemId,
-   			lineNumber: orderItemId
+   			lineNumber: orderItemId,
+    		title:title,
+			type:type
     	};
     	
-    	switch (type){
-	    	case "LineItem":
-	    		orderItem.title="Line Items";
-	    		orderItem.type="lineitem";
-	    		break;
-	    	case "OrderImage":
-	    		orderItem.title="Images";
-	    		orderItem.type="orderimage";
-	    		break;
-    	}
         for(var i=0;i<$scope.setting.orderItemButtons.length;i++){
         	$scope.setting.orderItemButtons[i].selected=false;
        	}
@@ -42,30 +34,39 @@ orderApp.controller("orderItemCtrl", ["$scope","$state",function($scope,$state) 
                     	 type: "separator" 
                      },{
 	                     type: "splitButton",
-	                     text: "Add Item",
+	                     text: "+",
+	                     id:"additem",
 	                     menuButtons: [{ 
-	                        	 text: "Line Items", 
+	                        	 text: "Pricing Item", 
 	                        	 icon: "insert-n",
-	                        	 id:"LineItem",
+	                        	 id:"pricingitem",
 	                        },{
-	                        	text: "Designs", 
+	                        	 text: "Line Item", 
+	                        	 icon: "insert-n",
+	                        	 id:"lineitem",
+	                        },{
+	                        	type: "separator" 
+	                        },{
+	                        	text: "Design", 
 	                        	icon: "insert-m",
-		                       	id:"Design"
+		                       	id:"designitem"
 	                        },{ 
-	                        	text: "Images", 
+	                        	text: "Image", 
 	                        	icon: "insert-m",
-		                       	id:"OrderImage"
+		                       	id:"imageitem"
 	                        },{ 
-	                        	text: "Files", 
+	                        	text: "File", 
 	                        	icon: "insert-s",
-		                       	id:"File",
+		                       	id:"fileitem",
 	                        },{ 
 	                        	text: "Send Receive",
-		                       	id:"Shipping"
+		                       	id:"shipping"
 	                        }],
-                     		click:function(e) {
-                            	$scope.addOrderItem(e.id);
-                     		}
+                   		click:function(e) {
+                   			if(e.id!="additem"){
+                              	$scope.addOrderItem(e.id, e.target.text());
+                   			}
+                   		}
 	            	  
 	              }],
              toggle:function(e){
@@ -88,9 +89,6 @@ orderApp.controller("orderItemCtrl", ["$scope","$state",function($scope,$state) 
  	   	 $scope.selectedOrderItemId=item.orderItemId;
  	   	 $state.go('main.'+item.type,{orderItemId:item.orderItemId});
   	    };     
-     
-     
-
 
 }]);
 </script>

@@ -31,7 +31,7 @@ public class CliviaLibrary {
 	
 	private static String imageLibBaseDir="C:\\Clivia\\Images";
 	private static String[] imgExtensions={"jpg","jpeg","png","bmp","gif"};
-	private static int imgThumbnailSize=150;
+	private static int imgThumbnailSize=110;
 	
 	public String saveUploadImageToLib(MultipartFile file,LibImage libImage){
 		
@@ -130,5 +130,37 @@ public class CliviaLibrary {
 	    return FilenameUtils.isExtension( file.getOriginalFilename().toLowerCase(), imgExtensions);
 	}
 	
-
+	public BufferedImage getBufferedImage(Integer id){
+		BufferedImage bufferedImage=null;
+		LibImage libImage=libImageDao.findById(id);
+		if(libImage!=null){
+			String fileName=imageLibBaseDir+"\\"+libImage.getFilePath()+"\\"+libImage.getFileName();
+			File libFile=new File(fileName);
+			try {
+				bufferedImage = ImageIO.read(libFile);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return bufferedImage;
+	}
+	public byte[] getByteArrayImage(Integer id){
+		BufferedImage bufferedImage=getBufferedImage(id);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		byte[] result=null;
+		try {
+			ImageIO.write(bufferedImage, "jpg", baos );
+			baos.flush();
+			result=baos.toByteArray();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				baos.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
 }

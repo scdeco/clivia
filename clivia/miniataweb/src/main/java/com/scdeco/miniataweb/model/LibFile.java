@@ -3,6 +3,7 @@ package com.scdeco.miniataweb.model;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.scdeco.miniataweb.util.CliviaLocalDateTimeJsonDeserializer;
 import com.scdeco.miniataweb.util.CliviaLocalDateTimeJsonSerializer;
 
+@Entity
 public class LibFile {
 	
 	@Id

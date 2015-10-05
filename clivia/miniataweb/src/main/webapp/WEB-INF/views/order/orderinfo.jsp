@@ -1,6 +1,7 @@
 
 	<form name="headerForm" ng-submit="" novalidate class="simple-form" >
 		<ul id="fieldlist">
+<!-- 	moved to top pane of ordermain 	
 			<li>
                       <label for="orderNumber" class="requird">Order#:</label>
                       <input type="text" name="customer" class="k-textbox"  style="width:100%;" ng-model="order.orderInfo.orderNumber"/>
@@ -9,7 +10,7 @@
                       <label for="orderDate" class="requird">Order Date:</label>
                       <input  kendo-datepicker name="orderDate" style="width:110px;"  style="width:100%;" k-options="orderDateOptions"   ng-model="order.orderInfo.orderDate" />
 			</li>
-			
+ -->			
 			<li>
                  <label for="Customer" class="required">Customer:</label>
                  <input kendo-combobox name="customer"  style="width:100%;" ng-model="order.orderInfo.customerId" k-options="customerOptions" required validationMessage="Enter {0}"/>
@@ -28,8 +29,8 @@
 			</li>
 			<li>
 		    	<label for="requiredDate">Required By:</label>
-				<input kendo-datepicker   name="requireDate"  style="width:110px;"  k-options="requireDateOptions" ng-model="order.orderInfo.requireDate"/>
-				<input kendo-timepicker   name="requireTime"  style="width:110px;"  k-options="requireTimeOptions" ng-model="order.orderInfo.requireTime"/>
+				<input kendo-datepicker   name="requireDate"  style="width:100px;"  k-options="requireDateOptions" ng-model="order.orderInfo.requireDate"/>
+				<input kendo-timepicker   name="requireTime"  style="width:100px;"  k-options="requireTimeOptions" ng-model="order.orderInfo.requireTime"/>
 			</li>
 			
 		</ul>

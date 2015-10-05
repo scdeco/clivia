@@ -11,8 +11,11 @@
  	<%@include file="ordermain-script.jsp"%>
 	<%@include file="orderinfo-script.jsp"%>
 	<%@include file="orderitem-script.jsp"%>
+	<%@include file="pricingitem-script.jsp"%> 
 	<%@include file="lineitem-script.jsp"%> 
-	<%@include file="orderimage-script.jsp"%> 
+	<%@include file="imageitem-script.jsp"%> 
+	<%@include file="designitem-script.jsp"%> 
+	<%@include file="fileitem-script.jsp"%> 
 	
 </head>
 
@@ -22,10 +25,54 @@
 
 <style>
 
- 	.k-toolbar,k-grid {
+	.k-splitter {
 		border-width: 0;
+	}
+	
+	.k-listview {
+		border-width: 0;
+	}
+	
+ 	.k-toolbar{
+		border-width: 0;
+		padding: 0;
+		margin: 0;
+		height:32px;	//default 36px
 		} 
 		
+	.k-grid{
+        margin: 0;
+        padding: 0;
+        border-width: 0;
+        height: 100%; /* DO NOT USE !important for setting the Grid height! */
+      	}
+
+	/* 	do not show background color of grid editing cell */
+	.k-grid .k-edit-cell { 
+		background: transparent; 
+		}
+		
+	.k-grid .k-grid-edit-row td:first-child {
+		color:blue;
+		font-weight: bold;
+		
+	}
+
+	/* show horizontal grid line		 */
+	.k-grid tr:not(last-child) td{
+ 	   border-bottom: 1px dotted gray;
+		}		
+	.k-grid tr:last-child td{
+ 	   border-bottom: 1px solid gray;
+		}		
+		
+	#top-pane label{
+        display: block;
+        padding: .3em;
+        font-weight: bold;
+        }
+		
+	
 /* 	orderinfo */
      #fieldlist {
         margin: 10px;
@@ -33,24 +80,19 @@
      } 
      #fieldlist li {
          list-style: none;
-         padding-bottom: .7em;
+         padding-top: .7em;
          text-align: left;
      }
      
      #fieldlist label {
           display: block;
-          padding-bottom: .2em;
-          font-weight: bold;
       }
       
+     
       textarea { 
       	resize: vertical; 
       }
       
-
- 	
-
-	
 	
 /* 	image item styles */
 	#imageItemToolbar, #lineItemToolbar{
@@ -61,18 +103,21 @@
         padding: 10px 5px;
         margin-bottom: -1px;
         min-height: 510px;
+        border-width: 0;
+        background-color:red;
 	    }
+	    
     .imageItem {
             float: left;
             position: relative;
             width: 111px;
             height: 170px;
-            margin: 0 5px;
+            margin: 3 5px;
             padding: 0;
         }
 	.imageItem img {
-            max-width: 90px;
-            max-height: 90px;
+            max-width: 110px;
+            max-height: 110px;
             width: auto;
             height: auto;
             }
@@ -116,7 +161,7 @@
             visibility: hidden;
         }	
 	
-	
+		
 
 </style>
 

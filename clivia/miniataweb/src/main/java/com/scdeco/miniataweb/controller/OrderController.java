@@ -3,7 +3,7 @@ package com.scdeco.miniataweb.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,46 +19,30 @@ import com.scdeco.miniataweb.model.OrderClivia;
 public class OrderController {
 	
 	@Autowired
-	OrderDao orderDao;
+	private OrderDao orderDao;
 
 	@RequestMapping(value="/",method=RequestMethod.GET)
-	public String order(Model model) {
+	public String order() {
 
 		return "order/order";
 	}
 	
-	@RequestMapping(value="ordermain",method=RequestMethod.GET)
-	public String orderMain(Model model) {
-
-		return "order/ordermain";
-	}
-	@RequestMapping(value="orderinfo",method=RequestMethod.GET)
-	public String orderHeader(Model model) {
-
-		return "order/orderinfo";
-	}
 	
-	@RequestMapping(value="orderitem",method=RequestMethod.GET)
-	public String main(Model model) {
-
-		return "order/orderitem";
-	}
 	
-	@RequestMapping(value="lineitem",method=RequestMethod.GET)
-	public String LineItem() {
+	@RequestMapping(value="{ordermain}",method=RequestMethod.GET)
+	public String orderMain(@PathVariable String ordermain) {
 
-		return "order/lineitem";
+		return "order/"+ordermain;
+	}
+
+	
+	
+	@RequestMapping(value="item/{itemtype}",method=RequestMethod.GET)
+	public String orderItem(@PathVariable String itemtype) {
 		
+		return "order/"+itemtype;
 	}
 
-	@RequestMapping(value="orderimage",method=RequestMethod.GET)
-	public String OrderImage() {
-
-		return "order/orderimage";
-		
-	}
-	
-	
 	@RequestMapping(value="get-order",method=RequestMethod.GET)
 	public @ResponseBody  OrderClivia getOrder(@RequestParam("number") String orderNumber){
 		System.out.println("Order#:"+orderNumber);

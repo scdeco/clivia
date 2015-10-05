@@ -4,8 +4,6 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","$http",funct
 	$scope.mainSplitterOrientation="horizontal";
     $scope.setting.orderItemButtons=[];
 	
-	var baseUrl="/miniataweb/order/";
-	
 	function populateModel(data){
     	$scope.order.orderInfo=data.orderInfo;
     	$scope.order.orderItems=data.orderItems;
@@ -86,13 +84,14 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","$http",funct
 		if(!!$scope.searchOrderNumber){
 			$scope.newOrder();
 					
-			var url=baseUrl+"get-order?number="+$scope.searchOrderNumber;
+			var url=$scope.setting.orderUrl+"get-order?number="+$scope.searchOrderNumber;
 
 			$http.get(url).
 				success(function(data, status, headers, config) {
 				    if(data){
 				    	populateModel(data);
 				    	if($scope.order.orderItems.length>0){
+				    		$scope.dict.getRemoteImages();
 				    		for(var i=0;i<$scope.order.orderItems.length;i++){
 				    			var item=$scope.order.orderItems[i];
 				    			var button={text:item.title, id: "btn"+item.orderItemId, togglable: true, group: "OrderItem" };
@@ -127,7 +126,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","$http",funct
 	 
 	$scope.saveOrder=function(){
 
-		var url=baseUrl+"save-order";
+		var url=$scope.setting.orderUrl+"save-order";
 		
 /*implement on server isde 		if(!$scope.order.orderInfo.orderDate){
 			$scope.order.orderInfo.orderDate = $filter('date')(new Date(),'yyyy-MM-dd');	
@@ -145,7 +144,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","$http",funct
 	
 	$scope.deleteOrder=function(){
 		if(!!$scoped.order.orderMain.id && confirm("Please confirm to delete this order.")){
-			var url=baseUrl+"delete-order";
+			var url=$scope.setting.orderUrl+"delete-order";
 			$http.post(url,$scope.order).
 			  success(function(data, status, headers, config) {
 				  $scope.newGarment();
@@ -157,23 +156,8 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","$http",funct
 	}
 
 
-	$scope.outterSplitterOptions={
-            orientation: "vertical",
-            panes: [
-                    { collapsible: false, resizable: false, size: "50px"},
-                    { collapsible: false},
-                    { collapsible: false, resizable: true, size: "100px" }
-                ]			
-	};
-	
-	
-	$scope.mainSplitterOptions={
-            orientation: "horizontal",
-            panes: [
-                    { collapsible: true, resizable:true,size: "350px"},
-                    { collapsible: false},
-                ]			
-	};
+
+
 
 	var searchTemplate='<span class="k-textbox k-space-right" style="width: 140px;" >'+
 						'<input type="text" name="searchOrderNumber" class="k-textbox" placeholder="Search Order#" ng-model="searchOrderNumber" />'+
@@ -181,6 +165,10 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","$http",funct
 						
     $scope.orderToolbarOptions = {
 	        items: [{
+		        	 template: '<label> <span ng-show="!!order.orderInfo.orderNumber"> Order#:</span> <span style="font-weight: bold;">{{order.orderInfo.orderNumber}}</span> </label>'
+	        	 },{ 
+	        		 type: "separator" 
+               	 },{
 	                type: "button",
 	                text: "New",
 	                id:"btnNew",
@@ -214,5 +202,23 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","$http",funct
 	            
 	       }]
 	    };	
+    
+    
+	//called from parenet resize event
+	$scope.resizeItemGrids=function(){
+		if(!!$scope.common.itemGrid){
+//what's the difference between $scope.common.itemGrid and $("#lineItemGrid")?
+		    var gridElement =$("#lineItemGrid"), 
+		        dataArea = gridElement.find(".k-grid-content"),
+		        gridHeight = gridElement.innerHeight(),
+		        otherElements = gridElement.children().not(".k-grid-content"),
+		        otherElementsHeight = 0;
+		    otherElements.each(function(){
+		        otherElementsHeight += $(this).outerHeight();
+			    });
+	   		dataArea.height(400 - otherElementsHeight);
+		}
+	};
+
 }]);
 </script>

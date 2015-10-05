@@ -6,6 +6,8 @@ orderApp.config(function($stateProvider, $urlRouterProvider) {
 	
      $urlRouterProvider.otherwise('/');
    
+     var orderItemUrl='item/{orderItemId:[0-9]{1,3}}';
+     
 	 $stateProvider
 	 	.state('main',{
 	 		  url:'/',
@@ -31,24 +33,55 @@ orderApp.config(function($stateProvider, $urlRouterProvider) {
         	template:'<h3>add new items</h3>',
         })
         
+        .state('main.pricingitem', {
+ 	       	url: orderItemUrl,
+           	templateUrl: 'item/pricingitem',
+           	controller: 'pricingitemCtrl'	
+ 	     }) 
+
         .state('main.lineitem', {
- 	       	url: 'item/{orderItemId:[0-9]{1,3}}',
-           	templateUrl: 'lineitem',
-           	controller: 'lineItemCtrl'	
+ 	       	url: orderItemUrl,
+           	templateUrl: 'item/lineitem',
+           	controller: 'lineitemCtrl'	
  	     }) 
  	     
- 	     .state('main.orderimage', {
-  	       	url: 'item/{orderItemId:[0-9]{1,3}}',
-           	templateUrl: 'orderimage',
-           	controller: 'orderImageCtrl'	
+ 	     .state('main.imageitem', {
+  	       	url: orderItemUrl,
+           	templateUrl: 'item/imageitem',
+           	controller: 'imageitemCtrl'	
  	     })
         
+ 	     .state('main.designitem', {
+   	       	url:orderItemUrl ,
+            templateUrl: 'item/designitem',
+            controller: 'designitemCtrl'	
+  	     })
+
+ 	     .state('main.fileitem', {
+  	       	url: orderItemUrl,
+           	templateUrl: 'item/fileitem',
+           	controller: 'fileitemCtrl'	
+   	     })
+  	     
 });
 
 orderApp.controller("orderCtrl",["$scope","$http",function($scope,$http) {
+	
 	$scope.setting={};	
 	$scope.setting.lineItemCarryOn=false;
 	
+	$scope.setting.baseUrl="/miniataweb/";
+	$scope.setting.orderUrl=$scope.setting.baseUrl+"order/"
+	$scope.setting.libraryUrl=$scope.setting.baseUrl+"library/";
+	$scope.setting.garmentUrl=$scope.setting.baseUrl+"garment/";
+	
+	$scope.layout={};
+	$scope.layout.lineItemGrid={};
+	
+	
+	$scope.common={}
+	$scope.common.itemGrid=null;
+		
 	$scope.searchOrderNumber="";
 
 	$scope.order={};
@@ -61,8 +94,8 @@ orderApp.controller("orderCtrl",["$scope","$http",function($scope,$http) {
 	
 	$scope.dict={};
 	$scope.dict.garments=[];
-    $scope.dict.colourway=[];//new kendo.data.ObservableArray([])
-    $scope.dict.sizeRange=[];//new kendo.data.ObservableArray([])
+    $scope.dict.colourway=[];
+    $scope.dict.sizeRange=[];
     $scope.dict.images=[];
 
 
@@ -105,7 +138,28 @@ orderApp.controller("orderCtrl",["$scope","$http",function($scope,$http) {
 	
 	$scope.dict.getRemoteImages=function(){
 		
-		
+		if($scope.order.orderInfo.orderId){
+			var imageString="";
+			for(var i=0;i<$scope.order.imageItems.length;i++){
+				if($scope.order.imageItems[i].imageId){
+					imageString+=","+$scope.order.imageItems[i].imageId;
+				}
+			}
+			if(imageString!==""){
+
+				var url=$scope.setting.libraryUrl+"get-images?ids="+imageString.substr(1);
+				$http.get(url).
+					success(function(data) {
+
+					    if(data){
+					    	$scope.dict.images=data;
+					    }
+					}).
+					error(function(data, status, headers, config) {
+						  alert( "failure message: " + JSON.stringify({data: data}));
+					   });	
+			}
+		}
 	}
 	
 }]);

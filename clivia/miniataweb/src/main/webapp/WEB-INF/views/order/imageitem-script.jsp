@@ -1,5 +1,5 @@
 <script>
-orderApp.controller("orderImageCtrl",["$scope","$http","$stateParams" ,function($scope,$http,$stateParams){
+orderApp.controller("imageitemCtrl",["$scope","$http","$stateParams" ,function($scope,$http,$stateParams){
 	
 	var orderItemId =parseInt($stateParams.orderItemId);
 	
@@ -25,33 +25,13 @@ orderApp.controller("orderImageCtrl",["$scope","$http","$stateParams" ,function(
 			    },    
 			    
 			    serverFiltering:false,
-			    pageSize: 16
+			    pageSize: 10
 	        });
     
 	$scope.imageItemGridOptions = {
 			height: 300,
 			autoSync: true,
-	        dataSource:imageItemDataSource/*  {	
-	        	data:$scope.order.imageItems,
-			    schema: {
-			        model: {
-			            id: "id",
-		                fields: {
-		                    id: {type: "number"},
-		                    orderId: {type: "number"},
-		                    orderItemId: {type: "number"},
-		                    imageId:{type: "number"}
-		                }
-			        }
-			    },
-			    filter: {
-			        field: "orderItemId",
-			        operator: "eq",
-			        value: orderItemId
-			    },    
-			    
-			    serverFiltering:false
-	        } */, //end of dataSource
+	        dataSource:imageItemDataSource,
 	        columns: [{
 	            title: " ",
 	            template: "#= ++ imageItemGridLineNumber #",
@@ -141,8 +121,8 @@ orderApp.controller("orderImageCtrl",["$scope","$http","$stateParams" ,function(
 	
 	$scope.newUploadOptions={
 			async:{
-				 saveUrl: '/miniataweb/upload/newimage',
-				 removeUrl:'/miniataweb/upload/removeimage',
+				 saveUrl: $scope.setting.libraryUrl+'upload/newimage',
+				 removeUrl:$scope.setting.orderUrl+'upload/removeimage',
 				 autoUpload: false,
 				 batch: false   
 				 /* The selected files will be uploaded in separate requests */
@@ -177,9 +157,22 @@ orderApp.controller("orderImageCtrl",["$scope","$http","$stateParams" ,function(
 	};
 	
 	$scope.imagePagerOptions={
-			dataSource:imageItemDataSource
+			dataSource:imageItemDataSource,
+			pageSizes:[5,10,15,20,"all"]
 			
-	}
+	};
+	$scope.showOriginalImage=function(imageId){
+		if(imageId){
+			var url=$scope.setting.libraryUrl+"get-imagefile?id="+imageId;
+			$http.get(url).
+				success(function(data, status, headers, config) {
+				    	$scope.previewOriginalImage=data;
+				}).
+				error(function(data, status, headers, config) {
+					$scope.previewOriginalImage=null;
+				   });					
+		}
+	};
 	
 }]);
 </script>

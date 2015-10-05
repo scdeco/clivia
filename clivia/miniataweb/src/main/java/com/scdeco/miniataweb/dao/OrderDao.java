@@ -28,8 +28,13 @@ public class OrderDao {
 	private OrderLineItemDao orderLineItemDao;
 
 	@Autowired
+	private OrderPricingItemDao orderPricingItemDao;
+	
+	@Autowired
 	private OrderImageDao orderImageDao;
 	
+	@Autowired
+	private OrderEmbDesignDao orderEmbDesignDao;
 	
 	@Autowired
 	private CliviaAutoNumberDao cliviaAutoNumberDao;

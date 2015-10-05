@@ -41,7 +41,7 @@ public class LibImage {
 	private String uploadBy;
 	
 	
-	@Column(name="Remark", length=255)
+	@Column(name="Remark")
 	private String remark;
 	
 	@Lob @Basic(fetch=FetchType.EAGER)

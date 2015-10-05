@@ -1,7 +1,5 @@
 package com.scdeco.miniataweb.model;
 
-import java.math.BigDecimal;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -32,7 +30,7 @@ public class OrderLineItem {
 	@Column(name="StyleNumber",length=20)
 	private String styleNumber;
 	
-	@Column(name="Description",length=200)
+	@Column(name="Description",length=255)
 	private String description;
 	
 	@Column(name="Colour",length=50)
@@ -43,13 +41,7 @@ public class OrderLineItem {
 	
 	@Column(name="Quantity")
 	private Integer quantity;
-	
-	@Column(name="Price",precision=19,scale=2)
-	private BigDecimal price;
-	
-	@Column(name="Amount",precision=19,scale=2)
-	private BigDecimal amount;
-	
+		
 	@Column(name="Remark",length=50)
 	private String remark;
 
@@ -139,22 +131,6 @@ public class OrderLineItem {
 
 	public void setQuantity(Integer quantity) {
 		this.quantity = quantity;
-	}
-
-	public BigDecimal getPrice() {
-		return price;
-	}
-
-	public void setPrice(BigDecimal price) {
-		this.price = price;
-	}
-
-	public BigDecimal getAmount() {
-		return amount;
-	}
-
-	public void setAmount(BigDecimal amount) {
-		this.amount = amount;
 	}
 
 	public String getRemark() {
