@@ -13,24 +13,24 @@
  -->			
 			<li>
                  <label for="Customer" class="required">Customer:</label>
-                 <input kendo-combobox name="customer"  style="width:100%;" ng-model="order.orderInfo.customerId" k-options="customerOptions" required validationMessage="Enter {0}"/>
+                 <input kendo-combobox name="customer"  style="width:100%;" ng-model="SO.dataSet.info.customerId" k-options="customerOptions" required validationMessage="Enter {0}"/>
 			</li>
 			<li>
 		    	<label for="Buyer">Buyer:</label>
-				<input type="text"  name="buyer" class="k-textbox" style="width:120px;" ng-model="order.orderInfo.buyer">
+				<input type="text"  name="buyer" class="k-textbox" style="width:120px;" ng-model="SO.dataSet.info.buyer">
 			</li>
 			<li>
 				<label for="orderName">Order Name:</label>
-				<input type="text"  name="orderName" class="k-textbox" style="width:100%;"   ng-model="order.orderInfo.orderName"> 
+				<input type="text"  name="orderName" class="k-textbox" style="width:100%;"   ng-model="SO.dataSet.info.orderName"> 
 			</li>
 			<li>
 		    	<label for="customerPO">Customer PO#:</label>
-				<input type="text"  name="customerPO" class="k-textbox" style="width:150px;"   ng-model="order.orderInfo.customerPO" ng-trim="true"/>
+				<input type="text"  name="customerPO" class="k-textbox" style="width:150px;"   ng-model="SO.dataSet.info.customerPO" ng-trim="true"/>
 			</li>
 			<li>
 		    	<label for="requiredDate">Required By:</label>
-				<input kendo-datepicker   name="requireDate"  style="width:100px;"  k-options="requireDateOptions" ng-model="order.orderInfo.requireDate"/>
-				<input kendo-timepicker   name="requireTime"  style="width:100px;"  k-options="requireTimeOptions" ng-model="order.orderInfo.requireTime"/>
+				<input kendo-datepicker   name="requireDate"  style="width:100px;"  k-options="requireDateOptions" ng-model="SO.dataSet.info.requireDate"/>
+				<input kendo-timepicker   name="requireTime"  style="width:100px;"  k-options="requireTimeOptions" ng-model="SO.dataSet.info.requireTime"/>
 			</li>
 			
 		</ul>

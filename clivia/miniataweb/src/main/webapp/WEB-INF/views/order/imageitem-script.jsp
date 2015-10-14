@@ -1,12 +1,12 @@
 <script>
-orderApp.controller("imageitemCtrl",["$scope","$http","$stateParams" ,function($scope,$http,$stateParams){
-	
+orderApp.controller("imageitemCtrl",["$scope","$http","$stateParams","SO" ,function($scope,$http,$stateParams,SO){
+	$scope.SO=SO;
 	var orderItemId =parseInt($stateParams.orderItemId);
 	
+	$scope.setting={};
 	
-    imageItemGridLineNumber=0;
     var imageItemDataSource=new kendo.data.DataSource({	
-	        	data:$scope.order.imageItems,
+	        	data:SO.dataSet.imageItems,
 			    schema: {
 			        model: {
 			            id: "id",
@@ -33,11 +33,10 @@ orderApp.controller("imageitemCtrl",["$scope","$http","$stateParams" ,function($
 			autoSync: true,
 	        dataSource:imageItemDataSource,
 	        columns: [{
-	            title: " ",
-	            template: "#= ++ imageItemGridLineNumber #",
-	            locked: true,
-	            width: 30,
-	            attributes:{style:"text-align:right;"}
+		            title: "#",
+    	            width: 20,
+    	            attributes:{style:"text-align:right;", class:"gridLineNumber"},
+    	            headerAttributes:{style:"text-align:center;", class:"gridLineNumberHeader"}
 				}, {					    
  					field: "id",
 				    title: "Id",
@@ -84,12 +83,17 @@ orderApp.controller("imageitemCtrl",["$scope","$http","$stateParams" ,function($
 	        editable: {confirmation:false},
 
 //events:		 
-	       	dataBinding: function() {
-	       		imageItemGridLineNumber = (this.dataSource.page() - 1) * this.dataSource.pageSize();
-	    		 if(!imageItemGridLineNumber){
-	    			 imageItemGridLineNumber=0;
-	    		 }
-	       	}
+	       	dataBound: function(e) {
+	    		 var pageSkip = (this.dataSource.page() - 1) * this.dataSource.pageSize();
+	    		 if(!pageSkip) pageSkip=0;
+	    		 pageSkip++;
+	    		 
+	    		 //index starts from 0
+	       		$("#imageItemGrid td.gridLineNumber").text(function(index){
+	       		//	console.log("line number index:"+index);
+	       			return pageSkip+index;
+	       		});	       		
+	       	},	       	
 	};
 	
 	$scope.imageItemListViewOptions={
@@ -121,8 +125,8 @@ orderApp.controller("imageitemCtrl",["$scope","$http","$stateParams" ,function($
 	
 	$scope.newUploadOptions={
 			async:{
-				 saveUrl: $scope.setting.libraryUrl+'upload/newimage',
-				 removeUrl:$scope.setting.orderUrl+'upload/removeimage',
+				 saveUrl: SO.setting.libraryUrl+'upload/newimage',
+				 removeUrl:SO.setting.orderUrl+'upload/removeimage',
 				 autoUpload: false,
 				 batch: false   
 				 /* The selected files will be uploaded in separate requests */
@@ -137,9 +141,9 @@ orderApp.controller("imageitemCtrl",["$scope","$http","$stateParams" ,function($
 			success: function (e) {
 			    if(e.response.status==="success"){
 					var data = e.response.data;
-					$scope.dict.insertImage(data);
+					SO.dict.insertImage(data);
 					var newItem={
-					    	orderId:$scope.order.orderInfo.orderId,
+					    	orderId:SO.dataSet.info.orderId,
 					    	orderItemId:orderItemId, 
 					    	imageId:data.id,
 					    	remark:e.response.message
@@ -163,7 +167,7 @@ orderApp.controller("imageitemCtrl",["$scope","$http","$stateParams" ,function($
 	};
 	$scope.showOriginalImage=function(imageId){
 		if(imageId){
-			var url=$scope.setting.libraryUrl+"get-imagefile?id="+imageId;
+			var url=SO.setting.libraryUrl+"get-imagefile?id="+imageId;
 			$http.get(url).
 				success(function(data, status, headers, config) {
 				    	$scope.previewOriginalImage=data;

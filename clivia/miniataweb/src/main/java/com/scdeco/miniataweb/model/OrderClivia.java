@@ -4,24 +4,25 @@ import java.util.List;
 import java.util.Map;
 
 public class OrderClivia {
-	private OrderInfo orderInfo;
-	private List<OrderItem> orderItems;
+	
+	private OrderInfo info;
+	private List<OrderItem> items;
 	private List<OrderLineItem> lineItems;
 	private List<OrderImage> imageItems;
 	
 	private List<Map<String,String>> deletedItems;
 	
-	public OrderInfo getOrderInfo() {
-		return orderInfo;
+	public OrderInfo getInfo() {
+		return info;
 	}
-	public void setOrderInfo(OrderInfo orderInfo) {
-		this.orderInfo = orderInfo;
+	public void setInfo(OrderInfo info) {
+		this.info = info;
 	}
-	public List<OrderItem> getOrderItems() {
-		return orderItems;
+	public List<OrderItem> getItems() {
+		return items;
 	}
-	public void setOrderItems(List<OrderItem> orderItems) {
-		this.orderItems = orderItems;
+	public void setItems(List<OrderItem> items) {
+		this.items = items;
 	}
 	public List<OrderLineItem> getLineItems() {
 		return lineItems;

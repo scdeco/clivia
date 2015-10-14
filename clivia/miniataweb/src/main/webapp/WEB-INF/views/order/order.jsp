@@ -13,6 +13,7 @@
 	<%@include file="orderitem-script.jsp"%>
 	<%@include file="pricingitem-script.jsp"%> 
 	<%@include file="lineitem-script.jsp"%> 
+	<%@include file="lineitemdetail-script.jsp"%> 
 	<%@include file="imageitem-script.jsp"%> 
 	<%@include file="designitem-script.jsp"%> 
 	<%@include file="fileitem-script.jsp"%> 
@@ -160,8 +161,6 @@
             clear: both;
             visibility: hidden;
         }	
-	
-		
 
 </style>
 

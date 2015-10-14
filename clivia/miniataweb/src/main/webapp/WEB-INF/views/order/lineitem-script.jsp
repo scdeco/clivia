@@ -1,24 +1,37 @@
 <script>
-orderApp.controller("lineitemCtrl",["$scope","$http","$stateParams" ,function($scope,$http,$stateParams){
+orderApp.controller("lineitemCtrl",["$scope","$http","$state","$stateParams","GridWrapper","SO" ,function($scope,$http,$state,$stateParams,GridWrapper,SO){
 
+	var gridWrapper=new GridWrapper("lineItemGrid");
 	var orderItemId =parseInt($stateParams.orderItemId);
-	
-//    lineItemGridLineNumber=0;
-    lineItemGridCurrentRow=null;
+	var lineItemGridColumns=["lineNumber","styleNumber","description","colour","size","quantity","remark"];
 
-    lineItemGridCurrentGarment=null;
+	$scope.setting={};
+
+	$scope.dict={};
+	$scope.dict.colourway=[];
+	$scope.dict.sizeRange=[];
+
+    SO.instance.lineItemGridCurrentGarment=null;
 
     
-
+    $scope.$on("kendoWidgetCreated", function(event, widget){
+        // the event is emitted for every widget; if we have multiple
+        // widgets in this controller, we need to check that the event
+        // is for the one we're interested in.
+        if (widget ===$scope.lineItemGrid) {
+        	gridWrapper.wrapGrid();
+        	$scope.onClickLineItemEditing();
+        }
+    });				
+	
 	$scope.lineItemBrand='DD';
  	$scope.lineItemGridOptions = {
-	 			columnMenu: true,
 				autoSync: true,
 		        dataSource: {
-		        	data: $scope.order.lineItems, 
+		        	data: SO.dataSet.lineItems, 
 		    	    schema: {
 		    	        model: {
-		    	            id: "id",
+		    	            id: "id",                                                                                                                                                                                                                                                                                                                                     
 	    	                fields: {
 	    	                    id: { type: "number"},
 	    	                    orderId: { type: "number"},
@@ -50,14 +63,14 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$stateParams" ,function($s
 //use $(".LineItemGridLineNumber").text(function(index)) to generate lineNumber 	
 //template: "#= ++ lineItemGridLineNumber #",
 		            //locked: true, if true will cause the wrong cell get focus when add new row
-		            width: 30,
-		            attributes:{style:"text-align:right;", class:"lineItemGridLineNumber"},
-		            headerAttributes:{style:"text-align:center;", class:"lineItemGridLineNumberHeader"}
+		            width: 20,
+		            attributes:{style:"text-align:right;", class:"gridLineNumber"},
+		            headerAttributes:{style:"text-align:center;", class:"gridLineNumberHeader"}
 		        
 					}, {					    
 					    field: "styleNumber",
-					    title: "Style Number",
-					    width: 120
+					    title: "Style#",
+					    width: 40
 					}, {
 					    field: "description",
 					    title: "Description",
@@ -84,10 +97,7 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$stateParams" ,function($s
 					    width: 120
 	 			}],  //end of columns
 
-		        editable: {
-		            createAt: "bottom"
-		        },
-		        
+		        editable: false,
 		        selectable: "cell",
 		        navigatable: true,
 		        resizable: true,
@@ -102,6 +112,7 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$stateParams" ,function($s
 
 //events:		 
 		       	dataBinding: function(e) {
+		       		console.log("event binding:"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
 		       		
 //use $(".LineItemGridLineNumber").text(function(index)) to generate lineNumber  indested of  commented code below
 		       	/*
@@ -114,52 +125,70 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$stateParams" ,function($s
 		       	},
 		       	
  		       	dataBound: function(e) {
+		       		console.log("event bound:");
+ 		       		
 		    		 var pageSkip = (this.dataSource.page() - 1) * this.dataSource.pageSize();
 		    		 if(!pageSkip) pageSkip=0;
 		    		 pageSkip++;
 		    		 
 		    		 //index starts from 0
-		       		$(".lineItemGridLineNumber").text(function(index){
+		       		$("#lineItemGrid td.gridLineNumber").text(function(index){
 		       		//	console.log("line number index:"+index);
 		       			return pageSkip+index;
 		       		});	       		
 		       	},
 		       	
 		       	save: function(e) {
-		       		var fieldName;
-		       		var fieldValue;
-		       		for(var i=0;i<this.columns.length;i++){
-		       			if (typeof e.values[this.columns[i].field]!='undefined'){
-		       				fieldName=this.columns[i].field;
-		       				fieldValue=e.values[fieldName];
-		       				break;
-		       			}
-		       		}
-		       		
-		       		if(fieldValue===";"){
-		       		 	
-		       			alert("asdfasdf");
-		       			
-		       		}else if(typeof e.values.styleNumber!== 'undefined'){
-		          		if(e.values.styleNumber!=e.model.styleNumber){
+		       		if(typeof e.values.styleNumber!== 'undefined'){
+			       		console.log("event save:"+JSON.stringify(e.values));
+		       			if(e.values.styleNumber===";"){
+		  	        		e.preventDefault();
+			       			var dataItem=gridWrapper.getCurrentDataItem();
+		       		 		var dataItemIndex=gridWrapper.getCurrentDataItemIndex();
+		       		 		console.log("save dataItemIndex:"+dataItemIndex);
+			       		 	var copiedDataItem=gridWrapper.getDataItemByIndex(dataItemIndex-1);
+		       		 		if(!!copiedDataItem){
+		       		 			for(var i=1;i<lineItemGridColumns.length;i++){
+		       		 				if(typeof copiedDataItem[lineItemGridColumns[i]] !=='undefined')
+				       		 			dataItem[lineItemGridColumns[i]]=copiedDataItem[lineItemGridColumns[i]];
+		       		 			}
+		       		 		}
+		       		 	}else {
 			          		e.preventDefault();
+
 			          		e.model.set("styleNumber",e.values.styleNumber.toUpperCase().trim());
 			          		getGarment(e.model);
+			          		
 //				       		console.log("get garment:"+e.values.styleNumber);
 
 		          		}
 		          	}
-		          	
 		         },
 		       	
 		       	change:function(e){
-		       		var row=getCurrentRow();
-	        		if(row!==lineItemGridCurrentRow){		//row changed
-	        			lineItemGridCurrentRow=row;
-	        			var dataItem=getCurrentDataItem();
-	        			getGarment(dataItem);;
+		       		var row=gridWrapper.getCurrentRow();
+		       		console.log("event change:");
+		       		
+	        		if(row!==gridWrapper.currentRow){		//row changed
+	        			gridWrapper.currentRow=row;
+	        			var dataItem=gridWrapper.getCurrentDataItem();
+	        			if(dataItem){
+		        			getGarment(dataItem);
+		        			$state.go('main.lineitem.detail',{orderItemId:orderItemId,lineItemId:dataItem.lineNumber});
+	        			}
+	        			
 	        		};
-		       	}
+		       	},
+		       	
+		        edit:function(e){
+		        	console.log("event edit:");
+				    var editingCell=gridWrapper.getEditingCell();
+				    if(!!editingCell){
+				    	this.select(editingCell);
+			        	console.log("set editing cell:");
+				    }
+
+		        }
 
 	}; //end of lineItemGridOptions
 
@@ -184,20 +213,22 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$stateParams" ,function($s
     
     function colourColumnEditor(container, options) {
 	    $('<input class="grid-editor"  data-bind="value:' + options.field + '"/>')
-	    	.appendTo(container).kendoComboBox({
-	        autoBind: true,
-	        dataSource: {
-	            data: $scope.dict.colourway
-	        }
+	    	.appendTo(container)
+	    	.kendoComboBox({
+		        autoBind: true,
+		        dataSource: {
+		            data: $scope.dict.colourway
+		        }
 	    })
 	};	
 
 	function sizeColumnEditor(container, options) {
 	    $('<input class="grid-editor"  data-bind="value:' + options.field + '"/>')
-	    	.appendTo(container).kendoComboBox({
-	        autoBind: true,
-	        dataSource: {
-	            data: $scope.dict.sizeRange
+	    	.appendTo(container)
+	    	.kendoComboBox({
+		        autoBind: true,
+		        dataSource: {
+		            data: $scope.dict.sizeRange
 	        }
 	    })
 	};				    
@@ -227,184 +258,38 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$stateParams" ,function($s
 				}
 			                
 		        function getGarment(model){
+		        	if (!model) return;
+		        	if(!model.styleNumber) return;
+		        	
 					var styleNumber=model.styleNumber;
 					if(!styleNumber){
 						lineItemGridCurrentGarment=null;
 	    				setRowDict();
 					}else{
-						
-		    			lineItemGridCurrentGarment=$scope.dict.getGarment(styleNumber);
-		    			if(!lineItemGridCurrentGarment){
-			    			var url=$scope.setting.garmentUrl+"get-product?style="+styleNumber;
-			    			$http.get(url).
-			    				success(function(data, status, headers, config) {
-			    				    if(data){
+						if(lineItemGridCurrentGarment && lineItemGridCurrentGarment.styleNumber===styleNumber){
+					    	model.set("description",lineItemGridCurrentGarment.styleName);
+						}else{
+							SO.dict.getGarment(styleNumber).
+								then(function(data){		//sucess
 			    				    	lineItemGridCurrentGarment=data;
-			    				    	$scope.dict.insertGarment(data);
 								    	model.set("description",lineItemGridCurrentGarment.styleName);
 					    				setRowDict();
-			    				    }
-			    			   }).
-			    			   error(function(data, status, headers, config) {
-			    				  alert( "failure message: " + JSON.stringify({data: data}));
-			    			   });		    			   
-		    			} else {
-					    	model.set("description",lineItemGridCurrentGarment.styleName);
-		    				setRowDict();
-		    			}
+									},						
+									function(error){		//error
+										lineItemGridCurrentGarment=null;
+								    	model.set("description","");
+					    				setRowDict();
+									});
+						}
 					}
 		    	}
 		        
-				function addLineItemRow(isInsert){
-					var grid=$scope.lineItemGrid;
-  		            var dataSource =grid.dataSource;
-				    var newItem={
-					    	orderId:$scope.order.orderInfo.orderId,
-					    	orderItemId:orderItemId, 
-					    	brand:$scope.lineItemBrand
-					    };
- 				    
-				    if(!isInsert){ //append to last row
-					    dataSource.add(newItem);
-					    setLineNumber();
-					    if(dataSource.totalPages()>1)		//without the line will casue problem when add row  
-					    	dataSource.page(dataSource.totalPages());
-				    	grid.editRow(grid.tbody.children().last());
-					    
-				    }else{		//insert before current row
-		 				var rowIdx =getCurrentRowIndex();
-				    	var idx = getCurrentDataItemIndex();
-					    dataSource.insert((!!idx)?idx:0,newItem);
-					    setLineNumber();
-				    	grid.editRow(getRow(rowIdx));
-				    }
-				    
-				}
-				
-				function getDataItem(row){
-					if(!$scope.lineItemGrid) return null;
-					return (!!row)?$scope.lineItemGrid.dataItem(row):null;
-				}
-				
-				
-				function getDataItemIndex(dataItem){
-					if(!$scope.lineItemGrid) return null;
-					var index = (!!dataItem)?$scope.lineItemGrid.dataSource.indexOf(dataItem):null;
-					console.log("dataItem index:"+index);
-					return index;
-				}
-				
-				function getCurrentDataItem(){
-					if(!$scope.lineItemGrid) return null;
-					var row=getCurrentRow();
-					return getDataItem(row);
-				}
-				
-				function getCurrentDataItemIndex(){
-					if(!$scope.lineItemGrid) return null;
-					var dataItem= getCurrentDataItem();
-					var idx = getDataItemIndex(dataItem);
-					return idx;
-				}
-				
-				function getRow(index){
-					if(!$scope.lineItemGrid) return null;
-					return $scope.lineItemGrid.tbody.children().eq(index)
-				}
 
-				//index starts from 0
-				function getRowIndex(row){
-					if(!$scope.lineItemGrid) return null;
-					 var index=(!!row)?($("tr", $scope.lineItemGrid.tbody).index(row)):null;
-					 return index;
-				}
 				
-				
-				function getCurrentRow(){
-					if(!$scope.lineItemGrid) return null;
-					var cell=$scope.lineItemGrid.current();
-					return (!!cell)?cell.closest("tr"):null;
-				}
-				
-				
-		        
-				function getCurrentRowIndex(){
-					if(!$scope.lineItemGrid) return null;
-					return getRowIndex(getCurrentRow());
-				}
-				
-
-				function deleteLineItemRow(){
-					var dataItem=getCurrentDataItem();
-					var grid=$scope.lineItemGrid;
-					
-				    if (dataItem) {
-				        if (confirm('Please confirm to delete the selected row.')) {
-							if(dataItem.id)
-								$scope.order.deletedItems.push({entity:"lineItem",id:dataItem.id});
-							
-				        	grid.dataSource.remove(dataItem);
-				        	lineItemGridCurrentRow=-1;
-				        	setLineNumber();
-				        	grid.table.focus();
-				        }
-				    } else {
-				        alert('Please select a  row to delete.');
-				    }					
-				}
-				
-				function setLineNumber(){
-					var dataItems=$scope.lineItemGrid.dataSource.view();
-					for(var i=0;i<dataItems.length;i++){ 
-						dataItems[i].lineNumber=i+1;
-					}
-				}
-				
-			    $scope.$on("kendoWidgetCreated", function(event, widget){
-			        // the event is emitted for every widget; if we have multiple
-			        // widgets in this controller, we need to check that the event
-			        // is for the one we're interested in.
-			        if (widget ===$scope.lineItemGrid) {
-			        	$scope.common.itemGrid=$scope.lineItemGrid;
-			        	enableReorderRow($scope.lineItemGrid,true);
-			        }
-			    });				
-				
-				function enableReorderRow(grid,enable){
-					if(enable){
 						
-	 					grid.table.kendoSortable({
-		                    filter: ">tbody >tr:not(.k-grid-edit-row)",
-		                    hint: $.noop,
-		                    cursor: "move",
-		                    placeholder: function(element) {
-		                        return element.clone().addClass("k-state-hover").css("opacity", 0.65);
-		                    },
-		                    container: "#lineItemGrid tbody",
-		                    change: function(e) {
-		                    	var dataSource,skip,oldIndex,newIndex,dataItem;
-		                    	
-		                        dataSource=$scope.lineItemGrid.dataSource;
-			                    skip = !!(dataSource.skip())?(dataSource.skip()):0;
-		                        oldIndex = e.oldIndex + skip;
-		                        newIndex = e.newIndex + skip;
-		                        dataItem = dataSource.getByUid(e.item.data("uid"));
-	
-		                        dataSource.remove(dataItem);
-		                        dataSource.insert(newIndex, dataItem);
-		                        setLineNumber();
-		                        dataSource.sync();
-		                    }
-		                });
-					}else{
-	 					grid.table.kendoSortable({});
-					}
-				}
-				
-				
 				$scope.lineItemGridContextMenuOptions={
 						closeOnClick:true,
-						filter:".lineItemGridLineNumber,.lineItemGridLineNumberHeader",
+						filter:".gridLineNumber,.gridLineNumberHeader",
 						select:function(e){
 						
 							switch(e.item.id){
@@ -422,6 +307,43 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$stateParams" ,function($s
 						}
 					
 				};
+				
+				function addLineItemRow(isInsert){
+				    var newItem={
+					    	orderId:SO.dataSet.info.orderId,
+					    	orderItemId:orderItemId, 
+					    	brand:$scope.lineItemBrand
+					    };
+				    gridWrapper.addNewRow(newItem,isInsert);
+				}
+				
+				function deleteLineItemRow(){
+					var dataItem=this.getCurrentDataItem();
+				    if (dataItem) {
+				        if (confirm('Please confirm to delete the selected row.')) {
+							if(dataItem.id)
+								SO.dataSet.deletedItems.push({entity:"lineItem",id:dataItem.id});
+					
+							gridWrapper.deleteRow(dataTiem);
+				        }
+				    }
+			   		else {
+			        	alert('Please select a  row to delete.');
+			   		}
+				    
+				}
+				
+				$scope.onClickLineItemEditing=function(){
+					$scope.lineItemGrid.setOptions({
+						editable:$scope.setting.lineItemEditing,
+						selectable: (!!$scope.setting.lineItemEditing)?"cell":"multiple, row",
+					});
+					var options=$scope.lineItemGrid.getOptions();
+//					console.log("grid options: editable="+options.editable+"  selectable="+options.selectable);
+//					console.log("grid options:"+JSON.stringify(options));
+
+					gridWrapper.enableReorderRow();
+				}
 
 
 }]); 

@@ -1,6 +1,8 @@
 <script>
-orderApp.controller("orderInfoCtrl", ["$scope",function($scope) {
+orderApp.controller("orderInfoCtrl", ["$scope","SO",function($scope,SO) {
 
+	$scope.SO=SO;
+	
 	$scope.customerOptions={
             dataTextField: "text",
             dataValueField: "value",			

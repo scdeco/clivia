@@ -43,7 +43,7 @@ public class OrderDao {
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
 	public void save(OrderClivia order){
 		
-		OrderInfo orderInfo=order.getOrderInfo();
+		OrderInfo orderInfo=order.getInfo();
 		if(!(orderInfo.getOrderId()>0)){
 			Integer orderId=cliviaAutoNumberDao.getNextNumber("OrderId");
 			Integer orderNumber=cliviaAutoNumberDao.getNextNumber("OrderNumber");
@@ -51,9 +51,9 @@ public class OrderDao {
 			orderInfo.setOrderNumber('S'+orderNumber.toString());
 			orderInfo.setOrderDate(LocalDate.now());
 			
-			if(order.getOrderItems()!=null){
+			if(order.getItems()!=null){
 				
-				for(OrderItem orderItem:order.getOrderItems()){
+				for(OrderItem orderItem:order.getItems()){
 					orderItem.setOrderId(orderId);
 				}
 			}
@@ -94,8 +94,8 @@ public class OrderDao {
 		
 		orderInfoDao.saveOrUpdate(orderInfo);
 		
-		if(order.getOrderItems()!=null){
-			for(OrderItem orderItem:order.getOrderItems()){
+		if(order.getItems()!=null){
+			for(OrderItem orderItem:order.getItems()){
 				orderItemDao.saveOrUpdate(orderItem);
 			}
 		}
@@ -120,9 +120,9 @@ public class OrderDao {
 		OrderInfo orderInfo=orderInfoDao.findByOrderId(orderId);
 		if(orderInfo!=null){
 			order=new OrderClivia();
-			order.setOrderInfo(orderInfo);
+			order.setInfo(orderInfo);
 			List<OrderItem> orderItems=orderItemDao.FindListByOrderId(orderId);
-			order.setOrderItems(orderItems);
+			order.setItems(orderItems);
 			List<OrderLineItem> lineItems=orderLineItemDao.FindListByOrderId(orderId);
 			order.setLineItems(lineItems);
 			List<OrderImage> imageItems=orderImageDao.FindListByOrderId(orderId);
@@ -155,8 +155,8 @@ public class OrderDao {
 	public void deleteOrder(OrderClivia order){
 		orderLineItemDao.deleteAll(order.getLineItems());
 		orderImageDao.deleteAll(order.getImageItems());
-		orderItemDao.deleteAll(order.getOrderItems());
-		orderInfoDao.delete(order.getOrderInfo());
+		orderItemDao.deleteAll(order.getItems());
+		orderInfoDao.delete(order.getInfo());
 	}
 	
 }

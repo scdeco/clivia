@@ -8,7 +8,7 @@
 		<div style="margin:6px;">
 		    <label>Brand:</label>
 		    <input kendo-dropdownlist style="width:140px;" ng-model="lineItemBrand" k-options="lineitemBrandOptions">
-		    <input type="checkbox" ng-model="setting.lineItemCarryOn"  style="vertical-align:middle;"><label>Carry On</label>
+		    <input type="checkbox" ng-model="setting.lineItemEditing"  style="vertical-align:middle;" ng-click="onClickLineItemEditing()"><label>Editing</label>
 
 	    </div>
     
@@ -34,7 +34,7 @@
 			
 		</div>
 		<div>
-			<h3>line item detail</h3>
+			<div id="lineitemdetail" ui-view></div>
 		</div>
     </div>
 	

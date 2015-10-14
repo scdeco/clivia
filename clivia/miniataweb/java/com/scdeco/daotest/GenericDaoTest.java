@@ -19,7 +19,7 @@ import com.scdeco.model.Employee;
 import com.scdeco.service.LoginService;
 
 public class GenericDaoTest {
-	
+
 	private static EmployeeDao employeeDao;
 	private static ClassPathXmlApplicationContext context;
 	

@@ -35,8 +35,11 @@
 	
 	<div id="bottom-pane" style="height:300px;">
 				<pre>
-					model:{{order|json}}
-					dict:{{dict|json}}
+					dataSet:{{SO.dataSet|json}}
+					buttons:{{SO.instance.itemButtons}}
+					dictGarments:{{SO.dict.garments|json}}
+					dictImages:{{SO.dict.images|json}}
+					
 	
 				</pre>
 	</div> <!-- bottom pane of outter splitter -->
