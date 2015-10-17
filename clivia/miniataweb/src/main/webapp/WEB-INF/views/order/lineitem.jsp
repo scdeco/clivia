@@ -6,9 +6,9 @@
                     	  { collapsible: true}]"
 				style="height: 470px; width: 100%;">    
 		<div style="margin:6px;">
-		    <label>Brand:</label>
-		    <input kendo-dropdownlist style="width:140px;" ng-model="lineItemBrand" k-options="lineitemBrandOptions">
-		    <input type="checkbox" ng-model="setting.lineItemEditing"  style="vertical-align:middle;" ng-click="onClickLineItemEditing()"><label>Editing</label>
+		    <label>Brand: {{lineItemBrand}}</label>
+<!-- 		    <input kendo-dropdownlist style="width:140px;" ng-model="lineItemBrand" k-options="lineitemBrandOptions"> -->
+<!-- 		    <input type="checkbox" ng-model="setting.lineItemEditing"  style="vertical-align:middle;" ng-click="onClickLineItemEditing()"><label>Editing</label> -->
 
 	    </div>
     

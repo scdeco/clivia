@@ -59,7 +59,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 				.then(function(data){
 				    if(data){
 			    		for(var i=0;i<SO.dataSet.items.length;i++)
-			    			SO.addOrderItemButton(SO.dataSet.items[i])
+			    			SO.addOrderItemButton(SO.dataSet.items[i]);
 
 			    		SO.dict.getRemoteImages();
 				    	SO.setCurrentOrderItem(0);

@@ -44,7 +44,8 @@ public class OrderLineItem {
 		
 	@Column(name="Remark",length=50)
 	private String remark;
-
+	
+	
 	public int getId() {
 		return id;
 	}

@@ -27,6 +27,9 @@ public class OrderItem {
 	
 	@Column(name="Type", length=10)
 	private String type;
+	
+	@Column(name="Spec", length=255)
+	private String spec;
 
 	public int getId() {
 		return id;
@@ -74,6 +77,14 @@ public class OrderItem {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	public String getSpec() {
+		return spec;
+	}
+
+	public void setSpec(String spec) {
+		this.spec = spec;
 	}
 
 	

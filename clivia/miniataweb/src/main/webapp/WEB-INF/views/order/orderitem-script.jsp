@@ -1,6 +1,6 @@
 <script>
 orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
-	 $scope.SO=SO;
+	 
      $scope.itemToolbarOptions = {
              items: [{
                          type: "buttonGroup",
@@ -11,35 +11,11 @@ orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
 	                     type: "splitButton",
 	                     text: "+",
 	                     id:"additem",
-	                     menuButtons: [{ 
-	                        	 text: "Pricing Item", 
-	                        	 icon: "insert-n",
-	                        	 id:"pricingitem",
-	                        },{
-	                        	 text: "Line Item", 
-	                        	 icon: "insert-n",
-	                        	 id:"lineitem",
-	                        },{
-	                        	type: "separator" 
-	                        },{
-	                        	text: "Design", 
-	                        	icon: "insert-m",
-		                       	id:"designitem"
-	                        },{ 
-	                        	text: "Image", 
-	                        	icon: "insert-m",
-		                       	id:"imageitem"
-	                        },{ 
-	                        	text: "File", 
-	                        	icon: "insert-s",
-		                       	id:"fileitem",
-	                        },{ 
-	                        	text: "Send Receive",
-		                       	id:"shipping"
-	                        }],
+	                     menuButtons: SO.setting.registeredOrderItems,
                    		click:function(e) {
                    			if(e.id!="additem"){
-                              	var item=SO.addOrderItem(e.id, e.target.text());
+                   				var menuItem=SO.getRegisteredOrderItem(e.id);
+                              	var item=SO.addOrderItem(menuItem.itemType,menuItem.text,menuItem.spec);
                               	SO.setCurrentOrderItem(item.orderItemId);
                    			}
                    		}
