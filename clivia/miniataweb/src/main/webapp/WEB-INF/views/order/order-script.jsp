@@ -66,13 +66,44 @@
 			controller : 'designitemCtrl'
 		})
 
-		.state('main.fileItem', {
+		.state('main.fileitem', {
 			url : orderItemUrl,
 			templateUrl : 'item/fileitem',
 			controller : 'fileitemCtrl'
 		})
 	});
 
+	
+	//Sample directive.  Activate it by passing my-grid attribute to
+	//the div which constructs the grid.  It expects your div to also
+	//have a kendo-grid attribute, to activate the Kendo UI directive
+	//for creating a grid.
+orderApp.directive('checkSelect', ['$compile', function ($compile) {
+	 var directive = {
+	     restrict: 'A',
+	     scope: true,
+	     controller: function ($scope) {
+	         window.crap = $scope;
+	         $scope.toggleSelectAll = function(ev) {
+	             var grid = $(ev.target).closest("[kendo-grid]").data("kendoGrid");
+	             var items = grid.dataSource.data();
+	             items.forEach(function(item){
+	                 item.selected = ev.target.checked;
+	             });
+	         };
+	     },
+	     link: function ($scope, $element, $attrs) {
+	         var options = angular.extend({}, $scope.$eval($attrs.kOptions));
+	         options.columns.unshift({
+	             template: "<input type='checkbox' ng-model='dataItem.selected' />",
+	             title: "<input type='checkbox' title='Select all' ng-click='toggleSelectAll($event)' />",
+	             width: 30
+	         });
+	     }
+	 };
+	 return directive;
+	}]);	
+	
 //GridWrapper
 orderApp.factory("GridWrapper",function(){
 	//constructor, need a kendoGrid's name
@@ -82,6 +113,7 @@ orderApp.factory("GridWrapper",function(){
 		this.gridColumns=null;
 		this.currentRowUid="";
 		this.reorderRowEnabled=false;
+		this.isEditing=true;
 	}
 	
 	GridWrapper.prototype.setColumns=function(columns){
@@ -91,8 +123,16 @@ orderApp.factory("GridWrapper",function(){
 	//call this method in kendoWidgetCreated event
 	GridWrapper.prototype.wrapGrid=function(){
 		this.grid=$("#"+this.gridName).data("kendoGrid");
-		this.enableReorderRow();
+//		this.enableReorderRow();
 		this.showLineNumber();
+	}
+	
+	
+	GridWrapper.prototype.getDataItemIndexByRowIndex=function (rowIndex){
+		if(!this.grid) return null;
+		var row=this.getRow(rowIndex);
+		var dataItem=this.getDataItemByRow(row);
+		return this.getDataItemIndex(dataItem);
 	}
 
 	GridWrapper.prototype.getDataItemByRow=function (row){
@@ -160,10 +200,13 @@ orderApp.factory("GridWrapper",function(){
 		return index;
 	}
 
+	//lineNumber starts from 1
 	GridWrapper.prototype.setLineNumber=function (){
-		var dataItems=this.grid.dataSource.view();
+		var ds=this.grid.dataSource;
+		var dataItems=ds.view();
+		var skip = !!ds.skip()?ds.skip():0;
 		for(var i=0;i<dataItems.length;i++){ 
-			dataItems[i].lineNumber=i+1;
+			dataItems[i].lineNumber=i+skip+1;
 		}
 	}
 		
@@ -197,21 +240,33 @@ orderApp.factory("GridWrapper",function(){
 	}		
 
 	GridWrapper.prototype.copyPreviousRow=function(){
-		var dataItem=this.getCurrentDataItem();
- 		var dataItemIndex=this.getCurrentDataItemIndex();
-		var copiedDataItem=this.getDataItemByIndex(dataItemIndex-1);
- 		if(!!copiedDataItem){
+		var idx=this.getCurrentRowIndex();
+		if(idx>0){
+			dis=this.grid.dataSource.view();
+			diFrom=dis[idx-1];
+			diTo=dis[idx];
  			for(var i=1;i<this.gridColumns.length;i++){
- 				if(typeof copiedDataItem[this.gridColumns[i].field] !=='undefined')
-     		 			dataItem[this.gridColumns[i].field]=copiedDataItem[this.gridColumns[i].field];
+ 				var field=this.gridColumns[i].field;
+ 				if(typeof diFrom[field] !=='undefined')
+     		 		diTo[field]=diFrom[field];
  			}
- 		}
+		}
+// 		var dataItem=this.getCurrentDataItem();
+//  		var dataItemIndex=this.getCurrentDataItemIndex();
+// 		var copiedDataItem=this.getDataItemByIndex(dataItemIndex-1);
+//  		if(!!copiedDataItem){
+//  			for(var i=1;i<this.gridColumns.length;i++){
+//  				if(typeof copiedDataItem[this.gridColumns[i].field] !=='undefined')
+//      		 			dataItem[this.gridColumns[i].field]=copiedDataItem[this.gridColumns[i].field];
+//  			}
+//  		}
 	}
+
 	
-	GridWrapper.prototype.enableReorderRow=function (){
+	GridWrapper.prototype.getSortableOptions=function (){
 		var self=this;		
-		this.grid.table.kendoSortable({
-             filter: ">tbody >tr:not(.k-grid-edit-row)",
+		return 	{
+			 filter: ".k-grid tr[data-uid]:not(.k-grid-edit-row)",			
              hint: $.noop,
              cursor: "move",
              placeholder: function(element) {
@@ -219,21 +274,24 @@ orderApp.factory("GridWrapper",function(){
              },
              container: "#"+this.gridName+ " tbody",
              change: function(e) {
-             	 var dataSource,skip,oldIndex,newIndex,dataItem;
-             	
-                 dataSource=self.grid.dataSource;
-              	 skip = !!dataSource.skip()?dataSource.skip():0;
-                 oldIndex = e.oldIndex + skip;
-                 newIndex = e.newIndex + skip;
-                 dataItem = dataSource.getByUid(e.item.data("uid"));
-
-                 dataSource.remove(dataItem);
-                 dataSource.insert(newIndex, dataItem);
-                 self.setLineNumber();
-                 dataSource.sync();
+             	 var ds=self.grid.dataSource,
+                 	 idx=self.getDataItemIndexByRowIndex(e.newIndex),
+                 	 di= ds.getByUid(e.item.data("uid"));
+                 ds.remove(di);
+                 ds.insert(idx, di);
+ 				 self.setLineNumber();
+                 ds.sync();
                 }
-            });
-		this.allowReorderRow=true;
+            };
+	}
+	
+	
+	GridWrapper.prototype.enableEditing=function(editing){
+		this.isEditing=editing;
+		this.grid.setOptions({
+			editable:editing,
+			selectable: editing?"cell":"row",
+		});
 	}
 	
 	//called from parenet resize event
@@ -386,7 +444,7 @@ orderApp.factory("SO",["$http","$q","$state",function($http, $q,$state){
 			 icon: "insert-n",
 			 id:"lineitem",
 			 spec:"generic",
-			 itemType:"lineitem"
+			 itemType:"lineitem"		//datatable
 		},{
 			 text: "DD Line Item", 
 			 icon: "insert-n",
@@ -732,7 +790,7 @@ orderApp.factory("SO",["$http","$q","$state",function($http, $q,$state){
  	}
 	
  	_order.addOrderItemButton=function(orderItem){
-        button={text:orderItem.title, id: "btn"+orderItem.orderItemId, togglable: true, group: "OrderItem"};
+        button={text:orderItem.title, id: "btn"+orderItem.orderItemId, icon: "insert-n",togglable: true, group: "OrderItem"};
         instance.itemButtons.push(button);
         return button;
  	}
