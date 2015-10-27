@@ -105,7 +105,6 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 			},function(data){
 				alert( "failure message: " + JSON.stringify({data: data}));
 			});
-			
 		}
 	}
 	

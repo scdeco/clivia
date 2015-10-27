@@ -1,5 +1,5 @@
 <script>
-orderApp.controller("pricingitemCtrl",["$scope","$http","$stateParams" ,function($scope,$http,$stateParams){
+orderApp.controller("pricingItemCtrl",["$scope","$http","$stateParams" ,function($scope,$http,$stateParams){
 
 
 }]);

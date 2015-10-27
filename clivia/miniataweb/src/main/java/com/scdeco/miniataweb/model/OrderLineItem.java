@@ -39,6 +39,9 @@ public class OrderLineItem {
 	@Column(name="Size",length=20)
 	private String size;
 
+	@Column(name="Qty00")
+	private Integer qty00;
+	
 	@Column(name="Qty01")
 	private Integer qty01;
 
@@ -164,6 +167,14 @@ public class OrderLineItem {
 
 	public void setSize(String size) {
 		this.size = size;
+	}
+
+	public Integer getQty00() {
+		return qty00;
+	}
+
+	public void setQty00(Integer qty00) {
+		this.qty00 = qty00;
 	}
 
 	public Integer getQty01() {

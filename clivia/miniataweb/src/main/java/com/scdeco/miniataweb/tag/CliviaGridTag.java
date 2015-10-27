@@ -182,7 +182,7 @@ public class CliviaGridTag extends SimpleTagSupport {
 
 	private void createDataSource(){
 
-		String crudServiceBaseUrl="*:{url: 'http://'+window.location.host"+"+'/miniataweb/data/"+gridInfo.getGridDaoName()+
+		String crudServiceBaseUrl="*:{url: 'http://'+window.location.host"+"+'/miniataweb/datasource/"+gridInfo.getGridDaoName()+
 				"/*',type:'post',dataType: 'json',contentType:'application/json'},";
 			
 		//create filter variable for javascript

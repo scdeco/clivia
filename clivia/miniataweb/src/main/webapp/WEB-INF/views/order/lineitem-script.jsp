@@ -1,10 +1,12 @@
 <script>
-orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrapper","SO" ,
+orderApp.controller("lineItemCtrl",["$scope","$http","$state","GarmentGridWrapper","SO" ,
          function($scope,$http,$state,GarmentGridWrapper,SO){
 
-	var garmentGridWrapper=new GarmentGridWrapper("lineItemGrid");
-	var currentOrderItem=SO.getCurrentOrderItem(); 
-	var orderItemId =currentOrderItem.orderItemId;
+	if(SO.instance.currentItemId===0) return;
+	
+	var ggw=new GarmentGridWrapper("lineItemGrid");
+	var orderItem=SO.getCurrentOrderItem(); 
+	var orderItemId =orderItem.orderItemId;
 	
 	var gridColumns=[{
 		        name:"lineNumber",
@@ -12,14 +14,14 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 				//use $(".gridLineNumber").text(function(index)) to generate lineNumber 	
 				// need to call gridWrapper.showLineNumber in dataBound event
 		        //locked: true, if true will cause the wrong cell get focus when add new row
+		        attributes:{class:"gridLineNumber"},
+		        headerAttributes:{class:"gridLineNumberHeader"},
 		        width: 25,
-		        attributes:{style:"text-align:right;", class:"gridLineNumber"},
-		        headerAttributes:{style:"text-align:center;", class:"gridLineNumberHeader"}
 	    
 			}, {			
 				name:"styleNumber",
 			    field: "styleNumber",
-			    title: "Style#",
+			    title: "Style",
 			    width: 60
 			}, {
 				name:"description",
@@ -30,149 +32,69 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 				name:"colour",
 			    field: "colour",
 			    title: "Colour",
-			    editor:function(container, options){garmentGridWrapper.colourColumnEditor(container, options)},
+			    editor:function(container, options){ggw.colourColumnEditor(container, options)},
 			    width: 150
 			}, {
+				name:"remark",
+			    field: "remark",
+			    title: "Remark"
+				//extend last column if do not set its width 
+		
+			}];
+	
+	var sizeQtyWidth=40;
+	var sizeQtyEditor=ggw.numberColumnEditor;
+	var sizeQtyAttr={style:"text-align:right;"};
+	
+	var sizeRangeFields=["12M","18M","2T","3T","4T","5/6","S","M","L","XL","XXL","XXXL","1X","2X"];
+	var sizeRangeTitles=["12M","18M","2T","3T","4T","5/6","S","M","L","XL","2XL","3XL","1X","2X"];
+	
+	if(orderItem.spec==="DD"){
+		var j=4;
+		for(var i=0;i<sizeRangeFields.length;i++){
+			var field="qty"+("00"+i).slice(-2);
+			gridColumns.splice(j++,0,{
+				name:field,
+				field:field,
+				title:sizeRangeTitles[i],
+			    editor:sizeQtyEditor,
+			    width: sizeQtyWidth,
+			    attributes:sizeQtyAttr
+			});			
+		}
+		gridColumns.splice(j,0,{
+			name:"quantity",
+		    field: "quantity",
+		    title: "Total",
+		    editor: ggw.readOnlyColumnEditor,
+		    width: 80,
+		    attributes:sizeQtyAttr
+			});
+	}else{
+		gridColumns.splice(4,0,{
 				name:"size",
 			    field: "size",
 			    title: "Size",
-			    editor:function(container, options){garmentGridWrapper.sizeColumnEditor(container, options)},
+			    editor:function(container, options){ggw.sizeColumnEditor(container, options)},
 			    width: 80
 			}, {
 				name:"quantity",
 			    field: "quantity",
 			    title: "Quantity",
-			    editor: garmentGridWrapper.numberColumnEditor,
+			    editor: ggw.numberColumnEditor,
 			    width: 80,
 			    attributes:{style:"text-align:right;"}
-			}, {
-				name:"remark",
-			    field: "remark",
-			    title: "Remark"
-				//extend last column if not setting its width 
-		
-			}];
-	var sizeQtyWidth=40;
-	var sizeQtyEditor=garmentGridWrapper.numberColumnEditor;
-	var sizeQtyAttr={style:"text-align:right;"};
-	if(currentOrderItem.spec==="DD"){
-			gridColumns.splice(4,2,{
-				name:"qty01",
-				field:"qty01",
-				title:"12M",
-			    editor:sizeQtyEditor,
-			    width: sizeQtyWidth,
-			    attributes:sizeQtyAttr
-			},{
-				name:"qty02",
-				field:"qty02",
-				title:"18M",
-			    editor:sizeQtyEditor,
-			    width: sizeQtyWidth,
-			    attributes:sizeQtyAttr
-			},{
-				name:"qty03",
-				field:"qty03",
-				title:"2T",
-			    editor:sizeQtyEditor,
-			    width: sizeQtyWidth,
-			    attributes:sizeQtyAttr
-			},{
-				name:"qty04",
-				field:"qty04",
-				title:"3T",
-			    editor:sizeQtyEditor,
-			    width: sizeQtyWidth,
-			    attributes:sizeQtyAttr
-			},{
-				name:"qty05",
-				field:"qty05",
-				title:"4T",
-			    editor:sizeQtyEditor,
-			    width: sizeQtyWidth,
-			    attributes:sizeQtyAttr
-			},{
-				name:"qty06",
-				field:"qty06",
-				title:"5/6",
-			    editor:sizeQtyEditor,
-			    width: sizeQtyWidth,
-			    attributes:sizeQtyAttr
-			},{
-				name:"qty07",
-				field:"qty07",
-				title:"S",
-			    editor:sizeQtyEditor,
-			    width: sizeQtyWidth,
-			    attributes:sizeQtyAttr
-			},{
-				name:"qty08",
-				field:"qty08",
-				title:"M",
-			    editor:sizeQtyEditor,
-			    width: sizeQtyWidth,
-			    attributes:sizeQtyAttr
-			},{
-				name:"qty09",
-				field:"qty09",
-				title:"L",
-			    editor:sizeQtyEditor,
-			    width: sizeQtyWidth,
-			    attributes:sizeQtyAttr
-			},{
-				name:"qty10",
-				field:"qty10",
-				title:"XL",
-			    editor:sizeQtyEditor,
-			    width: sizeQtyWidth,
-			    attributes:sizeQtyAttr
-			},{
-				name:"qty11",
-				field:"qty11",
-				title:"2XL",
-			    editor:sizeQtyEditor,
-			    width: sizeQtyWidth,
-			    attributes:sizeQtyAttr
-			},{
-				name:"qty12",
-				field:"qty12",
-				title:"3XL",
-			    editor:sizeQtyEditor,
-			    width: sizeQtyWidth,
-			    attributes:sizeQtyAttr
-			},{
-				name:"qty13",
-				field:"qty13",
-				title:"1L",
-			    editor:sizeQtyEditor,
-			    width: sizeQtyWidth,
-			    attributes:sizeQtyAttr
-			},{
-				name:"qty14",
-				field:"qty14",
-				title:"2L",
-			    editor:sizeQtyEditor,
-			    width: sizeQtyWidth,
-			    attributes:sizeQtyAttr
-			},{
-				name:"quantity",
-			    field: "quantity",
-			    title: "Total",
-			    editor: garmentGridWrapper.readOnlyColumnEditor,
-			    width: 80,
-			    attributes:{style:"text-align:right;"}
-
-			});
+			})
 	}
 	
 	
-	garmentGridWrapper.setColumns(gridColumns);
+	ggw.setColumns(gridColumns);
 	
 	$scope.setting={};
 
 	$scope.setting.lineItemEditing=true;
-	$scope.lineItemBrand=currentOrderItem.spec;
-	$scope.dict=garmentGridWrapper.dict;
+	$scope.lineItemBrand=orderItem.spec;
+	$scope.dict=ggw.dict;
 
 
     $scope.$on("kendoWidgetCreated", function(event, widget){
@@ -180,11 +102,11 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
         // widgets in this controller, we need to check that the event
         // is for the one we're interested in.
         if (widget ===$scope.lineItemGrid) {
-        	garmentGridWrapper.wrapGrid();
+        	ggw.wrapGrid();
         }
     });	
     
-	$scope.lineItemBrand=currentOrderItem.spec;
+	$scope.lineItemBrand=orderItem.spec;
 	
  	$scope.lineItemGridOptions = {
 				autoSync: true,
@@ -241,7 +163,7 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 		       	
  		       	dataBound:function(e){
  		       		console.log("event bound:");
- 		       		garmentGridWrapper.showLineNumber();
+ 		       		ggw.showLineNumber();
  		       	},
  		       		
 		       	save: function(e) {
@@ -249,25 +171,25 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 			       		console.log("event save:"+JSON.stringify(e.values));
 	  	        		e.preventDefault();
  		       			if(e.values.styleNumber===";"){
-		       				garmentGridWrapper.copyPreviousRow();
+		       				ggw.copyPreviousRow();
 		       		 	}else {
 			          		e.model.set("styleNumber",e.values.styleNumber.toUpperCase().trim());
-			          		garmentGridWrapper.setCurrentGarment(e.model);
+			          		ggw.setCurrentGarment(e.model);
 		          		}
 		          	}
 		         },
 		       	
 		         //row or cloumn changed
 		       	change:function(e){
-		       		var row=garmentGridWrapper.getCurrentRow();
+		       		var row=ggw.getCurrentRow();
 		       		console.log("event change:");
 		       		var	newRowUid=row?row.data("uid"):"";
-	        		if((typeof newRowUid!=="undefined") && (garmentGridWrapper.currentRowUid!==newRowUid)){		//row changed
-	        			garmentGridWrapper.currentRowUid=newRowUid;
-	        			var dataItem=garmentGridWrapper.getCurrentDataItem();
+	        		if((typeof newRowUid!=="undefined") && (ggw.currentRowUid!==newRowUid)){		//row changed
+	        			ggw.currentRowUid=newRowUid;
+	        			var dataItem=ggw.getCurrentDataItem();
 	        			if(dataItem){
-		        			garmentGridWrapper.setCurrentGarment(dataItem);
-	//	        			$state.go('main.lineitem.detail',{orderItemId:orderItemId,lineItemId:dataItem.lineNumber});
+		        			ggw.setCurrentGarment(dataItem);
+		        			$state.go('main.lineItem.detail',{orderItemId:orderItemId,lineItemId:dataItem.lineNumber});
 	        			}
 	        			
 	        		};
@@ -275,7 +197,7 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 		       	
 		        edit:function(e){
 		        	console.log("event edit:");
-				    var editingCell=garmentGridWrapper.getEditingCell();
+				    var editingCell=ggw.getEditingCell();
 				    if(!!editingCell){
 				    	this.select(editingCell);
 			        	console.log("set editing cell:");
@@ -287,7 +209,7 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 
        
 //methods		   
- 	$scope.lineItemGridSortableOptions = garmentGridWrapper.getSortableOptions();
+ 	$scope.lineItemGridSortableOptions = ggw.getSortableOptions();
 						
 	$scope.lineItemGridContextMenuOptions={
 			closeOnClick:true,
@@ -297,8 +219,8 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 				switch(e.item.id){
 					case "menuAdd":
 						$scope.setting.lineItemEditing=true;
-						if(!garmentGridWrapper.isEditing)
-							garmentGridWrapper.enableEditing(true);
+						if(!ggw.isEditing)
+							ggw.enableEditing(true);
 						addLineItemRow(false);
 						break;
 					case "menuAddWindow":
@@ -322,7 +244,7 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 			    	orderItemId:orderItemId, 
 			    	brand:$scope.lineItemBrand
 			    };
-		    garmentGridWrapper.addRow(newItem,isInsert);
+		    ggw.addRow(newItem,isInsert);
 		}
 				
 		var deleteLineItemRow=function (){
@@ -330,9 +252,9 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 		    if (dataItem) {
 		        if (confirm('Please confirm to delete the selected row.')) {
 					if(dataItem.id)
-						SO.dataSet.deletedItems.push({entity:"lineItem",id:dataItem.id});
+						SO.dataSet.deleteds.push({entity:"lineItem",id:dataItem.id});
 			
-					garmentGridWrapper.deleteRow(dataTiem);
+					ggw.deleteRow(dataTiem);
 		        }
 		    }
 	   		else {
@@ -341,16 +263,16 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 		    
 		}
 		$scope.onClickLineItemEditing=function(){
-			garmentGridWrapper.enableEditing($scope.setting.lineItemEditing);				
+			ggw.enableEditing($scope.setting.lineItemEditing);				
 		}
 		
 		$scope.styleWin={
+				gridRebind: 0,
 				styleNumber: "",
 				total: 0,
 				garment: {},
 				columns: new kendo.data.ObservableArray([{title:"Colour",template:"<label>#: colour #</label>"}]),
 				data: new kendo.data.ObservableArray([]),
-				
 				options:{
 					modal: false,
 					title: "Add Line Item",
@@ -358,7 +280,6 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 					resizable: true,
 					draggable: true,
 					actions: [ "Close", "Maximize" ],
-					position: {top: 10, lft: 20 }					
 				},
 				
 				getGrid: function(){
@@ -383,8 +304,19 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 						
 					}
 				},
-				
+				clearGrid:function(){
+					this.columns.splice(1, this.columns.length-1);
+					this.data.splice(0, this.data.length);
+					this.total=0;
+					this.gridRebind++;
+				},
+				clear: function(){
+					this.styleNumber="";
+					this.garment={};
+					this.clearGrid();
+				},
 				add: function(){
+					var sizes=this.garment.sizeRange.split(",");
 					for(var r=0;r<this.data.length;r++){
 						var di=this.data[r];		//dataItem
 					    var newItem={
@@ -397,24 +329,28 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 						    	quantity:di.total,
 						    	remark:di.remark,
 						    };
-					    garmentGridWrapper.addRow(newItem,false);						
+						for(var i=0;i<sizes.length;i++){  //exclude colour,total,remark
+							var f="f"+("00"+i).slice(-2); 
+							var q="qty"+("00"+sizeRangeFields.indexOf(sizes[i].trim().toUpperCase())).slice(-2); 
+							newItem[q]=di[f];
+						}
+					    ggw.addRow(newItem,false);						
 						
 					}
 					
 					this.clear();
 				},
 				
-				clear: function(){
-					this.styleNumber="";
-					this.garment={};
-					this.clearGrid();
+				ok: function(){
+					this.add();
+					$scope.styleWindow.close();
 				},
 				
-				clearGrid:function(){
-					this.columns.splice(1, this.columns.length-1);
-					this.data.splice(0, this.data.length);
-					this.total=0;
+				cancel: function(){
+					this.clear();
+					$scope.styleWindow.close();
 				},
+				
 				
 				createGrid: function(){
 					if(!this.garment) return;
@@ -424,12 +360,13 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 								field: "f"+("00"+i).slice(-2),
 								title: sizes[i],
 								width: 60,
-								//attributes: {style:"text-align: right;"}
+								//attributes: {class:"gridNumberColumn"}
 							};
 						this.columns.push(column);
 					}
-					this.columns.push({title: "Total", field:"total",editor:garmentGridWrapper.readOnlyColumnEditor, width: 60}); //, attributes: {style:"text-align: right;"}
+					this.columns.push({title: "Total", field:"total",editor:ggw.readOnlyColumnEditor, width: 60});  //,attributes: {style:"text-align: right; font-weight: bold;"}
 					this.columns.push({title: "Remark",field: "remark"});
+					this.gridRebind++;
 					
 					var colours=this.garment.colourway.split(",");
 					for(var i=0; i<colours.length; i++)
@@ -443,6 +380,7 @@ orderApp.controller("lineitemCtrl",["$scope","$http","$state","GarmentGridWrappe
 					this.total=total;
 				}
 		};
+		
 		
 		$scope.styleWin.gridOptions={
 			autoSync: true,

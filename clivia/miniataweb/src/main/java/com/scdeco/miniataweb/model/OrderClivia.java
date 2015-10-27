@@ -10,7 +10,7 @@ public class OrderClivia {
 	private List<OrderLineItem> lineItems;
 	private List<OrderImage> imageItems;
 	
-	private List<Map<String,String>> deletedItems;
+	private List<Map<String,String>> deleteds;
 	
 	public OrderInfo getInfo() {
 		return info;
@@ -30,11 +30,11 @@ public class OrderClivia {
 	public void setLineItems(List<OrderLineItem> lineItems) {
 		this.lineItems = lineItems;
 	}
-	public List<Map<String, String>> getDeletedItems() {
-		return deletedItems;
+	public List<Map<String, String>> getDeleteds() {
+		return deleteds;
 	}
-	public void setDeletedItems(List<Map<String, String>> deletedItems) {
-		this.deletedItems = deletedItems;
+	public void setDeleteds(List<Map<String, String>> deleteds) {
+		this.deleteds = deleteds;
 	}
 	public List<OrderImage> getImageItems() {
 		return imageItems;

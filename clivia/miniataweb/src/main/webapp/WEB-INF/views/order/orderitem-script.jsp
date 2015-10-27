@@ -2,7 +2,6 @@
 orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
 	
 	 $scope.itemButtons=SO.instance.itemButtons;
-	 
      $scope.itemToolbarOptions = {
              items: [{
                          type: "buttonGroup",
@@ -51,23 +50,54 @@ orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
               		 
      };
      
-     $scope.itemToolbarContextMenuOptions={
-    		 
- 			closeOnClick: true,
-			filter: "a.k-state-active",
-			select: function(e){
-			
-				switch(e.item.id){
-					case "menuRename":
-						break;
-					case "menuRemove":
-						break;
-				}
-				
-			}
-
-     };
      
+ 	$scope.itemToolbarContextMenuOptions={
+ 			closeOnClick: false,
+ 			filter:"a.k-state-active",
+ 			open: function(e){
+ 				if ($(e.item).is("li"))  return;
+ 				
+ 				$scope.currentItemButton=SO.getCurrentOrderItemButton();
+ 				menuText="<input type='text' class='k-textbox' ng-model='currentItemButton.text'>"
+ 				var items = [{
+ 	                text: "Change Title", 
+ 	                id: "menuRename", 
+ 	                items: [{text:menuText,encoded: false}]
+ 	            }, {
+ 	                text: "Remove",
+ 	                id: "menuRemove"
+ 	            }];
+ 	            this.setOptions({
+ 	                dataSource: items
+ 	            })
+ 			},
+ 			close:function(e){
+ 				if(e.item.id==="menuRename" && $scope.currentItemButton){
+ 					item=SO.getCurrentOrderItem();
+ 					if($scope.currentItemButton.text!==item.title){
+ 						item.title=$scope.currentItemButton.text;
+ 					}
+ 				}
+ 			},
+ 			select: function(e){
+ 			
+ 				switch(e.item.id){
+ 					case "menuRename":
+ 						console.log(e.item.title);
+ 						break;
+ 					case "menuRemove":
+ 						alert("remove");
+ 						break;
+ 				}
+ 				
+ 			}
+ 		}
 
+     
+     
 }]);
+
+
+
+
 </script>

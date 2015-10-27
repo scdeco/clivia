@@ -24,11 +24,16 @@ public class DictDao {
 		return sessionFactory.getCurrentSession();
 	}
 
+	
+	/*return a list[text,value]*/
 	@SuppressWarnings("rawtypes")
 	public List getDict(String from,String textField,String valueField,String orderBy){
+
 		StringBuilder sb=new StringBuilder();
+		
 		sb.append("select "+textField+" as text");
 		if(valueField!=null&&!valueField.isEmpty()) sb.append(","+valueField+" as value");
+		
 		sb.append(" from "+from);
 		if(orderBy!=null&&!orderBy.isEmpty()) sb.append(" order by "+orderBy);
 		SQLQuery query = (SQLQuery) getSession().createSQLQuery(sb.toString());

@@ -1,5 +1,5 @@
 <script>
-orderApp.controller("imageitemCtrl",["$scope","$http","$stateParams","SO" ,function($scope,$http,$stateParams,SO){
+orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,function($scope,$http,$stateParams,SO){
 	$scope.SO=SO;
 	var orderItemId =parseInt($stateParams.orderItemId);
 	

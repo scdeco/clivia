@@ -1,5 +1,5 @@
 <script>
-orderApp.controller("designitemCtrl",["$scope","$http","$stateParams" ,function($scope,$http,$stateParams){
+orderApp.controller("designItemCtrl",["$scope","$http","$stateParams" ,function($scope,$http,$stateParams){
 
 
 }]);

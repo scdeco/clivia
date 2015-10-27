@@ -74,7 +74,7 @@ public class OrderDao {
 
 		}
 		else{
-			List<Map<String,String>> deletedItems=order.getDeletedItems();
+			List<Map<String,String>> deletedItems=order.getDeleteds();
 			System.out.println("deleted:"+deletedItems);
 			for(Map<String,String> item:deletedItems){
 					String daoName=item.get("entity");

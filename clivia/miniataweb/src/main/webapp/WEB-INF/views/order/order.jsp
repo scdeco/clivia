@@ -3,20 +3,25 @@
 <head>
 
 	<title>Order</title>
-	<%@taglib prefix="ex" uri="/WEB-INF/miniataweb-tags.tld"%>
 	<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
-	<%@taglib prefix="kendo" uri="http://www.kendoui.com/jsp/tags"%>
+
 	<shared:header/> 
+
+	<%@include file="../cliviagrid/gridwrapper.jsp"%>
 	<%@include file="order-script.jsp"%>
+	<%@include file="aconsts.jsp"%>
+	<%@include file="aconfig.jsp"%>
  	<%@include file="ordermain-script.jsp"%>
 	<%@include file="orderinfo-script.jsp"%>
 	<%@include file="orderitem-script.jsp"%>
-	<%@include file="pricingitem-script.jsp"%> 
+
+ 	<%@include file="pricingitem-script.jsp"%> 
 	<%@include file="lineitem-script.jsp"%> 
 	<%@include file="lineitemdetail-script.jsp"%> 
 	<%@include file="imageitem-script.jsp"%> 
 	<%@include file="designitem-script.jsp"%> 
-	<%@include file="fileitem-script.jsp"%> 
+	<%@include file="fileitem-script.jsp"%>  
+	<%@include file="emailitem-script.jsp"%>  
 	
 </head>
 
@@ -38,8 +43,8 @@
 		border-width: 0;
 		padding: 0;
 		margin: 0;
-		height:32px;	//default 36px
-		} 
+		height:36px;	//default 36px
+		}
 		
 	.k-grid{
         margin: 0;
@@ -53,19 +58,44 @@
 		background: transparent; 
 		}
 		
-	.k-grid .k-grid-edit-row td:first-child {
+	/*highlight line number of editing row, might not be the first column 	td:first-child  */
+	.k-grid .k-grid-edit-row td.gridLineNumber{
 		color:blue;
 		font-weight: bold;
 		
 	}
 
 	/* show horizontal grid line		 */
-	.k-grid tr:not(last-child) td{
+	.k-grid-content tr:not(:last-child) td{
  	   border-bottom: 1px dotted gray;
 		}		
-	.k-grid tr:last-child td{
+/*  	.k-grid-content tr:last-child td{
  	   border-bottom: 1px solid gray;
-		}		
+		}  */
+				
+	/* 	grid coloumn header */
+ 	.k-grid-header tr:last-child th{ 
+	   font-weight: bold; 
+  	   text-align: center;
+		}
+		
+	.k-grid .gridLineNumber{
+		text-align: right;
+	}		 
+	
+	/* 	the grid in styleWindow	 */
+	#styleGrid .k-grid-content tr td:not(:last-child){
+ 	   text-align: right;
+	  }		
+	#styleGrid .k-grid-content tr td:first-child{
+ 	   font-weight: bold;
+	  }		
+				
+	
+	/* no wrap */	
+	.k-grid td{
+   		white-space: nowrap;
+	}
 		
 	#top-pane label{
         display: block;

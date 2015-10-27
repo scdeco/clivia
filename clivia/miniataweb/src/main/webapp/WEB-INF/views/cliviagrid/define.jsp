@@ -11,29 +11,6 @@
 	<shared:header/>
 </head>
 
-<span id="undo" style="display:none" class="k-button">Click here to add or edit.</span>
-<c:url value="http://192.6.2.108:8080/miniataweb/garment/edit" var="remoteUrl" />
-
-<kendo:window name="window" title="Add garment product" draggable="true" resizable="true" 
-		width="615" close="onClose" content="${remoteUrl }">				
-</kendo:window>    
-
-<script>
-    function onClose() {
-        $("#undo").show();
-    }
-
-    $(document).ready(function() {
-        $("#undo").bind("click", function() {
-                $("#window").data("kendoWindow").open();
-                $("#undo").hide();
-            });
-    });
-</script>	
-
-
-
-
 
 <script>
 			
@@ -66,13 +43,6 @@
 	
 </script> 
 
-<ex:clivia-grid gridno="281" name="garmentsizegrid" editable="true"/>
-
-<ex:clivia-grid gridno="280" name="garmentcolourgrid" editable="true"/>
- 
-<ex:clivia-grid gridno="282" name="garmentcategorygrid" editable="true"/>
-
-
 <kendo:tabStrip name="tabStrip" animation="false">
 	<kendo:tabStrip-items>
 	    <kendo:tabStrip-item text="Grid" selected="true">
@@ -95,20 +65,6 @@
 				</div>
 		    </kendo:tabStrip-item-content>
 	    </kendo:tabStrip-item>
-        <kendo:tabStrip-item text="Size">
-            <kendo:tabStrip-item-content>
-				<div class="tabPage">
-	                <div id="garmentsizegrid" class=grid></div>
-	            </div>
-            </kendo:tabStrip-item-content>    
-        </kendo:tabStrip-item>
-        <kendo:tabStrip-item text="Colour">
-            <kendo:tabStrip-item-content>
-				<div class="tabPage">
-	                <div id="garmentcolourgrid" class=grid></div>
-	            </div>
-            </kendo:tabStrip-item-content>    
-        </kendo:tabStrip-item>
         <kendo:tabStrip-item text="Category">
             <kendo:tabStrip-item-content>
 				<div class="tabPage">

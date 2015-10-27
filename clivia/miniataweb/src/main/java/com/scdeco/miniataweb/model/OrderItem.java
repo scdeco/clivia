@@ -31,6 +31,9 @@ public class OrderItem {
 	@Column(name="Spec", length=255)
 	private String spec;
 
+	@Column(name="SpecDetail", length=255)
+	private String specDetail;
+	
 	public int getId() {
 		return id;
 	}
@@ -85,6 +88,14 @@ public class OrderItem {
 
 	public void setSpec(String spec) {
 		this.spec = spec;
+	}
+
+	public String getSpecDetail() {
+		return specDetail;
+	}
+
+	public void setSpecDetail(String specDetail) {
+		this.specDetail = specDetail;
 	}
 
 	

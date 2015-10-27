@@ -4,9 +4,9 @@
 				k-panes="[{ collapsible: false, resizable:false,size:'40px'},
 						   { collapsible: false, resizable:true,size:'350px', min:'100px'},
                     	  { collapsible: true}]"
-				style="height: 470px; width: 100%;">    
+				style="height: 550px; width: 100%;">    
 				
-		<div style="margin:6px;">
+		<div style="margin:6px;"><!-- top pane-->
 		    <label>Brand: {{lineItemBrand}}</label>
 
 		    <input type="checkbox"  style="vertical-align:middle;"
@@ -47,8 +47,9 @@
 </div>
 
 <div kendo-window="styleWindow" id="styleWindow" 
-	 k-width="600"
+	 k-width="850"
 	 k-height="310"
+	 k-position="{top: 50, left: 100 }"					
 	 k-visible="false"
 	 k-options="styleWin.options">
    				 
@@ -58,20 +59,22 @@
 			<label ng-click="styleWin.getGrid()" class="k-icon k-i-search"></label>
 		</span>
 	</form>		
+	
 	<h4>{{styleWin.garment.styleNumber}}:&nbsp;{{styleWin.garment.styleName}}</h4>  
-<!-- 	ng-show="styleWin.data.length>0" -->
+
 	<div  kendo-grid="styleGrid" id="styleGrid" 
-		  
 		  k-options="styleWin.gridOptions" 
-		  k-rebind="styleWin.columns"
+		  k-rebind="styleWin.gridRebind"
 		  k-height=200>
 	</div> 		
 	<div>
 	
-		<input type="button" value="OK" ng-click="styleWin.add()">
-		<input type="button" value="Clear" ng-click="styleWin.clear()">
-		
-		<label>Total:{{styleWin.total}}</label>
+		<input type="button" value="Add" ng-click="styleWin.add()">
+		<input type="button" value="OK" ng-click="styleWin.ok()">
+		<label style="margin-left: 100px; font-weight: bold;" >Total:{{styleWin.total}}</label>
+		<input type="button" value="Clear" ng-click="styleWin.clear()" style="margin-left:100px;">
+		<input type="button" value="Cancel" ng-click="styleWin.cancel()">
+
 	</div>		 
    				 
 </div>	<!--end of styleWindow -->
