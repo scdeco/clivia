@@ -56,23 +56,21 @@ orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
  			filter:"a.k-state-active",
  			open: function(e){
  				if ($(e.item).is("li"))  return;
- 				
  				$scope.currentItemButton=SO.getCurrentOrderItemButton();
  				menuText="<input type='text' class='k-textbox' ng-model='currentItemButton.text'>"
- 				var items = [{
- 	                text: "Change Title", 
- 	                id: "menuRename", 
- 	                items: [{text:menuText,encoded: false}]
- 	            }, {
- 	                text: "Remove",
- 	                id: "menuRemove"
- 	            }];
+ 				var items = 
  	            this.setOptions({
- 	                dataSource: items
+ 	                dataSource: [{
+	 	 	                text: "Change Title", 
+	 	 	                items: [{text:menuText,encoded: false, value: "menuRename"}]
+	 	 	            }, {
+	 	 	                text: "Remove",
+	 	 	                value: "menuRemove"
+	 	 	            }]
  	            })
  			},
  			close:function(e){
- 				if(e.item.id==="menuRename" && $scope.currentItemButton){
+ 				if($(e.item).is("li") && $scope.currentItemButton){
  					item=SO.getCurrentOrderItem();
  					if($scope.currentItemButton.text!==item.title){
  						item.title=$scope.currentItemButton.text;
@@ -80,14 +78,9 @@ orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
  				}
  			},
  			select: function(e){
- 			
- 				switch(e.item.id){
- 					case "menuRename":
- 						console.log(e.item.title);
- 						break;
- 					case "menuRemove":
- 						alert("remove");
- 						break;
+ 				if($(e.item).is("li") && e.item.textContent==="Remove"){
+	 				this.close();
+ 					alert("remove");
  				}
  				
  			}

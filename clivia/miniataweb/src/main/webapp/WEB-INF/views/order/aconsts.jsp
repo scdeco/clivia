@@ -1,5 +1,6 @@
 <script>
 	orderApp.constant("consts",{
+		
 		baseUrl:"/miniataweb/",
 		
 		registeredItemTypes:[{

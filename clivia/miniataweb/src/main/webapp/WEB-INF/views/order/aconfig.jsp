@@ -30,8 +30,8 @@ orderApp.config(function($stateProvider, $urlRouterProvider,consts) {
 	var itemUrl = 'item:{orderItemId:[0-9]{1,3}}';
 	var itemTypes=consts.registeredItemTypes;
 	
-	for(var i=0,type; i<itemTypes.length; i++){
-		type=itemTypes[i];
+	for(var i=0; i<itemTypes.length; i++){
+		var type=itemTypes[i];
 		$stateProvider.state('main.'+type.name, {
 			url : itemUrl,
 			templateUrl : type.name,

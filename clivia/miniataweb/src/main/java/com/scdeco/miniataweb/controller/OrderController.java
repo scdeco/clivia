@@ -63,9 +63,7 @@ public class OrderController {
 
 	@RequestMapping(value="save-order",method=RequestMethod.POST)
 	public @ResponseBody  OrderClivia saveOrder(@RequestBody OrderClivia order){
-		System.out.println("Order:"+order);
 		orderDao.save(order);
-		System.out.println("Order:"+order);
 		return order;
 	}
 	

@@ -100,6 +100,7 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 			
 			setting:{
 				user:{
+					id:1000,
 					userName: "Jacob",
 					role:"Admin",
 					firstName: "Jacob",
@@ -138,7 +139,7 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 	
 	
 	for(var i=0;i<setting.registeredItemTypes.length;i++){
-		dataSet[setting.registeredItemTypes[i]+"s"]=new kendo.data.ObservableArray([]);	
+		dataSet[setting.registeredItemTypes[i].name+"s"]=new kendo.data.ObservableArray([]);	
 	}
 	
 	
@@ -169,7 +170,7 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 		dataSet.info={orderId:0,orderNumber:'',customerId:''};
 		dataSet.items.splice(0,dataSet.items.length);
 		for(var i=0;i<_order.setting.registeredItemTypes.length;i++){
-			var dt=dataSet[_order.setting.registeredItemTypes[i]+"s"];
+			var dt=dataSet[_order.setting.registeredItemTypes[i].name+"s"];
 			dt.splice(0,dt.length);
 		}
 		dataSet.deleteds.splice(0,dataSet.deleteds.length);		
@@ -266,7 +267,7 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 			}
 			if(imageString!==""){
 
-				var url=setting.url.library+"get-images?ids="+imageString.substr(1);
+				var url=setting.url.library+"image/getlist?ids="+imageString.substr(1);
 				
 				$http.get(url).
 					success(function(data, status, headers, config) {
@@ -299,7 +300,7 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 		
 		for(var i=0;i<setting.registeredItemTypes.length;i++){
 			
-			var itemType=setting.registeredItemTypes[i]+"s",
+			var itemType=setting.registeredItemTypes[i].name+"s",
 				dataTable=dataSet[itemType],
 				dataItems=data[itemType];
 			if(angular.isDefined(dataItems))
@@ -340,7 +341,7 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 		_order.deleteds=[];		
 
 		for(var i=0;i<_order.registeredItemTypes.length;i++){
-			var itemType=_order.registeredItemTypes[i]+"s";
+			var itemType=_order.registeredItemTypes[i].name+"s";
 			clearRowIdAndOrderId(itemType);
 		}
 	}

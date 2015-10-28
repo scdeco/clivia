@@ -10,14 +10,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.scdeco.miniataweb.dao.LibImageDao;
-import com.scdeco.miniataweb.model.LibImage;
 import com.scdeco.miniataweb.service.CliviaLibrary;
 
 @Controller
@@ -25,24 +24,23 @@ import com.scdeco.miniataweb.service.CliviaLibrary;
 public class LibraryController {
 	
 	@Autowired
-	private CliviaLibrary cliviaLibraryUtils;
+	private CliviaLibrary cliviaLibrary;
 	
-	@Autowired
-	private LibImageDao libImageDao;
-	
-	@RequestMapping(value = "upload/newimage", method = RequestMethod.POST)
+	@RequestMapping(value = "{type}/upload", method = RequestMethod.POST)
 	public  @ResponseBody Map<String, Object> uploadFile( @RequestParam("file") MultipartFile file,
+											@PathVariable String type,
 	                                        @RequestParam("user") String uploadBy){
 		
 	    final HashMap<String, Object> ret = new HashMap<String, Object>();
-		
+	    String result="";
+	    Object libDataItem=null;
 		System.out.println("Uploading--------------"+file.getOriginalFilename());
-		LibImage libImage=new LibImage();
-		libImage.setUploadBy(uploadBy);
-		String result=cliviaLibraryUtils.saveUploadImageToLib(file,libImage);
-		ret.put("data", libImage);
+
+		result=cliviaLibrary.saveUploadFileToLib(file,type,uploadBy,libDataItem);
+		ret.put("data", libDataItem);
+
 		if (result.startsWith("success")){
-			System.out.println("Uploaded Succeed--------------"+libImage.getOriginalFileName());
+			System.out.println("Uploaded Succeed--------------"+file.getOriginalFilename());
 			ret.put("status","success");
 			ret.put("message",result.substring(7));
 		}else{
@@ -53,15 +51,19 @@ public class LibraryController {
 	    return ret;
 	}
 	
-	@RequestMapping(value="get-images",method=RequestMethod.GET)
-	public @ResponseBody  List<LibImage> getImages(@RequestParam("ids") String ids){
-		return libImageDao.findListByImageIdList(ids);
+	
+	//get a list of lib records
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value="{type}/getlist",method=RequestMethod.GET)
+	public @ResponseBody  List getList(@PathVariable String type, @RequestParam("ids") String ids){
+		return cliviaLibrary.findListByIds(type,ids);
 	}
 	
-	@RequestMapping(value="get-imagefile",method=RequestMethod.GET)
-	public @ResponseBody HttpEntity<byte[]> getImageFile(@RequestParam("id") Integer id){
+	//get  real file 
+	@RequestMapping(value="{type}/getimage",method=RequestMethod.GET)
+	public @ResponseBody HttpEntity<byte[]> getFile(@PathVariable String type, @RequestParam("id") Integer id){
 		
-		byte[] result=cliviaLibraryUtils.getByteArrayImage(id);
+		byte[] result=cliviaLibrary.getByteArrayImage(type,id);
 		if(result!=null){
 			result=Base64.getEncoder().encode(result);
 	        HttpHeaders headers = new HttpHeaders();

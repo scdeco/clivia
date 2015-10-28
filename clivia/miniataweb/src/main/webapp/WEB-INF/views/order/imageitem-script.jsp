@@ -125,8 +125,8 @@ orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,funct
 	
 	$scope.newUploadOptions={
 			async:{
-				 saveUrl: SO.setting.libraryUrl+'upload/newimage',
-				 removeUrl:SO.setting.orderUrl+'upload/removeimage',
+				 saveUrl: SO.setting.url.library+'image/upload',
+				 removeUrl:SO.setting.url.library+'image/removeupload',
 				 autoUpload: false,
 				 batch: false   
 				 /* The selected files will be uploaded in separate requests */
@@ -136,7 +136,7 @@ orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,funct
 				uploadSelectedFiles: 'Upload'
 			},
 			upload:function (e) {
-			    e.data = {user: "jacob zhang"};
+			    e.data = {user: SO.setting.user.userName};
 			},
 			success: function (e) {
 			    if(e.response.status==="success"){
@@ -165,9 +165,9 @@ orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,funct
 			pageSizes:[5,10,15,20,"all"]
 			
 	};
-	$scope.showOriginalImage=function(imageId){
-		if(imageId){
-			var url=SO.setting.libraryUrl+"get-imagefile?id="+imageId;
+	$scope.showOriginalImage=function(fileId){
+		if(fileId){
+			var url=SO.setting.url.library+"/embdesign/getimage?id=1";			//image/getimage?id="+fileId;
 			$http.get(url).
 				success(function(data, status, headers, config) {
 				    	$scope.previewOriginalImage=data;

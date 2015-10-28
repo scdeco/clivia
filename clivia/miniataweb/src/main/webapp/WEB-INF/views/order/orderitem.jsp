@@ -1,6 +1,4 @@
 <div>
-
-
 	<div kendo-sortable="itemToolbarSortable" id="itemToolbarSortable" 
 	     k-options="itemToolbarSortableOptions">
 	     

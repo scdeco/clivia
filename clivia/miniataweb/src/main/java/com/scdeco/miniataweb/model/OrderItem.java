@@ -25,7 +25,7 @@ public class OrderItem {
 	@Column(name="Title", length=50)
 	private String title;
 	
-	@Column(name="Type", length=10)
+	@Column(name="Type", length=20)
 	private String type;
 	
 	@Column(name="Spec", length=255)

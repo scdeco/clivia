@@ -16,6 +16,7 @@
  	<context:component-scan base-package="com.scdeco.miniataweb.dao" />
  	<context:component-scan base-package="com.scdeco.miniataweb.service" />
  	<context:component-scan base-package="com.scdeco.miniataweb.util" />
+ 	<context:component-scan base-package="com.scdeco.miniataweb.embdeisgn" />
 	
 	<bean id="dataSource"
 		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
