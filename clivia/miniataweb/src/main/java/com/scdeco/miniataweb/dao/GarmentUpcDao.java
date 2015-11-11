@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.scdeco.miniataweb.model.GarmentUpc;
 
 @Repository("garmentUpcDao")
-public class GarmentUpcDao extends GenericDao<GarmentUpc, Integer> {
+public class GarmentUpcDao extends GenericDao<GarmentUpc> {
 
 	public List<GarmentUpc> FindListByGarmentId(Integer garmentId) {
 		List<GarmentUpc> list=this.findList(super.createCriteria().add(Restrictions.eq("garmentId", garmentId)));

@@ -5,7 +5,7 @@ import java.util.List;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 
-public class OrderItemGenericDao<T, PK extends java.io.Serializable> extends GenericDao<T, PK> {
+public class OrderItemGenericDao<T> extends GenericDao<T> {
 	public List<T> FindListByOrderItemId(Integer orderId,Integer orderItemId) {
 		List<T> list=this.findList(super.createCriteria()
 				.add(Restrictions.eq("orderId", orderId))

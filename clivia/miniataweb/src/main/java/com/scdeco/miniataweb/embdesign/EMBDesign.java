@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -13,11 +14,11 @@ import java.util.ArrayList;
 
 public class EMBDesign 
 {
-	public enum FunctionCode { STOP, STITCH, JUMP, BORERIN, END, CHANGECOLOR};
+//	public enum FunctionCode { 9-STOP, STITCH, JUMP, BORERIN, END, CHANGECOLOR};
 	
 	final class Stitch {
 		public int stepIndex;
-		public FunctionCode funcCode;
+		public int funcCode;
 		public int xCoord;
 		public int yCoord;
 		public int xImage;
@@ -28,7 +29,7 @@ public class EMBDesign
 		public Stitch(){
 		}
 		
-		public Stitch(int stepIndex,FunctionCode funcCode,int xCoord,int yCoord,int xImage,int yImage,int xChange,int yChange){
+		public Stitch(int stepIndex,int funcCode,int xCoord,int yCoord,int xImage,int yImage,int xChange,int yChange){
 			this.stepIndex=stepIndex;
 			this.funcCode=funcCode;
 			this.xCoord=xCoord;
@@ -84,11 +85,13 @@ public class EMBDesign
 	}
 
 	private boolean showTrim=false;
-	
+	private int trimCount;
+
 	private Stitch[] stitchList;
 	public Stitch[] getStitchList(){
 		return this.stitchList;
 	}
+	
 	
 	private String dstFile = "";
 	public String getDstFile(){
@@ -119,9 +122,10 @@ public class EMBDesign
 		this.ptBottomRight.y = 0;
 		
 		this.rawDesignBufferedImage = null;
+		this.trimCount=0;
 	}
 	
-
+	//FunctionCode { 1-STITCH, 2-JUMP,  3-STOP,4-BORERIN,  5-CHANGECOLOR,9-END} 
 	private void getDSTToken(){
 		byte x = 0,y = 0,z = 0;
 		while ( x == 0 && y == 0 && z == 0)
@@ -137,7 +141,7 @@ public class EMBDesign
 		}
 		
 		if (z == (byte)0XF3){
-			this.currPoint.funcCode = FunctionCode.END;
+			this.currPoint.funcCode = 9;	//FunctionCode.END;
 			this.stepList.add(new Step());
 			return;
 		}
@@ -153,20 +157,19 @@ public class EMBDesign
 		this.currPoint.yCoord += yChange;
 		
 		this.currPoint.stepIndex = stepList.size();
-		
 		switch(z&0XC3){
 			case 0X03:
-				this.currPoint.funcCode = FunctionCode.STITCH;
+				this.currPoint.funcCode = 1;		//FunctionCode.STITCH;
 				break;
 			case 0X83:
-				this.currPoint.funcCode = FunctionCode.JUMP;
+				this.currPoint.funcCode = 2;    	//FunctionCode.JUMP;
 				break;
 			case 0XC3:
-				this.currPoint.funcCode = FunctionCode.STOP;
+				this.currPoint.funcCode =3;			//FunctionCode.STOP;
 				this.stepList.add(new Step());
 				break;
 			case 0X43:
-				this.currPoint.funcCode = FunctionCode.BORERIN;
+				this.currPoint.funcCode =4;			// FunctionCode.BORERIN;
 				break;
 			default:
 				break;
@@ -183,7 +186,7 @@ public class EMBDesign
 			stitchList = new Stitch[(int)((this.inFS.length()-512-1)/3)+1];
 			this.currPoint=new Stitch(); 
 			this.inFS.seek(512);			
-			for (getDSTToken(); currPoint.funcCode != FunctionCode.END; getDSTToken()){
+			for (getDSTToken(); currPoint.funcCode !=9 ; getDSTToken()){			//FunctionCode.END
 				
 				if (this.currPoint.xCoord < this.ptTopLeft.x) this.ptTopLeft.x = this.currPoint.xCoord;
 				if (this.currPoint.yCoord > this.ptTopLeft.y) this.ptTopLeft.y = this.currPoint.yCoord;
@@ -192,6 +195,7 @@ public class EMBDesign
 				stitchList[stitchCount++] = new Stitch(currPoint);
 			}
 			
+			int consecutiveJumpCount=0;
 			int stepIndex = 0;
 			stepList.get(stepIndex).firstStitchIndex = 0;
 			for (int i = 0; i < stitchCount; i++){
@@ -208,10 +212,30 @@ public class EMBDesign
 					stepIndex = st.stepIndex;
 					stepList.get(stepIndex).firstStitchIndex = i;
 				}
+				
+				if(st.funcCode==2)			//Jump
+					consecutiveJumpCount++;
+				else
+				{
+					if(consecutiveJumpCount>=5)
+						trimCount++;
+					consecutiveJumpCount=0;
+				}
 			}
+			trimCount++;
 			stepList.get(stepIndex).stepIndex=stepIndex;
 			stepList.get(stepIndex).lastStitchIndex = stitchCount - 1;
 			stepList.get(stepIndex).stitchCount = stepList.get(stepIndex).lastStitchIndex - stepList.get(stepIndex).firstStitchIndex;
+			
+			//if first Jump titches more than 5 , remove the count
+			consecutiveJumpCount=0;
+			for(int i=0;i<6;i++)
+				if(stitchList[i].funcCode==2)
+					consecutiveJumpCount++;
+			if(consecutiveJumpCount>=5)
+				trimCount--;
+			trimCount=trimCount+stepList.size()-1;
+				
 		}
 		catch(IOException e){
 			System.out.println("Error file reading.");
@@ -266,13 +290,14 @@ public class EMBDesign
 		g2d.setColor(threadColor);
 		
 		Stitch currStitch;
-		Stitch prevStitch=stitchList[0];
+		Stitch prevStitch=stitchList[step.firstStitchIndex];
 
 		for(int i=step.firstStitchIndex+1;i<=step.lastStitchIndex;i++){
 			currStitch=stitchList[i];
-
-			if (currStitch.funcCode == FunctionCode.JUMP||prevStitch.funcCode == FunctionCode.JUMP 
-					|| prevStitch.funcCode == FunctionCode.STOP){
+			
+			//FunctionCode.JUMP||FunctionCode.STOP
+			if (currStitch.funcCode == 2||prevStitch.funcCode == 3 	
+					|| prevStitch.funcCode == 9){
 				if (showTrim){
 					float[] dash1 = {2f,0f,2f};
 					BasicStroke bs1 = new BasicStroke(1,BasicStroke.CAP_BUTT,BasicStroke.JOIN_ROUND,1.0f,dash1,2f);
@@ -305,6 +330,60 @@ public class EMBDesign
 		for(Step step:stepList)
 			drawStep(step,g2d);
 	}
+	
+	public byte[] getRawImageData(){
+		 byte[] pixels = ((DataBufferByte) rawDesignBufferedImage.getRaster().getDataBuffer()).getData();
+		 return pixels;
+	}
+	
+	public BufferedImage getEMBDesignRawImage(){
+		return rawDesignBufferedImage;
+	}
+	
+	
+	public EMBDesignM getEMBDesignM(){
+		EMBDesignM emb=new EMBDesignM();
+		emb.setPixelWidth(getDesignWidthInPixel());
+		emb.setPixelHeight(getDesignHeightInPixel());
+		emb.setWidth(getDesignWidthInMM());
+		emb.setHeight(getDesignHeightInMM());
+		emb.setStartX(getStartX());
+		emb.setStartY(getStartY());
+		emb.setLeft(getDesignLeft());
+		emb.setTop(getDesignTop());
+		emb.setRight(getDesignRight());
+		emb.setBottom(getDesignBottom());
+		
+		emb.setStitchCount(getStitchCount());
+		emb.setStepCount(getStepCount());
+		emb.setTrimCount(getTrimCount());
+		
+		EMBDesignStitch[] embStitches=new EMBDesignStitch[getStitchCount()];
+		
+		for(int i=0;i<getStitchCount()-3;i++){
+			EMBDesignStitch embStitch=new EMBDesignStitch();
+			Stitch stitch=this.stitchList[i];
+			embStitch.setX(stitch.xImage);
+			embStitch.setY(stitch.yImage);
+			embStitch.setF(stitch.funcCode);
+			embStitches[i]=embStitch;
+		}
+		
+		emb.setStitchList(embStitches);
+		
+		EMBDesignStep[] embSteps=new EMBDesignStep[getStepCount()];
+		
+		int i=0;
+		for(Step step:stepList){
+			EMBDesignStep embStep=new EMBDesignStep(); 
+			embStep.setFirstStitch(step.firstStitchIndex);
+			embStep.setLastStitch(step.lastStitchIndex);
+			embSteps[i]=embStep;
+			i++;
+		}
+		emb.setStepList(embSteps); 
+		return emb;
+	}
 		
 	//get design image with provided colorway
 	public BufferedImage getEMBDesignImage(Colorway colorway){
@@ -324,13 +403,16 @@ public class EMBDesign
 
 	
 	public int getStitchCount(){
-		return this.stitchList==null?0:this.stitchList.length;
+		return 	this.stitchList==null?0:this.stitchList.length;
 	}
 	
 	public int getStepCount(){
 		return this.stepList == null?0:stepList.size();
 	}
 
+	public int getTrimCount(){
+		return this.trimCount;
+	}
 	
 	public int getDesignHeightInPixel(){
 		return getStitchCount()==0? 0 : ptTopLeft.y-ptBottomRight.y +1;

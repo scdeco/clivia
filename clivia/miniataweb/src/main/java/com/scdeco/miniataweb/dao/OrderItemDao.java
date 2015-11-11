@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.scdeco.miniataweb.model.OrderItem;
 
 @Repository("orderItemDao")
-public class OrderItemDao extends GenericDao<OrderItem, Integer> {
+public class OrderItemDao extends GenericDao<OrderItem> {
 	public List<OrderItem> FindListByOrderId(Integer orderId) {
 		List<OrderItem> list=this.findList(
 				super.createCriteria()

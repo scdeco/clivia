@@ -2,6 +2,7 @@ package com.scdeco.miniataweb.dao;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -21,7 +22,7 @@ import com.scdeco.miniataweb.util.DataSourceRequest;
 import com.scdeco.miniataweb.util.DataSourceResult;
 
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-public abstract class GenericDao<T, PK extends java.io.Serializable> {
+public abstract class GenericDao<T> {
 	
 	private  Class<T> entityClass;
 	
@@ -59,8 +60,8 @@ public abstract class GenericDao<T, PK extends java.io.Serializable> {
 	
 	@SuppressWarnings("unchecked")
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
-	public PK save(T entity) {
-		return (PK) getSession().save(entity);
+	public Integer save(T entity) {
+		return (Integer)getSession().save(entity);
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
@@ -81,7 +82,7 @@ public abstract class GenericDao<T, PK extends java.io.Serializable> {
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
-	public void deleteById(PK id) {
+	public void deleteById(Integer id) {
 		getSession().delete(this.findById(id));
 
 	}
@@ -101,15 +102,15 @@ public abstract class GenericDao<T, PK extends java.io.Serializable> {
 	        }  		
 	}
 
-	public boolean exists(PK id) {
+	public boolean exists(Integer id) {
 	       return findById(id) != null; 
 	}
 
-	public T load(PK id) {
+	public T load(Integer id) {
         return (T) getSession().load(this.entityClass, id);  
 	}
 
-	public T findById(PK id) {
+	public T findById(Integer id) {
 		 return (T) getSession().get(this.entityClass, id); 
 	}
 	
@@ -158,6 +159,23 @@ public abstract class GenericDao<T, PK extends java.io.Serializable> {
 	public List<T> findList(Criterion... criterions) {
         return createCriteria(criterions).list();  
 	}
+	
+	public List<T> findListByIds(String[] ids){
+		List<T> list=new ArrayList<T>();
+		for(String id:ids){
+			T dataItem=findById(Integer.parseInt(id));
+			if(dataItem!=null)
+				list.add(dataItem);
+		}
+		return list;
+	}
+	
+	public List<T> findListByIds(String strIds){
+		String[] ids=strIds.split(",");
+		return  findListByIds(ids);
+	}
+	
+	
 	
     public DataSourceResult findListByRequest(DataSourceRequest request) {
         return request.toDataSourceResult(getSession(), this.entityClass);

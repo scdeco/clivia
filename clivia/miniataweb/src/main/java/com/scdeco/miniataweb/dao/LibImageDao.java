@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.scdeco.miniataweb.model.LibImage;
 
 @Repository ("libImageDao")
-public class LibImageDao extends GenericDao<LibImage, Integer> {
+public class LibImageDao extends GenericDao<LibImage> {
 	
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<LibImage> findListByImageIdList(String[] imageIds){

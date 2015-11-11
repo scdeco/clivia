@@ -122,7 +122,7 @@ orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,funct
 				$scope.imageItemToolbar.enable("#btnAdd");				
 			}
 	}
-	
+	 
 	$scope.newUploadOptions={
 			async:{
 				 saveUrl: SO.setting.url.library+'image/upload',
@@ -167,7 +167,7 @@ orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,funct
 	};
 	$scope.showOriginalImage=function(fileId){
 		if(fileId){
-			var url=SO.setting.url.library+"/embdesign/getimage?id=1";			//image/getimage?id="+fileId;
+			var url=SO.setting.url.library+"image/getimage?id="+fileId;
 			$http.get(url).
 				success(function(data, status, headers, config) {
 				    	$scope.previewOriginalImage=data;

@@ -1,6 +1,7 @@
 package com.scdeco.miniataweb.model;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -11,18 +12,50 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.scdeco.miniataweb.util.CliviaLocalDateTimeJsonDeserializer;
+import com.scdeco.miniataweb.util.CliviaLocalDateTimeJsonSerializer;
+
 @Entity
 public class LibEmbDesign {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private int id;
-
+	
+	@Column(name="OriginalFileName")
+	private String originalFileName;
+	
+	@Column(name="Description")
+	private String description;
+	
+	@Column(name="Size")
+	private Integer size;
+	
+	@JsonSerialize(using=CliviaLocalDateTimeJsonSerializer.class)
+	@JsonDeserialize(using = CliviaLocalDateTimeJsonDeserializer.class)
+	@Column(name="UploadAt")
+	private LocalDateTime uploadAt;
+	
+	@Column(name="UploadBy")
+	private String uploadBy;
+	
+	@Column(name="Remark")
+	private String remark;
+	
+	@Lob @Basic(fetch=FetchType.EAGER)
+	@Column(name="thumbnail")
+	private byte[] thumbnail;
+	
+	@Column(name="FileName")
+	private String fileName;
+	
+	@Column(name="FilePath")
+	private String filePath;
+	
 	@Column(name="DesignNumber",length=10)
 	private String designNumber;
-	
-	@Column(name="DesignName",length=200)
-	private String designName;
 	
 	@Column(name="CustomerNumber")
 	private Integer customerNumber;
@@ -38,153 +71,134 @@ public class LibEmbDesign {
 	
 	@Column(name="StepCount")
 	private Integer stepCount;
-	
-
-	@Column(name="DstFileName")
-	private String dstFileName;
-	
-	@Column(name="DstFilePath")
-	private String dstFilePath;
-	
-	@Column(name="EmbFileName")
-	private String embFileName;
-	
-	@Column(name="EmbFilePath")
-	private String embFilePath;
-	
-	
-	@Lob @Basic(fetch=FetchType.EAGER)
-	@Column(name="Thumbnail")
-	private byte[] thumbnail;
-
 
 	public int getId() {
 		return id;
 	}
 
-
 	public void setId(int id) {
 		this.id = id;
 	}
 
-
-	public String getDesignNumber() {
-		return designNumber;
+	public String getOriginalFileName() {
+		return originalFileName;
 	}
 
-
-	public void setDesignNumber(String designNumber) {
-		this.designNumber = designNumber;
+	public void setOriginalFileName(String originalFileName) {
+		this.originalFileName = originalFileName;
 	}
 
-
-	public String getDesignName() {
-		return designName;
+	public String getDescription() {
+		return description;
 	}
 
-
-	public void setDesignName(String designName) {
-		this.designName = designName;
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
-
-	public Integer getCustomerNumber() {
-		return customerNumber;
+	public Integer getSize() {
+		return size;
 	}
 
-
-	public void setCustomerNumber(Integer customerNumber) {
-		this.customerNumber = customerNumber;
+	public void setSize(Integer size) {
+		this.size = size;
 	}
 
-
-	public BigDecimal getWidth() {
-		return width;
+	public LocalDateTime getUploadAt() {
+		return uploadAt;
 	}
 
-
-	public void setWidth(BigDecimal width) {
-		this.width = width;
+	public void setUploadAt(LocalDateTime uploadAt) {
+		this.uploadAt = uploadAt;
 	}
 
-
-	public BigDecimal getHeight() {
-		return height;
+	public String getUploadBy() {
+		return uploadBy;
 	}
 
-
-	public void setHeight(BigDecimal height) {
-		this.height = height;
+	public void setUploadBy(String uploadBy) {
+		this.uploadBy = uploadBy;
 	}
 
-
-	public Integer getStitchCount() {
-		return stitchCount;
+	public String getRemark() {
+		return remark;
 	}
 
-
-	public void setStitchCount(Integer stitchCount) {
-		this.stitchCount = stitchCount;
+	public void setRemark(String remark) {
+		this.remark = remark;
 	}
-
-
-	public Integer getStepCount() {
-		return stepCount;
-	}
-
-
-	public void setStepCount(Integer stepCount) {
-		this.stepCount = stepCount;
-	}
-
-
-	public String getDstFileName() {
-		return dstFileName;
-	}
-
-
-	public void setDstFileName(String dstFileName) {
-		this.dstFileName = dstFileName;
-	}
-
-
-	public String getDstFilePath() {
-		return dstFilePath;
-	}
-
-
-	public void setDstFilePath(String dstFilePath) {
-		this.dstFilePath = dstFilePath;
-	}
-
-
-	public String getEmbFileName() {
-		return embFileName;
-	}
-
-
-	public void setEmbFileName(String embFileName) {
-		this.embFileName = embFileName;
-	}
-
-
-	public String getEmbFilePath() {
-		return embFilePath;
-	}
-
-
-	public void setEmbFilePath(String embFilePath) {
-		this.embFilePath = embFilePath;
-	}
-
 
 	public byte[] getThumbnail() {
 		return thumbnail;
 	}
 
-
 	public void setThumbnail(byte[] thumbnail) {
 		this.thumbnail = thumbnail;
 	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public String getFilePath() {
+		return filePath;
+	}
+
+	public void setFilePath(String filePath) {
+		this.filePath = filePath;
+	}
+
+	public String getDesignNumber() {
+		return designNumber;
+	}
+
+	public void setDesignNumber(String designNumber) {
+		this.designNumber = designNumber;
+	}
+
+	public Integer getCustomerNumber() {
+		return customerNumber;
+	}
+
+	public void setCustomerNumber(Integer customerNumber) {
+		this.customerNumber = customerNumber;
+	}
+
+	public BigDecimal getWidth() {
+		return width;
+	}
+
+	public void setWidth(BigDecimal width) {
+		this.width = width;
+	}
+
+	public BigDecimal getHeight() {
+		return height;
+	}
+
+	public void setHeight(BigDecimal height) {
+		this.height = height;
+	}
+
+	public Integer getStitchCount() {
+		return stitchCount;
+	}
+
+	public void setStitchCount(Integer stitchCount) {
+		this.stitchCount = stitchCount;
+	}
+
+	public Integer getStepCount() {
+		return stepCount;
+	}
+
+	public void setStepCount(Integer stepCount) {
+		this.stepCount = stepCount;
+	}
+	
 
 }

@@ -10,7 +10,7 @@ import com.scdeco.miniataweb.model.Garment;
 import com.scdeco.miniataweb.model.GarmentUpc;
 
 @Repository ("garmentDao")
-public class GarmentDao extends GenericDao<Garment , Integer> {
+public class GarmentDao extends GenericDao<Garment> {
 
 	@Autowired
 	GarmentUpcDao garmentUpcDao;

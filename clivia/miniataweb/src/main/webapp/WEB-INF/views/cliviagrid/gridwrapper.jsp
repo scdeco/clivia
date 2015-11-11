@@ -1,7 +1,7 @@
 <script>
 
 angular.module("cliviagrid",
-		[ "ui.router", "kendo.directives" ]).
+		["kendo.directives" ]).
 
 factory("GridWrapper",function(){
 			//constructor, need a kendoGrid's name

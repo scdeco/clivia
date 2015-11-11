@@ -31,9 +31,12 @@ public class GarmentUpc {
 	@Column(name="QtyInStock")
 	private Integer qtyInStock;
 	
-	@Column(name="QtyInOrder")
-	private Integer qtyInOrder;
-
+	@Column(name="QtyInSO")
+	private Integer qtyInSO;
+	
+	@Column(name="QtyInPO")
+	private Integer qtyInPO;
+	
 	@Column(name="Remark",length=250)
 	private String remark;
 
@@ -85,14 +88,23 @@ public class GarmentUpc {
 		this.qtyInStock = qtyInStock;
 	}
 
-	public Integer getQtyInOrder() {
-		return qtyInOrder;
+	public Integer getQtyInSO() {
+		return qtyInSO;
 	}
 
-	public void setQtyInOrder(Integer qtyInOrder) {
-		this.qtyInOrder = qtyInOrder;
+	public void setQtyInSO(Integer qtyInSO) {
+		this.qtyInSO = qtyInSO;
 	}
 
+	public Integer getQtyInPO() {
+		return qtyInPO;
+	}
+
+	public void setQtyInPO(Integer qtyInPO) {
+		this.qtyInPO = qtyInPO;
+	}
+
+	
 	public String getRemark() {
 		return remark;
 	}

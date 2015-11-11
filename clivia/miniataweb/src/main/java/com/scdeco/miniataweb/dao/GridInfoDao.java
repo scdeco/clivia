@@ -9,7 +9,7 @@ import com.scdeco.miniataweb.model.GridInfo;
  
 
 @Repository ("gridInfoDao")
-public class GridInfoDao extends GenericDao<GridInfo,Integer> {
+public class GridInfoDao extends GenericDao<GridInfo> {
 	
 	public GridInfo findByGridNo(String gridNo){
 		List<GridInfo> list=this.findList(super.createCriteria().add(Restrictions.eq("gridNo", gridNo)));

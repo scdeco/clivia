@@ -1,7 +1,5 @@
 package com.scdeco.miniataweb.controller;
 
-import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,24 +29,13 @@ public class LibraryController {
 											@PathVariable String type,
 	                                        @RequestParam("user") String uploadBy){
 		
-	    final HashMap<String, Object> ret = new HashMap<String, Object>();
-	    String result="";
-	    Object libDataItem=null;
-		System.out.println("Uploading--------------"+file.getOriginalFilename());
+	    System.out.println("Uploading--------------"+file.getOriginalFilename());
 
-		result=cliviaLibrary.saveUploadFileToLib(file,type,uploadBy,libDataItem);
-		ret.put("data", libDataItem);
-
-		if (result.startsWith("success")){
-			System.out.println("Uploaded Succeed--------------"+file.getOriginalFilename());
-			ret.put("status","success");
-			ret.put("message",result.substring(7));
-		}else{
-			System.out.println("Uploaded failed--------------"+result);
-			ret.put("status","error");
-			ret.put("message", result);
-		}
-	    return ret;
+	    Map<String, Object> result=cliviaLibrary.saveFileToLib(type,file,uploadBy);
+	    
+	    System.out.println("Uploading complete-----"+result.get("status")+" message:"+result.get("message"));
+	    
+	    return result;
 	}
 	
 	
@@ -63,9 +50,8 @@ public class LibraryController {
 	@RequestMapping(value="{type}/getimage",method=RequestMethod.GET)
 	public @ResponseBody HttpEntity<byte[]> getFile(@PathVariable String type, @RequestParam("id") Integer id){
 		
-		byte[] result=cliviaLibrary.getByteArrayImage(type,id);
+		byte[] result=cliviaLibrary.getBase64ByteArrayImage(type, id);
 		if(result!=null){
-			result=Base64.getEncoder().encode(result);
 	        HttpHeaders headers = new HttpHeaders();
 	        headers.setContentType(MediaType.IMAGE_JPEG); //or what ever type it is
 	        headers.setContentLength(result.length);
@@ -73,6 +59,21 @@ public class LibraryController {
 		} else {
 			return null;
 		}
+		
+	}
+	
+	@RequestMapping(value="{type}/getrawimage",method=RequestMethod.GET)
+	public @ResponseBody Map<String, Object> getRawImage(@PathVariable String type, @RequestParam("id") Integer id){
+		
+		Map<String, Object> result=cliviaLibrary.getEmbDesignRawImageData(id);
+		return result;
+		
+	}
+	@RequestMapping(value="{type}/getstitches",method=RequestMethod.GET)
+	public @ResponseBody Map<String, Object> getEmbDesignStitches(@PathVariable String type, @RequestParam("id") Integer id){
+		
+		Map<String, Object> result=cliviaLibrary.getEmbDesignStitches(id);
+		return result;
 		
 	}
 	

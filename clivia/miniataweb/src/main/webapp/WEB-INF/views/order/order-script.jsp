@@ -1,7 +1,5 @@
 <script>
-// 	orderApp.config
 	'user strict';
-
 	var orderApp = angular.module("orderApp",
 			[ "ui.router", "kendo.directives","cliviagrid" ]);
 
@@ -291,24 +289,27 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 	}
 	
 	
-	//dataSet
+	//populate data get from server into this model(_order.dataSet)
 	var populate=function(data){
-		
 		_order.clearDataSet();
-		dataSet.info=data.info;
-		dataSet.items=data.items;
-		
-		for(var i=0;i<setting.registeredItemTypes.length;i++){
+		if(!!data) {		//data is not empty
+			if(angular.isDefined(data.info))
+				dataSet.info=data.info;
+			if(data.info(data.items))
+				dataSet.items=data.items;
 			
-			var itemType=setting.registeredItemTypes[i].name+"s",
-				dataTable=dataSet[itemType],
-				dataItems=data[itemType];
-			if(angular.isDefined(dataItems))
-		    	for(var j=0;j<dataItems.length;j++)
-		    		dataTable.push(dataItems[j]);
+			for(var i=0;i<setting.registeredItemTypes.length;i++){
+				var itemType=setting.registeredItemTypes[i].name+"s",
+					dataTable=dataSet[itemType],
+					dataItems=data[itemType];
+				if(angular.isDefined(dataItems))
+			    	for(var j=0;j<dataItems.length;j++)
+			    		dataTable.push(dataItems[j]);
+			}
 		}
 	}
 	
+	//set rowId and orderId of tables in dataSet to empty for repeat order
 	var clearRowIdAndOrderId=function (dataTableName){
 		
 		var dataTable=dataSet[dataTableName];
@@ -345,7 +346,8 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 			clearRowIdAndOrderId(itemType);
 		}
 	}
-		
+	
+	//retrieve data from server with provided orderNumber and populate into order's dataSet
 	_order.retrieve=function(orderNumber){
 
 		var url=setting.url.order+"get-order?number="+orderNumber;
@@ -354,7 +356,6 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 		$http.get(url).
 			success(function(data, status, headers, config) {
 		    	populate(data);
-		    	
 			    deferred.resolve(data);
 			}).
 			error(function(data, status, headers, config) {

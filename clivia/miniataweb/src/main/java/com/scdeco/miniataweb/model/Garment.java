@@ -34,9 +34,6 @@ public class Garment  {
 	@Column(name="Brand",length=30)
 	private String brand;
 	
-	@Column(name="Gender", length=10)
-	private String gender;
-	
 	@Column(name="Colourway",length=250)
 	private String colourway;
 	
@@ -46,9 +43,12 @@ public class Garment  {
 	@Column(name="TotalQtyInStock")
 	private Integer totalQtyInStock;
 	
-	@Column(name="TotalQtyInOrder")
-	private Integer totalQtyInOrder;
-	
+	@Column(name="TotalQtyInSO")
+	private Integer totalQtyInSO;
+
+	@Column(name="TotalQtyInPO")
+	private Integer totalQtyInPO;
+
 	@Column(name="WholeSalePrice")
 	private Double wholeSalePrice;
 	
@@ -114,10 +114,6 @@ public class Garment  {
 		this.category = category;
 	}
 
-	public String getGender() {
-		return gender;
-	}
-
 	public String getBrand() {
 		return brand;
 	}
@@ -126,10 +122,6 @@ public class Garment  {
 		this.brand = brand;
 	}
 	
-	public void setGender(String gender) {
-		this.gender = gender;
-	}
-
 	public String getColourway() {
 		return colourway;
 	}
@@ -154,12 +146,20 @@ public class Garment  {
 		this.totalQtyInStock = totalQtyInStock;
 	}
 
-	public Integer getTotalQtyInOrder() {
-		return totalQtyInOrder;
+	public Integer getTotalQtyInSO() {
+		return totalQtyInSO;
 	}
 
-	public void setTotalQtyInOrder(Integer totalQtyInOrder) {
-		this.totalQtyInOrder = totalQtyInOrder;
+	public void setTotalQtyInSO(Integer totalQtyInSO) {
+		this.totalQtyInSO = totalQtyInSO;
+	}
+
+	public Integer getTotalQtyInPO() {
+		return totalQtyInPO;
+	}
+
+	public void setTotalQtyInPO(Integer totalQtyInPO) {
+		this.totalQtyInPO = totalQtyInPO;
 	}
 
 	public Double getWholeSalePrice() {
@@ -185,7 +185,4 @@ public class Garment  {
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-
-
-
 }

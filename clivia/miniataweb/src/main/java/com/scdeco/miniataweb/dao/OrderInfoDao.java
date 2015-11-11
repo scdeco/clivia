@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.scdeco.miniataweb.model.OrderInfo;
 
 @Repository ("orderInfoDao")
-public class OrderInfoDao extends GenericDao<OrderInfo, Integer> {
+public class OrderInfoDao extends GenericDao<OrderInfo> {
 
 	public OrderInfo findByOrderNumber(String orderNumber) {
 		List<OrderInfo> list=this.findList(super.createCriteria().add(Restrictions.eq("orderNumber",orderNumber)));

@@ -10,7 +10,7 @@ import com.scdeco.miniataweb.model.GridColumn;
 
 
 @Repository ("gridColumnDao")
-public class GridColumnDao extends GenericDao<GridColumn, Integer> {
+public class GridColumnDao extends GenericDao<GridColumn> {
 	
 	public List<GridColumn> findColumnListByGridId(Integer gridId){
 		
