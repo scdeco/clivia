@@ -58,7 +58,7 @@ public abstract class GenericDao<T> {
 		return newPojo;
 	}
 	
-	@SuppressWarnings("unchecked")
+
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
 	public Integer save(T entity) {
 		return (Integer)getSession().save(entity);

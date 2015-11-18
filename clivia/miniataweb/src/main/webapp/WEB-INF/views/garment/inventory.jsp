@@ -7,7 +7,7 @@
 
 	<shared:header/> 
 
-	<%@include file="../cliviagrid/gridwrapper.jsp"%>
+	<%@include file="../common/gridwrapper.jsp"%>
 	<%@include file="inventory-script.jsp"%>
 	
 </head>

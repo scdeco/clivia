@@ -295,7 +295,7 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 		if(!!data) {		//data is not empty
 			if(angular.isDefined(data.info))
 				dataSet.info=data.info;
-			if(data.info(data.items))
+			if(data.items)
 				dataSet.items=data.items;
 			
 			for(var i=0;i<setting.registeredItemTypes.length;i++){

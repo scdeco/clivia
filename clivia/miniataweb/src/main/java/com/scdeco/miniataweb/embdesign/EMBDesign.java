@@ -378,6 +378,7 @@ public class EMBDesign
 			EMBDesignStep embStep=new EMBDesignStep(); 
 			embStep.setFirstStitch(step.firstStitchIndex);
 			embStep.setLastStitch(step.lastStitchIndex);
+			embStep.setIndex(i);
 			embSteps[i]=embStep;
 			i++;
 		}
