@@ -12,8 +12,9 @@
 	<div ng-controller="testCtrl">
 		
 		<button ng-click="getDstImage()" >Get DST</button>
+    	<button ng-click="setCanvas()" >setCanvas</button>
 		<button ng-click="addDstImage()" >Add</button>
-		<button ng-click="testDstImage()" >Test</button>
+    	<button ng-click="drawDstImage()" >Draw with colorway</button>
 
     <div class="k-header wide" >
       	<div 	kendo-splitter="DstSplitter"  
@@ -27,14 +28,14 @@
       	
       	
       		<div id="dst-first-pane">
-      			<div kendo-color-palette 
-      				ng-model="dstBackgroundColor" 
-      				k-options="dstBackgroundColorOptions">
+      			<div kendo-color-palette
+      				ng-model="dstPaint.backgroundColor" 
+      				k-options="dstPaint.backgroundColorOptions()">
       			</div>
 			</div>	<!-- first-pane-->
 			
       		<div id="dst-second-pane" >
-   				<div id="container" ng-style="{'background-color':dstBackgroundColor}">
+   				<div id="container" ng-style="{'background-color':dstPaint.backgroundColor}">
 				</div>
 			</div>	<!-- second-pane-->
 			
@@ -47,26 +48,30 @@
 		             style="height:100%;">
 		             
 			       <div id="dst-info-pane">
-			       		<button ng-click="drawDstImage()" >Draw</button>
 			       </div>
 			       
 			       <div id="dst-thread-pane">
 			       		Threads:
-			       		<textarea ng-model="threadCodes" 
+			       		<textarea ng-model="dstPaint.dstCanvas.threadCodes" 
 			       				  ng-trim="true"
+			       				  class="k-textbox" 
 			       				  style="width:100%;resize: vertical;"></textarea>
 			       				  
-			    		<div kendo-sortable="dstThreadGridSortable"	k-options="dstThreadGridSortableOptions">
-							<div  kendo-grid="dstThreadGrid" id="dstThreadGrid" k-options="dstThreadGridOptions" ></div>
+			    		<div kendo-sortable="dstThreadGridSortable"	k-options="dstPaint.threadGridSortableOptions">
+							<div  kendo-grid="dstThreadGrid" id="dstThreadGrid" k-options="dstPaint.threadGridOptions()" ></div>
 						</div>
 			       		
 			       </div>
 			       
 			       <div id="dst-step-pane">
 			       		Running Steps:
-			       		<textarea ng-model="runningSteps" 
+			       		<textarea ng-model="dstPaint.dstCanvas.runningSteps" 
 			       				  ng-trim="true"
+			       				  class="k-textbox" 
 			       				  style="width:100%;resize: vertical;"></textarea>
+			    		<div kendo-sortable="dstStepGridSortable"	k-options="dstPaint.stepGridSortableOptions">
+							<div  kendo-grid="dstStepGrid" id="dstStepGrid" k-options="dstPaint.stepGridOptions()" ></div>
+						</div>
 			       </div>
 			       
 		       </div>
@@ -84,69 +89,43 @@
 	
 <script>
 var orderApp = angular.module("embDesignApp",
-		["kendo.directives","embdesign","cliviagrid"]);
+		["kendo.directives","embdesign"]);
 
-orderApp.controller("testCtrl",["$scope","DstDesign","DstCanvas","DstStage","GridWrapper",function($scope,DstDesign,DstCanvas,DstStage,GridWrapper){
+orderApp.controller("testCtrl",
+		["$scope","DstPaint","DstDesign","DstCanvas","DstStage",
+		function($scope,DstPaint,DstDesign,DstCanvas,DstStage){
+			
+	//{code:"S0561",r:255,g:0,b:0},{code:"S1011",r:125,g:125,b:125},{code:"S1043",r:0,g:0,b:255}
+	//var runningStepList=new kendo.data.ObservableArray([{code:"S1043",codeIndex:1}]);
+
+	$scope.dstPaint=new DstPaint({stage:"container"});
 	
-	$scope.dstBackgroundColorOptions={
-	        columns: 1,
-	        tileSize: {
-	            width: 34,
-	            height: 19
-	        },
-	        palette: [
-	            "#f0d0c9", "#e2a293", "#d4735e", "#65281a",
-	            "#eddfda", "#dcc0b6", "#cba092", "#7b4b3a",
-	            "#fcecd5", "#f9d9ab", "#f6c781", "#c87d0e",
-	            "#e1dca5", "#d0c974", "#a29a36", "#514d1b",
-	            "#c6d9f0", "#8db3e2", "#548dd4", "#17365d"
-	        ],
-	}
-	
-	var gwThread=new GridWrapper("dstThreadGrid");
-	
-	var threadGridColumns=[{
-		        name:"lineNumber",
-		        title: "#",
-		        attributes:{class:"gridLineNumber"},
-		        headerAttributes:{class:"gridLineNumberHeader"},
-		        width: 15,
-			}, {			
-				name:"colour",
-			    field: "colour",
-			    title: " ",
-			    width: 20
-			}, {			
-				name:"thread",
-			    field: "thread",
-			    title: "Thread",
-			}];
-	gwThread.setColumns(threadGridColumns);
+    $scope.$on("kendoWidgetCreated", function(event, widget){
+        // the event is emitted for every widget; if we have multiple
+        // widgets in this controller, we need to check that the event
+        // is for the one we're interested in.
+        if (widget ===$scope.dstThreadGrid) {
+        	$scope.dstPaint.wrapThreadGrid();
+        }
+        if (widget ===$scope.dstStepGrid) {
+        	$scope.dstPaint.wrapStepGrid();
+        }
+    });
 	
 	
 	
-	$scope.dstThreadGridOptions={
-			columns:threadGridColumns,
-	        editable: true,
-	        selectable: "cell",
-	        navigatable: true,			
-	}
-	
-	$scope.dst={};
-	
-	
-        var stage = new DstStage({container: 'container',
+/*         var stage = new DstStage({container: 'container',
 						          width: 1024,
-						          height: 800});
+						          height: 800}); */
  
 //    	stage.getContent().addEventListener("mousedown",function(evt){
 //    		alert("mousedown");
 //    	});
 
-        var layer = stage.createLayer(true);
+/*         var layer = stage.createLayer(true); */
     
-        var dstDesign=new DstDesign();
-        var dstCanvas=new DstCanvas(dstDesign);
+    var dstDesign=new DstDesign();
+    var dstCanvas=new DstCanvas(dstDesign);
 	
 	$scope.addDstImage=function(){
 		
@@ -159,25 +138,109 @@ orderApp.controller("testCtrl",["$scope","DstDesign","DstCanvas","DstStage","Gri
 			image:dstCanvas.imageObj
 		});
 		
-		stage.add(dstImage);
-		
+		$scope.dstPaint.dstStage.add(dstImage);
 	};
 	
+	
 	$scope.drawDstImage=function(){
-		dstCanvas.setColorway($scope.threadCodes,$scope.runningSteps);
  		dstCanvas.drawDesign();
- 		stage.draw();
- 		
+ 		$scope.dstPaint.dstStage.draw();
 	}
 	
+	$scope.setCanvas=function(){
+ 		dstCanvas.drawDesign();
+ 		$scope.dstPaint.setDstCanvas(dstCanvas);
+	}
 
 	$scope.getDstImage=function(){
 		
-		dstDesign.getDst(1);
+		dstDesign.getDst(4);
 	}
 
 }]);
 	
 </script>
 </body>
+<style>
+
+	.k-splitter {
+		border-width: 0;
+	}
+	
+	
+ 	.k-toolbar{
+		border-width: 0;
+		padding: 0;
+		margin: 0;
+		height:36px;	//default 36px
+		}
+		
+	.k-grid{
+        margin: 0;
+        padding: 0;
+        border-width: 0;
+/*         height: 100%; /* DO NOT USE !important for setting the Grid height! */ */
+      	}
+
+	/* 	do not show background color of grid editing cell */
+	.k-grid .k-edit-cell { 
+		background: transparent; 
+		
+		}
+		
+	/*highlight line number of editing row, might not be the first column 	td:first-child  */
+	.k-grid .k-grid-edit-row td.gridLineNumber{
+		color:blue;
+		font-weight: bold;
+		
+	}
+
+	.k-grid-content tr td{
+ 	   border-bottom: 1px dotted gray;
+		}		
+		
+ 	/* show horizontal grid line		 */
+/* 	.k-grid-content tr:not(:last-child) td{
+ 	   border-bottom: 1px dotted gray;
+		}		
+  	.k-grid-content tr:last-child td{
+ 	   border-bottom: 1px dashed gray;
+		}   */
+				
+	/* 	grid coloumn header */
+ 	.k-grid-header tr:last-child th{ 
+	   font-weight: bold; 
+  	   text-align: center;
+		}
+		
+	.k-grid .gridLineNumber{
+		text-align: right;
+	}		 
+
+	.k-grid td
+	{
+	    padding-top: 2px;
+	    padding-bottom: 2px;
+	}
+	.k-grid .k-textbox{
+		padding: 0px;
+		height:21px;
+	}
+
+	textarea{
+		margin:3px 0px;
+	}
+	
+	.colourCell{
+		float: left; 
+		width: 100%; 
+		border:1px solid black; 
+		border-radius:2px 2px 2px;
+		height:12px;
+		}
+	.k-dirty {
+  		border-width:0;
+	}
+</style>
+
 </html>

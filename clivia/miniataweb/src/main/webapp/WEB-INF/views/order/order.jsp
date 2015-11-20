@@ -31,6 +31,10 @@
 
 <style>
 
+	.k-dirty {
+  		border-width:0;
+	}
+	
 	.k-splitter {
 		border-width: 0;
 	}
