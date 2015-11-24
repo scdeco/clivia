@@ -25,7 +25,7 @@
 	
 </head>
 
-<body  ng-controller="orderCtrl">
+<body  ng-controller="orderCtrl" spellcheck="false">
   <div ui-view="main"></div>
 </body>
 

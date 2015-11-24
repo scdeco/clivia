@@ -9,9 +9,20 @@ factory("GridWrapper",function(){
 				this.gridName=gridName;
 				this.grid=null;
 				this.gridColumns=null;
-				this.currentRowUid="";
+				this.editingRowUid="";
 				this.reorderRowEnabled=false;
 				this.isEditing=true;
+				this.gridColumns=[];
+				this.enterMoveDown=true;
+				this.enterKeydown=false;
+				this.enterMoveDown=true;
+			}
+			
+			GridWrapper.prototype.setConfig=function(config){
+				if(config){
+					if(typeof config.columns!=='undefined')
+						this.gridColumns=config.columns;
+				}
 			}
 			
 			GridWrapper.prototype.setColumns=function(columns){
@@ -21,8 +32,54 @@ factory("GridWrapper",function(){
 			//call this method in kendoWidgetCreated event
 			GridWrapper.prototype.wrapGrid=function(){
 				this.grid=$("#"+this.gridName).data("kendoGrid");
-				//this.enableReorderRow();
-				this.showLineNumber();
+				
+				var showLineNumber=function(grid){
+		   	   		 var pageSkip = (grid.dataSource.page() - 1) * grid.dataSource.pageSize();
+	   	   		 
+		   	   		 pageSkip=!pageSkip? 1:pageSkip++;
+	   	   		 
+	   	   		 	//index starts from 0
+		   	   		 grid.tbody.find('td.gridLineNumber').text(function(index){
+	   	   				return pageSkip+index;
+	   	   				});	
+				}
+				
+				
+				
+				//if name of the first column is "lineNumbershow, show lineNumber 
+				if(this.gridColumns[0].name==="lineNumber"){
+					this.grid.bind("dataBound",function(e){
+						//e.sender is this.grid
+			   	   		 showLineNumber(e.sender);
+					});
+				}
+				//dataBound event triggered before wrapped
+				showLineNumber(this.grid);
+				
+				if(this.enterMoveDown){
+					var self=this;
+					this.grid.tbody.bind('keydown', function (e) {
+						self.enterKeydown=e.keyCode === 13;
+						console.log("keydown in wrapper:");
+						// stop bubbling up of this event
+				        e.stopPropagation();
+
+	                });
+					this.grid.bind('save',function(e){
+						if(self.enterMoveDown)
+							if(self.enterKeydown){
+								self.enterKeydown=false;
+								console.log("save in wrapper:");
+								var row=self.getEditingRow();
+								var cell=self.getEditingCell();
+								if(row && cell){
+							        var cellToEdit = $(row).next().find('td:eq('+cell.cellIndex+')');
+				                    self.grid.editCell(cellToEdit);
+								}
+							}
+					});
+					
+	            }			
 			}
 			
 			
@@ -50,15 +107,15 @@ factory("GridWrapper",function(){
 				return index;
 			}
 				
-			GridWrapper.prototype.getCurrentDataItem=function (){
+			GridWrapper.prototype.getEditingDataItem=function (){
 				if(!this.grid) return null;
-				var row=this.getCurrentRow();
+				var row=this.getEditingRow();
 				return this.getDataItemByRow(row);
 			}
 				
-			GridWrapper.prototype.getCurrentDataItemIndex=function (){
+			GridWrapper.prototype.getEditingDataItemIndex=function (){
 				if(!this.grid) return null;
-				var dataItem= this.getCurrentDataItem();
+				var dataItem= this.getEditingtDataItem();
 				var idx = this.getDataItemIndex(dataItem);
 				return idx;
 			}
@@ -78,20 +135,17 @@ factory("GridWrapper",function(){
 				
 			GridWrapper.prototype.getEditingCell=function (){
 				if(!this.grid) return null;
-				var cell=$("td.k-edit-cell",this.grid.tbody.children()).first();
-				return cell;
+				var cells=$("td.k-edit-cell",this.grid.tbody.children()).first();
+				return cells.length>0?cells[0]:null;
 			}
 				
-			GridWrapper.prototype.getCurrentRow=function (){
+			GridWrapper.prototype.getEditingRow=function (){
 				if(!this.grid) return null;
 				var cell=this.getEditingCell();
-				if(!!cell)
-				  cell=this.grid.current();
 				var row=(!!cell)?cell.closest("tr"):null;
-				console.log("getCurrentRow:"+(!!row));
-				return row;
+				return row 
 			}
-			    
+			
 			GridWrapper.prototype.getCurrentRowIndex=function (){
 				if(!this.grid) return null;
 				var index=this.getRowIndex(this.getCurrentRow());
@@ -205,20 +259,6 @@ factory("GridWrapper",function(){
 			   		dataArea.height(400 - otherElementsHeight);
 			};	
 			
-			//called in grid's dataBound event 
-			GridWrapper.prototype.showLineNumber= function() {
-		   		 if(this.grid){
-		   	   		 var pageSkip = (this.grid.dataSource.page() - 1) * this.grid.dataSource.pageSize();
-		   	   		 if(!pageSkip) pageSkip=0;
-		   	   		 pageSkip++;
-		   	   		 
-		   	   		 //index starts from 0
-		   	   		$("#"+this.gridName+" td.gridLineNumber").text(function(index){
-		   	   		//	console.log("line number index:"+index);
-		   	   			return pageSkip+index;
-		   	   		});	       		
-		   		 }
-		    };
 		    
 		    GridWrapper.prototype.numberColumnEditor=function(container, options) {
 		        $('<input class="grid-editor" data-bind="value:' + options.field + '"/>')

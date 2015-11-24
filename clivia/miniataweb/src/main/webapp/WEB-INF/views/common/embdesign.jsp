@@ -225,8 +225,9 @@ factory("Selector",function(){
 factory("DictThread",["$http",function($http){		//service
 	var DictThread={
 		threads:[],
-		defaultThreadColor:{r:100,g:100,b:100},
-		defaultThreadColors:[{r:0,	g:255,	b:0	},
+		defaultThreadColor:{r:100,g:100,b:100,a:0.05},
+		cursorThreadColor:{r:231,g:124,b:228,a:1},
+		defaultThreadColors:[{r:0,	g:255,	b:0 },
 		     				{r:0,	g:0,	b:255},
 		     				{r:255,	g:0,	b:0},
 		     				{r:255,	g:255,	b:0},
@@ -258,14 +259,6 @@ factory("DictThread",["$http",function($http){		//service
 					
 		},			
 		
-		getDefaultColorModel:function(){
-			var colorModel=[DictThread.defaultThreadColor];
-			var threadColors=DictThread.defaultThreadColors;
-			for(var i=0; i<255; i++)
-				colorModel.push(threadColors[i%15]);
-			return colorModel;
-		},
-
 		getThreadColor:function(code){
 			var c=DictThread.defaultThreadColor;
 			if(code){
@@ -293,6 +286,15 @@ factory("DictThread",["$http",function($http){		//service
 				threadColors.push(DictThread.getThreadColor(codeList[i]))
 			}
 			return threadColors;
+		},
+		
+		getRunningSteps:function(steps,stepCount){
+			var result=[];
+			if(steps)
+				result=steps.split('-',stepCount);
+			for(var i=result.length;i<stepCount;i++)
+				result.push('0');
+			return result;
 		},
 		
 		normalizeThreadCode:function(threadCode){
@@ -333,24 +335,44 @@ factory("DictThread",["$http",function($http){		//service
 			return stepList.join("-");
 		},
 		
-		
-		
+		getDefaultColorModel:function(){
+			
+			var colorModel=[DictThread.defaultThreadColor];
+			var threadColors=DictThread.defaultThreadColors;
+			for(var i=0,colour; i<255; i++)
+				colorModel.push(threadColors[i%15]);
+			return colorModel;
+		},
+
+		//colorway={threadCodes:"1024,1043",runningSteps:"1-2-1-2",alaphaSteps:"0-0-1-0",alpha:0.1};
+		//stepCount=4;
 		getColorModel:function(colorway,stepCount){
 			var colorModel;
-			if(!colorway.threadCodes||!colorway.runningSteps||!stepCount){
+			if(!colorway){
 				colorModel=this.getDefaultColorModel();
 			}else{
+				
 				colorModel=[DictThread.defaultThreadColor];
 				
-				
 				var threadColors=DictThread.getThreadColors(colorway.threadCodes);
-				var runningSteps=colorway.runningSteps.split('-',stepCount);
+				var runningSteps=DictThread.getRunningSteps(colorway.runningSteps,stepCount);
+				var alphaSteps=DictThread.getRunningSteps(colorway.alphaSteps,stepCount);
 				
-				for(var i=0,idx;i<stepCount;i++){
+				var alpha=typeof colorway.alpha==='undefined'?0:colorway.alpha;
+				
+				for(var i=0,idx,c,a; i<stepCount; i++){
+					
 					idx=(i>=colorway.runningSteps.length)?0: parseInt(runningSteps[i]);
-					if(!(idx>=0))
-						idx=0;
-					colorModel.push(threadColors[idx]);
+					if(idx>=16)
+						c=DictThread.cursorThreadColor;
+					else if (idx<threadColors.length)
+						c=threadColors[idx];
+					else
+						c=threadColors[0];
+					
+					if(alpha)
+						c={r:c.r,g:c.g,b:c.b,a:alphaSteps[i]==='1'?1:alpha}
+					colorModel.push(c);
 				}
 			}
 			return colorModel;
@@ -367,55 +389,62 @@ factory("DictThread",["$http",function($http){		//service
 factory("DstDesign",["$http","DictThread",function($http,DictThread){
 	
 	var DstDesign=function(id){
-		this.pixelWidth=0;
-		this.pixelHeight=0;	
-		this.stitchCount=0;
-		this.stitchList=[];
-		this.stepCount=0;
-		this.stepList=[];
-		
+		this.initDesign();
 		if(!!id) this.getDst(id);
 	}
 	
 	DstDesign.prototype={
 			
-		initDst:function(){
+		initDesign:function(){
+			this.width="";
+			this.height="";
+			this.startX="";
+			this.startY="";
+			this.left="";
+			this.top="";
+			this.right="";
+			this.bottom="";
+			this.stitchCount="";
+			this.stepCount="";
+			this.trimCount="";
+			this.designNumber="";				
+			
 			this.pixelWidth=0;
 			this.pixelHeight=0;	
-			this.stitchCount=0;
 			this.stitchList=[];	
-			this.stepCount=0;
 			this.stepList=[];
 			},
+		
+		isValid:function(){
+			return this.stitchList.length>0;
+		},
 		
 		getDst:function(dstId){
 		
 			var url="/miniataweb/library/embdesign/getstitches?id="+dstId;
 			var self=this;
+			this.initDesign();
 			
 			$http.get(url).
 				success(function(data, status, headers, config) {
 					var design=data.data;
-					self.pixelWidth=design.pixelWidth;
-					self.pixelHeight=design.pixelHeight;
-					self.stitchCount=design.stitchCount;
-					self.stitchList=design.stitchList;
-					self.stepCount=design.stepCount;
-					self.stepList=design.stepList;
+					for(var property in design){
+						if(design.hasOwnProperty(property))
+							self[property]=design[property];
+					}
 				}).
 				error(function(data, status, headers, config) {
-					self.initDst();
 				});								
-			},
+		},
 			
-		drawStep:function(ctx,color,stepIndex,highLight,ratio){
+		drawStep:function(ctx,colour,stepIndex,highLight,ratio){
 		
 			var stitchList=this.stitchList,
 				firstStitch=this.stepList[stepIndex].firstStitch,
 				lastStitch=this.stepList[stepIndex].lastStitch,
 				prevStitchIsJump=true;
 			
-			ctx.strokeStyle="rgb("+color.r+","+color.g+","+color.b+")";   //+",1)";
+			ctx.strokeStyle="rgba("+colour.r+","+colour.g+","+colour.b+","+(typeof colour.a==='undefined'?1:colour.a)+")";   //+",1)";
 			ctx.beginPath();
 			
 			for(var i=firstStitch, currStitch; i<=lastStitch; i++){
@@ -458,7 +487,7 @@ factory("DstCanvas",["DstDesign",function(DstDesign){
 		
 		this.canvas=document.createElement('canvas');
 		this.canvas.id=this.createElementId();
-		//this.canvas.style.visibility='hidden';
+		this.canvas.style.visibility='hidden';
 		this.ctx=this.canvas.getContext("2d");
 		document.body.appendChild(this.canvas);
 		this.imageObj=document.getElementById(this.canvas.id);
@@ -507,14 +536,22 @@ factory("DstCanvas",["DstDesign",function(DstDesign){
 			this.runningSteps=runningSteps;
 		},
 		
-		drawDesign:function(){
+		//if typeof colorway==="undefined", use delautColorModel
+		//if colorway==={}, use thredCodes or runningSteps of this dstCanvas
+		drawDesign:function(colorway){
+			if(!this.dstDesign.isValid) 
+				return;
 	
 			this.canvas.width=Math.round(this.dstDesign.pixelWidth*SCREEN_DESIGN_RATIO)+1;
 			this.canvas.height=Math.round(this.dstDesign.pixelHeight*SCREEN_DESIGN_RATIO)+1;
 			this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
-			
-			if(this.dstDesign)
-				this.dstDesign.drawDesign(this.ctx,{threadCodes:this.threadCodes,runningSteps:this.runningSteps},SCREEN_DESIGN_RATIO);
+			if(colorway){
+				if(!colorway.threadCode)
+					colorway.threadCodes=this.threadCodes;
+				if(!colorway.runningSteps)
+					colorway.runningSteps=this.runningSteps;
+			};
+			this.dstDesign.drawDesign(this.ctx,colorway,SCREEN_DESIGN_RATIO);
 		},
 	}
 	
@@ -565,7 +602,7 @@ factory("DstStage",["Selector",function(Selector){
 	
 	var MAX_THREAD_COUNT=15;
 
-	var paletteColours=[
+	var paletteColors=[
             "#fefefe", "#c4c4c4", "#787878", "#202020",
             "#c6d9f0", "#8db3e2", "#548dd4", "#17365d",
             "#f0d0c9", "#e2a293", "#d4735e", "#65281a",
@@ -583,8 +620,8 @@ factory("DstStage",["Selector",function(Selector){
 			}, {			
 				name:"colour",
 			    title: " ",
-			    width: 35,
-			    template: "<span #if(colour){# class='colourCell' #}# style='background-color:#= colour #;'>&nbsp;</span>"
+			    width: 30,
+			    template: "<span #if(colour){# class='colorCell' #}# style='background-color:#= colour #;'>&nbsp;</span>"
 			}, {			
 				name:"thread",
 			    field: "code",
@@ -600,15 +637,17 @@ factory("DstStage",["Selector",function(Selector){
 			}, {			
 				name:"stitchCount",
 			    title: "St.",
-			    width: 40,
+			    width: 45,
+			    field:"stepStitchCount",
+			    attributes:{style:"text-align:right;"},
 			    editor:function(container, options) {
 			         $("<span>" + options.model.get(options.field)+ "</span>").appendTo(container);
 			     },
 			}, {			
 				name:"colour",
 			    title: " ",
-			    width: 35,
-			    template: "<span #if(colour){# class='colourCell' #}# style='background-color:#= colour #;'>&nbsp;</span>"
+			    width: 30,
+			    template: "<span #if(colour){# class='colorCell' #}# style='background-color:#= colour #;'>&nbsp;</span>"
 			}, {			
 				name:"code",
 			    field: "code",
@@ -617,6 +656,7 @@ factory("DstStage",["Selector",function(Selector){
 				name:"threadIndex",
 			    title: "#",
 			    field:"threadIndex",
+			    attributes:{style:"text-align:right;"},
 			    editor:function(container, options) {
 			         $("<span>" + options.model.get(options.field)+ "</span>").appendTo(container);
 			     },
@@ -638,6 +678,7 @@ factory("DstStage",["Selector",function(Selector){
 			this.dstStage=new DstStage({container:config.stage,
 		          width: 1024,
 		          height: 800});
+			
 	}
     
     dstPaint.prototype={
@@ -655,6 +696,7 @@ factory("DstStage",["Selector",function(Selector){
 					this.runningStepList[i].code="";
 					this.runningStepList[i].colour="";
 					this.runningStepList[i].threadIndex="";
+					this.runningStepList[i].stepStitchCount="";
 				}
 			},
 			
@@ -663,12 +705,17 @@ factory("DstStage",["Selector",function(Selector){
 				this.runningStepList.splice(0,this.runningStepList.length)
 				if(this.dstCanvas.dstDesign){
 					var design=this.dstCanvas.dstDesign,
+						stepList=design.stepList;
 						stepCount=design.stepCount,
 						threadCount=stepCount<MAX_THREAD_COUNT?stepCount:MAX_THREAD_COUNT;
+					
 					for(var i=0;i<threadCount;i++)
 						this.threadList.push({code:"",colour:""});
-					for(var i=0;i<stepCount;i++)
-						this.runningStepList.push({code:"",colour:"",threadIndex:""});
+					
+					for(var i=0,stepStitchCount;i<stepCount;i++){
+						stepStitchCount=(stepList[i].lastStitch-stepList[i].firstStitch).toString();
+						this.runningStepList.push({code:"",colour:"",threadIndex:"",stepStitchCount:stepStitchCount});
+					}
 				}
 			},
 			
@@ -724,14 +771,17 @@ factory("DstStage",["Selector",function(Selector){
 				this.gwStep.wrapGrid();
 			},
 			
+
 			
 			backgroundColorOptions:function(){
+				self=this;
 				return {
-		        	columns: 1,
-		        	tileSize: {width: 34,height: 12},
-			        palette: paletteColours
+		        	columns: 4,
+		        	tileSize: {width: 22,height: 12},
+			        palette: paletteColors,
 		        }
 			},
+			
 				
 			threadGridOptions:function(){
 				var self=this;
@@ -742,12 +792,10 @@ factory("DstStage",["Selector",function(Selector){
 			        navigatable: true,			
 			        autoSync:true,
 					dataSource:this.threadList,
-					
-					dataBound:function(e){
-						self.gwThread.showLineNumber();
-					},
-					
 					save:function(e){
+	                	 console.log("save:");
+			       		if (typeof e.values=== 'undefined')
+				       			return;
 			       		if (typeof e.values.code=== 'undefined')
 			       			return;
 			       		var code=DictThread.normalizeThreadCode(e.values.code);
@@ -767,6 +815,11 @@ factory("DstStage",["Selector",function(Selector){
 		  	        			e.model.set("colour",colour);
 		  	        		}
 	  	        		}
+	  	        		if(e.model.get("code")==""){
+	  	        			
+	  	        			self.gwThread.enterKeydown=false;
+	  	        		}
+	  	        		
 		          		var template = kendo.template(this.columns[1].template),
 		                	cell = e.container.parent().children('td').eq(1);
 	                    cell.html(template(e.model));
@@ -779,11 +832,41 @@ factory("DstStage",["Selector",function(Selector){
 	                    }
 	                    self.gwStep.grid.refresh();
 	                    self.parseThreads();
-						self.dstCanvas.drawDesign();
-						self.dstStage.draw();
+						self.drawDesign({});
 
 					},
 				}
+			},
+			drawDesign:function(){
+				//editing mode
+				var colorway={};
+				var cell=this.gwStep.getEditingCell();
+				if (cell && cell.cellIndex===3){
+					
+					var rowIndex=self.gwStep.getEditingRow().rowIndex;
+					var steps="",alphaSteps="";
+					
+					stepList=this.runningStepList;
+					for(var i=0,idx,a;i<stepList.length;i++){
+						idx=parseInt(stepList[i].threadIndex);
+						if(!idx)
+							idx=0;
+						if(i==rowIndex){
+							//if(idx==0)
+							idx=16;
+							a="1";
+						}else{
+							a="0";
+						}
+						steps+="-"+idx;
+						alphaSteps+="-"+a;
+					}
+					colorway.runningSteps=steps.substring(1);
+					colorway.alphaSteps=alphaSteps.substring(1);
+					colorway.alpha=0.2;
+				}
+				this.dstCanvas.drawDesign(colorway);
+				this.dstStage.draw();
 			},
 
 			stepGridOptions:function(){
@@ -796,11 +879,18 @@ factory("DstStage",["Selector",function(Selector){
 			        autoSync:true,
 					dataSource:this.runningStepList,
 
-					dataBound:function(e){
-						self.gwStep.showLineNumber();
+					change:function(e){
+						console.log("change:");
 					},
-				
+					
+					edit:function(e){
+						self.drawDesign();
+						console.log("edit:");
+				    },
+				    
 					save:function(e){
+	                	 console.log("save:");
+
 			       		if(typeof e.values.code!== 'undefined'){
 			       			var code=e.values.code;
 		  	        		e.preventDefault();
@@ -851,10 +941,7 @@ factory("DstStage",["Selector",function(Selector){
 		                    cell.html(template(e.model));
 		                    
 		                    self.parseRunningSteps();
-							self.dstCanvas.drawDesign();
-							self.dstStage.draw();
 			          	}
-						
 					},
 			
 
@@ -862,6 +949,143 @@ factory("DstStage",["Selector",function(Selector){
 			},
 			
 	}
+    
+    var converter={
+    		//http://stackoverflow.com/questions/17242144/javascript-convert-hsb-hsv-color-to-rgb-accurately
+    		
+			/*accepts parameters
+			h  Object = {h:x, s:y, v:z}
+			OR 
+			h, s, v */   		
+  		
+			HSV2RGB:function(h, s, v) {
+			    var r, g, b, i, f, p, q, t;
+			    if (arguments.length === 1) {
+			        s = h.s, v = h.v, h = h.h;
+			    }
+			    i = Math.floor(h * 6);
+			    f = h * 6 - i;
+			    p = v * (1 - s);
+			    q = v * (1 - f * s);
+			    t = v * (1 - (1 - f) * s);
+			    switch (i % 6) {
+			        case 0: r = v, g = t, b = p; break;
+			        case 1: r = q, g = v, b = p; break;
+			        case 2: r = p, g = v, b = t; break;
+			        case 3: r = p, g = q, b = v; break;
+			        case 4: r = t, g = p, b = v; break;
+			        case 5: r = v, g = p, b = q; break;
+			    }
+			    return {
+			        r: Math.round(r * 255),
+			        g: Math.round(g * 255),
+			        b: Math.round(b * 255)
+			    };
+			},
+    		
+			/* accepts parameters
+			   r  Object = {r:x, g:y, b:z}
+			   OR 
+			   r, g, b
+			*/
+			RGB2HSV:function(r, g, b) {
+			    if (arguments.length === 1) {
+			        g = r.g, b = r.b, r = r.r;
+			    }
+			    var max = Math.max(r, g, b), min = Math.min(r, g, b),
+			        d = max - min,
+			        h,
+			        s = (max === 0 ? 0 : d / max),
+			        v = max / 255;
+			
+			    switch (max) {
+			        case min: h = 0; break;
+			        case r: h = (g - b) + d * (g < b ? 6: 0); h /= 6 * d; break;
+			        case g: h = (b - r) + d * 2; h /= 6 * d; break;
+			        case b: h = (r - g) + d * 4; h /= 6 * d; break;
+			    }
+			
+			    return {
+			        h: h,
+			        s: s,
+			        v: v
+			    };
+			},
+			
+			HSV2HSL:function(h, s, v) {
+			    if (arguments.length === 1) {
+			        s = h.s, v = h.v, h = h.h;
+			    }
+			    var _h = h,
+			        _s = s * v,
+			        _l = (2 - s) * v;
+			    _s /= (_l <= 1) ? _l : 2 - _l;
+			    _l /= 2;
+
+			    return {
+			        h: _h,
+			        s: _s,
+			        l: _l
+			    };
+			},
+
+			HSL2HSV:function(h, s, l) {
+			    if (arguments.length === 1) {
+			        s = h.s, l = h.l, h = h.h;
+			    }
+			    var _h = h,
+			        _s,
+			        _v;
+
+			    l *= 2;
+			    s *= (l <= 1) ? l : 2 - l;
+			    _v = (l + s) / 2;
+			    _s = (2 * s) / (l + s);
+
+			    return {
+			        h: _h,
+			        s: _s,
+			        v: _v
+			    };
+			},			
+			
+			HSL2RGB:function(h,s,l){
+			    if (arguments.length === 1) {
+			        s = h.s, l = h.l, h = h.h;
+			    }
+			    return converter.HSV2RGB(converter.HSL2HSV(h,s,l));
+			},
+			
+			RGB2HSL:function(r, g, b) {
+			    if (arguments.length === 1) {
+			        g = r.g, b = r.b, r = r.r;
+			    }
+			    return converter.HSV2HSL(converter.RGB2HSV(r,g,b));
+			},
+			
+			RGB2Hex:function(rgbColor){
+				var r=rgbColor.r,g=rgbColor.g,b=rgbColor.b;
+				return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+			},
+			
+			Hex2RGB:function(hexColor){
+			    // strip the leading # if it's there
+			    var hex = hexColor.replace(/^\s*#|\s*$/g, '');
+
+			    // convert 3 char codes --> 6, e.g. `E0F` --> `EE00FF`
+			    if(hex.length == 3){
+			        hex = hex.replace(/(.)/g, '$1$1');
+			    }
+			    
+			    var result= {
+				    r:parseInt(hex.substr(0, 2), 16),
+			        g:parseInt(hex.substr(2, 2), 16),
+			        b:parseInt(hex.substr(4, 2), 16)
+			    }
+			    return result;
+			},			
+			
+    }
 	
     return dstPaint;
 }]);

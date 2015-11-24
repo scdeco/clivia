@@ -8,7 +8,7 @@
 	<%@include file="../common/embdesign.jsp"%>
 	<%@include file="../common/gridwrapper.jsp"%>
 </head>
-<body ng-app="embDesignApp">
+<body ng-app="embDesignApp" spellcheck="false">
 	<div ng-controller="testCtrl">
 		
 		<button ng-click="getDstImage()" >Get DST</button>
@@ -24,14 +24,11 @@
 				k-panes="[{ collapsible: false, resizable: false, size: '38px'},
                 		  { collapsible: false},
                   		  { collapsible: true, resizable: true,size:'200px'}]"
-		    	style="height:900px;">      	
+		    	style="height:750px;">      	
       	
-      	
+      	      		<!-- 		ng-model="dstPaint.backgroundColor"  -->
       		<div id="dst-first-pane">
-      			<div kendo-color-palette
-      				ng-model="dstPaint.backgroundColor" 
-      				k-options="dstPaint.backgroundColorOptions()">
-      			</div>
+
 			</div>	<!-- first-pane-->
 			
       		<div id="dst-second-pane" >
@@ -42,12 +39,55 @@
       		<div id="dst-third-pane">
 		      	<div kendo-splitter="DstInfoSplitter"  
 		      		 k-orientation="'vertical'" 
-					 k-panes="[{ collapsible: true, resizable: false, size: '120px'},
+					 k-panes="[{ collapsible: true, resizable: true, size: '120px'},
 		                		  { collapsible: true,size:'250px'},
 		                  		  { collapsible: false, resizable: true}]"
 		             style="height:100%;">
 		             
 			       <div id="dst-info-pane">
+			       		<div kendo-tab-strip 
+			       			 k-animation="false">
+			       			<ul>
+			       				<li class="k-state-active">Info</li>
+			       				<li>Color</li>
+			       				<li>Fabric</li>
+			       				<li>Thread</li>
+			       			</ul>
+			      			
+			      			<div>		<!-- tabpage of info -->
+			      				<table>
+			      					<tr>
+			      						<td>{{dstPaint.dstCanvas.dstDesign.designNumber}}</td>
+			      					</tr>
+			      					<tr>
+			      						<td>Stitches:</td>
+			      						<td>{{dstPaint.dstCanvas.dstDesign.stitchCount}}</td>
+			      						<td>Steps:</td>
+			      						<td>{{dstPaint.dstCanvas.dstDesign.stepCount}}</td>
+			      					</tr>
+			      					<tr>
+			      						<td>Width:</td>
+			      						<td>{{dstPaint.dstCanvas.dstDesign.width}}</td>
+			      						<td>Height:</td>
+			      						<td>{{dstPaint.dstCanvas.dstDesign.height}}</td>
+			      					</tr>
+			      				</table>
+			      			</div>
+			      			
+			      			<div kendo-color-palette
+			 	   				 ng-model="dstPaint.backgroundColor"
+			       				 k-orientation="'vertical'"
+			       				 k-options="dstPaint.backgroundColorOptions()">
+			      			</div>
+			      			
+			      			<div>
+			      				Fabric
+			      			</div>
+			      			
+			      			<div>
+			      				Thread
+			      			</div>
+			       		</div>
 			       </div>
 			       
 			       <div id="dst-thread-pane">
@@ -70,7 +110,7 @@
 			       				  class="k-textbox" 
 			       				  style="width:100%;resize: vertical;"></textarea>
 			    		<div kendo-sortable="dstStepGridSortable"	k-options="dstPaint.stepGridSortableOptions">
-							<div  kendo-grid="dstStepGrid" id="dstStepGrid" k-options="dstPaint.stepGridOptions()" ></div>
+							<div  kendo-grid="dstStepGrid" id="dstStepGrid" k-options="dstPaint.stepGridOptions()" spellcheck="false"></div>
 						</div>
 			       </div>
 			       
@@ -113,7 +153,6 @@ orderApp.controller("testCtrl",
     });
 	
 	
-	
 /*         var stage = new DstStage({container: 'container',
 						          width: 1024,
 						          height: 800}); */
@@ -154,7 +193,7 @@ orderApp.controller("testCtrl",
 
 	$scope.getDstImage=function(){
 		
-		dstDesign.getDst(4);
+		dstDesign.getDst(2);
 	}
 
 }]);
@@ -176,6 +215,7 @@ orderApp.controller("testCtrl",
 		}
 		
 	.k-grid{
+		font-size: 11px;
         margin: 0;
         padding: 0;
         border-width: 0;
@@ -224,14 +264,15 @@ orderApp.controller("testCtrl",
 	}
 	.k-grid .k-textbox{
 		padding: 0px;
-		height:21px;
+		height:19px;
 	}
 
 	textarea{
+		font-size: 11px;
 		margin:3px 0px;
 	}
 	
-	.colourCell{
+	.colorCell{
 		float: left; 
 		width: 100%; 
 		border:1px solid black; 
@@ -240,6 +281,29 @@ orderApp.controller("testCtrl",
 		}
 	.k-dirty {
   		border-width:0;
+	}
+	
+	.k-slider .k-label{
+		visibility: hidden;
+	}
+	
+	.k-tabstrip {
+		font-size: 11px;
+        margin: 0;
+        padding: 0;
+        border-width: 0;	
+        height:100%;
+	}
+	
+	.k-tabstrip span.k-link{
+	    margin: 0 ;
+        padding: 2px 3px;
+	}
+	
+	.k-tabstrip .k-content{
+        margin: 0;
+        padding: 0;
+        border-width: 0;		
 	}
 </style>
 

@@ -11,8 +11,6 @@ orderApp.controller("lineItemCtrl",["$scope","$http","$state","GarmentGridWrappe
 	var gridColumns=[{
 		        name:"lineNumber",
 		        title: "#",
-				//use $(".gridLineNumber").text(function(index)) to generate lineNumber 	
-				// need to call gridWrapper.showLineNumber in dataBound event
 		        //locked: true, if true will cause the wrong cell get focus when add new row
 		        attributes:{class:"gridLineNumber"},
 		        headerAttributes:{class:"gridLineNumberHeader"},
@@ -161,12 +159,7 @@ orderApp.controller("lineItemCtrl",["$scope","$http","$state","GarmentGridWrappe
 		       		console.log("event binding:"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
 		       	},
 		       	
- 		       	dataBound:function(e){
- 		       		console.log("event bound:");
- 		       		ggw.showLineNumber();
- 		       	},
- 		       		
-		       	save: function(e) {
+ 		       	save: function(e) {
 		       		if(typeof e.values.styleNumber!== 'undefined'){		//styleNumber changed
 			       		console.log("event save:"+JSON.stringify(e.values));
 	  	        		e.preventDefault();
