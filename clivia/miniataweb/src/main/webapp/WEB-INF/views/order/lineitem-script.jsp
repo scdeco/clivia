@@ -176,7 +176,7 @@ orderApp.controller("lineItemCtrl",["$scope","$http","$state","GarmentGridWrappe
 		       	change:function(e){
 		       		var row=ggw.getCurrentRow();
 		       		console.log("event change:");
-		       		var	newRowUid=row?row.data("uid"):"";
+		       		var	newRowUid=row?row.dataset["uid"]:"";
 	        		if((typeof newRowUid!=="undefined") && (ggw.currentRowUid!==newRowUid)){		//row changed
 	        			ggw.currentRowUid=newRowUid;
 	        			var dataItem=ggw.getCurrentDataItem();

@@ -13,9 +13,8 @@ factory("GridWrapper",function(){
 				this.reorderRowEnabled=false;
 				this.isEditing=true;
 				this.gridColumns=[];
-				this.enterMoveDown=true;
-				this.enterKeydown=false;
-				this.enterMoveDown=true;
+				this.enterKeyDown=false;
+				this.enterMoveDown=false;
 			}
 			
 			GridWrapper.prototype.setConfig=function(config){
@@ -25,8 +24,14 @@ factory("GridWrapper",function(){
 				}
 			}
 			
+			
+			
 			GridWrapper.prototype.setColumns=function(columns){
 				this.gridColumns=columns;
+			}
+			
+			GridWrapper.prototype.enableEnterMoveDown=function(){
+				this.enterMoveDown=true;
 			}
 			
 			//call this method in kendoWidgetCreated event
@@ -59,17 +64,18 @@ factory("GridWrapper",function(){
 				if(this.enterMoveDown){
 					var self=this;
 					this.grid.tbody.bind('keydown', function (e) {
-						self.enterKeydown=e.keyCode === 13;
-						console.log("keydown in wrapper:");
-						// stop bubbling up of this event
-				        e.stopPropagation();
-
+						if(self.enterMoveDown && e.keyCode === 13 ){
+							self.enterKeyDown=true;
+							console.log("keydown in wrapper:");
+							// stop bubbling up of this event
+					        e.stopPropagation();
+						}
 	                });
 					this.grid.bind('save',function(e){
 						if(self.enterMoveDown)
-							if(self.enterKeydown){
-								self.enterKeydown=false;
-								console.log("save in wrapper:");
+							if(self.enterKeyDown){
+								self.enterKeyDown=false;
+								console.log(self.gridName+" save in wrapper:");
 								var row=self.getEditingRow();
 								var cell=self.getEditingCell();
 								if(row && cell){
@@ -107,15 +113,15 @@ factory("GridWrapper",function(){
 				return index;
 			}
 				
-			GridWrapper.prototype.getEditingDataItem=function (){
+			GridWrapper.prototype.getCurrentDataItem=function (){
 				if(!this.grid) return null;
-				var row=this.getEditingRow();
+				var row=this.getCurrentRow();
 				return this.getDataItemByRow(row);
 			}
 				
-			GridWrapper.prototype.getEditingDataItemIndex=function (){
+			GridWrapper.prototype.getCurrentDataItemIndex=function (){
 				if(!this.grid) return null;
-				var dataItem= this.getEditingtDataItem();
+				var dataItem= this.getCurrentDataItem();
 				var idx = this.getDataItemIndex(dataItem);
 				return idx;
 			}
@@ -138,12 +144,30 @@ factory("GridWrapper",function(){
 				var cells=$("td.k-edit-cell",this.grid.tbody.children()).first();
 				return cells.length>0?cells[0]:null;
 			}
+			
+			GridWrapper.prototype.getCurrentCell=function(){
+				if(!this.grid) return null;
+				var cell=this.getEditingCell();
+				if(!cell){
+					cell=this.grid.current();
+					if(cell)
+						cell=cell[0];
+				}
+				return cell;
+			}
 				
 			GridWrapper.prototype.getEditingRow=function (){
 				if(!this.grid) return null;
 				var cell=this.getEditingCell();
-				var row=(!!cell)?cell.closest("tr"):null;
-				return row 
+				var row=(!!cell)?$(cell).closest("tr"):null;
+				return row?row[0]:null; 
+			}
+			
+			GridWrapper.prototype.getCurrentRow=function(){
+				if(!this.grid) return null;
+				var cell=this.getCurrentCell();
+				var row=(!!cell)?$(cell).closest("tr"):null;
+				return row?row[0]:null; 
 			}
 			
 			GridWrapper.prototype.getCurrentRowIndex=function (){
@@ -190,6 +214,8 @@ factory("GridWrapper",function(){
 		        	this.grid.table.focus();
 			    }					
 			}		
+			
+			
 
 			GridWrapper.prototype.copyPreviousRow=function(){
 				var idx=this.getCurrentRowIndex();

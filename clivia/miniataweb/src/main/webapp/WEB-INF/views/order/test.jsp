@@ -193,7 +193,7 @@ orderApp.controller("testCtrl",
 
 	$scope.getDstImage=function(){
 		
-		dstDesign.getDst(2);
+		dstDesign.getDst(1);
 	}
 
 }]);
