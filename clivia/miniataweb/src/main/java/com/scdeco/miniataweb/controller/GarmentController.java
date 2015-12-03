@@ -19,18 +19,23 @@ public class GarmentController {
 	@Autowired
 	GarmentDao garmentDao;
 	
-
-	
 	@RequestMapping(value="/",method=RequestMethod.GET)
 	public String main(Model model) {
 
-		return "garment/main";
+		return "garment/garment";
 	}
 
 	@RequestMapping(value="product",method=RequestMethod.GET)
 	public String  edit(){
 		return "garment/product";
 	}
+	
+	@RequestMapping(value="inventory",method=RequestMethod.GET)
+	public String  inventory(){
+		return "garment/inventory";
+	}
+	
+	
 	
 	@RequestMapping(value="get-product",method=RequestMethod.GET)
 	public @ResponseBody  Garment getGarment(@RequestParam("style") String styleNumber){
@@ -49,11 +54,5 @@ public class GarmentController {
 		return garment;
 	}
 	
-/*	no use, can be delete @RequestMapping(value="order",method=RequestMethod.GET)
-	public String  order(){
-		return "garment/order";
-	}
-
-	*/
 
 }

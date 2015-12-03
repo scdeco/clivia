@@ -1,18 +1,17 @@
 <script>
 
-angular.module("cliviagrid",
+angular.module("clivia",
 		["kendo.directives" ]).
 
 factory("GridWrapper",function(){
 			//constructor, need a kendoGrid's name
-			var GridWrapper=function(gridName){
+			var GridWrapper=function(gridName,gridColumns){
 				this.gridName=gridName;
 				this.grid=null;
-				this.gridColumns=null;
+				this.gridColumns=!!gridColumns?gridColumns:[];
 				this.editingRowUid="";
 				this.reorderRowEnabled=false;
 				this.isEditing=true;
-				this.gridColumns=[];
 				this.enterKeyDown=false;
 				this.enterMoveDown=false;
 			}
@@ -23,8 +22,6 @@ factory("GridWrapper",function(){
 						this.gridColumns=config.columns;
 				}
 			}
-			
-			
 			
 			GridWrapper.prototype.setColumns=function(columns){
 				this.gridColumns=columns;
@@ -48,8 +45,6 @@ factory("GridWrapper",function(){
 	   	   				return pageSkip+index;
 	   	   				});	
 				}
-				
-				
 				
 				//if name of the first column is "lineNumbershow, show lineNumber 
 				if(this.gridColumns[0].name==="lineNumber"){
@@ -259,6 +254,9 @@ factory("GridWrapper",function(){
 		                 ds.insert(idx, di);
 		 				 self.setLineNumber();
 		                 ds.sync();
+		                 
+		                 if(typeof self.dragSorted!='undefined')
+		                	 self.dragSorted();
 		                }
 		            };
 			}
@@ -273,16 +271,18 @@ factory("GridWrapper",function(){
 			}
 			
 			//called from parenet resize event
-			GridWrapper.prototype.resizeGrid=function(){
+			GridWrapper.prototype.resizeGrid=function(gridHeight){
 			    var gridElement =$("#"+this.gridName), 
 			        dataArea = gridElement.find(".k-grid-content"),
-			        gridHeight = gridElement.innerHeight(),
+//			        gridHeight = gridElement.innerHeight()-37,
 			        otherElements = gridElement.children().not(".k-grid-content"),
 			        otherElementsHeight = 0;
-				    otherElements.each(function(){
+
+			    	otherElements.each(function(){
 				        otherElementsHeight += $(this).outerHeight();
 					    });
-			   		dataArea.height(400 - otherElementsHeight);
+			    	gridElement.innerHeight(gridHeight);
+			   		dataArea.height(gridHeight - otherElementsHeight);
 			};	
 			
 		    
@@ -298,6 +298,7 @@ factory("GridWrapper",function(){
 		         $("<span>" + options.model.get(options.field)+ "</span>").appendTo(container);
 		     };
 			
+		     
 			return GridWrapper;
 			
 }). /* end of GridWrapper */	

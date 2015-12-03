@@ -1,5 +1,5 @@
 <script>
-angular.module("embdesign",	["kendo.directives","cliviagrid"]).
+angular.module("embdesign",	["kendo.directives","clivia"]).
 
 factory("Selector",function(){
 	var ANCHOR_HALF_SIZE=3,ANCHOR_SIZE=ANCHOR_HALF_SIZE*2+1;
@@ -20,7 +20,7 @@ factory("Selector",function(){
 		this.originalCursor='default';
 		this.curosr=name+"-resize";
 		
-        this.on('dragmove', function () {
+        this.on('dragmove', function () { 
         	this.getParent().update(this);
         });
         this.on('mousedown touchstart', function () {
@@ -346,7 +346,7 @@ factory("DictThread",["$http",function($http){		//service
 		//stepCount=4;
 		getColorModel:function(colorway,stepCount){
 			var colorModel;
-			if(!colorway){
+			if(!colorway || (!colorway.threadCodes && !colorway.runningSteps)){
 				colorModel=this.getDefaultColorModel();
 			}else{
 				
@@ -485,7 +485,7 @@ factory("DstCanvas",["DstDesign","DictThread",function(DstDesign,DictThread){
 		
 		this.canvas=document.createElement('canvas');
 		this.canvas.id=this.createElementId();
-		this.canvas.style.visibility='hidden';
+		//this.canvas.style.visibility='hidden';
 		this.ctx=this.canvas.getContext("2d");
 		document.body.appendChild(this.canvas);
 		this.imageObj=document.getElementById(this.canvas.id);
@@ -519,6 +519,8 @@ factory("DstCanvas",["DstDesign","DictThread",function(DstDesign,DictThread){
 		setDstDesign:function(dstDesign){
 			if(angular.isDefined(dstDesign)){
 				this.dstDesign=dstDesign;
+				this.canvas.width=Math.round(this.dstDesign.pixelWidth*SCREEN_DESIGN_RATIO)+1;		//original size of image
+				this.canvas.height=Math.round(this.dstDesign.pixelHeight*SCREEN_DESIGN_RATIO)+1;
 			}else{
 				this.dstDesign=null;
 				this.canvas.width=0;
@@ -556,8 +558,6 @@ factory("DstCanvas",["DstDesign","DictThread",function(DstDesign,DictThread){
 			if(!this.dstDesign.isValid) 
 				return;
 	
-			this.canvas.width=Math.round(this.dstDesign.pixelWidth*SCREEN_DESIGN_RATIO)+1;
-			this.canvas.height=Math.round(this.dstDesign.pixelHeight*SCREEN_DESIGN_RATIO)+1;
 			if(colorway){
 				if(!colorway.threadCode)
 					colorway.threadCodes=this.threadCodes;
@@ -667,7 +667,7 @@ factory("DstStage",["Selector",function(Selector){
 				name:"colour",
 			    title: " ",
 			    width: 30,
-			    template: "<span #if(threadIndex){# class='colorCell' #}# style='background-color:#= self.getThreadColor(threadIndex) #;'>&nbsp;</span>"
+			    template: "<span #if(threadIndex){# class='colorCell' #}# style='background-color:#= renderingPaint.getThreadColor(threadIndex) #;'>&nbsp;</span>"
 			}, {			
 				name:"code",
 			    field: "code",
@@ -684,7 +684,6 @@ factory("DstStage",["Selector",function(Selector){
 			}];
 	
     var dstPaint=function(config){
-			
     		this.gwThread=new GridWrapper("dstThreadGrid");
 			this.gwThread.setColumns(threadGridColumns);
 			this.gwThread.enableEnterMoveDown();
@@ -692,6 +691,11 @@ factory("DstStage",["Selector",function(Selector){
     		this.gwStep=new GridWrapper("dstStepGrid");
 			this.gwStep.setColumns(stepGridColumns);
 			this.gwStep.enableEnterMoveDown();
+			
+			var thisPaint=this;
+			this.gwStep.dragSorted=function(){
+				thisPaint.parseRunningSteps();
+			}
 
 			this.threadList=new kendo.data.ObservableArray([]);
 			this.runningStepList=new kendo.data.ObservableArray([]);
@@ -700,13 +704,11 @@ factory("DstStage",["Selector",function(Selector){
 			this.dstStage=new DstStage({container:config.stage,
 		          width: 1024,
 		          height: 800});
-			
-			
 	}
     
     dstPaint.prototype={
 
-			clearThreads:function(){
+			clearThreadList:function(){			//clear contents(code,colour) of dataSource of threadGrid
 				for(var i=0;i<this.threadList;i++){
 					this.threadList[i].code="";
 					this.threadList[i].colour="";
@@ -714,20 +716,19 @@ factory("DstStage",["Selector",function(Selector){
 				
 			},
 			
-			clearRunningSteps:function(){
+			clearRunningStepList:function(){		//clear contents(code,threadIndex) of dataSource of stepGrid
 				for(var i=0;i<this.runningStepList.length;i++){
 					this.runningStepList[i].code="";
 					this.runningStepList[i].threadIndex="";
-					this.runningStepList[i].stepStitchCount="";
 				}
 			},
 			
-			initColorway:function(){
+			initColorwayList:function(){	//stepList(stepGrid) and runningStepList(stepGrid)
 				this.threadList.splice(0,this.threadList.length)
 				this.runningStepList.splice(0,this.runningStepList.length)
 				if(this.dstCanvas.dstDesign){
 					var design=this.dstCanvas.dstDesign,
-						stepList=design.stepList;
+						stepList=design.stepList,
 						stepCount=design.stepCount,
 						threadCount=stepCount<MAX_THREAD_COUNT?stepCount:MAX_THREAD_COUNT;
 					
@@ -736,12 +737,12 @@ factory("DstStage",["Selector",function(Selector){
 					
 					for(var i=0,stepStitchCount;i<stepCount;i++){
 						stepStitchCount=(stepList[i].lastStitch-stepList[i].firstStitch).toString();
-						this.runningStepList.push({code:"",colour:"",threadIndex:"",stepStitchCount:stepStitchCount});
+						this.runningStepList.push({code:"",threadIndex:"",stepStitchCount:stepStitchCount});
 					}
 				}
 			},
 			
-			parseThreads:function(){
+			parseThreads:function(){	//from this.threadList to this.dstCanvas.threadCodes
 				var threads=[],thread;
 				for(var i=0;i<this.threadList.length;i++){
 					thread=this.threadList[i];
@@ -754,7 +755,17 @@ factory("DstStage",["Selector",function(Selector){
 				}
 			},
 			
-			parseRunningSteps:function(){
+			populateThreads:function(){  //from this.dstCanvas.threadCodes to this.threadList
+				var threadCodes=this.dstCanvas.threadCodes;
+				if(threadCodes){
+					
+				}else{
+					this.clearThreads();
+				}
+					
+			},
+			
+			parseRunningSteps:function(){	//from this.runningStepList to this.dstCanvas.runningSteps
 				var steps=[],step;
 				for(var i=0;i<this.runningStepList.length;i++){
 					step=this.runningStepList[i];
@@ -767,6 +778,14 @@ factory("DstStage",["Selector",function(Selector){
 				}
 			},
 			
+			populateRunningSteps:function(){	//from this.dstCanvas.runningSteps to this.runningStepList
+				var runningSteps=this.dstCanvas.runningSteps;
+				if(runningSteps){
+					
+				}else{
+					this.clearRunningSteps();
+				}
+			},
 			
 			getThreadIndex:function(threadCode){
 				var index=-1;
@@ -790,7 +809,7 @@ factory("DstStage",["Selector",function(Selector){
 			
 			setDstCanvas:function(dstCanvas){
 				this.dstCanvas=dstCanvas;
-				this.initColorway();
+				this.initColorwayList();
 			},
 			
 			wrapThreadGrid:function(){
@@ -801,18 +820,12 @@ factory("DstStage",["Selector",function(Selector){
 				this.gwStep.wrapGrid();
 			},
 			
-
-			
-			backgroundColorOptions:function(){
-				self=this;
+			backgroundColorPaletteOptions:function() {
 				return {
-		        	columns: 4,
-		        	tileSize: {width: 22,height: 12},
-			        palette: paletteColors,
-		        }
+			        palette: paletteColors
+				};
 			},
 			
-				
 			threadGridOptions:function(){
 				var self=this;
 				return {
@@ -863,13 +876,14 @@ factory("DstStage",["Selector",function(Selector){
 	                    self.gwStep.grid.refresh();
 	                    self.parseThreads();
 						self.drawDesign({});
-					},
+					}
 				}
 			},
+			
 			drawDesign:function(){			//editing mode, called from events of gwStep.grid and gwThread.grid
 				var colorway={};
 				var cell=this.gwStep.getCurrentCell();
-				if (cell){		//cellIndex>0
+				if (cell && cell.cellIndex>0){		//cellIndex>0
 					var cellIndex=cell.cellIndex;
 					var row=this.gwStep.getCurrentRow();
 					var rowIndex=row.rowIndex;
@@ -881,12 +895,8 @@ factory("DstStage",["Selector",function(Selector){
 						idx=parseInt(stepList[i].threadIndex);
 						if(!idx)
 							idx=0;
-						switch(cellIndex){
-							case 3:							//code column
-								idx=i==rowIndex?16:idx;
-								a=idx>0?'1':'0';
-								break;
-							case 4:							//threadIndex column
+						switch(cellIndex){					//threadIndex
+							case 4:
 								if(i==rowIndex){
 									idx=(idx>0)?idx:16;
 									a="1";
@@ -894,7 +904,23 @@ factory("DstStage",["Selector",function(Selector){
 									a="0";
 								}
 								break;
-							default:
+							case 3:							//code column
+								if(i==rowIndex){
+									idx=16;
+									a="1";
+								}else{
+									a=idx>0?'1':'0';
+								}
+								break;
+							case 2:							//colour column
+								if(i==rowIndex){
+									idx=(idx>0)?idx:16;
+									a="1";
+								}else{
+									a="0";
+								}
+								break;
+							case 1:							//ST. COLUMN
 								if(i==rowIndex){
 									idx=16;
 									a="1";
@@ -909,7 +935,7 @@ factory("DstStage",["Selector",function(Selector){
 					}
 					colorway.runningSteps=steps.substring(1);
 					colorway.alphaSteps=alphaSteps.substring(1);
-					colorway.alpha=0.03;
+					colorway.alpha=cellIndex==4?0.15:0.03;
 				}
 				
 				this.dstCanvas.drawDesign(colorway);
@@ -999,152 +1025,19 @@ factory("DstStage",["Selector",function(Selector){
 		  	        		e.preventDefault();
 							self.drawDesign();
 			          	}
-					},
-			
+			       		
+					},	//end of save
+					
+		       		dataBinding:function(e){
+		       			console.log("binding");
+		       			renderingPaint=self;
+		       		}
 
 				}
-			},
-			
-	}
+			}			//end of stepGridOptions
+    	} //end of prototype	
     
-    var converter={
-    		//http://stackoverflow.com/questions/17242144/javascript-convert-hsb-hsv-color-to-rgb-accurately
-    		
-			/*accepts parameters
-			h  Object = {h:x, s:y, v:z}
-			OR 
-			h, s, v */   		
-  		
-			HSV2RGB:function(h, s, v) {
-			    var r, g, b, i, f, p, q, t;
-			    if (arguments.length === 1) {
-			        s = h.s, v = h.v, h = h.h;
-			    }
-			    i = Math.floor(h * 6);
-			    f = h * 6 - i;
-			    p = v * (1 - s);
-			    q = v * (1 - f * s);
-			    t = v * (1 - (1 - f) * s);
-			    switch (i % 6) {
-			        case 0: r = v, g = t, b = p; break;
-			        case 1: r = q, g = v, b = p; break;
-			        case 2: r = p, g = v, b = t; break;
-			        case 3: r = p, g = q, b = v; break;
-			        case 4: r = t, g = p, b = v; break;
-			        case 5: r = v, g = p, b = q; break;
-			    }
-			    return {
-			        r: Math.round(r * 255),
-			        g: Math.round(g * 255),
-			        b: Math.round(b * 255)
-			    };
-			},
-    		
-			/* accepts parameters
-			   r  Object = {r:x, g:y, b:z}
-			   OR 
-			   r, g, b
-			*/
-			RGB2HSV:function(r, g, b) {
-			    if (arguments.length === 1) {
-			        g = r.g, b = r.b, r = r.r;
-			    }
-			    var max = Math.max(r, g, b), min = Math.min(r, g, b),
-			        d = max - min,
-			        h,
-			        s = (max === 0 ? 0 : d / max),
-			        v = max / 255;
-			
-			    switch (max) {
-			        case min: h = 0; break;
-			        case r: h = (g - b) + d * (g < b ? 6: 0); h /= 6 * d; break;
-			        case g: h = (b - r) + d * 2; h /= 6 * d; break;
-			        case b: h = (r - g) + d * 4; h /= 6 * d; break;
-			    }
-			
-			    return {
-			        h: h,
-			        s: s,
-			        v: v
-			    };
-			},
-			
-			HSV2HSL:function(h, s, v) {
-			    if (arguments.length === 1) {
-			        s = h.s, v = h.v, h = h.h;
-			    }
-			    var _h = h,
-			        _s = s * v,
-			        _l = (2 - s) * v;
-			    _s /= (_l <= 1) ? _l : 2 - _l;
-			    _l /= 2;
-
-			    return {
-			        h: _h,
-			        s: _s,
-			        l: _l
-			    };
-			},
-
-			HSL2HSV:function(h, s, l) {
-			    if (arguments.length === 1) {
-			        s = h.s, l = h.l, h = h.h;
-			    }
-			    var _h = h,
-			        _s,
-			        _v;
-
-			    l *= 2;
-			    s *= (l <= 1) ? l : 2 - l;
-			    _v = (l + s) / 2;
-			    _s = (2 * s) / (l + s);
-
-			    return {
-			        h: _h,
-			        s: _s,
-			        v: _v
-			    };
-			},			
-			
-			HSL2RGB:function(h,s,l){
-			    if (arguments.length === 1) {
-			        s = h.s, l = h.l, h = h.h;
-			    }
-			    return converter.HSV2RGB(converter.HSL2HSV(h,s,l));
-			},
-			
-			RGB2HSL:function(r, g, b) {
-			    if (arguments.length === 1) {
-			        g = r.g, b = r.b, r = r.r;
-			    }
-			    return converter.HSV2HSL(converter.RGB2HSV(r,g,b));
-			},
-			
-			RGB2Hex:function(rgbColor){
-				var r=rgbColor.r,g=rgbColor.g,b=rgbColor.b;
-				return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-			},
-			
-			Hex2RGB:function(hexColor){
-			    // strip the leading # if it's there
-			    var hex = hexColor.replace(/^\s*#|\s*$/g, '');
-
-			    // convert 3 char codes --> 6, e.g. `E0F` --> `EE00FF`
-			    if(hex.length == 3){
-			        hex = hex.replace(/(.)/g, '$1$1');
-			    }
-			    
-			    var result= {
-				    r:parseInt(hex.substr(0, 2), 16),
-			        g:parseInt(hex.substr(2, 2), 16),
-			        b:parseInt(hex.substr(4, 2), 16)
-			    }
-			    return result;
-			},			
-			
-    }
-	
-    return dstPaint;
+    	return dstPaint;
 }]);
 
 

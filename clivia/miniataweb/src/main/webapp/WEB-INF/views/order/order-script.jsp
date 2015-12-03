@@ -1,12 +1,12 @@
 <script>
 	'user strict';
 	var orderApp = angular.module("orderApp",
-			[ "ui.router", "kendo.directives","cliviagrid" ]);
+			[ "ui.router", "kendo.directives","clivia" ]);
 
 
 
  //GarmentGridWrapper inherited from GridWrapper
- orderApp.factory("GarmentGridWrapper",function(GridWrapper,SO){
+ orderApp.factory("GarmentGridWrapper",["GridWrapper","SO",function(GridWrapper,SO){
 
 	 var GarmentGridWrapper=function(gridName){
 		GridWrapper.call(this,gridName);
@@ -89,7 +89,7 @@
     
 	
 	return GarmentGridWrapper;
- }); /* end of GarmentGridWrapper */
+ }]); /* end of GarmentGridWrapper */
 
  //SO
 orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state,consts){
@@ -183,6 +183,7 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
     dict.getGarment=function(styleNumber){
 		var garment=null;
 		if(styleNumber){
+			styleNumber=styleNumber.trim().toUpperCase();
 			for (i = 0; i <dict.garments.length; i++) {
 			    if (dict.garments[i].styleNumber === styleNumber) {
 			    	garment=dict.garments[i];

@@ -14,7 +14,7 @@
 		<button ng-click="getDstImage()" >Get DST</button>
     	<button ng-click="setCanvas()" >setCanvas</button>
 		<button ng-click="addDstImage()" >Add</button>
-    	<button ng-click="drawDstImage()" >Draw with colorway</button>
+    	<button ng-click="print()" >Print</button>
 
     <div class="k-header wide" >
       	<div 	kendo-splitter="DstSplitter"  
@@ -49,37 +49,47 @@
 			       			 k-animation="false">
 			       			<ul>
 			       				<li class="k-state-active">Info</li>
-			       				<li>Color</li>
+			       				<li>palette</li>
+			       				<li>picker</li>
 			       				<li>Fabric</li>
 			       				<li>Thread</li>
 			       			</ul>
-			      			
-			      			<div>		<!-- tabpage of info -->
-			      				<table>
-			      					<tr>
-			      						<td>{{dstPaint.dstCanvas.dstDesign.designNumber}}</td>
-			      					</tr>
-			      					<tr>
-			      						<td>Stitches:</td>
-			      						<td>{{dstPaint.dstCanvas.dstDesign.stitchCount}}</td>
-			      						<td>Steps:</td>
-			      						<td>{{dstPaint.dstCanvas.dstDesign.stepCount}}</td>
-			      					</tr>
-			      					<tr>
-			      						<td>Width:</td>
-			      						<td>{{dstPaint.dstCanvas.dstDesign.width}}</td>
-			      						<td>Height:</td>
-			      						<td>{{dstPaint.dstCanvas.dstDesign.height}}</td>
-			      					</tr>
-			      				</table>
+			      			<div>
+				      			<div id="info">		<!-- tabpage of info -->
+				      				<table>
+				      					<tr>
+				      						<td>{{dstPaint.dstCanvas.dstDesign.designNumber}}</td>
+				      					</tr>
+				      					<tr>
+				      						<td>Stitches:</td>
+				      						<td>{{dstPaint.dstCanvas.dstDesign.stitchCount}}</td>
+				      						<td>Steps:</td>
+				      						<td>{{dstPaint.dstCanvas.dstDesign.stepCount}}</td>
+				      					</tr>
+				      					<tr>
+				      						<td>Width:</td>
+				      						<td>{{dstPaint.dstCanvas.dstDesign.width}}</td>
+				      						<td>Height:</td>
+				      						<td>{{dstPaint.dstCanvas.dstDesign.height}}</td>
+				      					</tr>
+				      				</table>
+				      			</div>
 			      			</div>
+			      			
 			      			
 			      			<div kendo-color-palette
 			 	   				 ng-model="dstPaint.backgroundColor"
 			       				 k-orientation="'vertical'"
-			       				 k-options="dstPaint.backgroundColorOptions()">
+			       				 k-columns="8"
+			       				 k-titleSize="{'width':12}"
+			       				 k-options="dstPaint.backgroundColorPaletteOptions()">
 			      			</div>
 			      			
+			      			<div kendo-flat-color-picker
+			 	   				 ng-model="dstPaint.backgroundColor"
+			 	   				 k-preview="false">
+			      			</div>
+
 			      			<div>
 			      				Fabric
 			      			</div>
@@ -92,15 +102,14 @@
 			       
 			       <div id="dst-thread-pane">
 			       		Threads:
-			       		<textarea ng-model="dstPaint.dstCanvas.threadCodes" 
-			       				  ng-trim="true"
-			       				  class="k-textbox" 
-			       				  style="width:100%;resize: vertical;"></textarea>
-			       				  
-			    		<div kendo-sortable="dstThreadGridSortable"	k-options="dstPaint.threadGridSortableOptions">
-							<div  kendo-grid="dstThreadGrid" id="dstThreadGrid" k-options="dstPaint.threadGridOptions()" ></div>
-						</div>
-			       		
+				       		<textarea ng-model="dstPaint.dstCanvas.threadCodes" 
+				       				  ng-trim="true"
+				       				  class="k-textbox" 
+				       				  style="width:100%;resize: vertical;"></textarea>
+				       				  
+				    		<div kendo-sortable="dstThreadGridSortable"	k-options="dstPaint.gwThread.getSortableOptions()">
+								<div  kendo-grid="dstThreadGrid" id="dstThreadGrid" k-options="dstPaint.threadGridOptions()" ></div>
+							</div>
 			       </div>
 			       
 			       <div id="dst-step-pane">
@@ -109,8 +118,8 @@
 			       				  ng-trim="true"
 			       				  class="k-textbox" 
 			       				  style="width:100%;resize: vertical;"></textarea>
-			    		<div kendo-sortable="dstStepGridSortable"	k-options="dstPaint.stepGridSortableOptions">
-							<div  kendo-grid="dstStepGrid" id="dstStepGrid" k-options="dstPaint.stepGridOptions()" spellcheck="false"></div>
+			    		<div kendo-sortable="dstStepGridSortable"	k-options="dstPaint.gwStep.getSortableOptions()">
+							<div  kendo-grid="dstStepGrid" id="dstStepGrid" k-options="dstPaint.stepGridOptions()"></div>
 						</div>
 			       </div>
 			       
@@ -164,7 +173,8 @@ orderApp.controller("testCtrl",
 /*         var layer = stage.createLayer(true); */
     
     var dstDesign=new DstDesign();
-    var dstCanvas=new DstCanvas(dstDesign);
+	dstDesign.getDst(2);
+    var dstCanvas=new DstCanvas();
 	
 	$scope.addDstImage=function(){
 		
@@ -181,19 +191,32 @@ orderApp.controller("testCtrl",
 	};
 	
 	
-	$scope.drawDstImage=function(){
- 		dstCanvas.drawDesign();
- 		$scope.dstPaint.dstStage.draw();
+	$scope.print=function(){
+		var dataUrl=document.getElementById("DstCanvas1").toDataURL();
+	    var windowContent = '<!DOCTYPE html>';
+	    windowContent += '<html>'
+	    windowContent += '<head><title>Print canvas</title></head>';
+	    windowContent += '<body>'
+	    windowContent += '<img src="' + dataUrl + '">';
+	    windowContent += '</body>';
+	    windowContent += '</html>';
+	    var printWin = window.open('','','width=800,height=600');
+	    printWin.document.open();
+	    printWin.document.write(windowContent);
+	    printWin.document.close();
+	    printWin.focus();
+	    printWin.print();
+	    printWin.close();
 	}
 	
 	$scope.setCanvas=function(){
+		dstCanvas.setDstDesign(dstDesign)
  		dstCanvas.drawDesign();
  		$scope.dstPaint.setDstCanvas(dstCanvas);
 	}
 
 	$scope.getDstImage=function(){
 		
-		dstDesign.getDst(1);
 	}
 
 }]);
@@ -305,6 +328,13 @@ orderApp.controller("testCtrl",
         padding: 0;
         border-width: 0;		
 	}
+	
+ 	#dst-info-pane{ 
+ 		overflow:hidden; 
+ 	} 
+
+
+	
 </style>
 
 </html>

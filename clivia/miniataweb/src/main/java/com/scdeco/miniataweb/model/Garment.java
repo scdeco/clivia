@@ -49,8 +49,8 @@ public class Garment  {
 	@Column(name="TotalQtyInPO")
 	private Integer totalQtyInPO;
 
-	@Column(name="WholeSalePrice")
-	private Double wholeSalePrice;
+	@Column(name="WholesalePrice")
+	private Double wholesalePrice;
 	
 	@Column(name="RetailPrice")
 	private Double retailPrice;
@@ -162,12 +162,12 @@ public class Garment  {
 		this.totalQtyInPO = totalQtyInPO;
 	}
 
-	public Double getWholeSalePrice() {
-		return wholeSalePrice;
+	public Double getWholesalePrice() {
+		return wholesalePrice;
 	}
 
-	public void setWholeSalePrice(Double wholeSalePrice) {
-		this.wholeSalePrice = wholeSalePrice;
+	public void setWholeSalePrice(Double wholesalePrice) {
+		this.wholesalePrice = wholesalePrice;
 	}
 
 	public Double getRetailPrice() {
