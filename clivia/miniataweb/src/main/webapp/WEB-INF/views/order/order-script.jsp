@@ -184,7 +184,7 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 		var garment=null;
 		if(styleNumber){
 			styleNumber=styleNumber.trim().toUpperCase();
-			for (i = 0; i <dict.garments.length; i++) {
+			for (var i = 0; i <dict.garments.length; i++) {
 			    if (dict.garments[i].styleNumber === styleNumber) {
 			    	garment=dict.garments[i];
 			    	break; 
@@ -211,26 +211,6 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 			});
 		return deferred.promise;
 	};
-	
-	
-    dict.getRemoteDicts=function(dicts){
-    	var url=setting.url.garment+"get-product?style="+styleNumber;
-    	var deferred = $q.defer();
-		$http.get(url).
-			success(function(data, status, headers, config) {
-				if(data){
-					dict.insertGarment(data);
-					deferred.resolve(data)
-				}else{
-					deferred.reject("1");
-				}
-			}).
-			error(function(data, status, headers, config) {
-				deferred.reject("2");
-			});
-		return deferred.promise;
-    	
-    }
 	
 	
 	dict.insertGarment=function(garment){

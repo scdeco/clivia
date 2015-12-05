@@ -13,11 +13,11 @@
  -->			
 			<li>
                  <label for="Customer" class="required">Customer:</label>
-                 <input kendo-combobox name="customer"  style="width:100%;" ng-model="SO.dataSet.info.customerId" k-options="customerOptions" required validationMessage="Enter {0}"/>
+                 <customer-input name="customer"  style="width:100%;" ng-model="SO.dataSet.info.customerId"></customer-input>
 			</li>
 			<li>
 		    	<label for="Buyer">Buyer:</label>
-				<input type="text"  name="buyer" class="k-textbox" style="width:120px;" ng-model="SO.dataSet.info.buyer">
+				<input type="text"  name="buyer" class="k-textbox" style="width:100%;" ng-model="SO.dataSet.info.buyer">
 			</li>
 			<li>
 				<label for="orderName">Order Name:</label>
@@ -25,7 +25,7 @@
 			</li>
 			<li>
 		    	<label for="customerPO">Customer PO#:</label>
-				<input type="text"  name="customerPO" class="k-textbox" style="width:150px;"   ng-model="SO.dataSet.info.customerPO" ng-trim="true"/>
+				<input type="text"  name="customerPO" class="k-textbox" style="width:100%;"   ng-model="SO.dataSet.info.customerPO" ng-trim="true"/>
 			</li>
 			<li>
 		    	<label for="requiredDate">Required By:</label>

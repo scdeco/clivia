@@ -41,6 +41,7 @@
 	   			
 		 		<garment-input-window name="garmentInputWindow" id="garmentInputWindow"
 		 				dict-garment="SO.dict"
+		 				add-function="garmentInputWindowAddFunction"
 		 				k-append-to="'div#lineItem'"
 		 				k-width="850"
 					 	k-height="310"

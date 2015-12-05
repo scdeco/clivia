@@ -1,197 +1,5 @@
 <script>
-orderApp.directive("garmentInputWindow",["GridWrapper",function(GridWrapper){
-	
-	return { 
-		restrict:"EA",
-		replace:true,
-		scope:{
-			name:'@',
-			id:'@',
-			dictGarment:'='
-		},
-		
-		templateUrl:"garmentinputwindow",
-		link: function(scope,element,attrs){
-			var gridSchema={model: {id: "id",
-				fields: {
-					id: { type: "number"},
-					colour: { type: "string"},
-					total: {type:"number"},
-					remark: {type:"string"},
-					f00: {type:"number"},
-					f01: {type:"number"},
-					f02: {type:"number"},
-					f03: {type:"number"},
-					f04: {type:"number"},
-					f05: {type:"number"},
-					f06: {type:"number"},
-					f07: {type:"number"},
-					f08: {type:"number"},
-					f09: {type:"number"},
-					f10: {type:"number"},
-					f11: {type:"number"},
-					f12: {type:"number"}
-				}}};
 
-			var gridColumns=new kendo.data.ObservableArray([{title:"Colour",template:"<label>#: colour #</label>"}]);
-			var gridData=new kendo.data.ObservableArray([]);
-			
-			scope.styleNumber="";
-			scope.garment={};
-			scope.gridRebind=0;
-			
-			scope.gridOptions={
-					columns:gridColumns,
-					dataSource:{
-						data:gridData,
-						schema:gridSchema
-					},
-					autoSync: true,
-			        editable: true,
-			        selectable: "cell",
-			        navigatable: true,
-			        resizable: true,
-			        dataBound: function(e){
-						this.autoFitColumn(0);
-			        },
-			        save:function(e){
-			        	var t=0, changed=false;
-			        	
-			        	for(var c=0; c<this.columns.length-3; c++){
-			        		var field="f"+("00"+c).slice(-2);
-				        	if(typeof e.values[field]!== 'undefined'){
-				        		t+=e.values[field];
-				        		changed=true;
-				        	}else{
-				        		if(e.model[field])	
-				        			t+=e.model[field];
-				        	}
-			        	}
-			        	
-			        	if(changed){
-			        		e.model.total=(t!==0)?t:null;
-			        		scope.calcTotal();
-			        	}
-			        }
-			};
-			
-			scope.getGrid= function(){
-					var styleNumber=scope.styleNumber;
-					scope.styleNumber="";
-					scope.clearGrid();
-					if(styleNumber){
-						scope.garment=scope.dictGarment.getGarment(styleNumber);
-						if(scope.garment){
-							scope.createGrid();
-						}else{
-							scope.dictGarment.getRemoteGarment(styleNumber).
-								then(function(data){		//sucess
-									scope.garment=data;
-									scope.createGrid();
-								},						
-								function(error){		//error
-							    	//self.description=error;
-								});
-						}
-						
-					}
-				};
-				
-			scope.clearGrid=function(){
-					gridColumns.splice(1, gridColumns.length-1);
-					gridData.splice(0, gridData.length);
-					
-					scope.total=0;
-					scope.gridRebind++;
-				};
-				
-			scope.clear=function(){
-					scope.styleNumber="";
-					scope.garment={};
-					scope.clearGrid();
-				};
-				
-			scope.add=function(){
-					if(scope.addFunction){
-						scope.addFunction();
-						scope.clear();
-					}
-				};
-				
-			scope.ok=function(){
-					scope.add();
-					if(scope.window)
-						scope.window.close();
-				};
-				
-			scope.cancel=function(){
-					scope.clear();
-					if(scope.window)
-						scope.window.close();
-				};
-				
-				
-			scope.createGrid=function(){
-					if(!scope.garment) return;
-					var sizes=scope.garment.sizeRange.split(",");
-					for(var i=0;i<sizes.length;i++){
-						var column={
-								field: "f"+("00"+i).slice(-2),
-								title: sizes[i],
-								width: 60,
-								//attributes: {class:"gridNumberColumn"}
-							};
-						gridColumns.push(column);
-					}
-					gridColumns.push({title: "Total", field:"total",editor:GridWrapper.readOnlyColumnEditor, width: 60});  //,attributes: {style:"text-align: right; font-weight: bold;"}
-					gridColumns.push({title: "Remark",field: "remark"});
-
-					var colours=scope.garment.colourway.split(",");
-					for(var i=0; i<colours.length; i++)
-						gridData.push({id: i, colour: colours[i],total:null});
-
-					scope.gridRebind++;
-
-				};
-				
-			scope.calcTotal=function(){
-					var total=0;
-					for(var r=0;r<gridData.length;r++)
-						if(gridData[r].total)	total+=gridData[r].total;
-					scope.total=total;
-				};
-			
-			
-			scope.add=function(){
-				var sizes=scope.garment.sizeRange.split(",");
-				for(var r=0;r<gridData.length;r++){
-					var di=this.data[r];		//dataItem
-				    var newItem={
-				    	orderId:SO.dataSet.info.orderId,
-				    	orderItemId:orderItemId, 
-				    	brand:$scope.lineItemBrand,
-				    	styleNumber:this.garment.styleNumber,
-				    	description:this.garment.styleName,
-				    	colour:di.colour,
-				    	quantity:di.total,
-				    	remark:di.remark,
-				    };
-					for(var i=0;i<sizes.length;i++){  //exclude colour,total,remark
-						var f="f"+("00"+i).slice(-2); 
-						var q="qty"+("00"+sizeRangeFields.indexOf(sizes[i].trim().toUpperCase())).slice(-2); 
-						newItem[q]=di[f];
-					}
-				    ggw.addRow(newItem,false);
-				}
-			};
-		},
-			
-		controller: ['$scope', function($scope) {
-
-		}]
-	}
-}]);
-	
 	
 orderApp.controller("lineItemCtrl",["$scope","$http","$state","GarmentGridWrapper","SO",
          function($scope,$http,$state,GarmentGridWrapper,SO){
@@ -408,7 +216,7 @@ orderApp.controller("lineItemCtrl",["$scope","$http","$state","GarmentGridWrappe
 						addLineItemRow(false);
 						break;
 					case "menuAddWindow":
-						$scope.styleWindow.open();
+						$scope.garmentInputWindow.open();
 						break;
 					case "menuInsert":
 						addLineItemRow(true);
@@ -450,10 +258,29 @@ orderApp.controller("lineItemCtrl",["$scope","$http","$state","GarmentGridWrappe
 			ggw.enableEditing($scope.setting.lineItemEditing);				
 		}
 		
-		$scope.garmentInputWindowOptions={
-				add:function(){
-					
+		$scope.garmentInputWindowAddFunction=function(garment,dataItems){
+			if(dataItems.length>0){
+				var sizes=garment.sizeRange.split(",");
+				for(var r=0;r<dataItems.length;r++){
+					var di=dataItems[r];		//dataItem
+				    var newItem={
+				    	orderId:SO.dataSet.info.orderId,
+				    	orderItemId:orderItemId, 
+				    	brand:$scope.lineItemBrand,
+				    	styleNumber:garment.styleNumber,
+				    	description:garment.styleName,
+				    	colour:di.colour,
+				    	quantity:di.total,
+				    	remark:di.remark,
+				    };
+					for(var i=0;i<sizes.length;i++){  //exclude colour,total,remark
+						var f="f"+("00"+i).slice(-2); 
+						var q="qty"+("00"+sizeRangeFields.indexOf(sizes[i].trim().toUpperCase())).slice(-2); 
+						newItem[q]=di[f];
+					}
+				    ggw.addRow(newItem,false);
 				}
+			}
 		}
 
 }]); 

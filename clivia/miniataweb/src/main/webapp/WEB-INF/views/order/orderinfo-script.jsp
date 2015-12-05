@@ -1,12 +1,16 @@
 <script>
-orderApp.controller("orderInfoCtrl", ["$scope","SO",function($scope,SO) {
+orderApp.controller("orderInfoCtrl", ["$scope","SO","cliviaDDS",function($scope,SO,cliviaDDS) {
 
 	$scope.SO=SO;
 	
+	
+	
+	/*k-options="customerOptions" 		
 	$scope.customerOptions={
             dataTextField: "text",
             dataValueField: "value",			
-			dataSource:{
+			dataSource:{data:customerDict.items}
+		{
  	    	    transport: {
 	    	        read: {
 	    	            url: '/miniataweb/dict/map?from=company&textField=businessName&valueField=id&orderBy=businessName',
@@ -14,9 +18,9 @@ orderApp.controller("orderInfoCtrl", ["$scope","SO",function($scope,SO) {
 	    	            dataType: 'json',
  	    	            contentType: 'application/json'
 	    	        }
-			} }
-			
-	}
+				} 
+			}
+ 	}*/
 
 	$scope.requireTimeOptions={
 			format: "hh:mm tt",
