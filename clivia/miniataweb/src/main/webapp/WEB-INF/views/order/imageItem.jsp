@@ -11,8 +11,8 @@
       		<div id="imageitem-first-pane">
       			<div kendo-list-view="imageItemListView" k-options="imageItemListViewOptions">
 	         		<div class="imageItem" k-template>
-						<img ng-src="data:image/JPEG;base64,{{SO.dict.getImage(dataItem.imageId).thumbnail}}" alt="{{dataItem.remark}} image">
-	                		<h3>{{SO.dict.getImage(dataItem.imageId).originalFileName}}</h3>
+						<img ng-src="data:image/JPEG;base64,{{SO.dds.image.getLocalItem('id',dataItem.imageId).thumbnail}}" alt="{{dataItem.remark}} image">
+	                		<h3>{{SO.dds.image.getLocalItem("id",dataItem.imageId).originalFileName}}</h3>
 	 	                	<p ng-click="showOriginalImage(dataItem.imageId)">{{SO.dict.getImageDetail(dataItem.imageId)}}</p> 
 	        		</div>
 	   			</div> 

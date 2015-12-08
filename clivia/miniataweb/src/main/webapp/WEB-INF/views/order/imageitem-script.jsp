@@ -5,8 +5,29 @@ orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,funct
 	
 	$scope.setting={};
 	
-    var imageItemDataSource=new kendo.data.DataSource({	
+	var getImages=function(dataItems){
+		var imageString="";
+		for(var i=0;i<dataItems.length;i++){
+			if(dataItems[i].imageId){
+				imageString+=","+dataItems[i].imageId;
+			}
+		}
+		if(imageString!==""){
+			imageString=imageString.substring(1);
+			SO.dds.image.getItems("id",imageString)
+				.then(function(){
+					
+				},function(){
+					
+				});
+			
+		}
+	}
+	
+    var imageItemDataSource=new kendo.data.DataSource({
+    	
 	        	data:SO.dataSet.imageItems,
+	        	
 			    schema: {
 			        model: {
 			            id: "id",
@@ -18,6 +39,7 @@ orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,funct
 		                }
 			        }
 			    },
+			    
 			    filter: {
 			        field: "orderItemId",
 			        operator: "eq",
@@ -25,7 +47,12 @@ orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,funct
 			    },    
 			    
 			    serverFiltering:false,
-			    pageSize: 10
+			    pageSize: 10,
+
+			    change: function(e) {
+			        //check the "response" argument to skip the local operations
+		            getImages(e.items);
+			    }
 	        });
     
 	$scope.imageItemGridOptions = {
@@ -98,7 +125,7 @@ orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,funct
 	
 	$scope.imageItemListViewOptions={
 			autoSync:true,
-	        dataSource: imageItemDataSource
+	        dataSource: imageItemDataSource,
 	};
 	
 	$scope.toolbarOptions={
@@ -141,7 +168,7 @@ orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,funct
 			success: function (e) {
 			    if(e.response.status==="success"){
 					var data = e.response.data;
-					SO.dict.insertImage(data);
+					SO.dds.image.addItem(data);
 					var newItem={
 					    	orderId:SO.dataSet.info.orderId,
 					    	orderItemId:orderItemId, 

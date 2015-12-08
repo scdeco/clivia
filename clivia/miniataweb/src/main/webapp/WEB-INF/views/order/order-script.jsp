@@ -40,24 +40,17 @@
 			if(this.currentGarment && this.currentGarment.styleNumber===styleNumber){
 		    	model.set("description",this.currentGarment.styleName);
 			}else{
-				var garment=SO.dict.getGarment(styleNumber);
-				if(garment){
-					this.currentGarment=garment;
-					this.setRowDict();
-				}else{
-					var self=this;
-					SO.dict.getRemoteGarment(styleNumber).
-						then(function(data){		//sucess
-    				    	self.currentGarment=data;
-					    	model.set("description",self.currentGarment.styleName);
-		    				self.setRowDict();
-						},						
-						function(error){		//error
-							self.currentGarment=null;
-					    	model.set("description","");
-		    				self.setRowDict();
-						});
-				}
+				var self=this;
+				SO.dds.garment.getItem("styleNumber",styleNumber)
+					.then(function(garment){
+						self.currentGarment=garment;
+				    	model.set("description",self.currentGarment.styleName);
+						self.setRowDict();
+					},function(error){
+						self.currentGarment=null;
+				    	model.set("description","");
+	    				self.setRowDict();
+					});
 			}
 		}
 	}
@@ -92,7 +85,7 @@
  }]); /* end of GarmentGridWrapper */
 
  //SO
-orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state,consts){
+orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http, $q, $state,consts,cliviaDDS){
 	var _order={
 			dataSet:{info:{},items:[],deleteds:[]},
 			
@@ -110,7 +103,6 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 					base:consts.baseUrl,
 					order:consts.baseUrl+"order/",
 					library:consts.baseUrl+"library/",
-					garment:consts.baseUrl+"garment/"
 					},
 				layout:{
 					lineItemGrid:{},
@@ -125,8 +117,11 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 				
 				},
 				
-			dict:{garments:[],images:[],customers:[], garmentBrands:[]},
-			
+			dds:{
+				garment:cliviaDDS.getDict("garment"),
+				image:cliviaDDS.createDict("image",consts.baseUrl+"data/libImage/","onDemand")
+				},
+				
 			instance:{
 				itemButtons:new kendo.data.ObservableArray([]),
 				currentItemId:0
@@ -154,8 +149,7 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 	//setting
 	
     _order.clearDicts=function(){
-		dict.garments.splice(0,dict.garments.length);
-		dict.images.splice(0,dict.images.length);
+		_order.dds.image.clear();
     }
     
     _order.clearInstance=function(){
@@ -180,94 +174,6 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
     	_order.clearInstance();
     }
     
-    dict.getGarment=function(styleNumber){
-		var garment=null;
-		if(styleNumber){
-			styleNumber=styleNumber.trim().toUpperCase();
-			for (var i = 0; i <dict.garments.length; i++) {
-			    if (dict.garments[i].styleNumber === styleNumber) {
-			    	garment=dict.garments[i];
-			    	break; 
-			    }
-			}
-		}
-		return garment;
-    }
-
-    dict.getRemoteGarment=function(styleNumber){	
-    	var url=setting.url.garment+"get-product?style="+styleNumber;
-    	var deferred = $q.defer();
-		$http.get(url).
-			success(function(data, status, headers, config) {
-				if(data){
-					dict.insertGarment(data);
-					deferred.resolve(data)
-				}else{
-					deferred.reject("1");
-				}
-			}).
-			error(function(data, status, headers, config) {
-				deferred.reject("2");
-			});
-		return deferred.promise;
-	};
-	
-	
-	dict.insertGarment=function(garment){
-		dict.garments.push(garment);
-	};
-	
-	dict.getImage=function(imageId){
-		var image=null;
-		if(imageId){
-			for (i = 0; i < dict.images.length; i++) {
-			    if (dict.images[i].id ===imageId) {
-			    	image=dict.images[i];
-			    	break; 
-			    }
-			}		
-		}
-		return image;
-	}
-	
-	dict.insertImage=function(image){
-		dict.images.push(image);
-	};
-	
-	dict.getRemoteImages=function(){
-    	var deferred = $q.defer();
-		if(!_order.isNew() && angular.isDefined(dataSet.imageItems)){
-			var imageString="";
-			if(dataSet.imageItems)
-			for(var i=0;i<dataSet.imageItems.length;i++){
-				if(dataSet.imageItems[i].imageId){
-					imageString+=","+dataSet.imageItems[i].imageId;
-				}
-			}
-			if(imageString!==""){
-
-				var url=setting.url.library+"image/getlist?ids="+imageString.substr(1);
-				
-				$http.get(url).
-					success(function(data, status, headers, config) {
-					    if(data){
-					    	dict.images=data;
-					    	deferred.resolve(data);
-					    }else{
-							deferred.reject("1");
-					    }
-					}).
-					error(function(data, status, headers, config) {
-						deferred.reject("2");
-					});
-			}else{
-				deferred.reject("3");
-			}
-		}else{
-			deferred.reject("4");
-		}
-		return deferred.promise;
-	}
 	
 	
 	//populate data get from server into this model(_order.dataSet)
@@ -289,6 +195,7 @@ orderApp.factory("SO",["$http","$q","$state","consts",function($http, $q, $state
 			}
 		}
 	}
+	
 	
 	//set rowId and orderId of tables in dataSet to empty for repeat order
 	var clearRowIdAndOrderId=function (dataTableName){

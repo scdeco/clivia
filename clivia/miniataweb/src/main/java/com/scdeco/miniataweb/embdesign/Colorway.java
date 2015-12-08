@@ -126,7 +126,7 @@ public class Colorway {
 				thread=thread.substring(1);
 			else
 				firstLetter="S";
-			int i=CliviaUtils.tryParseInt(thread);
+			int i=CliviaUtils.parseInt(thread);
 			if(i>0)
 				result=firstLetter+CliviaUtils.right("0000"+i,4);
 		}
@@ -152,7 +152,7 @@ public class Colorway {
 		if(runningSteps.trim()!= ""){
 			String[] steps = runningSteps.split(Colourway_Seperator);
 			for(String step : steps)
-				result += "-" + CliviaUtils.tryParseInt(step);		//Ints.tryParse(s);
+				result += "-" + CliviaUtils.parseInt(step);		//Ints.tryParse(s);
 			result= (result=="")? "":result.substring(1);
 		}
 		return runningSteps;

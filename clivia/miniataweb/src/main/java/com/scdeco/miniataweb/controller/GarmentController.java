@@ -38,7 +38,7 @@ public class GarmentController {
 	
 	
 	@RequestMapping(value="get-product",method=RequestMethod.GET)
-	public @ResponseBody  Garment getGarment(@RequestParam("style") String styleNumber){
+	public @ResponseBody  Garment getGarment(@RequestParam("styleNumber") String styleNumber){
 		return garmentDao.FindByStyleNumber(styleNumber);
 	}
 

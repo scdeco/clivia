@@ -2,7 +2,7 @@ package com.scdeco.miniataweb.util;
 
 
 public class CliviaUtils {
-	public static int tryParseInt(String numStr){
+	public static int parseInt(String numStr){
 		int result=0;
 		try{
 			result=Integer.parseInt(numStr);

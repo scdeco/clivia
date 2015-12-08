@@ -175,6 +175,21 @@ public abstract class GenericDao<T> {
 		return  findListByIds(ids);
 	}
 	
+	public List<T> findListByKeys(String keyName, String[] keyValues){
+		List<T> list=new ArrayList<T>();
+		for(String keyValue:keyValues){
+			T dataItem=findUniqueResult(keyName,keyValue);
+			if(dataItem!=null)
+				list.add(dataItem);
+		}
+		return list;
+	}
+	
+	public List<T> findListByKeys(String keyName,String strKeyValues){
+		String[] keyValues=strKeyValues.split(",");
+		return  findListByKeys(keyName,keyValues);
+	}
+	
 	
 	
     public DataSourceResult findListByRequest(DataSourceRequest request) {

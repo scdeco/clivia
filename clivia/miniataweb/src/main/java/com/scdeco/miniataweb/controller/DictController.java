@@ -22,8 +22,8 @@ public class DictController {
 	DictDao dictDao;
 	
 	@SuppressWarnings("rawtypes")
-	@RequestMapping(value="list",method=RequestMethod.GET)
-	public @ResponseBody List getDictList(@RequestParam(value = "from", required = true) String from,
+	@RequestMapping(value="get",method=RequestMethod.GET)
+	public @ResponseBody List getList(@RequestParam(value = "from", required = true) String from,
 										@RequestParam(value = "textField", required = true) String textField,
 										@RequestParam(value = "orderBy", required = false) String orderBy){
 										

@@ -37,22 +37,39 @@ factory("util",["$http","$q",function($http,$q){
 factory("DataDict",["$q","util",function($q,util){
 	
 	var DataDict=function(name,url,mode){
-		this.name=name;
-		this.url=url;
+		if(name.name){
+			this.name=name.name;
+			this.url=name.url;
+			this.loadMode=!!name.mode?name.mode:"lazy";		//lazy,onDemand,eager
+		}else{
+			this.name=name;
+			this.url=url;
+			this.loadMode=!!mode?mode:"lazy";		//lazy,onDemand,eager
+		}
 		this.items=[];
 		this.isLoading=false;
 		this.isLoaded=false;
 		this.waitingDeferred=[];
-		this.loadMode=!!mode?mode:"lazy";		//lazy,onDemand,eager
 		if(this.loadMode==="eager")
 			this.load();
 	}
 	
 	DataDict.prototype={
+		clear:function(){
+			this.isLoaded=false;
+			this.items.splice(0,this.items.length);
+		},
+		
+		addItem:function(item){
+			this.items.push(item);
+		},
+		
 		waitForLoaded:function(deferred){
 			this.waitingDeferred.unshift(deferred);
 			if(this.waitingDeferred.length===1){
-				var url=this.url,self=this;
+				var url=this.url,
+					self=this;
+				
 				util.getRemote(url)
 					.then(function(loaded){
 						self.finishLoading(true,loaded);
@@ -102,22 +119,78 @@ factory("DataDict",["$q","util",function($q,util){
 		},
 		
 		
+		loadItem:function(name,value){
+			var deferred = $q.defer()
+				self=this,
+				url=this.url+"getitem?name="+name+"&value="+value;
+			
+			util.getRemote(url)
+				.then(function(gotItem){
+					if(gotItem){
+			    		self.addItem(gotItem);
+					}
+					deferred.resolve(gotItem);
+			},function(error){
+				deferred.reject(error);
+			});
+			
+			return deferred.promise;
+		},
+		
+		loadItems:function(name,strValues){
+			var deferred = $q.defer();
+
+			self=this,
+			url=this.url+"getitems?name="+name+"&value="+strValues;
+		
+			util.getRemote(url)
+				.then(function(gotItems){
+					if(gotItems){
+						for(var i=0,item;i<gotItems.length;i++){
+							item=gotItems[i];
+				    		self.addItem(item);
+						}
+					}
+					deferred.resolve(gotItems);
+				},function(error){
+					deferred.reject(error);
+				});
+			
+			return deferred.promise;
+		},
+		
+		
+		
 		//find the item in local item list only. 
-		findItem:function(name,value){
+		getLocalItem:function(name,value){
 			return util.find(this.items,name,value);
 		},
 		
-		//Return a promise.If resolved,data is the none null item;otherwise rejected with error info 
+		getLocalItems:function(name,values){
+			var valueList=values.split(",");
+			var items=[]
+			for(var i=0,item,value;i<valueList;i++){
+				value=valueList[i];
+				item=this.getLocalItem(name,value)
+				if(item){
+					items.push(item);
+				}
+			}
+			return items;
+		},
+		
+		//Return a promise.If resolved,data is the none null item;otherwise rejected with error info
+		//If item is not catched, load it
 		getItem:function(name,value){
 			var deferred = $q.defer();
 			var foundItem=null,self=this;
 			
 			if(this.loadMode==="onDemand"){
-				foundItem=this.findItem(name,value);
+				foundItem=this.getLocalItem(name,value);
 				if(foundItem){
 					deferred.resolve(foundItem);
 				}else{
-					this.loadItem(name.value)
+					this.loadItem(name,value)
 						.then(function(foundItem){
 							if(foundItem)	//succeed
 								deferred.resolve(foundItem);
@@ -129,7 +202,7 @@ factory("DataDict",["$q","util",function($q,util){
 				}
 			}else{
 				if(this.isLoaded){
-					foundItem=this.findItem(name,value);
+					foundItem=this.getLocalItem(name,value);
 					if(foundItem)
 						deferred.resolve(foundItem);
 					else
@@ -137,7 +210,7 @@ factory("DataDict",["$q","util",function($q,util){
 				}else{
 					this.load()
 						.then(function(loaded){
-							var foundItem=self.findItem(name,value);
+							var foundItem=self.getLocalItem(name,value);
 							if(foundItem)
 								deferred.resolve(item);
 							else
@@ -150,44 +223,83 @@ factory("DataDict",["$q","util",function($q,util){
 			return deferred.promise;
 		},
 		
-		getItems:function(){
-			var deferred = $q.defer(),self=this;
-			if(this.isLoaded){
-				deferred.resolve(this.items);
-			}else{
-				this.load()
-					.then(function(){
-						deferred.resolve(self.items)
-					},function(){
-						deferred.reject("error");
-					});
-			}
-			return deferred.promise;
-		},
-		
-		loadItem:function(name,value){
-			var deferred = $q.defer()
+		getItems:function(name,values){
+			var deferred = $q.defer(),
 				self=this;
-			util.getRemote(url)
-				.then(function(gotItem){
-					if(gotItem){
-			    		self.items.push[gotItem];
+			
+			//get all items if name is not provided (call by getItems())
+			if(!name){
+				if(this.isLoaded){
+					deferred.resolve(this.items);
+				}else{
+					this.load()
+						.then(function(){
+							deferred.resolve(self.items)
+						},function(){
+							deferred.reject("error");
+						});
+				}
+			}else{
+
+				var items=[];
+				if(this.loadMode==="onDemand"){
+					var valueList=values.split(",");
+					var getValues=[];
+					for(var i=0,item,value;i<valueList.length;i++){
+						value=valueList[i];
+						item=this.getLocalItem(name,value)
+						if(item){
+							items.push(item);
+						}else{
+							getValues.push(value);
+						}
 					}
-					deferred.resolve(gotItem);
-			},function(error){
-				deferred.reject(error);
-			});
+				
+					if(getValues.length>0){
+						this.loadItems(name,getValues.join())
+							.then(function(loadedItems){
+								if(loadedItems){
+									for(var i=0;i<loadedItems.length;i++){
+										items.push(loadedItems[i]);
+									}
+									deferred.resolve(items)
+								}else{
+									deferred.reject("error");
+								}
+								
+							},function(error){
+								deferred.reject(error)
+							});
+					}else{
+						deferred.resolve(items);
+					}
+					
+				}else{
+					if(this.isLoaded){
+						items=this.getLocalItems(name,values);
+						if(items.length>0){
+							deferred.resolve(items);
+						}else{
+							deferred.reject("error");
+						}
+					}else{
+						this.load()
+							.then(function(){
+								items=self.getLocalItems(name,values);
+								if(items.length>0){
+									deferred.resolve(items);
+								}else{
+									deferred.reject("error");
+								}
+							},function(){
+								deferred.reject("error");
+							});
+					}
+				}
+			}
 			
 			return deferred.promise;
-		},
-		
-		loadItems:function(name,values){
-			var deferred = $q.defer();
-			
-			
-			return deferred.promise;
-		},
-		
+		}
 			
 	};
 	
@@ -196,13 +308,22 @@ factory("DataDict",["$q","util",function($q,util){
 
 
 factory("DataDictSet",["DataDict","util", function(DataDict,util){
-	var dds=function(){
+	var dds=function(dicts){
 		this.dicts=[];
+		this.addDicts(dicts);
 	}
+	
 	dds.prototype={
+			
+		createDict:function(name,url,mode){
+			return new DataDict(name,url,mode);		
+		},
+		
+	
 		getDict:function(name){
 			return util.find(this.dicts,"name",name);
 		},
+		
 		
 		getDicts:function(strNames){
 			var result=[];
@@ -216,19 +337,26 @@ factory("DataDictSet",["DataDict","util", function(DataDict,util){
 		},
 
 		addDict:function(dict){
-			if(dict) 
+			if(dict) {
 				this.dicts.push(dict);
+			}
 		},
 		
+		//dicts is a array of {name,url,mode}
 		addDicts:function(dicts){
-			for(var i=0;i<dicts.length;i++)
-				this.addDict(dicts[i]);
+			if(dicts){
+				for(var i=0,dict;i<dicts.length;i++){
+					dict=this.createDict(dicts[i]);
+					this.addDict(dict);
+				}
+			}
 		},
 		
-		load:function(eagerOnly){
+		//load eager dict only
+		load:function(){
 			for(var i=0,dict;i<this.dicts.length;i++){
 				dict=this.dicts[i];
-				if(eagerOnly && dict.loadMode==="eager")
+				if(dict.loadMode==="eager")
 					dict.load();
 			}
 		},
@@ -237,15 +365,39 @@ factory("DataDictSet",["DataDict","util", function(DataDict,util){
 	
 	return dds;
 }]).
-
-factory("cliviaDDS",["DataDictSet","DataDict",function(DataDictSet,DataDict){
-	var cliviaDDS=new DataDictSet();
-	//cliviaDDS.addDict(new DataDict("garment","","onDemand"));
-	//cliviaDDS.addDict(new DataDict("garmnetBrand","","lazy"));
-	var url='/miniataweb/dict/map?from=company&textField=businessName&valueField=id&orderBy=businessName'
-	var dict=new DataDict("customer",url,"eager");
-	cliviaDDS.addDict(dict);
+//data dictionary set
+factory("cliviaDDS",["DataDictSet","consts",function(DataDictSet,DataDict,consts){
+	var baseUrl="/miniataweb/";
+	var dicts=[{
+			name:"customerInput",
+			url:baseUrl+"dict/map?from=company&textField=businessName&valueField=id&orderBy=businessName",
+			mode:"eager"
+		},{
+			name:"garment",
+			url:baseUrl+"/data/garment/",
+			mode:"onDemand"
+		}];
+	
+	var cliviaDDS=new DataDictSet(dicts);
 	return cliviaDDS
+}]).
+
+//dataSource set
+factory("cliviaDSS",["cliviaDDS",function(cliviaDDS){
+	var customerInput=new kendo.data.DataSource({
+		 transport: {
+ 	        read: {
+ 	            url: '/miniataweb/dict/map?from=company&textField=businessName&valueField=id&orderBy=businessName',
+ 	            type: 'get',
+ 	            dataType: 'json',
+  	            contentType: 'application/json'
+ 	        	}
+			} 		
+	});
+
+	return{
+		customerInput:customerInput,
+	}	
 }]).
 
 factory("GridWrapper",function(){
@@ -557,7 +709,7 @@ directive("customerInput",["cliviaDDS",function(cliviaDDS){
 		template:template,
 		link:function(scope,element,attrs){
 			
-			cliviaDDS.getDict("customer").getItems()
+			cliviaDDS.getDict("customerInput").getItems()
 				.then(function(items){
 					scope.customerOptions={
 				            dataTextField: "text",
@@ -575,7 +727,7 @@ directive("customerInput",["cliviaDDS",function(cliviaDDS){
 }]).
 
 directive("garmentInputWindow",["GridWrapper",function(GridWrapper){
-	var template='<div kendo-window="{{name}}" id="{{id}}"	k-visible="false" k-actions="[\'Close\',\'Maximize\']" k-modal="false">'+	   	
+	var template='<div kendo-window="{{name}}" id="{{id}}"	k-visible="false" k-actions="[\'Maximize\']" k-modal="false">'+	   	
 	'<form name="addStyle" ng-submit="getGrid()" novalidate>'+
 		'<span class="k-textbox k-space-right" style="width: 140px;" >'+
 		'<input type="text"  class="k-textbox" placeholder="Search Style#" ng-model="styleNumber"/>'+
@@ -594,7 +746,7 @@ directive("garmentInputWindow",["GridWrapper",function(GridWrapper){
 		scope:{
 			name:'@',
 			id:'@',
-			dictGarment:'=',
+			dictGarment:'=',			//type of DataDict
 			addFunction:'='
 		},
 		template:template,
@@ -706,24 +858,17 @@ directive("garmentInputWindow",["GridWrapper",function(GridWrapper){
 			};
 			
 			scope.getGrid= function(){
-					var styleNumber=scope.styleNumber;
+					var styleNumber=scope.styleNumber.trim().toUpperCase();
 					scope.styleNumber="";
 					clearGrid();
 					if(styleNumber){
-						scope.garment=scope.dictGarment.getGarment(styleNumber);
-						if(scope.garment){
-							createGrid();
-						}else{
-							scope.dictGarment.getRemoteGarment(styleNumber).
-								then(function(data){		//sucess
-									scope.garment=data;
-									createGrid();
-								},						
-								function(error){		//error
-							    	//self.description=error;
-								});
-						}
-						
+						scope.dictGarment.getItem("styleNumber",styleNumber)
+							.then(function(garment){
+								scope.garment=garment;
+								createGrid();
+							},function(){
+								
+							});
 					}
 				};
 				

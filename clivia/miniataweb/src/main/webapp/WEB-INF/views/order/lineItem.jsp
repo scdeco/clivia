@@ -40,7 +40,7 @@
 	   			</ul>
 	   			
 		 		<garment-input-window name="garmentInputWindow" id="garmentInputWindow"
-		 				dict-garment="SO.dict"
+		 				dict-garment="SO.dds.garment"
 		 				add-function="garmentInputWindowAddFunction"
 		 				k-append-to="'div#lineItem'"
 		 				k-width="850"

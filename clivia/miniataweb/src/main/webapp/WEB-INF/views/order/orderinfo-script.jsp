@@ -3,25 +3,6 @@ orderApp.controller("orderInfoCtrl", ["$scope","SO","cliviaDDS",function($scope,
 
 	$scope.SO=SO;
 	
-	
-	
-	/*k-options="customerOptions" 		
-	$scope.customerOptions={
-            dataTextField: "text",
-            dataValueField: "value",			
-			dataSource:{data:customerDict.items}
-		{
- 	    	    transport: {
-	    	        read: {
-	    	            url: '/miniataweb/dict/map?from=company&textField=businessName&valueField=id&orderBy=businessName',
-	    	            type: 'get',
-	    	            dataType: 'json',
- 	    	            contentType: 'application/json'
-	    	        }
-				} 
-			}
- 	}*/
-
 	$scope.requireTimeOptions={
 			format: "hh:mm tt",
 			parseFormats:["HH:mm:ss"],
@@ -39,6 +20,7 @@ orderApp.controller("orderInfoCtrl", ["$scope","SO","cliviaDDS",function($scope,
 		    parseFormats: ["yyyy-MM-dd"]
 	}
 	
+
 }]);
 </script>
 	

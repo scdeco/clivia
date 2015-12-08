@@ -51,6 +51,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 		$state.go('main.blankitem');
 	};	
 	
+	
 	$scope.getOrder=function(){
 		SO.clear();
 		if(!!$scope.searchOrderNumber){
@@ -61,7 +62,11 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 			    		for(var i=0;i<SO.dataSet.items.length;i++)
 			    			SO.addOrderItemButton(SO.dataSet.items[i]);
 
-			    		SO.dict.getRemoteImages();
+			    		//retrieve all items here
+			    		//SO.dict.getRemoteImages();
+			    		
+			    		
+			    		
 				    	SO.setCurrentOrderItem(0);
 				    }else{
 				    	alert("Can not find order:"+$scope.searchOrderNumber+".");
