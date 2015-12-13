@@ -13,13 +13,13 @@
 		
 		<button ng-click="getDstImage()" >Get DST</button>
     	<button ng-click="setCanvas()" >setCanvas</button>
-		<button ng-click="addDstImage()" >Add</button>
+		<button ng-click="addEmbImage()" >Add</button>
     	<button ng-click="print()" >Print</button>
 
     <div class="k-header wide" >
       	<div 	kendo-splitter="DstSplitter"  
       			k-orientation="'horizontal'" 
-      			ng-resize="resizeStage()"
+      			
       	
 				k-panes="[{ collapsible: false, resizable: false, size: '38px'},
                 		  { collapsible: false},
@@ -37,99 +37,10 @@
 			</div>	<!-- second-pane-->
 			
       		<div id="dst-third-pane">
-		      	<div kendo-splitter="DstInfoSplitter"  
-		      		 k-orientation="'vertical'" 
-					 k-panes="[{ collapsible: true, resizable: true, size: '120px'},
-		                		  { collapsible: true,size:'250px'},
-		                  		  { collapsible: false, resizable: true}]"
-		             style="height:100%;">
-		             
-			       <div id="dst-info-pane">
-			       		<div kendo-tab-strip 
-			       			 k-animation="false">
-			       			<ul>
-			       				<li class="k-state-active">Info</li>
-			       				<li>palette</li>
-			       				<li>picker</li>
-			       				<li>Fabric</li>
-			       				<li>Thread</li>
-			       			</ul>
-			      			<div>
-				      			<div id="info">		<!-- tabpage of info -->
-				      				<table>
-				      					<tr>
-				      						<td>{{dstPaint.dstCanvas.dstDesign.designNumber}}</td>
-				      					</tr>
-				      					<tr>
-				      						<td>Stitches:</td>
-				      						<td>{{dstPaint.dstCanvas.dstDesign.stitchCount}}</td>
-				      						<td>Steps:</td>
-				      						<td>{{dstPaint.dstCanvas.dstDesign.stepCount}}</td>
-				      					</tr>
-				      					<tr>
-				      						<td>Width:</td>
-				      						<td>{{dstPaint.dstCanvas.dstDesign.width}}</td>
-				      						<td>Height:</td>
-				      						<td>{{dstPaint.dstCanvas.dstDesign.height}}</td>
-				      					</tr>
-				      				</table>
-				      			</div>
-			      			</div>
-			      			
-			      			
-			      			<div kendo-color-palette
-			 	   				 ng-model="dstPaint.backgroundColor"
-			       				 k-orientation="'vertical'"
-			       				 k-columns="8"
-			       				 k-titleSize="{'width':12}"
-			       				 k-options="dstPaint.backgroundColorPaletteOptions()">
-			      			</div>
-			      			
-			      			<div kendo-flat-color-picker
-			 	   				 ng-model="dstPaint.backgroundColor"
-			 	   				 k-preview="false">
-			      			</div>
-
-			      			<div>
-			      				Fabric
-			      			</div>
-			      			
-			      			<div>
-			      				Thread
-			      			</div>
-			       		</div>
-			       </div>
-			       
-			       <div id="dst-thread-pane">
-			       		Threads:
-				       		<textarea ng-model="dstPaint.dstCanvas.threadCodes" 
-				       				  ng-trim="true"
-				       				  class="k-textbox" 
-				       				  style="width:100%;resize: vertical;"></textarea>
-				       				  
-				    		<div kendo-sortable="dstThreadGridSortable"	k-options="dstPaint.gwThread.getSortableOptions()">
-								<div  kendo-grid="dstThreadGrid" id="dstThreadGrid" k-options="dstPaint.threadGridOptions()" ></div>
-							</div>
-			       </div>
-			       
-			       <div id="dst-step-pane">
-			       		Running Steps:
-			       		<textarea ng-model="dstPaint.dstCanvas.runningSteps" 
-			       				  ng-trim="true"
-			       				  class="k-textbox" 
-			       				  style="width:100%;resize: vertical;"></textarea>
-			    		<div kendo-sortable="dstStepGridSortable"	k-options="dstPaint.gwStep.getSortableOptions()">
-							<div  kendo-grid="dstStepGrid" id="dstStepGrid" k-options="dstPaint.stepGridOptions()"></div>
-						</div>
-			       </div>
-			       
-		       </div>
-		       
+      			<div thread-matcher="myThreadMatcher" c-emb-canvas="embCanvas"></div>
 			</div>	<!-- third-pane-->
-			
 		</div>
 			
-	   
 	</div>
 
 		
@@ -141,55 +52,50 @@ var orderApp = angular.module("embDesignApp",
 		["kendo.directives","embdesign"]);
 
 orderApp.controller("testCtrl",
-		["$scope","DstPaint","DstDesign","DstCanvas","DstStage",
-		function($scope,DstPaint,DstDesign,DstCanvas,DstStage){
+		["$scope","EmbPaint","DstDesign","EmbCanvas","EmbStage",
+		function($scope,EmbPaint,DstDesign,EmbCanvas,EmbStage){
 			
 	//{code:"S0561",r:255,g:0,b:0},{code:"S1011",r:125,g:125,b:125},{code:"S1043",r:0,g:0,b:255}
 	//var runningStepList=new kendo.data.ObservableArray([{code:"S1043",codeIndex:1}]);
 
-	$scope.dstPaint=new DstPaint({stage:"container"});
-	
-    $scope.$on("kendoWidgetCreated", function(event, widget){
-        // the event is emitted for every widget; if we have multiple
-        // widgets in this controller, we need to check that the event
-        // is for the one we're interested in.
-        if (widget ===$scope.dstThreadGrid) {
-        	$scope.dstPaint.wrapThreadGrid();
-        }
-        if (widget ===$scope.dstStepGrid) {
-        	$scope.dstPaint.wrapStepGrid();
-        }
-    });
-	
-	
-/*         var stage = new DstStage({container: 'container',
-						          width: 1024,
-						          height: 800}); */
- 
-//    	stage.getContent().addEventListener("mousedown",function(evt){
-//    		alert("mousedown");
-//    	});
+    $scope.dstDesign=new DstDesign();
 
-/*         var layer = stage.createLayer(true); */
-    
-    var dstDesign=new DstDesign();
-	dstDesign.getDst(2);
-    var dstCanvas=new DstCanvas();
+    $scope.embStage=new EmbStage({container:'container',
+        width: 1024,
+        height: 800});
 	
-	$scope.addDstImage=function(){
-		
-		var dstImage=new Kinetic.Image({
-			x:0,
-			y:0,
-			draggable:true,
-			width:dstCanvas.getOriginalWidth(),
-			height:dstCanvas.getOriginalHeight(),
-			image:dstCanvas.imageObj
-		});
-		
-		$scope.dstPaint.dstStage.add(dstImage);
-	};
+	$scope.embCanvas=new EmbCanvas($scope.dstDesign);
+
+	$scope.embImage=new Kinetic.Image({
+		x:0,
+		y:0,
+		draggable:true,
+		width:$scope.embCanvas.getOriginalWidth(),
+		height:$scope.embCanvas.getOriginalHeight(),
+		image:$scope.embCanvas.imageObj
+	});
 	
+	$scope.embStage.add($scope.embImage);
+	
+	var onImageChanged=function(e){
+		$scope.embStage.draw();
+	}
+	
+	var onDesignChanged=function(e){
+		//e is dstDesign
+		
+		if($scope.myThreadMatcher 
+				&&  $scope.myThreadMatcher.embCanvas 
+				&&  $scope.myThreadMatcher.embCanvas.embDesign===e){
+			
+			$scope.myThreadMatcher.initColorwayList();
+		}
+	}
+	
+	$scope.dstDesign.change.addListener($scope.embCanvas,onDesignChanged);
+	$scope.embCanvas.imageChanged.addListener($scope.embStage,onImageChanged);
+
+    $scope.dstDesign.getDst(2);
 	
 	$scope.print=function(){
 		var dataUrl=document.getElementById("DstCanvas1").toDataURL();
@@ -209,15 +115,7 @@ orderApp.controller("testCtrl",
 	    printWin.close();
 	}
 	
-	$scope.setCanvas=function(){
-		dstCanvas.setDstDesign(dstDesign)
- 		dstCanvas.drawDesign();
- 		$scope.dstPaint.setDstCanvas(dstCanvas);
-	}
 
-	$scope.getDstImage=function(){
-		
-	}
 
 }]);
 	

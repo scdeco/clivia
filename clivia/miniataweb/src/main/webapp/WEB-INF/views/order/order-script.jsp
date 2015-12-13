@@ -6,26 +6,34 @@
 
 
  //GarmentGridWrapper inherited from GridWrapper
- orderApp.factory("GarmentGridWrapper",["GridWrapper","SO",function(GridWrapper,SO){
+ orderApp.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapper,cliviaDDS){
 
+	 var self;
+	 
 	 var GarmentGridWrapper=function(gridName){
 		GridWrapper.call(this,gridName);
 		
 		this.currentGarment=null;
 		this.dict={colourway:[],sizeRange:[]};
+		this.dictGarment=cliviaDDS.getDict("garment");
+		self=this;
 	}
 	 
 	GarmentGridWrapper.prototype=new GridWrapper(); 
 	
 	GarmentGridWrapper.prototype.setRowDict=function(){
-		
-   		this.dict.colourway.splice(0,this.dict.colourway.length);
-   		this.dict.sizeRange.splice(0,this.dict.sizeRange.length);
+   		var colourway=[],sizeRange=[];
    		if(this.currentGarment){
-			this.dict.colourway=String(this.currentGarment.colourway).split(',');
-			this.dict.sizeRange=String(this.currentGarment.sizeRange).split(',');
-			console.log("set row dict:"+String(this.currentGarment.colourway));
+			colourway=String(this.currentGarment.colourway).split(',');
+			sizeRange=String(this.currentGarment.sizeRange).split(',');
+			for(var i=0;i<colourway.length;i++)
+				colourway[i]=colourway[i].trim();
+			
+			for(var i=0;i<sizeRange.length;i++)
+				sizeRange[i]=sizeRange[i].trim();
    		}
+   		this.dict.colourway=colourway;
+   		this.dict.sizeRange=sizeRange;
 	}
 	
 	GarmentGridWrapper.prototype.setCurrentGarment=function(model){
@@ -40,8 +48,7 @@
 			if(this.currentGarment && this.currentGarment.styleNumber===styleNumber){
 		    	model.set("description",this.currentGarment.styleName);
 			}else{
-				var self=this;
-				SO.dds.garment.getItem("styleNumber",styleNumber)
+				this.dictGarment.getItem("styleNumber",styleNumber)
 					.then(function(garment){
 						self.currentGarment=garment;
 				    	model.set("description",self.currentGarment.styleName);
@@ -56,7 +63,7 @@
 	}
 	
 	GarmentGridWrapper.prototype.colourColumnEditor=function(container, options) {
-		var self=this;		
+		if(self.reorderRowEnabled) return;
 		$('<input class="grid-editor"  data-bind="value:' + options.field + '"/>')
 	    	.appendTo(container)
 	    	.kendoComboBox({
@@ -65,11 +72,10 @@
 		            data: self.dict.colourway
 		        }
 	    })
-	};	
+	}
 
 	GarmentGridWrapper.prototype.sizeColumnEditor=function(container, options) {
-		if(this.reorderRowEnabled) return;
-		var self=this;		
+		if(self.reorderRowEnabled) return;
 	    $('<input class="grid-editor"  data-bind="value:' + options.field + '"/>')
 	    	.appendTo(container)
 	    	.kendoComboBox({
@@ -78,8 +84,20 @@
 		            data: self.dict.sizeRange
 	        }
 	    })
-	};				    
-    
+	}				    
+	
+
+	GarmentGridWrapper.prototype.sizeQtyEditor=function(container, options) {
+		if(self.reorderRowEnabled) return;
+		var column=self.getGridColumn(options.field);
+		if(column)
+			if(self.dict.sizeRange.indexOf(column.title)<0)
+		        $("<span>-</span>").appendTo(container);
+			else
+				self.numberColumnEditor(container,options);
+		else
+	        self.readOnlyEditor(container,options);
+	}				    
 	
 	return GarmentGridWrapper;
  }]); /* end of GarmentGridWrapper */

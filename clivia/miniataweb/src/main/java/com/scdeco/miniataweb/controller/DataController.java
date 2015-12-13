@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.scdeco.miniataweb.dao.GenericDao;
 import com.scdeco.miniataweb.util.CliviaApplicationContext;
 import com.scdeco.miniataweb.util.CliviaUtils;
-import com.scdeco.miniataweb.util.DataSourceRequest;
 
 @Controller
 @RequestMapping("/data/*")

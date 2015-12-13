@@ -220,8 +220,8 @@ factory("Selector",function(){
 }).
 
 
-factory("DictThread",["$http",function($http){		//service
-	var DictThread={
+factory("dictThread",["$http",function($http){		//service
+	var dictThread={
 		threads:[],
 		defaultThreadColor:{r:100,g:100,b:100,a:0.05},
 		cursorThreadColor:{r:0,g:255,b:0,a:1},
@@ -250,7 +250,7 @@ factory("DictThread",["$http",function($http){		//service
 			    		t={code:d.code,r:d.red,g:d.green,b:d.blue};
 			    		ts.push(t);
 			    	}
-			    	DictThread.threads=ts
+			    	dictThread.threads=ts
 				}).
 				error(function(data, status, headers, config) {
 				});
@@ -258,10 +258,10 @@ factory("DictThread",["$http",function($http){		//service
 		},			
 		
 		getThreadColor:function(code){
-			var c=DictThread.defaultThreadColor;
+			var c=dictThread.defaultThreadColor;
 			if(code){
 				code=code.trim().toUpperCase();
-				var threads=DictThread.threads;
+				var threads=dictThread.threads;
 				for(var i=0;i<threads.length;i++ )
 					if(threads[i].code===code){
 						c=threads[i];
@@ -272,16 +272,16 @@ factory("DictThread",["$http",function($http){		//service
 		},
 
 		getThreadColorHex:function(code){
-			var c=DictThread.getThreadColor(code);
+			var c=dictThread.getThreadColor(code);
 			return (c===this.defaultThreadColor)?"":"#" + ((1 << 24) + (c.r << 16) + (c.g << 8) + c.b).toString(16).slice(1);
 		},
 		
 		getThreadColors:function(threadCodes){
-			var threadColors=[DictThread.defaultThreadColor],
+			var threadColors=[dictThread.defaultThreadColor],
 				codeList=threadCodes.split(',');
 			
 			for(var i=0;i<codeList.length;i++){
-				threadColors.push(DictThread.getThreadColor(codeList[i]))
+				threadColors.push(dictThread.getThreadColor(codeList[i]))
 			}
 			return threadColors;
 		},
@@ -335,8 +335,8 @@ factory("DictThread",["$http",function($http){		//service
 		
 		getDefaultColorModel:function(){
 			
-			var colorModel=[DictThread.defaultThreadColor];
-			var threadColors=DictThread.defaultThreadColors;
+			var colorModel=[dictThread.defaultThreadColor];
+			var threadColors=dictThread.defaultThreadColors;
 			for(var i=0,colour; i<255; i++)
 				colorModel.push(threadColors[i%15]);
 			return colorModel;
@@ -350,11 +350,11 @@ factory("DictThread",["$http",function($http){		//service
 				colorModel=this.getDefaultColorModel();
 			}else{
 				
-				colorModel=[DictThread.defaultThreadColor];
+				colorModel=[dictThread.defaultThreadColor];
 				
-				var threadColors=DictThread.getThreadColors(colorway.threadCodes);
-				var runningSteps=DictThread.getRunningSteps(colorway.runningSteps,stepCount);
-				var alphaSteps=DictThread.getRunningSteps(colorway.alphaSteps,stepCount);
+				var threadColors=dictThread.getThreadColors(colorway.threadCodes);
+				var runningSteps=dictThread.getRunningSteps(colorway.runningSteps,stepCount);
+				var alphaSteps=dictThread.getRunningSteps(colorway.alphaSteps,stepCount);
 				
 				var alpha=typeof colorway.alpha==='undefined'?0:colorway.alpha;
 				
@@ -362,7 +362,7 @@ factory("DictThread",["$http",function($http){		//service
 					
 					idx=(i>=colorway.runningSteps.length)?0: parseInt(runningSteps[i]);
 					if(idx>=16)
-						c=DictThread.cursorThreadColor;
+						c=dictThread.cursorThreadColor;
 					else if (idx<threadColors.length)
 						c=threadColors[idx];
 					else
@@ -379,49 +379,88 @@ factory("DictThread",["$http",function($http){		//service
 			
 	};
 	
-	DictThread.retrieve();
+	dictThread.retrieve();
 	
-	return  DictThread;
+	return  dictThread;
 }]).
+
+factory("Event",function(){
+	var event=function(){
+		this.listeners=[];
+	};
+	
+	event.prototype={
+		addListener:function(owner,handler){
+			if(owner && handler)
+				this.listeners.push({
+					owner:owner,
+					handler:handler
+				});
+		},
 		
-factory("DstDesign",["$http",function($http){
+		removeListener:function(owner,handler){
+			if(owner && handler)
+				for(var i=0,listener;i<this.listeners.length;i++){
+					listener=this.listeners[i];
+					if(listener.owner===owner && listener.handler===handler){
+						this.listeners.splice(i,1);
+						break;
+					}
+				}
+		},
+		
+		fireEvent:function(args){
+			for(var i=0,listener;i<this.listeners.length;i++){
+				listener=this.listeners[i];
+				listener.handler.apply(listener.owner,args);
+			}
+		}
+	}
+	
+	return event;
+}).
+
+factory("DstDesign",["$http","Event",function($http,Event){
+
+	var initDesign=function(design){
+		design.width="";
+		design.height="";
+		design.startX="";			
+		design.startY="";
+		design.left="";
+		design.top="";
+		design.right="";
+		design.bottom="";
+		design.stitchCount="";
+		design.stepCount="";
+		design.trimCount="";
+		design.designNumber="";				
+		
+		design.pixelWidth=0;
+		design.pixelHeight=0;	
+		design.stitchList=[];	
+		design.stepList=[];
+	}
 	
 	var DstDesign=function(id){
-		this.initDesign();
+		initDesign(this);
+		this.change=new Event();
 		if(!!id) this.getDst(id);
+		
 	}
 	
 	DstDesign.prototype={
 			
-		initDesign:function(){
-			this.width="";
-			this.height="";
-			this.startX="";
-			this.startY="";
-			this.left="";
-			this.top="";
-			this.right="";
-			this.bottom="";
-			this.stitchCount="";
-			this.stepCount="";
-			this.trimCount="";
-			this.designNumber="";				
-			
-			this.pixelWidth=0;
-			this.pixelHeight=0;	
-			this.stitchList=[];	
-			this.stepList=[];
-			},
-		
 		isValid:function(){
 			return this.stitchList.length>0;
 		},
+		
 		
 		getDst:function(dstId){
 		
 			var url="/miniataweb/library/embdesign/getstitches?id="+dstId;
 			var self=this;
-			this.initDesign();
+			initDesign(this);
 			
 			$http.get(url).
 				success(function(data, status, headers, config) {
@@ -430,8 +469,10 @@ factory("DstDesign",["$http",function($http){
 						if(design.hasOwnProperty(property))
 							self[property]=design[property];
 					}
+					self.change.fireEvent([self]);
 				}).
 				error(function(data, status, headers, config) {
+					self.change.fireEvent([self]);
 				});								
 		},
 			
@@ -477,36 +518,66 @@ factory("DstDesign",["$http",function($http){
 		
 }]).
 
-factory("DstCanvas",["DstDesign","DictThread",function(DstDesign,DictThread){
+factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 	
 	var SCREEN_PPM=1280/340,SCREEN_DESIGN_RATIO=SCREEN_PPM/10;
 	
-	var DstCanvas=function(dstDesign){
+	var EmbCanvas=function(embDesign){
 		
 		this.canvas=document.createElement('canvas');
-		this.canvas.id=this.createElementId();
+		this.canvas.id=createElementId();
 		//this.canvas.style.visibility='hidden';
-		this.ctx=this.canvas.getContext("2d");
 		document.body.appendChild(this.canvas);
 		this.imageObj=document.getElementById(this.canvas.id);
 		
+		this.ctx=this.canvas.getContext("2d");
 		this.ctx.lineWidth=1;
+
+		this.canvas.width=0;
+		this.canvas.height=0;
 		
+		this.embDesign=null;
 		this.threadCodes="";
 		this.runningSteps="";
-		this.dstDesign=null;
-		this.setDstDesign(dstDesign)
 		this.colorModel=null;			//colorModel used in current drawing
+		
+		this.imageChanged=new Event();
+		
+		if(embDesign)
+			this.setEmbDesign(embDesign);
 	}
 	
-	DstCanvas.prototype={
-
-		createElementId:function(){
-				if(angular.isUndefined(DstCanvas.prototype.randomId))
-					DstCanvas.prototype.randomId=0;
-					
-				return "DstCanvas"+(++DstCanvas.prototype.randomId);
-			},
+	var onDesignChanged=function(e){
+		var thisEmbCanvas=this;
+		thisEmbCanvas.canvas.width=Math.round(thisEmbCanvas.embDesign.pixelWidth*SCREEN_DESIGN_RATIO)+1;		//original size of image
+		thisEmbCanvas.canvas.height=Math.round(thisEmbCanvas.embDesign.pixelHeight*SCREEN_DESIGN_RATIO)+1;
+		thisEmbCanvas.drawDesign();
+	}
+	
+	var randomId=0;
+	var createElementId=function(){
+		return "EmbCanvas"+(randomId++);
+	}
+	
+	EmbCanvas.prototype={
+		
+		setEmbDesign:function(embDesign){
+			if(this.embDesign)
+				this.embDesign.change.removeListener(this,onDesignChanged);
+			
+			if(embDesign){
+				if(embDesign!==this.embDesign){	//embDesign changed
+					this.embDesign=embDesign;
+				}
+				this.embDesign.change.addListener(this,onDesignChanged);
+				
+			}else{
+				this.embDesign=null;
+				this.canvas.width=0;
+				this.canvas.height=0;
+				this.drawDesign();
+			}
+		},
 			
 		getOriginalWidth:function(){
 			return this.canvas.width;
@@ -516,17 +587,6 @@ factory("DstCanvas",["DstDesign","DictThread",function(DstDesign,DictThread){
 			return this.canvas.height;
 		},
 
-		setDstDesign:function(dstDesign){
-			if(angular.isDefined(dstDesign)){
-				this.dstDesign=dstDesign;
-				this.canvas.width=Math.round(this.dstDesign.pixelWidth*SCREEN_DESIGN_RATIO)+1;		//original size of image
-				this.canvas.height=Math.round(this.dstDesign.pixelHeight*SCREEN_DESIGN_RATIO)+1;
-			}else{
-				this.dstDesign=null;
-				this.canvas.width=0;
-				this.canvas.height=0;
-			}
-		},
 		
 		clearCanvas:function(){
 			this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
@@ -553,10 +613,12 @@ factory("DstCanvas",["DstDesign","DictThread",function(DstDesign,DictThread){
 		},
 		
 		//if typeof colorway==="undefined", use delautColorModel
-		//if colorway==={}, use thredCodes or runningSteps of this dstCanvas
+		//if colorway==={}, use thredCodes or runningSteps of this embCanvas
 		drawDesign:function(colorway){
-			if(!this.dstDesign.isValid) 
+			if(!(this.embDesign && this.embDesign.isValid)){
+				this.imageChanged.fireEvent([this]);
 				return;
+			} 
 	
 			if(colorway){
 				if(!colorway.threadCode)
@@ -565,22 +627,23 @@ factory("DstCanvas",["DstDesign","DictThread",function(DstDesign,DictThread){
 					colorway.runningSteps=this.runningSteps;
 			};
 			
-			var colorModel=DictThread.getColorModel(colorway,this.dstDesign.stepCount);
+			var colorModel=dictThread.getColorModel(colorway,this.embDesign.stepCount);
 			
 			if (this.isNewColorModel(colorModel)){
 				this.colorModel=colorModel;
 				this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
-				this.dstDesign.drawDesign(this.ctx,colorModel,SCREEN_DESIGN_RATIO);
+				this.embDesign.drawDesign(this.ctx,colorModel,SCREEN_DESIGN_RATIO);
+				this.imageChanged.fireEvent([this]);
 			}
 		},
 	}
 	
-	return DstCanvas; 
+	return EmbCanvas; 
 }]).
 
-
-factory("DstStage",["Selector",function(Selector){
-	var DstStage=function(config){	//{container: 'container', width: 1024, height: 800}
+factory("EmbStage",["Selector",function(Selector){
+	
+	var EmbStage=function(config){	//{container: 'container', width: 1024, height: 800}
 
 		this.stage=new Kinetic.Stage(config);
 		this.backGroundLayer=new Kinetic.Layer();
@@ -589,7 +652,7 @@ factory("DstStage",["Selector",function(Selector){
 		this.currentLayer=this.backGroundLayer;
 	}
 	
-	DstStage.prototype={
+	EmbStage.prototype={
 			createLayer:function(addToStage){
 				var newLayer=new Kinetic.Layer();
 				if(addToStage)
@@ -613,15 +676,13 @@ factory("DstStage",["Selector",function(Selector){
 			}
 	}
 	
-	return DstStage;
+	return EmbStage;
 	
-}])
+}]).
 
-.factory("DstPaint",["DictThread","DstDesign","DstCanvas","DstStage","GridWrapper",
-		function(DictThread,DstDesign,DstCanvas,DstStage,GridWrapper){
+factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread){
 	
 	var MAX_THREAD_COUNT=15;
-
 	var paletteColors=[
             "#fefefe", "#c4c4c4", "#787878", "#202020",
             "#c6d9f0", "#8db3e2", "#548dd4", "#17365d",
@@ -683,51 +744,47 @@ factory("DstStage",["Selector",function(Selector){
 			    width: 30
 			}];
 	
-    var dstPaint=function(config){
-    		this.gwThread=new GridWrapper("dstThreadGrid");
-			this.gwThread.setColumns(threadGridColumns);
-			this.gwThread.enableEnterMoveDown();
-			
-    		this.gwStep=new GridWrapper("dstStepGrid");
-			this.gwStep.setColumns(stepGridColumns);
-			this.gwStep.enableEnterMoveDown();
-			
-			var thisPaint=this;
-			this.gwStep.dragSorted=function(){
-				thisPaint.parseRunningSteps();
-			}
+	var embMatcher=function(){
+		
+		this.embCanvas={};
 
-			this.threadList=new kendo.data.ObservableArray([]);
-			this.runningStepList=new kendo.data.ObservableArray([]);
-			
-			this.dstCanvas={};
-			this.dstStage=new DstStage({container:config.stage,
-		          width: 1024,
-		          height: 800});
+		this.gwThread=new GridWrapper("embThreadGrid",threadGridColumns);
+		this.gwThread.enableEnterMoveDown();
+		
+		this.gwStep=new GridWrapper("embStepGrid",stepGridColumns);
+		this.gwStep.enableEnterMoveDown();
+		this.gwStep.dragSorted=function(){this.parseRunningSteps();};	//call back function
+
+		//as dataSource of 'dstThreadGrid' and 'dstStepGrid' which are wrapped by gwThread and gwStep respectfully
+		this.threadList=new kendo.data.ObservableArray([]);
+		this.runningStepList=new kendo.data.ObservableArray([]);
+
 	}
-    
-    dstPaint.prototype={
-
-			clearThreadList:function(){			//clear contents(code,colour) of dataSource of threadGrid
+	
+	embMatcher.prototype={
+			
+			//clear contents(code,colour) of dataSource of threadGrid
+			clearThreadList:function(){			
 				for(var i=0;i<this.threadList;i++){
 					this.threadList[i].code="";
 					this.threadList[i].colour="";
 				}
-				
 			},
 			
-			clearRunningStepList:function(){		//clear contents(code,threadIndex) of dataSource of stepGrid
+			//clear contents(code,threadIndex) of dataSource of stepGrid
+			clearRunningStepList:function(){		
 				for(var i=0;i<this.runningStepList.length;i++){
 					this.runningStepList[i].code="";
 					this.runningStepList[i].threadIndex="";
 				}
 			},
 			
-			initColorwayList:function(){	//stepList(stepGrid) and runningStepList(stepGrid)
+			//stepList(stepGrid) and runningStepList(stepGrid)
+			initColorwayList:function(){	
 				this.threadList.splice(0,this.threadList.length)
 				this.runningStepList.splice(0,this.runningStepList.length)
-				if(this.dstCanvas.dstDesign){
-					var design=this.dstCanvas.dstDesign,
+				if(this.embCanvas.embDesign){
+					var design=this.embCanvas.embDesign,
 						stepList=design.stepList,
 						stepCount=design.stepCount,
 						threadCount=stepCount<MAX_THREAD_COUNT?stepCount:MAX_THREAD_COUNT;
@@ -742,7 +799,11 @@ factory("DstStage",["Selector",function(Selector){
 				}
 			},
 			
-			parseThreads:function(){	//from this.threadList to this.dstCanvas.threadCodes
+			
+			
+			
+			//from this.threadList to this.embCanvas.threadCodes
+			parseThreads:function(){	
 				var threads=[],thread;
 				for(var i=0;i<this.threadList.length;i++){
 					thread=this.threadList[i];
@@ -750,22 +811,23 @@ factory("DstStage",["Selector",function(Selector){
 						break;
 					threads.push(thread.code);
 				}
-				if(threads!==this.dstCanvas.threadCodes){
-					this.dstCanvas.threadCodes=threads.join();
+				if(threads!==this.embCanvas.threadCodes){
+					this.embCanvas.threadCodes=threads.join();
 				}
 			},
 			
-			populateThreads:function(){  //from this.dstCanvas.threadCodes to this.threadList
-				var threadCodes=this.dstCanvas.threadCodes;
+			//from this.embCanvas.threadCodes to this.threadList
+			populateThreads:function(){  
+				var threadCodes=this.embCanvas.threadCodes;
 				if(threadCodes){
 					
 				}else{
 					this.clearThreads();
 				}
-					
 			},
 			
-			parseRunningSteps:function(){	//from this.runningStepList to this.dstCanvas.runningSteps
+			//from this.runningStepList to this.embCanvas.runningSteps
+			parseRunningSteps:function(){	
 				var steps=[],step;
 				for(var i=0;i<this.runningStepList.length;i++){
 					step=this.runningStepList[i];
@@ -773,13 +835,14 @@ factory("DstStage",["Selector",function(Selector){
 						break;
 					steps.push(step.threadIndex);
 				}
-				if(steps!==this.dstCanvas.runningSteps){
-					this.dstCanvas.runningSteps=steps.join('-');
+				if(steps!==this.embCanvas.runningSteps){
+					this.embCanvas.runningSteps=steps.join('-');
 				}
 			},
 			
-			populateRunningSteps:function(){	//from this.dstCanvas.runningSteps to this.runningStepList
-				var runningSteps=this.dstCanvas.runningSteps;
+			//from this.embCanvas.runningSteps to this.runningStepList
+			populateRunningSteps:function(){	
+				var runningSteps=this.embCanvas.runningSteps;
 				if(runningSteps){
 					
 				}else{
@@ -807,80 +870,13 @@ factory("DstStage",["Selector",function(Selector){
 			},
 
 			
-			setDstCanvas:function(dstCanvas){
-				this.dstCanvas=dstCanvas;
+			setEmbCanvas:function(embCanvas){
+				this.embCanvas=embCanvas;
 				this.initColorwayList();
 			},
 			
-			wrapThreadGrid:function(){
-				this.gwThread.wrapGrid();
-			},
-
-			wrapStepGrid:function(){
-				this.gwStep.wrapGrid();
-			},
-			
-			backgroundColorPaletteOptions:function() {
-				return {
-			        palette: paletteColors
-				};
-			},
-			
-			threadGridOptions:function(){
-				var self=this;
-				return {
-					columns:threadGridColumns,
-			        editable: true,
-			        selectable: "cell",
-			        navigatable: true,			
-			        autoSync:true,
-					dataSource:this.threadList,
-					save:function(e){
-	                	 console.log("thread save:");
-			       		if (typeof e.values=== 'undefined')
-				       			return;
-			       		if (typeof e.values.code=== 'undefined')
-			       			return;
-			       		var code=DictThread.normalizeThreadCode(e.values.code);
-			       		if(code===e.model.code)
-			       			return;
-			       			
-	  	        		e.preventDefault();
-
-	  	        		var index=(self.gwThread.getDataItemIndex(e.model)+1).toString();
-	  	        		
-		          		e.model.set("code","");
-		          		e.model.set("colour","");
-	  	        		if(self.getThreadIndex(code)<0){	//code not exists in the threadList
-		  	        		var colour=DictThread.getThreadColorHex(code);
-		  	        		if(colour){
-		  	        			e.model.set("code",code);
-		  	        			e.model.set("colour",colour);
-		  	        		}
-	  	        		}
-	  	        		if(e.model.get("code")==""){
-	  	        			
-	  	        			self.gwThread.enterKeyDown=false;
-	  	        		}
-	  	        		
-		          		var template = kendo.template(this.columns[1].template),
-		                	cell = e.container.parent().children('td').eq(1);
-	                    cell.html(template(e.model));
-	                    
-	                    for(var i=0,steps=self.runningStepList;i<steps.length;i++){
-	                    	if(steps[i].threadIndex===index){
-	                    		steps[i].code=code;
-	                    		steps[i].colour=colour;
-	                    	}
-	                    }
-	                    self.gwStep.grid.refresh();
-	                    self.parseThreads();
-						self.drawDesign({});
-					}
-				}
-			},
-			
-			drawDesign:function(){			//editing mode, called from events of gwStep.grid and gwThread.grid
+			//editing mode, called from events of gwStep.grid and gwThread.grid
+			drawDesign:function(){			
 				var colorway={};
 				var cell=this.gwStep.getCurrentCell();
 				if (cell && cell.cellIndex>0){		//cellIndex>0
@@ -920,7 +916,7 @@ factory("DstStage",["Selector",function(Selector){
 									a="0";
 								}
 								break;
-							case 1:							//ST. COLUMN
+							case 1:							//st. column
 								if(i==rowIndex){
 									idx=16;
 									a="1";
@@ -938,11 +934,66 @@ factory("DstStage",["Selector",function(Selector){
 					colorway.alpha=cellIndex==4?0.15:0.03;
 				}
 				
-				this.dstCanvas.drawDesign(colorway);
-				this.dstStage.draw();
-			},
+				this.embCanvas.drawDesign(colorway);
+				//this.dstStage.draw();
+			}, //end of drawDesign()
+			
+			
+			getThreadGridOptions:function(){
+				var self=this;
+				return	{
+					columns:threadGridColumns,
+			        editable: true,
+			        selectable: "cell",
+			        navigatable: true,			
+			        autoSync:true,
+					dataSource:self.threadList,
+					
+					save:function(e){
+	                	 console.log("thread save:");
+			       		if (typeof e.values=== 'undefined')
+				       			return;
+			       		if (typeof e.values.code=== 'undefined')
+			       			return;
+			       		var code=dictThread.normalizeThreadCode(e.values.code);
+			       		if(code===e.model.code)
+			       			return;
+			       			
+	  	        		e.preventDefault();
 
-			stepGridOptions:function(){
+	  	        		var index=(self.gwThread.getDataItemIndex(e.model)+1).toString();
+	  	        		
+		          		e.model.set("code","");
+		          		e.model.set("colour","");
+	  	        		if(self.getThreadIndex(code)<0){	//code not exists in the threadList
+		  	        		var colour=dictThread.getThreadColorHex(code);
+		  	        		if(colour){
+		  	        			e.model.set("code",code);
+		  	        			e.model.set("colour",colour);
+		  	        		}
+	  	        		}
+	  	        		if(e.model.get("code")==""){
+	  	        			self.gwThread.enterKeyDown=false;
+	  	        		}
+	  	        		
+		          		var template = kendo.template(this.columns[1].template),
+		                	cell = e.container.parent().children('td').eq(1);
+	                    cell.html(template(e.model));
+	                    
+	                    for(var i=0,steps=self.runningStepList;i<steps.length;i++){
+	                    	if(steps[i].threadIndex===index){
+	                    		steps[i].code=code;
+	                    		steps[i].colour=colour;
+	                    	}
+	                    }
+	                    self.gwStep.grid.refresh();
+	                    self.parseThreads();
+						self.drawDesign({});
+					}
+				} 
+			},//end of thread grid option
+			
+			getStepGridOptions:function(){
 				var self=this;
 				return {
 					columns:stepGridColumns,
@@ -950,7 +1001,7 @@ factory("DstStage",["Selector",function(Selector){
 			        selectable: "cell",
 			        navigatable: true,	
 			        autoSync:true,
-					dataSource:this.runningStepList,
+					dataSource:self.runningStepList,
 
 					change:function(e){
 						console.log("step change:");
@@ -980,7 +1031,7 @@ factory("DstStage",["Selector",function(Selector){
 
 			                	 console.log("step save3:");
 				          		
-			  	        		code=DictThread.normalizeThreadCode(code);
+			  	        		code=dictThread.normalizeThreadCode(code);
 			       				var thread=null;
 			  	        		var index=parseInt(code);
 			  	        		if(index>0 && index<=self.threadList.length){
@@ -990,7 +1041,7 @@ factory("DstStage",["Selector",function(Selector){
 			  	        		}
 			  	        		
 			  	        		if(index<0){
-			  	        			var colour=DictThread.getThreadColorHex(code);
+			  	        			var colour=dictThread.getThreadColorHex(code);
 			  	        			if(colour){
 			  	        				for(index=0;index<self.threadList.length;index++)
 			  	        					if(!self.threadList[index].code)
@@ -1030,14 +1081,77 @@ factory("DstStage",["Selector",function(Selector){
 					
 		       		dataBinding:function(e){
 		       			console.log("binding");
+		       			//create a globle variable
 		       			renderingPaint=self;
 		       		}
 
 				}
-			}			//end of stepGridOptions
-    	} //end of prototype	
+			},//end of stepGridOptions
+			
+			getBackgroundColorPaletteOptions:function(){
+				return {
+				    palette: paletteColors
+				}
+			}
+	}
+	
+	return embMatcher;
+}]).
+
+directive("threadMatcher",["EmbMatcher",function(EmbMatcher){
+	var templateUrl="../common/dstmatcher";
+	var directive={
+			restrict:'EA',
+			replace:false,
+			scope:{
+				cName:'@threadMatcher',
+				cEmbCanvas:'=',
+			},
+	
+			templateUrl:templateUrl,
+			
+			link:function(scope,element,attrs){
+				
+				scope.embMatcher=new EmbMatcher();
+				
+				scope.$on("kendoWidgetCreated", function(event, widget){
+				        // the event is emitted for every widget; if we have multiple
+				        // widgets in this controller, we need to check that the event
+				        // is for the one we're interested in.
+				        if (widget ===scope[scope.embMatcher.gwThread.gridName])
+				        	scope.embMatcher.gwThread.wrapGrid(widget);
+				        
+				        if (widget ===scope[scope.embMatcher.gwStep.gridName]) 
+				        	scope.embMatcher.gwStep.wrapGrid(widget);
+				    });	
+				
+				//expose this directive scope to parent directive
+				if(scope.cName)
+					scope.$parent[scope.cName]=scope.embMatcher;
+
+				if(scope.cEmbCanvas)
+					scope.embMatcher.setEmbCanvas(scope.cEmbCanvas);
+				
+
+			} //end of link function
+
+		}
+	
+	return directive;
+}]).
+
+factory("EmbPaint",["DstDesign","EmbCanvas","EmbStage",
+		function(DstDesign,EmbCanvas,EmbStage){
+	
+	
+    var embPaint=function(config){
+    }
     
-    	return dstPaint;
+    embPaint.prototype={
+
+    } //end of prototype	
+    
+    return embPaint;
 }]);
 
 

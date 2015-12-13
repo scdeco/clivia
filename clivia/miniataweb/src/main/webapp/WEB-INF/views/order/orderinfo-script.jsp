@@ -19,8 +19,6 @@ orderApp.controller("orderInfoCtrl", ["$scope","SO","cliviaDDS",function($scope,
 			format: "yyyy-MM-dd",
 		    parseFormats: ["yyyy-MM-dd"]
 	}
-	
-
 }]);
 </script>
 	
