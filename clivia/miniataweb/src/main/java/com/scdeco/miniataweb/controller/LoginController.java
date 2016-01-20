@@ -63,7 +63,7 @@ public class LoginController {
 	
 	@RequestMapping(value="/read",method=RequestMethod.POST)
 	public @ResponseBody DataSourceResult  read(){
-		DataSourceResult result=employeeDao.findListByRequest(new DataSourceRequest());
+		DataSourceResult result=employeeDao.findListByDataSourceRequest(new DataSourceRequest());
 		System.out.println(result);
 		return result;
 	}

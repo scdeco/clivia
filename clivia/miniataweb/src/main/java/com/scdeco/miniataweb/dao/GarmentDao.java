@@ -15,14 +15,14 @@ public class GarmentDao extends GenericDao<Garment> {
 	@Autowired
 	GarmentUpcDao garmentUpcDao;
 	
-	public Garment FindByStyleNumber(String styleNumber) {
+	public Garment findByStyleNumber(String styleNumber) {
 		List<Garment> list=this.findList(super.createCriteria().add(Restrictions.eq("styleNumber", styleNumber)));
 		return list.isEmpty()?null:list.get(0);
 	}
 
 	//all dependencies of garment and itself will be deleted
-	public void DeleteGarment(Garment garment) {
-		List<GarmentUpc> list=garmentUpcDao.FindListByGarmentId(garment.getId());
+	public void deleteGarment(Garment garment) {
+		List<GarmentUpc> list=garmentUpcDao.findListByGarmentId(garment.getId());
 		if (!list.isEmpty())
 			garmentUpcDao.deleteAll(list);
 		this.delete(garment);

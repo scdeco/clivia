@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hibernate.Criteria;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Criterion;
@@ -18,8 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.scdeco.miniataweb.util.CliviaUtils;
 import com.scdeco.miniataweb.util.DataSourceRequest;
 import com.scdeco.miniataweb.util.DataSourceResult;
+import com.scdeco.miniataweb.util.SqlRequest;
 
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 public abstract class GenericDao<T> {
@@ -121,6 +124,22 @@ public abstract class GenericDao<T> {
 	}
 
 	@SuppressWarnings("unchecked")
+	public List<T> findList(SqlRequest sqlRequest) {
+		
+		String sql="Select * From "+entityClass.getSimpleName();
+		if(sqlRequest.getWhere()!=null)
+			sql+=" where "+sqlRequest.getWhere();
+
+		if(sqlRequest.getOrderby()!=null)
+			sql+=" Order By "+sqlRequest.getOrderby();
+		
+		SQLQuery sqlQuery=getSession().createSQLQuery(sql);
+		sqlQuery.addEntity(entityClass);
+		List<T> result=sqlQuery.list();
+		return result;
+	}
+	
+	@SuppressWarnings("unchecked")
 	public List<T> findList(Criteria criteria) {
 		return criteria.list();
 	}
@@ -146,7 +165,30 @@ public abstract class GenericDao<T> {
                 .like(propertyName, "%" + value + "%");  
         return findList(criterion);  
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<T> findListIn(String propertyName,Object[] values){
+		List<T> result=null;
+        Criteria criteria = createCriteria();  
+		criteria.add(Restrictions.in(propertyName, values));
+		result=criteria.list();
+		return result;
+	}
 	
+	public List<T> findListIn(String propertyName,String propertyType,String valueSet){
+		List<T> result=null;
+		String[] strSet=valueSet.split(",");
+		if(propertyType.toLowerCase().startsWith("i")){
+			Integer[] intSet=new Integer[strSet.length];
+			for(int i=0;i<strSet.length;i++){
+				intSet[i]=CliviaUtils.parseInt(strSet[i]);
+			}
+			result=findListIn(propertyName,intSet);
+		} else {
+			result=findListIn(propertyName,strSet);
+		}
+		return result;
+	}
 	
 	@SuppressWarnings("unchecked")
 	public List<T> findList(Criterion criterion) {
@@ -190,13 +232,10 @@ public abstract class GenericDao<T> {
 		return  findListByKeys(keyName,keyValues);
 	}
 	
-	
-	
-    public DataSourceResult findListByRequest(DataSourceRequest request) {
+    public DataSourceResult findListByDataSourceRequest(DataSourceRequest request) {
         return request.toDataSourceResult(getSession(), this.entityClass);
     }
 	
-
 	@SuppressWarnings("unchecked")
 	public T findUniqueResult(String propertyName, Object value) {
         Criterion criterion = Restrictions.eq(propertyName, value);  

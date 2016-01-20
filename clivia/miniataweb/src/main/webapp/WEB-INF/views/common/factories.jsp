@@ -1,21 +1,48 @@
 <script>
+'user strict';
 
-angular.module("clivia",["kendo.directives" ]).
+clivia=angular.module("clivia",["kendo.directives" ]);
+
+clivia.
 
 factory("util",["$http","$q",function($http,$q){
 	return {
 		find:function(items,propertyName,propertyValue){
 			var result=null;
-			for (var i = 0; i <items.length; i++) {
-			    if (items[i][propertyName] === propertyValue) {
-			    	result=items[i];
-			    	break; 
-			    }
+			
+			if(Array.isArray(propertyName) || Array.isArray(propertyValue)) {
+				if(Array.isArray(propertyName) 
+						&& Array.isArray(propertyValue) 
+						&&	propertyName.length===propertyValue.length){
+					
+					var ns=propertyName,vs=propertyValue;
+					for (var i = 0,item; i <items.length; i++) {
+						item=items[i];
+						j=0;
+						while (j<propertyName.length){
+						    if (item[ns[j]] !== vs[j]) {
+						    	break; 
+						    }
+						    j++
+						}
+						if(j===propertyName.length){
+							result=item;
+							break;
+						}
+					}
+				}
+			}else{
+				for (var i = 0; i <items.length; i++) {
+				    if (items[i][propertyName] === propertyValue) {
+				    	result=items[i];
+				    	break; 
+				    }
+				}
 			}
 			return result;
 		},
 		
-		getRemote:function(url){
+		getRemote:function(url,data){
 			var deferred = $q.defer();
 			$http.get(url).
 				success(function(data, status, headers, config) {
@@ -58,6 +85,11 @@ factory("DataDict",["$q","util",function($q,util){
 		clear:function(){
 			this.isLoaded=false;
 			this.items.splice(0,this.items.length);
+			while(this.waitingDeferred.length>0){
+				var deferred=this.waitingDeferred.pop();
+				deferred.reject("error");
+			}
+			this.isLoading=false;
 		},
 		
 		addItem:function(item){
@@ -67,8 +99,7 @@ factory("DataDict",["$q","util",function($q,util){
 		waitForLoaded:function(deferred){
 			this.waitingDeferred.unshift(deferred);
 			if(this.waitingDeferred.length===1){
-				var url=this.url,
-					self=this;
+				var url=this.url,self=this;
 				
 				util.getRemote(url)
 					.then(function(loaded){
@@ -120,9 +151,9 @@ factory("DataDict",["$q","util",function($q,util){
 		
 		
 		loadItem:function(name,value){
-			var deferred = $q.defer()
-				self=this,
-				url=this.url+"getitem?name="+name+"&value="+value;
+			var deferred = $q.defer();
+			var	self=this;
+			var	url=this.url+"getitem?name="+name+"&value="+value;
 			
 			util.getRemote(url)
 				.then(function(gotItem){
@@ -140,7 +171,7 @@ factory("DataDict",["$q","util",function($q,util){
 		loadItems:function(name,strValues){
 			var deferred = $q.defer();
 
-			self=this,
+			var self=this,
 			url=this.url+"getitems?name="+name+"&value="+strValues;
 		
 			util.getRemote(url)
@@ -224,8 +255,8 @@ factory("DataDict",["$q","util",function($q,util){
 		},
 		
 		getItems:function(name,values){
-			var deferred = $q.defer(),
-				self=this;
+			var deferred = $q.defer();
+			var	self=this;
 			
 			//get all items if name is not provided (call by getItems())
 			if(!name){
@@ -366,7 +397,7 @@ factory("DataDictSet",["DataDict","util", function(DataDict,util){
 	return dds;
 }]).
 //data dictionary set
-factory("cliviaDDS",["DataDictSet","consts",function(DataDictSet,DataDict,consts){
+factory("cliviaDDS",["DataDictSet",function(DataDictSet){
 	var baseUrl="/miniataweb/";
 	var dicts=[{
 			name:"customerInput",
@@ -374,8 +405,13 @@ factory("cliviaDDS",["DataDictSet","consts",function(DataDictSet,DataDict,consts
 			mode:"eager"
 		},{
 			name:"garment",
-			url:baseUrl+"/data/garment/",
+			url:baseUrl+"data/garment/",
 			mode:"onDemand"
+		},{
+			name:"garmentBrand",
+			url:baseUrl+"data/dictGarmentBrand/get",
+			mode:"eager"
+
 		}];
 	
 	var cliviaDDS=new DataDictSet(dicts);
@@ -713,512 +749,323 @@ factory("GridWrapper",function(){
 			
 }). /* end of GridWrapper */	
 
-directive("customerInput",["cliviaDDS",function(cliviaDDS){
-	var template='<input kendo-combobox k-options="customerOptions" k-ng-delay="customerOptions" ></input>';
-	return {
-		restrict:"EA",
-		replace:true,
-		scope:true,
-		template:template,
-		link:function(scope,element,attrs){
+//GarmentGridWrapper inherited from GridWrapper
+factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function(GridWrapper,cliviaDDS,DataDict,$q){
+
+	 var thisGGW;
+	 
+	 var sizeRangeFields=["12M","18M","2T","3T","4T","5/6","S","M","L","XL","XXL","XXXL","1X","2X"];
+	 var sizeRangeTitles=["12M","18M","2T","3T","4T","5/6","S","M","L","XL","2XL","3XL","1X","2X"];
+		
+	 var getColumns=function(brand){
+			var sizeQtyWidth=40;
+			var sizeQtyEditor=thisGGW.sizeQtyEditor;
+			var sizeQtyTemplate=thisGGW.sizeQtyTemplate;
+			var sizeQtyAttr={style:"text-align:right;"};
 			
-			cliviaDDS.getDict("customerInput").getItems()
-				.then(function(items){
-					scope.customerOptions={
-				            dataTextField: "text",
-				            dataValueField: "value",			
-							dataSource: {data:items}, 
-							dataBound:function(e){
-								console.log("customer list bound to customer combobox");
-							}
-					};
-				},function(error){
-					console.log("dict:"+error);
-				});
-		}
-	}
-}]).
-
-directive("garmentInput",["GridWrapper",function(GridWrapper){
-	var template='<div>'+	   	
-	'<form name="addStyle" ng-submit="getGrid()" novalidate>'+
-		'<span class="k-textbox k-space-right" style="width: 140px;" >'+
-		'<input type="text"  class="k-textbox" placeholder="Search Style#" ng-model="styleNumber"/>'+
-		'<label ng-click="getGrid()" class="k-icon k-i-search"></label></span></form>'+		
-	'<h4>{{garment.styleNumber}}:&nbsp;{{garment.styleName}}</h4>'+
-	'<div  kendo-grid="styleGrid" id="styleGrid"  k-options="gridOptions"  k-rebind="gridRebind" k-height=200></div>'+ 		
-	'<div> <input type="button" value="Add" ng-click="add()">'+
-	  	'<input type="button" value="OK" ng-click="ok()">'+
-	  	'<label style="margin-left: 100px; font-weight: bold;" >Total:{{total}}</label>'+
-	  	'<input type="button" value="Clear" ng-click="clear()" style="margin-left:100px;">'+
-	  	'<input type="button" value="Cancel" ng-click="cancel()">	</div></div>';
-	
-	return { 
-		restrict:"EA",
-		replace:true,
-		scope:{
-			dictGarment:'=',			//type of DataDict
-			addFunction:'='
-		},
-		template:template,
-		link: function(scope,element,attrs){
-			var gridSchema={model: {id: "id",
-				fields: {
-					id: { type: "number"},
-					colour: { type: "string"},
-					total: {type:"number"},
-					remark: {type:"string"},
-					f00: {type:"number"},
-					f01: {type:"number"},
-					f02: {type:"number"},
-					f03: {type:"number"},
-					f04: {type:"number"},
-					f05: {type:"number"},
-					f06: {type:"number"},
-					f07: {type:"number"},
-					f08: {type:"number"},
-					f09: {type:"number"},
-					f10: {type:"number"},
-					f11: {type:"number"},
-					f12: {type:"number"}
-				}}};
-
-			var gridColumns=new kendo.data.ObservableArray([{title:"Colour",template:"<label>#: colour #</label>"}]);
-			var gridData=new kendo.data.ObservableArray([]);
-
-			var clearGrid=function(){
-				gridColumns.splice(1, gridColumns.length-1);
-				gridData.splice(0, gridData.length);
-				
-				scope.total=0;
-				scope.gridRebind++;
-			};
-
+			var gridColumns=[{
+			        name:"lineNumber",
+			        title: "#",
+			        //locked: true, if true will cause the wrong cell get focus when add new row
+			        attributes:{class:"gridLineNumber"},
+			        headerAttributes:{class:"gridLineNumberHeader"},
+			        width: 25,
 			
-			var createGrid=function(){
-				if(!scope.garment) return;
-				var sizes=scope.garment.sizeRange.split(",");
-				for(var i=0;i<sizes.length;i++){
-					var column={
-							field: "f"+("00"+i).slice(-2),
-							title: sizes[i],
-							width: 60,
-							//attributes: {class:"gridNumberColumn"}
-						};
-					gridColumns.push(column);
+				}, {			
+					name:"styleNumber",
+				    field: "styleNumber",
+				    title: "Style",
+				    width: 60
+				}, {
+					name:"description",
+				    field: "description",
+				    title: "Description",
+				    width: 240
+				}, {
+					name:"colour",
+				    field: "colour",
+				    title: "Colour",
+				    editor:thisGGW.colourColumnEditor,
+				    width: 150
+				}, {
+					name:"remark",
+				    field: "remark",
+				    title: "Remark"
+					//extend last column if do not set its width 
+			}];
+			
+			if(brand==="DD"){
+				var j=4;
+				for(var i=0;i<sizeRangeFields.length;i++){
+					var field="qty"+("00"+i).slice(-2);
+					gridColumns.splice(j++,0,{
+						name:field,
+						field:field,
+						title:sizeRangeTitles[i],
+					    editor:sizeQtyEditor,
+					    width: sizeQtyWidth,
+					    attributes:sizeQtyAttr
+					});			
 				}
-				gridColumns.push({title: "Total", field:"total",editor:GridWrapper.readOnlyColumnEditor, width: 60});  //,attributes: {style:"text-align: right; font-weight: bold;"}
-				gridColumns.push({title: "Remark",field: "remark"});
-
-				var colours=scope.garment.colourway.split(",");
-				for(var i=0; i<colours.length; i++)
-					gridData.push({id: i, colour: colours[i].trim(),total:null});
-
-				scope.gridRebind++;	//cause the grid rebinds
-
-			};
-			
-			var calcTotal=function(){
-				var total=0;
-				for(var r=0;r<gridData.length;r++)
-					if(gridData[r].total)	total+=gridData[r].total;
-				scope.total=total;
-			};
-			
-			var closeWindow=function(){
-				var parentWindow=element.closest(".k-window-content");			
-
-				if(parentWindow){
-					parentWindow.data("kendoWindow").close();
-				}
-			};
-			
-			scope.styleNumber="";
-			scope.garment={};
-			scope.gridRebind=0;
-
-			scope.gridOptions={
-					columns:gridColumns,
-					dataSource:{
-						data:gridData,
-						schema:gridSchema
-					},
-					autoSync: true,
-			        editable: true,
-			        selectable: "cell",
-			        navigatable: true,
-			        resizable: true,
-			        dataBound: function(e){
-						this.autoFitColumn(0);
-			        },
-			        save:function(e){
-			        	var t=0, changed=false;
-			        	
-			        	for(var c=0,field; c<this.columns.length-3; c++){
-			        		field="f"+("00"+c).slice(-2);
-				        	if(typeof e.values[field]!== 'undefined'){
-				        		t+=e.values[field];
-				        		changed=true;
-				        	}else{
-				        		if(e.model[field])	
-				        			t+=e.model[field];
-				        	}
-			        	}
-			        	
-			        	if(changed){
-			        		e.model.total=(t!==0)?t:null;
-			        		calcTotal();
-			        	}
-			        }
-			};
-			
-			scope.getGrid= function(){
-					var styleNumber=scope.styleNumber.trim().toUpperCase();
-					scope.styleNumber="";
-					clearGrid();
-					if(styleNumber){
-						scope.dictGarment.getItem("styleNumber",styleNumber)
-							.then(function(garment){
-								scope.garment=garment;
-								createGrid();
-							},function(){
-								
-							});
-					}
-				};
-				
-
-			scope.clear=function(){
-					scope.styleNumber="";
-					scope.garment={};
-					clearGrid();
-				};
-				
-			scope.add=function(){
-					if(scope.addFunction){
-						scope.addFunction(scope.garment,gridData);
-						scope.clear();
-					}
-				};
-				
-			scope.ok=function(){
-					scope.add();
-					closeWindow();
-				};
-				
-			scope.cancel=function(){
-					scope.clear();
-					closeWindow();
-				};
-				
-		},
-			
-		controller: ['$scope', function($scope) {
-		}]
-	}
-}]).
-	
-//Sample directive.  Activate it by passing my-grid attribute to
-//the div which constructs the grid.  It expects your div to also
-//have a kendo-grid attribute, to activate the Kendo UI directive
-//for creating a grid.
-directive('checkSelect', ['$compile', function ($compile) {
-	 var directive = {
-	     restrict: 'A',
-	     scope: true,
-	     controller: function ($scope) {
-	         window.crap = $scope;
-	         $scope.toggleSelectAll = function(ev) {
-	             var grid = $(ev.target).closest("[kendo-grid]").data("kendoGrid");
-	             var items = grid.dataSource.data();
-	             items.forEach(function(item){
-	                 item.selected = ev.target.checked;
-	             });
-	         };
-	     },
-	     link: function ($scope, $element, $attrs) {
-	         var options = angular.extend({}, $scope.$eval($attrs.kOptions));
-	         options.columns.unshift({
-	             template: "<input type='checkbox' ng-model='dataItem.selected' />",
-	             title: "<input type='checkbox' title='Select all' ng-click='toggleSelectAll($event)' />",
-	             width: 30
-	         });
-	     }
-	 };
-	 return directive;
-}]).
-
-directive('garmentGrid',["GarmentGridWrapper",function(GarmentGridWrapper){
-	var directive={
-			restrict:'EA',
-			replace:false,
-			scope:{
-				cName:'@garmentGrid',
-				cBrand:'=',
-				cEditable:'=',
-				cDataSource:'=',
-				cPageable:'=',
-				cNewItemFunction:'&',
-			},
-			templateUrl:'garmentgrid',
-			link:function(scope,element,attrs){
-				
-				scope.gridName=scope.cName+"Grid";
-				scope.inputWindowName=scope.cName+"InputWindow";
-				
-				var ggw=new GarmentGridWrapper(scope.gridName);
-				
-				var gridColumns=[{
-					        name:"lineNumber",
-					        title: "#",
-					        //locked: true, if true will cause the wrong cell get focus when add new row
-					        attributes:{class:"gridLineNumber"},
-					        headerAttributes:{class:"gridLineNumberHeader"},
-					        width: 25,
-				    
-						}, {			
-							name:"styleNumber",
-						    field: "styleNumber",
-						    title: "Style",
-						    width: 60
-						}, {
-							name:"description",
-						    field: "description",
-						    title: "Description",
-						    width: 240
-						}, {
-							name:"colour",
-						    field: "colour",
-						    title: "Colour",
-						    editor:function(container, options){ggw.colourColumnEditor(container, options)},
-						    width: 150
-						}, {
-							name:"remark",
-						    field: "remark",
-						    title: "Remark"
-							//extend last column if do not set its width 
-					
-						}];
-				
-				var sizeQtyWidth=40;
-				var sizeQtyEditor=ggw.sizeQtyEditor;
-				var sizeQtyTemplate=ggw.sizeQtyTemplate;
-				var sizeQtyAttr={style:"text-align:right;"};
-				
-				var sizeRangeFields=["12M","18M","2T","3T","4T","5/6","S","M","L","XL","XXL","XXXL","1X","2X"];
-				var sizeRangeTitles=["12M","18M","2T","3T","4T","5/6","S","M","L","XL","2XL","3XL","1X","2X"];
-				
-				if(scope.cBrand==="DD"){
-					var j=4;
-					for(var i=0;i<sizeRangeFields.length;i++){
-						var field="qty"+("00"+i).slice(-2);
-						gridColumns.splice(j++,0,{
-							name:field,
-							field:field,
-							title:sizeRangeTitles[i],
-						    editor:sizeQtyEditor,
-						    width: sizeQtyWidth,
-						    attributes:sizeQtyAttr
-						});			
-					}
-					gridColumns.splice(j,0,{
+				gridColumns.splice(j,0,{
+					name:"quantity",
+				    field: "quantity",
+				    title: "Total",
+				    editor: thisGGW.readOnlyColumnEditor,
+				    width: 80,
+				    attributes:sizeQtyAttr
+					});
+			}else{
+				gridColumns.splice(4,0,{
+						name:"size",
+					    field: "size",
+					    title: "Size",
+					    editor:thisGGW.sizeColumnEditor,
+					    width: 80
+					}, {
 						name:"quantity",
 					    field: "quantity",
-					    title: "Total",
-					    editor: ggw.readOnlyColumnEditor,
+					    title: "Quantity",
+					    editor: thisGGW.numberColumnEditor,
 					    width: 80,
-					    attributes:sizeQtyAttr
-						});
-				}else{
-					gridColumns.splice(4,0,{
-							name:"size",
-						    field: "size",
-						    title: "Size",
-						    editor:function(container, options){ggw.sizeColumnEditor(container, options)},
-						    width: 80
-						}, {
-							name:"quantity",
-						    field: "quantity",
-						    title: "Quantity",
-						    editor: ggw.numberColumnEditor,
-						    width: 80,
-						    attributes:{style:"text-align:right;"}
-						})
-				}
-			
-				ggw.setColumns(gridColumns);
-				
-				scope.setting={};
-				scope.setting.editing=true;
-				scope.dict=ggw.dict;
-				scope.dictGarment=ggw.dictGarment;
-
-			    scope.$on("kendoWidgetCreated", function(event, widget){
-			        // the event is emitted for every widget; if we have multiple
-			        // widgets in this controller, we need to check that the event
-			        // is for the one we're interested in.
-			        if (widget ===scope[scope.gridName]) {
-			        	ggw.wrapGrid(widget);
-			        	if(scope.cName)
-				        	scope.$parent[scope.cName]={
-			        			name:scope.cName,
-			        			grid:widget,
-			        			gridWrapper:ggw,
-			        			resize:function(gridHeight){
-			        				ggw.resizeGrid(gridHeight);
-			        			},
-			        	}
-			        }
-			    });	
-			    
-			 	scope.gridSortableOptions = ggw.getSortableOptions();
-			    
-			 	scope.gridOptions = {
-							autoSync: true,
-					        columns: gridColumns,
-					        dataSource: scope.cDataSource,
-					        editable: scope.cEditable,
-					        pageable:scope.cPageable,
-					        selectable: "cell",
-					        navigatable: true,
-					        resizable: true,
-						//events:		 
-					       	dataBinding: function(e) {
-					       		console.log("event binding:"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
-					       	},
-					       	
-					       	dataBound:function(e){
-					       		console.log("event databound:");
-					       		
-					       	},
-					       	
-			 		       	save: function(e) {
-					       		if(typeof e.values.styleNumber!== 'undefined'){		//styleNumber changed
-						       		console.log("event save:"+JSON.stringify(e.values));
-				  	        		e.preventDefault();
-			 		       			if(e.values.styleNumber===";"){
-					       				ggw.copyPreviousRow();
-					       		 	}else {
-						          		e.model.set("styleNumber",e.values.styleNumber.toUpperCase().trim());
-						          		ggw.setCurrentGarment(e.model);
-					          		}
-					          	}
-					         },
-					       	
-					         //row or cloumn changed
-					       	change:function(e){
-					       		var row=ggw.getCurrentRow();
-					       		console.log("event change:");
-					       		var	newRowUid=row?row.dataset["uid"]:"";
-				        		if((typeof newRowUid!=="undefined") && (ggw.currentRowUid!==newRowUid)){		//row changed
-				        			ggw.currentRowUid=newRowUid;
-				        			var dataItem=ggw.getCurrentDataItem();
-				        			if(dataItem){
-					        			ggw.setCurrentGarment(dataItem);
-					        			//$state.go('main.lineItem.detail',{orderItemId:orderItemId,lineItemId:dataItem.lineNumber});
-				        			}
-				        			
-				        		};
-					       	},
-					       	
-					        edit:function(e){
-					        	console.log("event edit:");
-							    var editingCell=ggw.getEditingCell();
-							    if(!!editingCell){
-							    	this.select(editingCell);
-						        	console.log("set editing cell:");
-							    }
-
-					        }
-
-				}; //end of garmetnGridOptions
-
-									
-				scope.gridContextMenuOptions={
-					closeOnClick:true,
-					filter:".gridLineNumber,.gridLineNumberHeader",
-					target:'#'+scope.gridName,
-					select:function(e){
-					
-						switch(e.item.id){
-							case "menuAdd":
-								scope.setting.editing=true;
-								if(!ggw.isEditing)
-									ggw.enableEditing(true);
-								addRow(false);
-								break;
-							case "menuAddWindow":
-								scope.garmentInputWindow.open();
-								break;
-							case "menuInsert":
-								addRow(true);
-								break;
-							case "menuDelete":
-								deleteRow();
-								break;
-						}
-						
-					}
-					
-				};
-							
-				var newItem=function(){
-					if(!scope.cNewItemFunction)
-						scope.cNewItemFunction=function(){
-								return {};
-							};
-					var item=scope.cNewItemFunction();
-					return item();
-				}
-				
-				var addRow=function(isInsert){
-					var item=newItem();
-					item.brand=scope.brand;
-				    ggw.addRow(item,isInsert);
-				}
-							
-				var deleteRow=function (){
-					var dataItem=this.getCurrentDataItem();
-				    if (dataItem) {
-				        if (confirm('Please confirm to delete the selected row.')) {
-							if(dataItem.id)
-								SO.dataSet.deleteds.push({entity:"lineItem",id:dataItem.id});
-					
-							ggw.deleteRow(dataItem);
-				        }
-				    }
-			   		else {
-			        	alert('Please select a  row to delete.');
-			   		}
-				    
-				}
-					
-				scope.inputWindowAddFunction=function(garment,dataItems){
-					if(dataItems.length>0){
-						var sizes=garment.sizeRange.split(",");
-						for(var r=0;r<dataItems.length;r++){
-							var di=dataItems[r];		//dataItem
-						    var item=newItem(); 
-						    item.styleNumber=garment.styleNumber;
-						    item.description=garment.styleName;
-						    item.colour=di.colour;
-						    item.quantity=di.total;
-						    item.remark=di.remark;
-							for(var i=0;i<sizes.length;i++){  //exclude colour,total,remark
-								var f="f"+("00"+i).slice(-2); 
-								var q="qty"+("00"+sizeRangeFields.indexOf(sizes[i].trim().toUpperCase())).slice(-2); 
-								item[q]=di[f];
-							}
-						    ggw.addRow(item,false);
-						}
-					}
-				}
-				
+					    attributes:{style:"text-align:right;"}
+					})
 			}
 			
+			return gridColumns;
+		}
+		
+	 var GarmentGridWrapper=function(gridName){
+		 
+		GridWrapper.call(this,gridName);
+		
+		this.currentGarment=null;
+		this.dict={colourway:[],sizeRange:[]};
+		this.dictGarment=cliviaDDS.getDict("garment");
+		
+		thisGGW=this;
 	}
-	return directive;
-}]);	
+	 
+	GarmentGridWrapper.prototype=new GridWrapper();
+	//must set before calling wrapegrid
+	GarmentGridWrapper.prototype.setBrand=function(brand){
+		this.brand=brand?brand:"DD";
+		var gridColumns=getColumns(this.brand);
+		this.setColumns(gridColumns);
+	}
+	
+	GarmentGridWrapper.prototype.setRowDict=function(){
+  		var colourway=[],sizeRange=[];
+  		if(this.currentGarment){
+			colourway=String(this.currentGarment.colourway).split(',');
+			sizeRange=String(this.currentGarment.sizeRange).split(',');
+			for(var i=0;i<colourway.length;i++)
+				colourway[i]=colourway[i].trim();
+			
+			for(var i=0;i<sizeRange.length;i++)
+				sizeRange[i]=sizeRange[i].trim();
+  		}
+  		this.dict.colourway=colourway;
+  		this.dict.sizeRange=sizeRange;
+	}
+	
+	GarmentGridWrapper.prototype.setCurrentGarment=function(model){
+   	if (!model) return;
+   	if(!model.styleNumber) return;
+   	
+		var styleNumber=model.styleNumber;
+		if(!styleNumber){
+			this.currentGarment=null;
+			this.setRowDict();
+		}else{
+			if(this.currentGarment && this.currentGarment.styleNumber===styleNumber){
+		    	model.set("description",this.currentGarment.styleName);
+			}else{
+				garment=this.dictGarment.getLocalItem("styleNumber",styleNumber);
+				if(garment){
+					thisGGW.currentGarment=garment;
+			    	model.set("description",thisGGW.currentGarment.styleName);
+					thisGGW.setRowDict();
+				}else{
+					
+					this.dictGarment.loadItem("styleNumber",styleNumber)
+						.then(function(garment){
+							thisGGW.currentGarment=garment;
+					    	model.set("description",thisGGW.currentGarment.styleName);
+							thisGGW.setRowDict();
+						},function(error){
+							thisGGW.currentGarment=null;
+					    	model.set("description","");
+		    				thisGGW.setRowDict();
+						});
+				}
+			}
+		}
+	}
 
+	var getDictUpc=function(dictUpc){
+    	var deferred = $q.defer();
+		
+		dictUpc.load()
+			.then(function(loaded){
+				deferred.resolve(loaded);
+			},function(error){
+				deferred.reject(error);
+			});
+
+		return deferred.promise;
+    }
+
+	var getUpcItem=function(dict,styleNumber,colour,size){
+    	var len=dict.items.length;
+    	var result=null;
+    	for(var i=0,item;i<len;i++){
+    		item=dict.items[i];
+    		if(styleNumber===item.styleNumber && colour===item.colour && size===item.size){
+    			result=item;
+    			break;
+    		}
+    	}
+    	return result;
+    }
+    
+	GarmentGridWrapper.prototype.parseFromLineItems=function(){
+		
+    	var deferred = $q.defer();
+    	
+    	var dictUpc=new DataDict("upc","","onDemand");
+	   	var dictUpcUrl="../data/garmentWithDetail/call/findListIn?param=s:styleNumber;s:s;s:";
+
+    	var dataItems=thisGGW.grid.dataItems();
+
+		var styleNumbers="";
+		
+		for(var i=0;i<dataItems.length;i++){
+			if(styleNumbers.indexOf(dataItems[i].styleNumber)<0)
+				styleNumbers+=","+dataItems[i].styleNumber;
+		}
+		
+		dictUpc.url=dictUpcUrl+styleNumbers.substring(1);
+
+		getDictUpc(dictUpc)
+			.then(function(){
+				var items=[];
+
+				var noError=true;
+				for(var r=0,di,item;r<dataItems.length;r++){
+					di=dataItems[r];		//dataItem
+					for(var i=0;i<sizeRangeFields.length;i++){  //exclude colour,total,remark
+						var field="qty"+("00"+i).slice(-2); 	//right(2)
+						var quantity=parseInt(di[field]);
+						if(quantity){
+						    item={}; 
+						    upcItem=getUpcItem(dictUpc,di.styleNumber,di.colour,sizeRangeFields[i])
+						    if(upcItem){
+						    	item.upcId=upcItem.upcId;
+						    	item.rowNumber=r;
+							    item.quantity=quantity;
+							    item.remark=di.remark;
+							    items.push(item);
+						    }else{			//error can not find 
+						    	noError=false;
+						    	deferred.reject("error:failed to UPC item.");
+						    	break;
+						    }
+						}
+					}
+				    if(!noError)
+				    	break;
+				}
+				if(noError)
+					deferred.resolve(items);
+			},function(){
+				deferred.reject("error:failed to get UPC")
+			});
+		return deferred.promise;
+	}
+	
+	GarmentGridWrapper.prototype.parseToLineItems=function(items){
+		
+    	var dictUpc=new DataDict("upc","","onDemand");
+	   	var dictUpcUrl="../data/garmentWithDetail/call/findListIn?param=s:upcId;s:i;s:";
+
+	   	var upcIds="";
+	   	
+		for(var i=0;i<items.length;i++){
+			upcIds+=","+items[i].upcId;
+		}
+		
+		dictUpc.url=dictUpcUrl+upcIds.substring(1);;
+	   	
+	   	getDictUpc(dictUpc)
+			.then(function(){
+					
+					for (var i=0,rowNumber=-1,lineItem,item,index,field;i<items.length;i++){
+						item=items[i];
+						upcItem=dictUpc.getLocalItem("upcId",item.upcId);
+						if(upcItem){
+							if(rowNumber!==item.rowNumber){
+								lineItem={
+										styleNumber:upcItem.styleNumber,
+										colour:upcItem.colour,
+										description:upcItem.styleName,
+										remark:item.remark
+										};
+								lineItem=thisGGW.grid.dataSource.add(lineItem);
+								rowNumber=item.rowNumber;
+							}
+							index=sizeRangeFields.indexOf(upcItem.size);
+							field="qty"+("00"+index).slice(-2); 
+							lineItem[field]=item.quantity;
+						}else{		//error:can not find upc item
+							
+						}
+					}
+			},function(){
+				var error="error:failed to get UPC";
+			});
+	}
+	
+	
+	
+	GarmentGridWrapper.prototype.colourColumnEditor=function(container, options) {
+		if(thisGGW.reorderRowEnabled) return;
+		$('<input class="grid-editor"  data-bind="value:' + options.field + '"/>')
+	    	.appendTo(container)
+	    	.kendoComboBox({
+		        autoBind: true,
+		        dataSource: {
+		            data: thisGGW.dict.colourway
+		        }
+	    })
+	}
+
+	GarmentGridWrapper.prototype.sizeColumnEditor=function(container, options) {
+		if(thisGGW.reorderRowEnabled) return;
+	    $('<input class="grid-editor"  data-bind="value:' + options.field + '"/>')
+	    	.appendTo(container)
+	    	.kendoComboBox({
+		        autoBind: true,
+		        dataSource: {
+		            data: thisGGW.dict.sizeRange
+	        }
+	    })
+	}				    
+	
+
+	GarmentGridWrapper.prototype.sizeQtyEditor=function(container, options) {
+		if(thisGGW.reorderRowEnabled) return;
+		var column=thisGGW.getGridColumn(options.field);
+		if(column)
+			if(thisGGW.dict.sizeRange.indexOf(column.title)<0)
+		        $("<span>-</span>").appendTo(container);
+			else
+				thisGGW.numberColumnEditor(container,options);
+		else
+	        thisGGW.readOnlyEditor(container,options);
+	}				    
+	
+	return GarmentGridWrapper;
+}]); /* end of GarmentGridWrapper */
 
 </script>

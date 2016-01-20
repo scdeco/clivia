@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.scdeco.miniataweb.dao.GarmentDao;
+import com.scdeco.miniataweb.dao.GarmentTransDao;
 import com.scdeco.miniataweb.model.Garment;
+import com.scdeco.miniataweb.model.GarmentTrans;
 
 @Controller
 @RequestMapping("/garment/*")
@@ -18,6 +20,9 @@ public class GarmentController {
 	
 	@Autowired
 	GarmentDao garmentDao;
+	
+	@Autowired
+	GarmentTransDao garmentTransDao;
 	
 	@RequestMapping(value="/",method=RequestMethod.GET)
 	public String main(Model model) {
@@ -35,11 +40,15 @@ public class GarmentController {
 		return "garment/inventory";
 	}
 	
+	@RequestMapping(value="transaction",method=RequestMethod.GET)
+	public String  transaction(){
+		return "garment/transaction";
+	}
 	
 	
 	@RequestMapping(value="get-product",method=RequestMethod.GET)
 	public @ResponseBody  Garment getGarment(@RequestParam("styleNumber") String styleNumber){
-		return garmentDao.FindByStyleNumber(styleNumber);
+		return garmentDao.findByStyleNumber(styleNumber);
 	}
 
 	@RequestMapping(value="save-product",method=RequestMethod.POST)
@@ -50,9 +59,26 @@ public class GarmentController {
 	
 	@RequestMapping(value="delete-product",method=RequestMethod.POST)
 	public @ResponseBody  Garment deleteGarment(@RequestBody Garment garment){
-		garmentDao.DeleteGarment(garment);
+		garmentDao.deleteGarment(garment);
 		return garment;
 	}
-	
 
+	
+	@RequestMapping(value="get-transaction",method=RequestMethod.GET)
+	public @ResponseBody  GarmentTrans getGarmentTrans(@RequestParam("number") String transNumber){
+		return garmentTransDao.getGarmentTransByTransNumber(transNumber);
+	}
+
+	@RequestMapping(value="save-transaction",method=RequestMethod.POST)
+	public @ResponseBody  GarmentTrans saveGarmentTrans(@RequestBody GarmentTrans garmentTrans){
+		garmentTransDao.save(garmentTrans);
+		return garmentTrans;
+	}
+	
+/*	@RequestMapping(value="delete-transaction",method=RequestMethod.POST)
+	public @ResponseBody  GarmentTrans deleteGarmentTrans(@RequestBody GarmentTrans garmentTrans){
+		garmentTransDao.delete(garmentTrans);
+		return garmentTrans;
+	}*/
+		
 }

@@ -4,7 +4,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	
 	var searchTemplate='<span class="k-textbox k-space-right" style="width: 140px;" >'+
 						'<input type="text" name="searchOrderNumber" class="k-textbox" placeholder="Search Order#" ng-model="searchOrderNumber" />'+
-						'<label ng-click="getOrder()" class="k-icon k-i-search"></span>' ;
+						'<span ng-click="getOrder()" class="k-icon k-i-search"></span><span ng-click="getOrder()" class="k-icon k-i-filter"></span></span>' ;
 						
     $scope.orderToolbarOptions = {
 	        items: [{

@@ -40,20 +40,20 @@ public class Garment  {
 	@Column(name="SizeRange",length=150)
 	private String sizeRange;
 	
-	@Column(name="TotalQtyInStock")
-	private Integer totalQtyInStock;
+	@Column(name="QOH")			//quantity on hand
+	private Integer qoh;
 	
-	@Column(name="TotalQtyInSO")
-	private Integer totalQtyInSO;
+	@Column(name="SQ")			// sale quantity
+	private Integer sq;
 
-	@Column(name="TotalQtyInPO")
-	private Integer totalQtyInPO;
+	@Column(name="PQ")			//purchase quantity
+	private Integer pq;
 
-	@Column(name="WholesalePrice")
-	private Double wholesalePrice;
+	@Column(name="WSP")			//whole sale price
+	private Double wsp;
 	
-	@Column(name="RetailPrice")
-	private Double retailPrice;
+	@Column(name="RRP")			//recommended retail price
+	private Double rrp;
 	
 	@Column(name="Remark",length=500)
 	private String  remark;
@@ -121,7 +121,7 @@ public class Garment  {
 	public void setBrand(String brand) {
 		this.brand = brand;
 	}
-	
+
 	public String getColourway() {
 		return colourway;
 	}
@@ -138,44 +138,44 @@ public class Garment  {
 		this.sizeRange = sizeRange;
 	}
 
-	public Integer getTotalQtyInStock() {
-		return totalQtyInStock;
+	public Integer getQoh() {
+		return qoh;
 	}
 
-	public void setTotalQtyInStock(Integer totalQtyInStock) {
-		this.totalQtyInStock = totalQtyInStock;
+	public void setQoh(Integer qoh) {
+		this.qoh = qoh;
 	}
 
-	public Integer getTotalQtyInSO() {
-		return totalQtyInSO;
+	public Integer getSq() {
+		return sq;
 	}
 
-	public void setTotalQtyInSO(Integer totalQtyInSO) {
-		this.totalQtyInSO = totalQtyInSO;
+	public void setSq(Integer sq) {
+		this.sq = sq;
 	}
 
-	public Integer getTotalQtyInPO() {
-		return totalQtyInPO;
+	public Integer getPq() {
+		return pq;
 	}
 
-	public void setTotalQtyInPO(Integer totalQtyInPO) {
-		this.totalQtyInPO = totalQtyInPO;
+	public void setPq(Integer pq) {
+		this.pq = pq;
 	}
 
-	public Double getWholesalePrice() {
-		return wholesalePrice;
+	public Double getWsp() {
+		return wsp;
 	}
 
-	public void setWholeSalePrice(Double wholesalePrice) {
-		this.wholesalePrice = wholesalePrice;
+	public void setWsp(Double wsp) {
+		this.wsp = wsp;
 	}
 
-	public Double getRetailPrice() {
-		return retailPrice;
+	public Double getRrp() {
+		return rrp;
 	}
 
-	public void setRetailPrice(Double retailPrice) {
-		this.retailPrice = retailPrice;
+	public void setRrp(Double rrp) {
+		this.rrp = rrp;
 	}
 
 	public String getRemark() {
@@ -185,4 +185,5 @@ public class Garment  {
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
+
 }

@@ -6,8 +6,8 @@
 	<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
 
 	<shared:header/> 
-
-	<%@include file="../common/gridwrapper.jsp"%>
+	<%@include file="../common/factories.jsp"%>
+	<%@include file="../common/directives.jsp"%>
 	<%@include file="inventory-script.jsp"%>
 	
 </head>
@@ -26,6 +26,7 @@
 		 
 	<div id="top-pane">
 		<label>Brand:</label>
+		<button ng-click="newTransaction()">New Transaction</button>
 	</div>	<!-- top pane of outter splitter -->
 	
 	<div id="middle-pane">
@@ -51,18 +52,30 @@
 	
 </div>	<!-- end of inventorySplitter -->
 
+<div kendo-window="transactionEntry"
+		k-width="850"
+	 	k-height="810"
+	 	k-position="{top: 50, left: 100 }"	
+	 	k-resizable="true"
+		k-draggable="true"
+	 	k-title="'Transaction'"
+	 	k-visible="false" 
+	 	k-actions="['Close','Maximize']"
+	 	k-modal="true">
 
-
+	<div transaction-entry></div>
+			
+	
+</div>
 
 </body>
 <style>
-html,
-body
-{
-    margin:0;
-    padding:0;
-    height:100%;
-}
+
+	html,body{
+	    margin:0;
+	    padding:0;
+	    height:100%;
+	}
 
 	.k-splitter {
 		border-width: 1;
@@ -159,6 +172,24 @@ body
 	    width: auto;
 	    height: auto;	
 	}
+	
+	table {
+		table-layout:fixed;
+	}
+	
+	table td.header {
+		text-align:right;
+	}
+	
+	.options{
+		padding: 0;
+	}
+     .options li {
+         list-style: none;
+         padding-right: 1em;
+         display: inline;
+     }	
+	
 
 </style>
 </html>

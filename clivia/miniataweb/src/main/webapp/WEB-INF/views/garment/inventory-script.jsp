@@ -2,8 +2,220 @@
 'user strict';
 var invtApp = angular.module("invtApp",
 		[ "ui.router", "kendo.directives","clivia"]);
+		
 
-invtApp.factory("inventory",["GridWrapper","Product",function(GridWrapper,Product){
+invtApp.directive('transactionEntry',["$http","cliviaDDS",function($http,cliviaDDS){
+	
+	var searchTemplate='<span class="k-textbox k-space-right" style="width: 140px;" >'+
+	'<input type="text" name="searchTransNumber" class="k-textbox" placeholder="Search Transaction#" ng-model="searchTransNumber" />'+
+	'<span ng-click="getTransaction()" class="k-icon k-i-search"></span>' ;
+	
+	
+	var directive={
+			restrict:'EA',
+			replace:false,
+			scope:{
+				cName:'@transactionEntry',
+			},
+			templateUrl:'transaction',
+			link:function(scope,element,attrs){
+				var baseUrl="";
+				var dictUpcUrl="../data/garmentWithDetail/call/findListIn?param=s:styleNumber;s:s;s:";
+				
+          	 	scope.$watch('dataSet.info.brand',function(newValue,oldValue){
+         	 		if(scope.garmentEntryGrid && newValue!==oldValue)
+	         	 		scope.garmentEntryGrid.create(newValue);
+         	 	});			
+				
+				scope.dds=cliviaDDS;
+				scope.transToolbarOptions = {
+					items: [{
+							 template: '<label> <span ng-show="!!dataSet.info.transNumber"> Transaction#:</span> <span style="font-weight: bold;">{{dataSet.info.transNumber}}</span> </label>'
+							},{ 
+								 type: "separator" 
+							},{
+								type: "button",
+								text: "New",
+								id:"btnNew",
+								click: function(e) {
+									scope.clear();
+									scope.$apply();
+								}
+							}, {
+								type: "separator",
+							}, {	
+								type: "button",
+								text: "save",
+								id: "btnSave",
+								click: function(e){
+									scope.save();
+								}
+							}, {
+								type: "separator",
+							}, {	
+								template:searchTemplate,		                
+							}, {
+								type: "button",
+								text: "Print",
+								id:"btnPrint"
+					}]};		
+				
+				
+				var populate=function(data,action){
+					scope.dataSet.info=data.info;
+					if(action==="LOAD"){
+						scope.dataSet.items=data.items;
+						scope.garmentEntryGrid.gridWrapper.parseToLineItems(data.items);
+					}
+				}
+				
+			 	scope.garmentEntryGridDataSource=new kendo.data.DataSource({
+			     	data:scope.lineItems, 
+				    schema: {
+				    	model: { id: "id" }
+				    },	//end of schema
+				    
+				    serverFiltering:false,
+				    pageSize: 0,			//paging in pager
+
+			    }); //end of dataSource,
+
+				scope.newItemFunction=function(){
+				    return {
+					    	brand:scope.dataSet.info.brand,
+					    };
+				}
+			    
+
+			    scope.getTransaction=function(){
+			    	var transNumber=scope.searchTransNumber;
+			    	scope.searchTransNumber="";
+			    	if(transNumber)
+			    		transNumber=transNumber.trim();
+			    	
+			    	if(transNumber){
+			    		scope.load(transNumber);
+			    	}else{
+						alert("Please input a Transaction# to search.");
+			    	}
+			    }
+			    
+			    scope.load=function(transNumber){
+					var url=baseUrl+"get-transaction?number="+transNumber;
+					
+					$http.get(url).
+						success(function(data, status, headers, config) {
+					    	populate(data,"LOAD");
+						}).
+						error(function(data, status, headers, config) {
+							scope.clear();
+						});
+							
+			    }
+			    
+			    
+			    
+			    scope.save=function(){
+					var url=baseUrl+"save-transaction";
+					
+					scope.garmentEntryGrid.gridWrapper.parseFromLineItems()
+						.then(function(items){
+							scope.dataSet.items=items;
+							$http.post(url, scope.dataSet).
+								success(function(data, status, headers, config) {
+						    		populate(data,"SAVE");
+								}).
+								error(function(data, status, headers, config) {
+								});
+						},function(error){
+							
+						});
+					
+					
+							
+			    }
+			    
+			    scope.remove=function(){
+					var url=baseUrl+"delete-transaction";
+					var deferred = $q.defer();
+					
+					$http.post(url, dataSet.info.transactionNumber).
+						success(function(data, status, headers, config) {
+						    scope.clear();
+							deferred.resolve(data);
+						}).
+						error(function(data, status, headers, config) {
+							deferred.reject(data);
+						});
+							
+					return deferred.promise;
+			    }
+			    
+ 			    scope.$on("kendoWidgetCreated", function(event, widget){
+			        if (widget ===scope.garmentEntryGrid) {
+			        	if(scope.cName)
+				        	scope.$parent[scope.cName]=scope;
+			        }
+			    });			
+			},
+			
+			controller:['$scope',"cliviaDDS","DataDict", function($scope,cliviaDDS,DataDict) {
+				var scope=$scope;
+				
+				scope.dictGarment=cliviaDDS.getDict("garment");
+				scope.dictUpc=new DataDict("garemnt-upc","","lazy");
+				
+				scope.dataSet={
+						info:{},
+						items:[],
+						deleteds:[],
+				}
+				
+				scope.lineItems=new kendo.data.ObservableArray([]);
+
+				scope.clearDataSet=function(){
+ 					scope.dataSet.info={
+							transId:0,
+							isIn:1,
+							type:0,
+							batchNumber:'',
+							description:'',
+							brand:'DD',
+							transDate:kendo.toString(kendo.parseDate(new Date()), 'yyyy-MM-dd')
+					};
+					
+/* 					var info=scope.dataSet.info;
+					info.id=null;
+					info.transId=0;
+					info.transNumber='';
+					info.isIn=1;
+					info.type=0;
+					info.batchNumber='';
+					info.description='';
+					info.brand='DD';
+					info.transDate='2015-12-10';
+					info.packaging='p';
+					info.location='L';
+ */					
+ 					scope.dataSet.items.splice(0,scope.dataSet.items.length);
+					scope.dataSet.deleteds.splice(0,scope.dataSet.deleteds.length);
+					scope.lineItems.splice(0,scope.lineItems.length);
+					
+				}
+				
+			    scope.clear=function(){
+			    	scope.searchTransNumber="";
+			    	scope.clearDataSet();
+			    }
+				
+         	 	scope.clear();
+			}]
+	}
+	return directive;
+}]);	
+
+
+invtApp.factory("inventory",["GridWrapper","Product","cliviaDDS",function(GridWrapper,Product,cliviaDDS){
 	
 	var garmentGridColumns=[{
 		        name:"lineNumber",
@@ -148,8 +360,8 @@ invtApp.factory("inventory",["GridWrapper","Product",function(GridWrapper,Produc
 		
 		gwGarment:gwGarment,
 		
-		wrapGarmentGrid:function(){
-			gwGarment.wrapGrid();
+		wrapGarmentGrid:function(grid){
+			gwGarment.wrapGrid(grid);
 		},
 		
 		dict:{
@@ -209,7 +421,6 @@ invtApp.factory("inventory",["GridWrapper","Product",function(GridWrapper,Produc
  			      	window.setTimeout(function () {
 			            gwGarment.resizeGrid(gridHeight);
 			      	},1); 
-			      	console.log("resize2:");
 			 }
 		 }
 	
@@ -335,8 +546,8 @@ factory("Product",["GridWrapper","$http",function(GridWrapper,$http){
 	}
 	Product.prototype={
 			gwUpc:gwUpc,
-			wrapUpcGrid:function(){
-				gwUpc.wrapGrid();
+			wrapUpcGrid:function(grid){
+				gwUpc.wrapGrid(grid);
 			},
 			upcGridOptions:{
 				columns:upcGridColumns,
@@ -369,12 +580,19 @@ invtApp.controller("inventoryCtrl",["$scope","inventory" ,function($scope,invent
 	// widgets in this controller, we need to check that the event
 	// is for the one we're interested in.
 		if (widget ===$scope.inventoryGarmentGrid) {
-			inventory.wrapGarmentGrid();
+			inventory.wrapGarmentGrid(widget);
 		}
 		if (widget ===$scope.inventoryUpcGrid) {
-			inventory.detail.wrapUpcGrid();
+			inventory.detail.wrapUpcGrid(widget);
 		}
+		
 	});	
+	
+	$scope.newTransaction=function(){
+		$scope.transactionEntry.open();
+	}
+	
+	
 	
 
 }]);

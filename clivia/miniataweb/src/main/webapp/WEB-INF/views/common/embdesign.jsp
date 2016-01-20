@@ -541,6 +541,7 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 		this.runningSteps="";
 		this.colorModel=null;			//colorModel used in current drawing
 		
+		
 		this.imageChanged=new Event();
 		
 		if(embDesign)
@@ -549,9 +550,24 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 	
 	var onDesignChanged=function(e){
 		var thisEmbCanvas=this;
-		thisEmbCanvas.canvas.width=Math.round(thisEmbCanvas.embDesign.pixelWidth*SCREEN_DESIGN_RATIO)+1;		//original size of image
-		thisEmbCanvas.canvas.height=Math.round(thisEmbCanvas.embDesign.pixelHeight*SCREEN_DESIGN_RATIO)+1;
-		thisEmbCanvas.drawDesign();
+		var colorway=null;
+		if(thisEmbCanvas.embDesign && thisEmbCanvas.embDesign.stepCount>0){
+
+			thisEmbCanvas.canvas.width=Math.round(thisEmbCanvas.embDesign.pixelWidth*SCREEN_DESIGN_RATIO)+1;		//original size of image
+			thisEmbCanvas.canvas.height=Math.round(thisEmbCanvas.embDesign.pixelHeight*SCREEN_DESIGN_RATIO)+1;
+			
+			if( thisEmbCanvas.embDesign.stepCount===thisEmbCanvas.runningSteps.split(',').length)
+				colorway={};
+			else{
+				this.threadCodes="";
+			}
+		}else{
+			
+			thisEmbCanvas.canvas.width=0;		//original size of image
+			thisEmbCanvas.canvas.height=0;
+		}
+		
+		thisEmbCanvas.drawDesign(colorway);
 	}
 	
 	var randomId=0;
@@ -1126,7 +1142,7 @@ directive("threadMatcher",["EmbMatcher",function(EmbMatcher){
 				    });	
 				
 				//expose this directive scope to parent directive
-				if(scope.cName)
+				if(scope.cName) 
 					scope.$parent[scope.cName]=scope.embMatcher;
 
 				if(scope.cEmbCanvas)

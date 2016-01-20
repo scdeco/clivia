@@ -17,25 +17,23 @@ public class GarmentUpc {
 	@Column(name="GarmentId", nullable = false)	
 	private int garmentId;
 	
-	
-	@Column(name="UPCNumber",length=12, unique=true, nullable=false)
+	@Column(name="UPCNumber",length=12)		//barcode
 	private String upcNumber;
 
-	
-	@Column(name="Colour",length=50)
+	@Column(name="Colour",length=50,nullable=false)
 	private String colour;
 	
-	@Column(name="Size",length=20)
+	@Column(name="Size",length=20,nullable=false)
 	private String size;
 	
-	@Column(name="QtyInStock")
-	private Integer qtyInStock;
+	@Column(name="QOH")
+	private Integer qoh;
 	
-	@Column(name="QtyInSO")
-	private Integer qtyInSO;
+	@Column(name="SQ")
+	private Integer sq;
 	
-	@Column(name="QtyInPO")
-	private Integer qtyInPO;
+	@Column(name="PQ")
+	private Integer pq;
 	
 	@Column(name="Remark",length=250)
 	private String remark;
@@ -80,31 +78,30 @@ public class GarmentUpc {
 		this.size = size;
 	}
 
-	public Integer getQtyInStock() {
-		return qtyInStock;
+	public Integer getQoh() {
+		return qoh;
 	}
 
-	public void setQtyInStock(Integer qtyInStock) {
-		this.qtyInStock = qtyInStock;
+	public void setQoh(Integer qoh) {
+		this.qoh = qoh;
 	}
 
-	public Integer getQtyInSO() {
-		return qtyInSO;
+	public Integer getSq() {
+		return sq;
 	}
 
-	public void setQtyInSO(Integer qtyInSO) {
-		this.qtyInSO = qtyInSO;
+	public void setSq(Integer sq) {
+		this.sq = sq;
 	}
 
-	public Integer getQtyInPO() {
-		return qtyInPO;
+	public Integer getPq() {
+		return pq;
 	}
 
-	public void setQtyInPO(Integer qtyInPO) {
-		this.qtyInPO = qtyInPO;
+	public void setPq(Integer pq) {
+		this.pq = pq;
 	}
 
-	
 	public String getRemark() {
 		return remark;
 	}

@@ -35,7 +35,7 @@ public class DataSourceController {
 	@RequestMapping(value="/{daoName}/read",method = RequestMethod.POST)
     public  @ResponseBody  DataSourceResult  read(@RequestBody DataSourceRequest request,@PathVariable String daoName){
     	System.out.println("request:"+request);
-    	DataSourceResult result=((GenericDao)CliviaApplicationContext.getBean(daoName)).findListByRequest(request);
+    	DataSourceResult result=((GenericDao)CliviaApplicationContext.getBean(daoName)).findListByDataSourceRequest(request);
        return result;
     }
     

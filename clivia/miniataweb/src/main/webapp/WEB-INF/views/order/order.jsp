@@ -7,7 +7,9 @@
 
 	<shared:header/> 
 
-	<%@include file="../common/gridwrapper.jsp"%>
+	<%@include file="../common/factories.jsp"%>
+	<%@include file="../common/directives.jsp"%>
+	
 	<%@include file="order-script.jsp"%>
 	<%@include file="aconsts.jsp"%>
 	<%@include file="aconfig.jsp"%>
@@ -112,7 +114,8 @@
      #fieldlist {
         margin: 10px;
         padding: 0;
-     } 
+     }
+      
      #fieldlist li {
          list-style: none;
          padding-top: .7em;

@@ -2,106 +2,6 @@
 	'user strict';
 	var orderApp = angular.module("orderApp",
 			[ "ui.router", "kendo.directives","clivia" ]);
-
-
-
- //GarmentGridWrapper inherited from GridWrapper
- orderApp.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapper,cliviaDDS){
-
-	 var self;
-	 
-	 var GarmentGridWrapper=function(gridName){
-		GridWrapper.call(this,gridName);
-		
-		this.currentGarment=null;
-		this.dict={colourway:[],sizeRange:[]};
-		this.dictGarment=cliviaDDS.getDict("garment");
-		self=this;
-	}
-	 
-	GarmentGridWrapper.prototype=new GridWrapper(); 
-	
-	GarmentGridWrapper.prototype.setRowDict=function(){
-   		var colourway=[],sizeRange=[];
-   		if(this.currentGarment){
-			colourway=String(this.currentGarment.colourway).split(',');
-			sizeRange=String(this.currentGarment.sizeRange).split(',');
-			for(var i=0;i<colourway.length;i++)
-				colourway[i]=colourway[i].trim();
-			
-			for(var i=0;i<sizeRange.length;i++)
-				sizeRange[i]=sizeRange[i].trim();
-   		}
-   		this.dict.colourway=colourway;
-   		this.dict.sizeRange=sizeRange;
-	}
-	
-	GarmentGridWrapper.prototype.setCurrentGarment=function(model){
-    	if (!model) return;
-    	if(!model.styleNumber) return;
-    	
-		var styleNumber=model.styleNumber;
-		if(!styleNumber){
-			this.currentGarment=null;
-			this.setRowDict();
-		}else{
-			if(this.currentGarment && this.currentGarment.styleNumber===styleNumber){
-		    	model.set("description",this.currentGarment.styleName);
-			}else{
-				this.dictGarment.getItem("styleNumber",styleNumber)
-					.then(function(garment){
-						self.currentGarment=garment;
-				    	model.set("description",self.currentGarment.styleName);
-						self.setRowDict();
-					},function(error){
-						self.currentGarment=null;
-				    	model.set("description","");
-	    				self.setRowDict();
-					});
-			}
-		}
-	}
-	
-	GarmentGridWrapper.prototype.colourColumnEditor=function(container, options) {
-		if(self.reorderRowEnabled) return;
-		$('<input class="grid-editor"  data-bind="value:' + options.field + '"/>')
-	    	.appendTo(container)
-	    	.kendoComboBox({
-		        autoBind: true,
-		        dataSource: {
-		            data: self.dict.colourway
-		        }
-	    })
-	}
-
-	GarmentGridWrapper.prototype.sizeColumnEditor=function(container, options) {
-		if(self.reorderRowEnabled) return;
-	    $('<input class="grid-editor"  data-bind="value:' + options.field + '"/>')
-	    	.appendTo(container)
-	    	.kendoComboBox({
-		        autoBind: true,
-		        dataSource: {
-		            data: self.dict.sizeRange
-	        }
-	    })
-	}				    
-	
-
-	GarmentGridWrapper.prototype.sizeQtyEditor=function(container, options) {
-		if(self.reorderRowEnabled) return;
-		var column=self.getGridColumn(options.field);
-		if(column)
-			if(self.dict.sizeRange.indexOf(column.title)<0)
-		        $("<span>-</span>").appendTo(container);
-			else
-				self.numberColumnEditor(container,options);
-		else
-	        self.readOnlyEditor(container,options);
-	}				    
-	
-	return GarmentGridWrapper;
- }]); /* end of GarmentGridWrapper */
-
  //SO
 orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http, $q, $state,consts,cliviaDDS){
 	var _order={
@@ -143,7 +43,6 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 			instance:{
 				itemButtons:new kendo.data.ObservableArray([]),
 				currentItemId:0
-				
 				}};
 
 	var dataSet=_order.dataSet, dict=_order.dict, setting=_order.setting, instance=_order.instance;

@@ -6,7 +6,8 @@
 	<shared:header/> 
 	
 	<%@include file="../common/embdesign.jsp"%>
-	<%@include file="../common/gridwrapper.jsp"%>
+	<%@include file="../common/factories.jsp"%>
+	<%@include file="../common/directives.jsp"%>
 </head>
 <body ng-app="embDesignApp" spellcheck="false">
 	<div ng-controller="testCtrl">
@@ -98,12 +99,13 @@ orderApp.controller("testCtrl",
     $scope.dstDesign.getDst(2);
 	
 	$scope.print=function(){
-		var dataUrl=document.getElementById("DstCanvas1").toDataURL();
+		
+	//	var dataUrl=document.getElementById($scope.embCanvas.canvas.id).toDataURL();
 	    var windowContent = '<!DOCTYPE html>';
 	    windowContent += '<html>'
 	    windowContent += '<head><title>Print canvas</title></head>';
 	    windowContent += '<body>'
-	    windowContent += '<img src="' + dataUrl + '">';
+	    windowContent += '<img src="' + $scope.embCanvas.imageObj.toDataURL() + '">';
 	    windowContent += '</body>';
 	    windowContent += '</html>';
 	    var printWin = window.open('','','width=800,height=600');
