@@ -1,9 +1,9 @@
 package com.scdeco.miniataweb.service;
 
-import com.scdeco.miniataweb.model.Employee;
+import com.scdeco.miniataweb.model.EmployeeInfo;
 
 public interface LoginService {
 
 	//make sure both username and password are not empty before calling this method. 
-	Employee authenticate(String username,String password);
+	EmployeeInfo authenticate(String username,String password);
 }

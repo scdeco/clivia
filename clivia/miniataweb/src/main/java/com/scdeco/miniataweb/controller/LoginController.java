@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.scdeco.miniataweb.dao.EmployeeDao;
-import com.scdeco.miniataweb.model.Employee;
+import com.scdeco.miniataweb.dao.EmployeeInfoDao;
+import com.scdeco.miniataweb.model.EmployeeInfo;
 import com.scdeco.miniataweb.service.LoginService;
 import com.scdeco.miniataweb.util.DataSourceRequest;
 import com.scdeco.miniataweb.util.DataSourceResult;
@@ -24,7 +24,7 @@ public class LoginController {
 	LoginService loginService;
 	
 	@Autowired
-	EmployeeDao employeeDao;
+	EmployeeInfoDao employeeDao;
 	 
 	private String version="0036";
 	
@@ -43,10 +43,10 @@ public class LoginController {
 
 		model.addAttribute("username", username);
 		model.addAttribute("password", "");
-		Employee user=loginService.authenticate(username, password); 
+		EmployeeInfo user=loginService.authenticate(username, password); 
 		if(user !=null){
 			
-			List<Employee> list=employeeDao.findList();
+			List<EmployeeInfo> list=employeeDao.findList();
 			model.addAttribute("users", list);
 			model.addAttribute("version",version);
 			

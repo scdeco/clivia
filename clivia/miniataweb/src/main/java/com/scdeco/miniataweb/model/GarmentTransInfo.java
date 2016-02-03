@@ -22,10 +22,17 @@ public class GarmentTransInfo {
 	@Column(name="TransNumber", length=20, unique=true, nullable=false)	
 	private String transNumber;
 	
+	@Column(name="Brand",length=20)
+	private String brand;
+	
+	
 	@Column(name="Description")
 	private String description;
 	
-	@Column(name="Type")		//0:Manual, 1:Invoice, 2:Adjust
+	@Column(name="IsIn")
+	private Boolean isIn;
+	
+	@Column(name="Type")		//0:Manual, 1:Invoice
 	private Integer type;
 	
 	@Column(name="BatchNumber",length=50) 
@@ -67,12 +74,28 @@ public class GarmentTransInfo {
 		this.transNumber = transNumber;
 	}
 
+	public String getBrand() {
+		return brand;
+	}
+
+	public void setBrand(String brand) {
+		this.brand = brand;
+	}
+
 	public String getDescription() {
 		return description;
 	}
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	public Boolean getIsIn() {
+		return isIn;
+	}
+
+	public void setIsIn(Boolean isIn) {
+		this.isIn = isIn;
 	}
 
 	public Integer getType() {

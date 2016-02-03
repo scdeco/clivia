@@ -1,71 +1,55 @@
 <!DOCTYPE html>
-<html ng-app="invtApp">
+<html ng-app="crmApp">
 <head>
 
-	<title>Inventory</title>
+	<title>Company</title>
 	<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
 
 	<shared:header/> 
 	<%@include file="../common/factories.jsp"%>
 	<%@include file="../common/directives.jsp"%>
-	<%@include file="inventory-script.jsp"%>
+	<%@include file="crm-script.jsp"%>
 	
 </head>
 
-<body  ng-controller="inventoryCtrl">
+<body  ng-controller="crmCtrl">
 
+<div kendo-splitter="crmSplitter"
 	
-
-<div kendo-splitter="inventorySplitter"
-	
-		k-panes="[{ collapsible: false, resizable:true, size: '30px',collapsed: false },
-                  { collapsible: false,size:'500px'},
-                  { collapsible: false, resizable: true}]"
-        k-options="inventory.splitterOptions"
+		k-panes="[{ collapsible: false, resizable:false, size: '35px'},
+                  { collapsible: false,size:'550px'},
+                  { collapsible: true, resizable: true}]"
+        k-options="crmsplitterOptions"
 		style="height:900px;">
 		 
 	<div id="top-pane">
-		<label>Brand:</label>
-		<button ng-click="newTransaction()">New Transaction</button>
+			Deparment: checkboxes
 	</div>	<!-- top pane of outter splitter -->
 	
 	<div id="middle-pane">
-		<div kendo-toolbar id="inventoryToolbar" k-options="inventory.toolbarOptions"></div>
-		<div  kendo-grid="inventoryGarmentGrid" id="inventoryGarmentGrid" k-options="inventory.garmentGridOptions"></div>
+		<div kendo-toolbar id="crmToolbar" k-options="crmToolbarOptions"></div>
+		<div  kendo-grid="crmCompanyGrid"  k-options="crmCompanyGridOptions"></div>
 	</div> <!-- middle pane of outter splitter -->
 	
-	<div id="bottom-pane" style="height:300px;">
-		<div kendo-tab-strip k-animation="false">
-   			<ul>
-   				<li class="k-state-active">UPC</li>
-   				<li>Transaction</li>
-   			</ul>
-   			<div>
-   				<div kendo-grid="inventoryUpcGrid" id="inventoryUpcGrid" k-options="inventory.detail.upcGridOptions"></div>
-   			</div>
-   			<div>
-   				Transaction
-   			</div>
-   		</div>
-		
+	<div id="bottom-pane" style="height:200px;">
 	</div> <!-- bottom pane of outter splitter -->
 	
-</div>	<!-- end of inventorySplitter -->
+</div>	<!-- end of crmSplitter -->
 
-<div kendo-window="transactionEntry"
+<div kendo-window="companyWindow"
 		k-width="850"
 	 	k-height="810"
 	 	k-position="{top: 50, left: 100 }"	
 	 	k-resizable="true"
 		k-draggable="true"
-	 	k-title="'Transaction'"
+	 	k-title="'Company'"
 	 	k-visible="false" 
-	 	k-actions="['Close','Maximize']"
-	 	k-modal="true">
+	 	k-actions="['Minimiz','Maximize','Close']"
+	 	k-pinned="true"
+	 	k-modal="false"
+	 	k-options="companyWindowOptions">
 
-	<div transaction-entry></div>
-			
-	
+	<div company="companyCard"></div>
 </div>
 
 </body>
@@ -78,7 +62,7 @@
 	}
 
 	.k-splitter {
-		border-width: 1;
+		border-width: 0;
 		height: 100%;
 	}
 	
@@ -142,6 +126,7 @@
     	right: 0;
     	width: auto;
     	height: auto;
+    	border-width: 0;
 	}
  
 	.k-tabstrip > .k-content {
@@ -189,7 +174,29 @@
          padding-right: 1em;
          display: inline;
      }	
+     
+     #fieldlist {
+        margin: 10px;
+        padding: 0;
+     }
+     #fieldlist li {
+         list-style: none;
+         padding-bottom: .7em;
+         text-align: left;
+     }
+     
+     #fieldlist label {
+          display: block;
+          padding-bottom: .2em;
+      }
+      
+      textarea { 
+      	resize: vertical; 
+      }     
+     
 	
 
 </style>
+</html>
+
 </html>

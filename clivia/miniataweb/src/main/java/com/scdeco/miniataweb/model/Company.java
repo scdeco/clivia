@@ -1,155 +1,58 @@
 package com.scdeco.miniataweb.model;
 
-import java.io.Serializable;
+import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-
-@Entity
-public class Company implements Serializable {
-
-	private static final long serialVersionUID = -6878604579429621423L;
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+public class Company {
+	CompanyInfo info;
+	List<CompanyContact> contactItems;
+	List<CompanyAddress> addressItems;
+	List<CompanyJournal> journalItems;
+	List<Integer> contactDeletedItems;
+	List<Integer> addressDeletedItems;
+	List<Integer> journalDeletedItems;
 	
-	@Column(name="BusinessName",length=100,unique=true,nullable=false)
-	private String businessName;
-	
-	@Column(name="Category", length=50)
-	private String category;
-	
-	@Column(name="City",length=30)
-	private String city;
-	
-	@Column(name="Province",length=20)
-	private String province;
-	
-	@Column(name="Country",length=20)
-	private String country;
-
-	@Column(name="WebSite",length=80)
-	private String website;
-	
-	@Column(name="Sales",length=50)
-	private String sales;
-	
-	@Column(name="Csr",length=50)
-	private String csr;
-	
-	@Column(name="Status")
-	private Integer status;
-	
-	@Column(name="SalesNote",columnDefinition="TEXT")
-	private String salesNote;
-	
-	@Column(name="SpecialRequirement",columnDefinition="TEXT")
-	private String specialRequirement;
-
-	public int getId() {
-		return id;
+	public CompanyInfo getInfo() {
+		return info;
 	}
-
-	public void setId(int id) {
-		this.id = id;
+	public void setInfo(CompanyInfo info) {
+		this.info = info;
 	}
-
-	public String getBusinessName() {
-		return businessName;
+	public List<CompanyContact> getContactItems() {
+		return contactItems;
 	}
-
-	public void setBusinessName(String businessName) {
-		this.businessName = businessName;
+	public void setContactItems(List<CompanyContact> contactItems) {
+		this.contactItems = contactItems;
 	}
-
-	public String getCategory() {
-		return category;
+	public List<CompanyAddress> getAddressItems() {
+		return addressItems;
 	}
-
-	public void setCategory(String category) {
-		this.category = category;
+	public void setAddressItems(List<CompanyAddress> addressItems) {
+		this.addressItems = addressItems;
 	}
-
-	public String getCity() {
-		return city;
+	public List<CompanyJournal> getJournalItems() {
+		return journalItems;
 	}
-
-	public void setCity(String city) {
-		this.city = city;
+	public void setJournalItems(List<CompanyJournal> journalItems) {
+		this.journalItems = journalItems;
 	}
-
-	public String getProvince() {
-		return province;
+	public List<Integer> getContactDeletedItems() {
+		return contactDeletedItems;
 	}
-
-	public void setProvince(String province) {
-		this.province = province;
+	public void setContactDeletedItems(List<Integer> contactDeletedItems) {
+		this.contactDeletedItems = contactDeletedItems;
 	}
-
-	public String getCountry() {
-		return country;
+	public List<Integer> getAddressDeletedItems() {
+		return addressDeletedItems;
 	}
-
-	public void setCountry(String country) {
-		this.country = country;
+	public void setAddressDeletedItems(List<Integer> addressDeletedItems) {
+		this.addressDeletedItems = addressDeletedItems;
 	}
-
-	public String getWebsite() {
-		return website;
+	public List<Integer> getJournalDeletedItems() {
+		return journalDeletedItems;
 	}
-
-	public void setWebsite(String website) {
-		this.website = website;
+	public void setJournalDeletedItems(List<Integer> journalDeletedItems) {
+		this.journalDeletedItems = journalDeletedItems;
 	}
-
-	public String getSales() {
-		return sales;
-	}
-
-	public void setSalesId(String sales) {
-		this.sales = sales;
-	}
-
-	public String getCsr() {
-		return csr;
-	}
-
-	public void setCsr(String csr) {
-		this.csr = csr;
-	}
-
-	public Integer getStatus() {
-		return status;
-	}
-
-	public void setStatus(Integer status) {
-		this.status = status;
-	}
-
-	public String getSalesNote() {
-		return salesNote;
-	}
-
-	public void setSalesNote(String salesNote) {
-		this.salesNote = salesNote;
-	}
-
-	public String getSpecialRequirement() {
-		return specialRequirement;
-	}
-
-	public void setSpecialRequirement(String specialRequirement) {
-		this.specialRequirement = specialRequirement;
-	}
-
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
-	
 	
 
 }

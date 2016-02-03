@@ -16,7 +16,7 @@ import com.scdeco.miniataweb.util.CliviaLocalDateJsonSerializer;
 
 
 @Entity
-public class Employee implements Serializable{
+public class EmployeeInfo implements Serializable{
 
 
 	private static final long serialVersionUID = 1115318630793728713L;
@@ -52,7 +52,7 @@ public class Employee implements Serializable{
 	private Boolean active;
 	
 	
-	public Employee(){
+	public EmployeeInfo(){
 	}
 	
 	public int getId() {

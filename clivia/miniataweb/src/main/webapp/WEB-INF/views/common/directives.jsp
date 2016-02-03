@@ -2,7 +2,25 @@
 'user strict';
 
 clivia.
-
+directive('capitalize', function() {
+	   return {
+	     require: 'ngModel',
+	     link: function(scope, element, attrs, modelCtrl) {
+	        var capitalize = function(inputValue) {
+	           if(inputValue == undefined) inputValue = '';
+	           var capitalized = inputValue.toUpperCase();
+	           if(capitalized !== inputValue) {
+	              modelCtrl.$setViewValue(capitalized);
+	              modelCtrl.$render();
+	            }         
+	            return capitalized;
+	         }
+	         modelCtrl.$parsers.push(capitalize);
+	         capitalize(scope[attrs.ngModel]);  // capitalize initial value
+	     }
+	   };
+}).
+	
 directive("customerInput",["cliviaDDS",function(cliviaDDS){
 	var template='<input kendo-combobox k-options="customerOptions" k-ng-delay="customerOptions" ></input>';
 	return {
@@ -27,11 +45,11 @@ directive("customerInput",["cliviaDDS",function(cliviaDDS){
 }]).
 
 directive("brandInput",["cliviaDDS",function(cliviaDDS){
-	var template='<select kendo-dropdownlist k-options="brandOptions" k-ng-delay="brandOptions" ></input>';
+	var template='<select kendo-dropdownlist k-options="brandOptions" k-ng-delay="brandOptions" ></select>';
 	return {
 		restrict:"EA",
 		replace:true,
-		scope:false,
+		scope:true,
 		template:template,
 		link:function(scope,element,attrs){
 			
@@ -41,29 +59,16 @@ directive("brandInput",["cliviaDDS",function(cliviaDDS){
 				            dataTextField: "name",
 				            dataValueField: "name",			
 							dataSource:{data:items}, 
+							value:"DD",					//default value
 					};
 				},function(error){
 					console.log("dict:"+error);
 				});
-			
-			
 		}
 	}
 }]).
 
 directive("garmentInput",["GridWrapper",function(GridWrapper){
-	var template='<div>'+	   	
-	'<form name="addStyle" ng-submit="getGrid()" novalidate>'+
-		'<span class="k-textbox k-space-right" style="width: 140px;" >'+
-		'<input type="text"  class="k-textbox" placeholder="Search Style#" ng-model="styleNumber"/>'+
-		'<label ng-click="getGrid()" class="k-icon k-i-search"></label></span></form>'+		
-	'<h4>{{garment.styleNumber}}:&nbsp;{{garment.styleName}}</h4>'+
-	'<div  kendo-grid="styleGrid" id="styleGrid"  k-options="gridOptions"  k-rebind="gridRebind" k-height=200></div>'+ 		
-	'<div> <input type="button" value="Add" ng-click="add()">'+
-	  	'<input type="button" value="OK" ng-click="ok()">'+
-	  	'<label style="margin-left: 100px; font-weight: bold;" >Total:{{total}}</label>'+
-	  	'<input type="button" value="Clear" ng-click="clear()" style="margin-left:100px;">'+
-	  	'<input type="button" value="Cancel" ng-click="cancel()">	</div></div>';
 	
 	return { 
 		restrict:"EA",
@@ -72,7 +77,7 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 			dictGarment:'=',			//type of DataDict
 			addFunction:'='
 		},
-		template:template,
+		templateUrl:'../common/garmentinput',
 		link: function(scope,element,attrs){
 			var gridSchema={model: {id: "id",
 				fields: {
@@ -133,7 +138,8 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 			var calcTotal=function(){
 				var total=0;
 				for(var r=0;r<gridData.length;r++)
-					if(gridData[r].total)	total+=gridData[r].total;
+					if(gridData[r].total)	
+						total+=gridData[r].total;
 				scope.total=total;
 			};
 			
@@ -259,7 +265,7 @@ directive('checkSelect', ['$compile', function ($compile) {
 	 return directive;
 }]).
 
-directive('garmentGrid',["GarmentGridWrapper","cliviaDDS",function(GarmentGridWrapper,cliviaDDS){
+directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(GarmentGridWrapper,cliviaDDS,util){
 
 	var directive={
 			restrict:'EA',
@@ -272,7 +278,7 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS",function(GarmentGridWr
 				cPageable:'=',
 				cNewItemFunction:'&',
 			},
-			templateUrl:'../order/garmentgrid',
+			templateUrl:'../common/garmentgrid',
 			link:function(scope,element,attrs){
 				
 				scope.gridName=scope.cName+"Grid";
@@ -346,6 +352,25 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS",function(GarmentGridWr
 						          		e.model.set("styleNumber",e.values.styleNumber.toUpperCase().trim());
 						          		ggw.setCurrentGarment(e.model);
 					          		}
+					          	}else{
+
+					          		var t=0, changed=false;
+					          		
+						        	for(var c=0,field; c<ggw.sizeRangeFields.length; c++){
+						        		field="qty"+("00"+c).slice(-2);
+							        	if(typeof e.values[field]!== 'undefined'){
+							        		t+=e.values[field];
+							        		changed=true;
+							        	}else{
+							        		if(e.model[field])	
+							        			t+=e.model[field];
+							        	}
+						        	}
+						        	
+						        	if(changed){
+						        		e.model.quantity=(t!==0)?t:null;
+						        		//calcTotal();
+						        	}
 					          	}
 					         },
 					       	
@@ -421,12 +446,9 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS",function(GarmentGridWr
 				}
 							
 				var deleteRow=function (){
-					var dataItem=this.getCurrentDataItem();
+					var dataItem=ggw.getCurrentDataItem();
 				    if (dataItem) {
 				        if (confirm('Please confirm to delete the selected row.')) {
-							if(dataItem.id)
-								SO.dataSet.deleteds.push({entity:"lineItem",id:dataItem.id});
-					
 							ggw.deleteRow(dataItem);
 				        }
 				    }
@@ -438,7 +460,7 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS",function(GarmentGridWr
 					
 				scope.inputWindowAddFunction=function(garment,dataItems){
 					if(dataItems.length>0){
-						var sizes=garment.sizeRange.split(",");
+						var sizes=util.split(garment.sizeRange);
 						for(var r=0,nullRow,di,item;r<dataItems.length;r++){
 							di=dataItems[r];		//dataItem
 						    item=newItem(); 
@@ -450,7 +472,7 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS",function(GarmentGridWr
 						    item.remark=di.remark;
 							for(var i=0;i<sizes.length;i++){  //exclude colour,total,remark
 								var f="f"+("00"+i).slice(-2); 	//right(2)
-								var q="qty"+("00"+ggw.sizeRangeFields.indexOf(sizes[i].trim().toUpperCase())).slice(-2); 
+								var q="qty"+("00"+ggw.sizeRangeFields.indexOf(sizes[i])).slice(-2); 
 								item[q]=di[f];
 								if(parseInt(di[f]))
 									nullRow=false;

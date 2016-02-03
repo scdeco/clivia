@@ -7,8 +7,8 @@ clivia.
 
 factory("util",["$http","$q",function($http,$q){
 	return {
-		find:function(items,propertyName,propertyValue){
-			var result=null;
+		findIndex:function(items,propertyName,propertyValue){
+			var result=-1;
 			
 			if(Array.isArray(propertyName) || Array.isArray(propertyValue)) {
 				if(Array.isArray(propertyName) 
@@ -26,7 +26,7 @@ factory("util",["$http","$q",function($http,$q){
 						    j++
 						}
 						if(j===propertyName.length){
-							result=item;
+							result=i;
 							break;
 						}
 					}
@@ -34,12 +34,17 @@ factory("util",["$http","$q",function($http,$q){
 			}else{
 				for (var i = 0; i <items.length; i++) {
 				    if (items[i][propertyName] === propertyValue) {
-				    	result=items[i];
+				    	result=i;
 				    	break; 
 				    }
 				}
 			}
 			return result;
+		},
+		
+		find:function(items,propertyName,propertyValue){
+			var index=this.findIndex(items,propertyName,propertyValue);
+			return index<0?null:items[index];
 		},
 		
 		getRemote:function(url,data){
@@ -57,7 +62,19 @@ factory("util",["$http","$q",function($http,$q){
 				});			
 			
 			return deferred.promise;
-		}
+		},
+		
+		split:function(originalStr){
+			var strs=[];
+			if(originalStr){
+				strs=originalStr.split(',');
+				for(var i=0;i<strs.length;i++){
+					if(strs)
+						strs[i]=strs[i].trim();
+				}
+			}
+			return strs;
+		},
 	}	
 }]).
 
@@ -400,12 +417,20 @@ factory("DataDictSet",["DataDict","util", function(DataDict,util){
 factory("cliviaDDS",["DataDictSet",function(DataDictSet){
 	var baseUrl="/miniataweb/";
 	var dicts=[{
+			name:"city",
+			url:baseUrl+"dict/get?from=dictCity&textField=name&orderBy=name",
+			mode:"eager"
+		},{
+			name:"province",
+			url:baseUrl+"dict/get?from=dictProvince&textField=name&orderBy=name",
+			mode:"eager"
+		},{
 			name:"customerInput",
-			url:baseUrl+"dict/map?from=company&textField=businessName&valueField=id&orderBy=businessName",
+			url:baseUrl+"dict/map?from=companyInfo&textField=businessName&valueField=id&orderBy=businessName",
 			mode:"eager"
 		},{
 			name:"garment",
-			url:baseUrl+"data/garment/",
+			url:baseUrl+"data/garmentInfo/",
 			mode:"onDemand"
 		},{
 			name:"garmentBrand",
@@ -449,7 +474,6 @@ factory("GridWrapper",function(){
 				this.enterMoveDown=false;
 			}
 			
-			
 			GridWrapper.prototype.setConfig=function(config){
 				if(config){
 					if(typeof config.columns!=='undefined')
@@ -484,7 +508,7 @@ factory("GridWrapper",function(){
 				var showLineNumber=function(grid){
 		   	   		 var pageSkip = (grid.dataSource.page() - 1) * grid.dataSource.pageSize();
 	   	   		 
-		   	   		 pageSkip=!pageSkip? 1:pageSkip++;
+		   	   		 pageSkip=!pageSkip? 1:++pageSkip;
 	   	   		 
 	   	   		 	//index starts from 0
 		   	   		 grid.tbody.find('td.gridLineNumber').text(function(index){
@@ -528,7 +552,6 @@ factory("GridWrapper",function(){
 					
 	            }			
 			}
-			
 			
 			GridWrapper.prototype.getDataItemIndexByRowIndex=function (rowIndex){
 				if(!this.grid) return null;
@@ -739,11 +762,29 @@ factory("GridWrapper",function(){
 		                spinners : false
 		            });
 		    };
+		    
+		    GridWrapper.prototype.dateColumnEditor=function (container, options) {
+		        $('<input  class="grid-editor" data-bind="value:' + options.field  + '"/>')
+	            .appendTo(container)
+	            .kendoDatePicker({
+	            	format:options.format
+	            });
+			}
 
 		    GridWrapper.prototype.readOnlyColumnEditor=function(container, options) {
 		         $("<span>" + options.model.get(options.field)+ "</span>").appendTo(container);
 		     };
 			
+		    GridWrapper.prototype.kendoComboBoxEditor=function(container,options,items){
+				if(items){
+				    $('<input class="grid-editor"  data-bind="value:' + options.field + '"/>')
+				    	.appendTo(container)
+				    	.kendoComboBox({
+					        autoBind: true,
+					        dataSource: {data:items}
+				    		});
+				}
+			};
 		     
 			return GridWrapper;
 			
@@ -753,11 +794,11 @@ factory("GridWrapper",function(){
 factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function(GridWrapper,cliviaDDS,DataDict,$q){
 
 	 var thisGGW;
-	 
-	 var sizeRangeFields=["12M","18M","2T","3T","4T","5/6","S","M","L","XL","XXL","XXXL","1X","2X"];
-	 var sizeRangeTitles=["12M","18M","2T","3T","4T","5/6","S","M","L","XL","2XL","3XL","1X","2X"];
 		
 	 var getColumns=function(brand){
+		 
+		    var sizeRangeFields=thisGGW.sizeRangeFields;
+		    var sizeRangeTitles=thisGGW.sizeRangeTitles;
 			var sizeQtyWidth=40;
 			var sizeQtyEditor=thisGGW.sizeQtyEditor;
 			var sizeQtyTemplate=thisGGW.sizeQtyTemplate;
@@ -779,7 +820,7 @@ factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function
 				}, {
 					name:"description",
 				    field: "description",
-				    title: "Description",
+				    title: "Name",
 				    width: 240
 				}, {
 					name:"colour",
@@ -850,6 +891,10 @@ factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function
 	//must set before calling wrapegrid
 	GarmentGridWrapper.prototype.setBrand=function(brand){
 		this.brand=brand?brand:"DD";
+		
+		this.sizeRangeFields=["12M","18M","2T","3T","4T","5/6","S","M","L","XL","XXL","XXXL","1X","2X"];
+		this.sizeRangeTitles=["12M","18M","2T","3T","4T","5/6","S","M","L","XL","2XL","3XL","1X","2X"];
+		
 		var gridColumns=getColumns(this.brand);
 		this.setColumns(gridColumns);
 	}
@@ -954,12 +999,12 @@ factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function
 				var noError=true;
 				for(var r=0,di,item;r<dataItems.length;r++){
 					di=dataItems[r];		//dataItem
-					for(var i=0;i<sizeRangeFields.length;i++){  //exclude colour,total,remark
+					for(var i=0;i<thisGGW.sizeRangeFields.length;i++){  //exclude colour,total,remark
 						var field="qty"+("00"+i).slice(-2); 	//right(2)
 						var quantity=parseInt(di[field]);
 						if(quantity){
 						    item={}; 
-						    upcItem=getUpcItem(dictUpc,di.styleNumber,di.colour,sizeRangeFields[i])
+						    upcItem=getUpcItem(dictUpc,di.styleNumber,di.colour,thisGGW.sizeRangeFields[i])
 						    if(upcItem){
 						    	item.upcId=upcItem.upcId;
 						    	item.rowNumber=r;
@@ -985,6 +1030,8 @@ factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function
 	}
 	
 	GarmentGridWrapper.prototype.parseToLineItems=function(items){
+		
+		if(!items) return;
 		
     	var dictUpc=new DataDict("upc","","onDemand");
 	   	var dictUpcUrl="../data/garmentWithDetail/call/findListIn?param=s:upcId;s:i;s:";
@@ -1014,18 +1061,37 @@ factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function
 								lineItem=thisGGW.grid.dataSource.add(lineItem);
 								rowNumber=item.rowNumber;
 							}
-							index=sizeRangeFields.indexOf(upcItem.size);
+							index=thisGGW.sizeRangeFields.indexOf(upcItem.size);
 							field="qty"+("00"+index).slice(-2); 
 							lineItem[field]=item.quantity;
 						}else{		//error:can not find upc item
 							
 						}
 					}
+					thisGGW.calculateTotal();
 			},function(){
 				var error="error:failed to get UPC";
 			});
 	}
 	
+	GarmentGridWrapper.prototype.calculateTotal=function() {
+		var dataItems=thisGGW.grid.dataItems();
+		var total=0;
+		for(var r=0,di,t;r<dataItems.length;r++){
+			di=dataItems[r];		//dataItem
+			t=0;
+			for(var i=0;i<thisGGW.sizeRangeFields.length;i++){  //exclude colour,total,remark
+				var field="qty"+("00"+i).slice(-2); 	//right(2)
+				var quantity=parseInt(di[field]);
+				if(quantity){
+					t+=quantity;	
+				}
+			}
+			di.set("quantity",t);
+			total+=t;
+		}
+		return total;
+	}
 	
 	
 	GarmentGridWrapper.prototype.colourColumnEditor=function(container, options) {

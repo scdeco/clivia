@@ -29,7 +29,11 @@ public class DictGarmentBrand {
 	
 	@Column(name="SizeTypeFields")
 	private String sizeTypeFields;
+	
+	@Column(name="Categories",length=500)
+	private String categories;
 
+	
 	public int getId() {
 		return id;
 	}
@@ -86,13 +90,14 @@ public class DictGarmentBrand {
 		this.sizeTypeFields = sizeTypeFields;
 	}
 
-	@Override
-	public String toString() {
-		return "DictGarmentBrand [id=" + id + ", lineNumber=" + lineNumber
-				+ ", name=" + name + ", sizeFields=" + sizeFields
-				+ ", sizeTitles=" + sizeTitles + ", sizeTypes=" + sizeTypes
-				+ ", sizeTypeFields=" + sizeTypeFields + "]";
+	public String getCategories() {
+		return categories;
 	}
+
+	public void setCategories(String categories) {
+		this.categories = categories;
+	}
+
 	
 	
 	

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.scdeco.miniataweb.model.Garment;
+import com.scdeco.miniataweb.model.GarmentInfo;
 import com.scdeco.miniataweb.model.GarmentTrans;
 import com.scdeco.miniataweb.model.GarmentTransDetail;
 import com.scdeco.miniataweb.model.GarmentTransInfo;
@@ -25,7 +25,7 @@ public class GarmentTransDao {
 	private CliviaAutoNumberDao cliviaAutoNumberDao;
 	
 	@Autowired
-	private GarmentDao garmentDao;
+	private GarmentInfoDao garmentInfoDao;
 	
 	@Autowired
 	private GarmentUpcDao garmentUpcDao;
@@ -73,13 +73,13 @@ public class GarmentTransDao {
 			Integer qoh=garmentUpc.getQoh()==null?0:garmentUpc.getQoh();
 			garmentUpc.setQoh(qoh+item.getQuantity());
 			
-			Garment garment=garmentDao.findById(garmentUpc.getGarmentId());
-			qoh=garment.getQoh()==null?0:garment.getQoh();
-			garment.setQoh(qoh+item.getQuantity());
+			GarmentInfo garmentInfo=garmentInfoDao.findById(garmentUpc.getGarmentId());
+			qoh=garmentInfo.getQoh()==null?0:garmentInfo.getQoh();
+			garmentInfo.setQoh(qoh+item.getQuantity());
 			
 			item.setTransId(info.getId());
 			
-			garmentDao.saveOrUpdate(garment);
+			garmentInfoDao.saveOrUpdate(garmentInfo);
 			garmentUpcDao.saveOrUpdate(garmentUpc);
 			garmentTransDetailDao.saveOrUpdate(item);
 		}
@@ -94,11 +94,11 @@ public class GarmentTransDao {
 			Integer qoh=garmentUpc.getQoh()==null?0:garmentUpc.getQoh();
 			garmentUpc.setQoh(qoh-item.getQuantity());
 			
-			Garment garment=garmentDao.findById(garmentUpc.getGarmentId());
-			qoh=garment.getQoh()==null?0:garment.getQoh();
-			garment.setQoh(qoh-item.getQuantity());
+			GarmentInfo garmentInfo=garmentInfoDao.findById(garmentUpc.getGarmentId());
+			qoh=garmentInfo.getQoh()==null?0:garmentInfo.getQoh();
+			garmentInfo.setQoh(qoh-item.getQuantity());
 			
-			garmentDao.saveOrUpdate(garment);
+			garmentInfoDao.saveOrUpdate(garmentInfo);
 			garmentUpcDao.saveOrUpdate(garmentUpc);
 			garmentTransDetailDao.delete(item);
 		}

@@ -12,6 +12,9 @@ public class DictGarmentCategory {
 	@GeneratedValue
 	private int id;
 	
+	@Column(name="BrandName",length=50)
+	private String brandName; 
+	
 	@Column(name="Code",length=3)
 	private String code;
 	
@@ -27,6 +30,14 @@ public class DictGarmentCategory {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public String getBrandName() {
+		return brandName;
+	}
+
+	public void setBrandName(String brandName) {
+		this.brandName = brandName;
 	}
 
 	public String getCode() {
@@ -52,6 +63,7 @@ public class DictGarmentCategory {
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-	
+
+
 
 }
