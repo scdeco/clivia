@@ -44,22 +44,22 @@ public class GarmentInfo  {
 	private String sizeRange;
 	
 	@Column(name="QOH")			//quantity on hand
-	private Integer qoh;
+	private Integer qoh=0;
 	
 	@Column(name="SQ")			// sale quantity
-	private Integer sq;
+	private Integer sq=0;
 
 	@Column(name="PQ")			//purchase quantity
-	private Integer pq;
+	private Integer pq=0;
 
 	@Column(name="WSP")			//whole sale price
-	private Double wsp;
+	private Double wsp=0.0d;
 	
 	@Column(name="RRP")			//recommended retail price
-	private Double rrp;
+	private Double rrp=0.0d;
 	
 	@Column(name="Used")
-	private Boolean used;
+	private Boolean used=false;
 	
 	@Column(name="Remark",length=500)
 	private String  remark;

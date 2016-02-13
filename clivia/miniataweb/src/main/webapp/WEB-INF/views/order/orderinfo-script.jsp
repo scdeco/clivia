@@ -19,6 +19,21 @@ orderApp.controller("orderInfoCtrl", ["$scope","SO","cliviaDDS",function($scope,
 			format: "yyyy-MM-dd",
 		    parseFormats: ["yyyy-MM-dd"]
 	}
+	
+	$scope.orderTimeOptions={
+			format: "hh:mm tt",
+			parseFormats:["HH:mm:ss"],
+	}
+	
+	$scope.buyerOptions={
+			dataSource:SO.company.contacts,
+			filter:"startswith",
+            dataTextField: "fullName",
+            dataValueField: "fullName",
+			autoBind:false,					//
+	}
+	
+	
 }]);
 </script>
 	

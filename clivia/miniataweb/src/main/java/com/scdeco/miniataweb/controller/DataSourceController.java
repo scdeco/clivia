@@ -24,18 +24,15 @@ import com.scdeco.miniataweb.util.DataSourceResult;
 @RequestMapping("/datasource/*")
 public class DataSourceController {
 	
-    @SuppressWarnings("rawtypes")
-	@RequestMapping(value="/{daoName}/read",method = RequestMethod.GET)
-    public  @ResponseBody  List  get(@PathVariable String daoName){
-    	
-       return ((GenericDao)CliviaApplicationContext.getBean(daoName)).findList();
-    }
-	
+
     @SuppressWarnings("rawtypes")
 	@RequestMapping(value="/{daoName}/read",method = RequestMethod.POST)
-    public  @ResponseBody  DataSourceResult  read(@RequestBody DataSourceRequest request,@PathVariable String daoName){
+    public  @ResponseBody  DataSourceResult  read(@RequestBody DataSourceRequest request,
+    											  @PathVariable String daoName){
     	System.out.println("request:"+request);
+    	
     	DataSourceResult result=((GenericDao)CliviaApplicationContext.getBean(daoName)).findListByDataSourceRequest(request);
+    	
        return result;
     }
     

@@ -1,7 +1,14 @@
 
 <form name="searchForm" ng-submit="getOrder()" novalidate >
-<div kendo-toolbar id="ordertoolbar" k-options="orderToolbarOptions"></div>
+	<div kendo-toolbar id="ordertoolbar" k-options="orderToolbarOptions"></div>
 </form>			
+
+<div ng-show="!!SO.dataSet.info.orderNumber">
+	Order#:<span style="font-weight: bold;">{{SO.dataSet.info.orderNumber}}</span>&nbsp;&nbsp;&nbsp; Account: <span style="font-weight: bold;">{{SO.company.info.businessName}}</span>
+</div>
+<div ng-hide="!!SO.dataSet.info.orderNumber">
+	  Customer: <company-combobox name="customer"  style="width:300px;" ng-model="SO.dataSet.info.customerId" ng-blur="SO.getCompany()"></company-combobox>
+</div>
 
 <div kendo-splitter="outterSplitter"
 		k-orientation="'vertical'"
@@ -11,6 +18,7 @@
 		 style="height:900px;">
 		 
 	<div id="top-pane">
+		
 	</div>	<!-- top pane of outter splitter -->
 	
 	<div id="middle-pane">

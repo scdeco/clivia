@@ -49,7 +49,7 @@ public class DictController {
 		return result;
 	}
 	
-	private class DictItem {
+	private static class DictItem {
 		@SuppressWarnings("unused")
 		public String text;
 		@SuppressWarnings("unused")

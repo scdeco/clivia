@@ -5,7 +5,7 @@ var crmApp = angular.module("crmApp",
 		
 crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,util){
 	
-	var searchTemplate='Select:<customer-input name="searchCompany" style="width:300px;"  ng-model="search.companyId"> </customer-input>'+
+	var searchTemplate='Select:<company-combobox name="searchCompany" style="width:300px;"  ng-model="search.companyId"> </company-combobox>'+
 	'<span ng-click="getCompany()" class="k-icon k-i-search"></span>';
 
 	var baseUrl="";	
@@ -527,7 +527,7 @@ crmApp.factory("JournalGridWrapper",["GridWrapper","cliviaDDS",function(GridWrap
 		         field: "date",
 		         title: "Date",
 		         format:"{0:yyyy-MM-dd}",
-		         width: 80,
+		         width: 100,
 		         editor: thisGW.dateColumnEditor,
 		     }, {
 		         name: "contact",
@@ -546,7 +546,8 @@ crmApp.factory("JournalGridWrapper",["GridWrapper","cliviaDDS",function(GridWrap
 		
 		GridWrapper.call(this,gridName);
 		thisGW=this;
-	 	this.setColumns(getColumns());
+	 	thisGW.setColumns(getColumns());
+	 	thisGW.hasDateColumnEditor=true;
 	}
 	
 	gw.prototype=new GridWrapper();	//implement inheritance
@@ -598,7 +599,7 @@ crmApp.factory("CompanyGridWrapper",["GridWrapper",function(GridWrapper){
 		        title: "#",
 		        attributes:{class:"gridLineNumber"},
 		        headerAttributes:{class:"gridLineNumberHeader"},
-		        width: 25,
+		        width: 40,
 			}, {
 		         name: "businessName",
 		         field: "businessName",
@@ -608,16 +609,19 @@ crmApp.factory("CompanyGridWrapper",["GridWrapper",function(GridWrapper){
 		         name: "city",
 		         field: "city",
 		         title: "City",
+				 filterable: { multi:true,search: true},
 		         width: 90,
 		     }, {
 		         name: "province",
 		         field: "province",
 		         title: "Province",
+				 filterable: { multi:true,search: true},
 		         width: 80,
 		     }, {
 		         name: "country",
 		         field: "country",
 		         title: "Country",
+				 filterable: { multi:true},
 		         width: 85,
 		     }, {
 		         name: "status",
@@ -675,12 +679,14 @@ crmApp.controller("crmCtrl",["$scope","CompanyGridWrapper",function($scope,Compa
 			        text: "Edit",
 			        id:"btnEdit",
 			        click: function(e) {
-/* 			        	if(inventory.currentItem){
-				    		$scope.openProduct(inventory.currentItem.styleNumber);
+			        	var di=$scope.cgw.getCurrentDataItem();
+ 			        	if(di){
+				    		$scope.openCompany(di.id);
 			       		}else{
 			       			alert("Please select a company to edit.");	
-			       		}
- */			        }
+			       		}			        	
+
+ 			        }
 			    }, {
 			        type: "separator",
 			    }, {	
@@ -694,6 +700,14 @@ crmApp.controller("crmCtrl",["$scope","CompanyGridWrapper",function($scope,Compa
 			}]};
 	
 	$scope.cgw=new CompanyGridWrapper("crmCompanyGrid");
+	$scope.cgw.doubleClickEvent=function(e) {
+    	var di=$scope.cgw.getCurrentDataItem();
+     	if(di){
+    		$scope.openCompany(di.id);
+   		}else{
+   			alert("Please select a company to edit.");	
+   		}
+     }
 	
 	$scope.crmCompanyGridDataSource={
 				transport: {
@@ -771,12 +785,12 @@ crmApp.controller("crmCtrl",["$scope","CompanyGridWrapper",function($scope,Compa
 	}
 		
 	$scope.openCompany=function(companyId){
-/* 		if(!!companyId){
+ 		if(!!companyId){
 			$scope.companyCard.load(companyId);
 		}else{
 			$scope.companyCard.clear();
 		}
- */		$scope.$apply();
+ 		$scope.$apply();
 		$scope.companyWindow.open();
 	}
 }]);

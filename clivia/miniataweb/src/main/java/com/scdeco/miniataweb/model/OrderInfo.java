@@ -60,6 +60,11 @@ public class OrderInfo {
 	@JsonDeserialize(using = CliviaLocalDateJsonDeserializer.class)
 	@Column(name="OrderDate")
 	private LocalDate orderDate;
+	
+	@JsonSerialize(using=CliviaLocalTimeJsonSerializer.class)
+	@JsonDeserialize(using = CliviaLocalTimeJsonDeserializer.class)
+	@Column(name="OrderTime")
+	private LocalTime orderTime;
 
 	@Column(name="CreateBy")
 	private Integer createBy;
@@ -80,6 +85,9 @@ public class OrderInfo {
 	
 	@Column(name="InvoiceBy")
 	private Integer invoiceBy;
+
+	@Column(name="RepId")
+	private Integer repId;
 
 	public int getId() {
 		return id;
@@ -169,6 +177,14 @@ public class OrderInfo {
 		this.orderDate = orderDate;
 	}
 
+	public LocalTime getOrderTime() {
+		return orderTime;
+	}
+
+	public void setOrderTime(LocalTime orderTime) {
+		this.orderTime = orderTime;
+	}
+
 	public Integer getCreateBy() {
 		return createBy;
 	}
@@ -209,17 +225,13 @@ public class OrderInfo {
 		this.invoiceBy = invoiceBy;
 	}
 
-	@Override
-	public String toString() {
-		return "OrderMain [id=" + id + ", orderId=" + orderId
-				+ ", orderNumber=" + orderNumber + ", orderName=" + orderName
-				+ ", customerId=" + customerId + ", buyer=" + buyer
-				+ ", customerPO=" + customerPO + ", orderStatus=" + orderStatus
-				+ ", requireDate=" + requireDate + ", requireTime="
-				+ requireTime + ", orderDate=" + orderDate + ", createBy="
-				+ createBy + ", finishDate=" + finishDate + ", finishBy="
-				+ finishBy + ", invoiceDate=" + invoiceDate + ", invoiceBy="
-				+ invoiceBy + "]";
+	public Integer getRepId() {
+		return repId;
 	}
+
+	public void setRepId(Integer repId) {
+		this.repId = repId;
+	}
+	
 
 }

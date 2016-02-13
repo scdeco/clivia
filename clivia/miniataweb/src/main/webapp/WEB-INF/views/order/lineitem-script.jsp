@@ -17,7 +17,9 @@ orderApp.controller("lineItemCtrl",["$scope","$state","SO",
 			var panes=e.sender.element.children(".k-pane"),
 			gridHeight=$(panes[1]).innerHeight();
 	      	window.setTimeout(function(){
-	      		$scope.garmentGrid.resize(gridHeight)},1);    
+	      		if($scope.garmentGrid)
+		      		$scope.garmentGrid.resize(gridHeight);
+		    },1);    
 	      	console.log("resize2:");
     	}		
     }

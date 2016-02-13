@@ -23,9 +23,9 @@ public class GarmentController {
 	@Autowired
 	GarmentTransDao garmentTransDao;
 	
-	@RequestMapping(value="inventory",method=RequestMethod.GET)
+	@RequestMapping(value="/",method=RequestMethod.GET)
 	public String  inventory(){
-		return "im/inventory";
+		return "im/im";
 	}
 	
 	@RequestMapping(value="product",method=RequestMethod.GET)

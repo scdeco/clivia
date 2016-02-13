@@ -4,14 +4,10 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	
 	var searchTemplate='<span class="k-textbox k-space-right" style="width: 140px;" >'+
 						'<input type="text" name="searchOrderNumber" class="k-textbox" placeholder="Search Order#" ng-model="searchOrderNumber" />'+
-						'<span ng-click="getOrder()" class="k-icon k-i-search"></span><span ng-click="getOrder()" class="k-icon k-i-filter"></span></span>' ;
+						'<span ng-click="getOrder()" class="k-icon k-i-search"></span></span>' ;
 						
     $scope.orderToolbarOptions = {
 	        items: [{
-		        	 template: '<label> <span ng-show="!!SO.dataSet.info.orderNumber"> Order#:</span> <span style="font-weight: bold;">{{SO.dataSet.info.orderNumber}}</span> </label>'
-	        	 },{ 
-	        		 type: "separator" 
-               	 },{
 	                type: "button",
 	                text: "New",
 	                id:"btnNew",

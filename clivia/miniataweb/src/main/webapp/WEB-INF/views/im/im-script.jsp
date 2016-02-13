@@ -1,9 +1,9 @@
 <script>
 'user strict';
-var invtApp = angular.module("invtApp",
+var imApp = angular.module("imApp",
 		[ "ui.router", "kendo.directives","clivia"]);
 		
-invtApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliviaDDS,util){
+imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliviaDDS,util){
 	
 	var searchTemplate='<span class="k-textbox k-space-right" style="width: 140px;" >'+
 	'<input type="text" name="searchStyleNumber" class="k-textbox" placeholder="Search Style#" ng-model="searchStyleNumber" capitalize ng-trim="true"/>'+
@@ -375,7 +375,7 @@ invtApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cl
 
 
 
-invtApp.directive('transactionEntry',["$http","cliviaDDS",function($http,cliviaDDS){
+imApp.directive('transactionEntry',["$http","cliviaDDS",function($http,cliviaDDS){
 	
 	var searchTemplate='<span class="k-textbox k-space-right" style="width: 140px;" >'+
 	'<input type="text" name="searchTransNumber" class="k-textbox" placeholder="Search Transaction#" ng-model="searchTransNumber" />'+
@@ -567,7 +567,7 @@ invtApp.directive('transactionEntry',["$http","cliviaDDS",function($http,cliviaD
 
 
 
-invtApp.factory("InventoryGridWrapper",["GridWrapper",function(GridWrapper){
+imApp.factory("InventoryGridWrapper",["GridWrapper",function(GridWrapper){
 	var gridColumns=[{
 		        name:"lineNumber",
 		        title: "#",
@@ -594,11 +594,13 @@ invtApp.factory("InventoryGridWrapper",["GridWrapper",function(GridWrapper){
 				name:"category",
 				title:"Category",
 				field:"category",
+				filterable: { multi:true},
 				width:140
 			}, {
 				name:"season",
 				title:"Seasons",
 				field:"season",
+				filterable: { multi:true},
 				width:90
 			}, {
 				name:"qoh",
@@ -665,7 +667,7 @@ invtApp.factory("InventoryGridWrapper",["GridWrapper",function(GridWrapper){
 	
 }]);
 
-invtApp.factory("UpcGridWrapper",["GridWrapper",function(GridWrapper){
+imApp.factory("UpcGridWrapper",["GridWrapper",function(GridWrapper){
 	
 	var thisGW;
 
@@ -758,7 +760,7 @@ invtApp.factory("UpcGridWrapper",["GridWrapper",function(GridWrapper){
 	return UpcGridWrapper;
 }]);
 
-invtApp.factory("inventory",["InventoryGridWrapper","UpcGridWrapper",function(InventoryGridWrapper,UpcGridWrapper){
+imApp.factory("inventory",["InventoryGridWrapper","UpcGridWrapper",function(InventoryGridWrapper,UpcGridWrapper){
 	
 	var igw=new InventoryGridWrapper("inventoryGarmentGrid");
 	var ugw=new UpcGridWrapper("inventoryUpcGrid");
@@ -847,6 +849,8 @@ invtApp.factory("inventory",["InventoryGridWrapper","UpcGridWrapper",function(In
 			
 		brand:'',
 		
+		inventoryGW:igw,
+		
 		currentItem:{},
 		
 		wrapGarmentGrid:function(grid){
@@ -912,8 +916,16 @@ invtApp.factory("inventory",["InventoryGridWrapper","UpcGridWrapper",function(In
 }]);
 
 
-invtApp.controller("inventoryCtrl",["$scope","inventory" ,function($scope,inventory){
+imApp.controller("inventoryCtrl",["$scope","inventory" ,function($scope,inventory){
 	$scope.inventory=inventory;
+	inventory.inventoryGW.doubleClickEvent=function(e) {
+    	var di=$scope.inventory.inventoryGW.getCurrentDataItem();
+     	if(di){
+    		$scope.openProduct(di.styleNumber);
+   		}
+     }
+
+
 	$scope.inventoryToolbarOptions={items: [{
 		        type: "button",
 		        text: "New",
@@ -936,9 +948,10 @@ invtApp.controller("inventoryCtrl",["$scope","inventory" ,function($scope,invent
 		        type: "separator",
 		    }, {	
 		        type: "button",
-		        text: "save",
-		        id: "btnSave",
+		        text: "Export To Excel",
+		        id: "btnExcel",
 		        click: function(e){
+		        	$scope.inventory.inventoryGW.grid.saveAsExcel();
 		            }
 		    }, {
 		        type: "separator",

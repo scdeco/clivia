@@ -24,6 +24,7 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.SimpleExpression;
 import org.hibernate.transform.ResultTransformer;
+import org.hibernate.transform.Transformers;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 
@@ -233,6 +234,26 @@ public class DataSourceRequest {
         }
     }   
     
+    //Added by Jacob for projection
+    private static void project(Criteria criteria, HashMap<String, Object> data) {
+        if (data != null && !data.isEmpty()) {
+        	String select=(String) data.get("select");
+        	if(!CliviaUtils.isBlank(select)){
+    			String[] fields=select.split(",");
+    			if(fields.length>0){
+    				ProjectionList projections = Projections.projectionList();
+    				for(String field:fields){
+    					 projections.add(Projections.property(field),field);
+    				}
+    				criteria.setProjection(projections);
+    				criteria.setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
+    			}        		
+        	}
+        }
+    }   
+
+    
+    
     private List<?> groupBy(List<?> items, List<GroupDescriptor> group, Class<?> clazz, final Session session, List<SimpleExpression> parentRestrictions)  throws IntrospectionException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     	ArrayList<Map<String, Object>> result = new ArrayList<Map<String,  Object>>();    	
     	                        
@@ -429,6 +450,9 @@ public class DataSourceRequest {
         if (groups != null && !groups.isEmpty()) {        	
 			result.setData(group(criteria, session, clazz));									
         } else {
+        	
+        	project(criteria,data);		    //Added by Jacob for projection
+
         	result.setData(criteria.list());	
         }
         

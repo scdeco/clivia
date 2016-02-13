@@ -6,6 +6,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import org.hibernate.annotations.Formula;
+
 @Entity
 public class CompanyContact {
 	@Id
@@ -21,11 +23,14 @@ public class CompanyContact {
 	@Column(name="Title",length=10)
 	private String title;
 	
-	@Column(name="FirstName",length=50)
+	@Column(name="FirstName",length=50,nullable=false)
 	private String firstName;
 	
 	@Column(name="LastName",length=50)
 	private String lastName;
+	
+	@Formula("concat(FirstName,' ',ifnull(LastName,''))")
+	private String fullName;
 	
 	@Column(name="Phone",length=50)
 	private String phone;
@@ -91,6 +96,14 @@ public class CompanyContact {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+
+	public String getFullName() {
+		return fullName;
+	}
+
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
 	}
 
 	public String getPhone() {

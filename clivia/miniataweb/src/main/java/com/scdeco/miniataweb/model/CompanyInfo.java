@@ -28,12 +28,6 @@ public class CompanyInfo {
 	@Column(name="Country",length=20)
 	private String country;
 	
-	@Column(name="Phone",length=50)
-	private String phone;
-	
-	@Column(name="Fax",length=50)
-	private String fax;
-	
 	@Column(name="WebSite",length=80)
 	private String website;
 	
@@ -42,6 +36,15 @@ public class CompanyInfo {
 	
 	@Column(name="Csr",length=50)
 	private String csr;
+	
+	@Column(name="IsCustomer")
+	private Boolean isCustomer=false;
+	
+	@Column(name="IsVendor")
+	private Boolean isVendor=false;
+	
+	@Column(name="IsSupplier")
+	private Boolean isSupplier=false;
 	
 	@Column(name="Status")
 	private Integer status;
@@ -100,22 +103,6 @@ public class CompanyInfo {
 		this.country = country;
 	}
 
-	public String getPhone() {
-		return phone;
-	}
-
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
-
-	public String getFax() {
-		return fax;
-	}
-
-	public void setFax(String fax) {
-		this.fax = fax;
-	}
-
 	public String getWebsite() {
 		return website;
 	}
@@ -138,6 +125,30 @@ public class CompanyInfo {
 
 	public void setCsr(String csr) {
 		this.csr = csr;
+	}
+
+	public Boolean getIsCustomer() {
+		return isCustomer;
+	}
+
+	public void setIsCustomer(Boolean isCustomer) {
+		this.isCustomer = isCustomer;
+	}
+
+	public Boolean getIsVendor() {
+		return isVendor;
+	}
+
+	public void setIsVendor(Boolean isVendor) {
+		this.isVendor = isVendor;
+	}
+
+	public Boolean getIsSupplier() {
+		return isSupplier;
+	}
+
+	public void setIsSupplier(Boolean isSupplier) {
+		this.isSupplier = isSupplier;
 	}
 
 	public Integer getStatus() {

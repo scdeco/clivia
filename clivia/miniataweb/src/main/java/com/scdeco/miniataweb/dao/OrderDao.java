@@ -1,6 +1,7 @@
 package com.scdeco.miniataweb.dao;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +18,7 @@ import com.scdeco.miniataweb.model.OrderLineItem;
 
 @Repository ("orderDao")
 public class OrderDao {
-	
+
 	@Autowired
 	private OrderInfoDao orderInfoDao;
 	
@@ -40,6 +41,7 @@ public class OrderDao {
 	private CliviaAutoNumberDao cliviaAutoNumberDao;
 	
 	
+	
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
 	public void save(OrderClivia order){
 		
@@ -50,6 +52,7 @@ public class OrderDao {
 			orderInfo.setOrderId(orderId);
 			orderInfo.setOrderNumber('S'+orderNumber.toString());
 			orderInfo.setOrderDate(LocalDate.now());
+			orderInfo.setOrderTime(LocalTime.now());
 			
 			if(order.getItems()!=null){
 				
@@ -111,9 +114,10 @@ public class OrderDao {
 				orderImageDao.saveOrUpdate(imageItem);
 			}
 		}
-		
-		
 	}
+	
+	
+	
 
 	public OrderClivia getOrderByOrderId(int orderId){
 		OrderClivia order=null;

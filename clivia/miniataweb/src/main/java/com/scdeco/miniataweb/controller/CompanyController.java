@@ -17,7 +17,7 @@ public class CompanyController {
 	@Autowired 
 	CompanyDao companyDao;
 	
-	@RequestMapping(value="list",method=RequestMethod.GET)
+	@RequestMapping(value="/",method=RequestMethod.GET)
 	public String list(){
 		return "crm/crm";
 	}

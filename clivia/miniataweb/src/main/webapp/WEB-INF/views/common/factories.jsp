@@ -472,6 +472,8 @@ factory("GridWrapper",function(){
 				this.isEditing=true;
 				this.enterKeyDown=false;
 				this.enterMoveDown=false;
+				this.hasDateColumnEditor=false;
+				this.doubleClickEvent=null;
 			}
 			
 			GridWrapper.prototype.setConfig=function(config){
@@ -504,6 +506,13 @@ factory("GridWrapper",function(){
 			//call this method in kendoWidgetCreated event
 			GridWrapper.prototype.wrapGrid=function(grid){
 				this.grid=grid;					//$("#"+this.gridName).data("kendoGrid");
+				var self=this;
+				
+				if(this.doubleClickEvent){
+					this.grid.bind("dataBound",function(e){
+						self.grid.tbody.find("tr").dblclick(self.doubleClickEvent);
+					});
+				}
 				
 				var showLineNumber=function(grid){
 		   	   		 var pageSkip = (grid.dataSource.page() - 1) * grid.dataSource.pageSize();
@@ -526,8 +535,25 @@ factory("GridWrapper",function(){
 				//dataBound event triggered before wrapped
 				showLineNumber(this.grid);
 				
+				//if this grid has dataPickerEditor column, convert value of date type to string
+				if(this.hasDateColumnEditor){
+					this.grid.bind('save',function(e){
+						var gridColumns=self.gridColumns;
+						for(var i=0,gridColumn;i<gridColumns.length;i++){
+							gridColumn=gridColumns[i];
+							if(gridColumn.editor===self.dateColumnEditor && e.values[gridColumn.field]){
+								e.preventDefault();
+								var format=gridColumn.format?gridColumn.format:'{0:yyyy-MM-dd}';
+								format=format.slice(3,format.length-1); //remove {0:} from format
+								e.values[gridColumn.field]=kendo.toString(e.values[gridColumn.field],format);
+								e.model[gridColumn.field]=e.values[gridColumn.field];
+								break;
+							}
+						}
+					});
+				}
+				
 				if(this.enterMoveDown){
-					var self=this;
 					this.grid.tbody.bind('keydown', function (e) {
 						if(self.enterMoveDown && e.keyCode === 13 ){
 							self.enterKeyDown=true;
@@ -537,6 +563,7 @@ factory("GridWrapper",function(){
 						}
 	                });
 					this.grid.bind('save',function(e){
+						
 						if(self.enterMoveDown)
 							if(self.enterKeyDown){
 								self.enterKeyDown=false;
@@ -548,6 +575,7 @@ factory("GridWrapper",function(){
 				                    self.grid.editCell(cellToEdit);
 								}
 							}
+						
 					});
 					
 	            }			
@@ -578,9 +606,17 @@ factory("GridWrapper",function(){
 			}
 				
 			GridWrapper.prototype.getCurrentDataItem=function (){
-				if(!this.grid) return null;
+				var result=null;
+				
+				if(!this.grid) return result;
 				var row=this.getCurrentRow();
-				return this.getDataItemByRow(row);
+				
+				if(row){
+					result=this.getDataItemByRow(row);
+				}else{
+					result=this.grid.dataItem(this.grid.select());
+				}
+				return result;
 			}
 				
 			GridWrapper.prototype.getCurrentDataItemIndex=function (){
@@ -764,7 +800,7 @@ factory("GridWrapper",function(){
 		    };
 		    
 		    GridWrapper.prototype.dateColumnEditor=function (container, options) {
-		        $('<input  class="grid-editor" data-bind="value:' + options.field  + '"/>')
+		        $('<input  class="grid-editor" data-type="text" data-bind="value:' + options.field  + '"/>')
 	            .appendTo(container)
 	            .kendoDatePicker({
 	            	format:options.format
@@ -777,7 +813,7 @@ factory("GridWrapper",function(){
 			
 		    GridWrapper.prototype.kendoComboBoxEditor=function(container,options,items){
 				if(items){
-				    $('<input class="grid-editor"  data-bind="value:' + options.field + '"/>')
+				    $('<input class="grid-editor" data-bind="value:' + options.field + '"/>')
 				    	.appendTo(container)
 				    	.kendoComboBox({
 					        autoBind: true,

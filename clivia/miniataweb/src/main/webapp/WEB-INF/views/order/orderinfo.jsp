@@ -1,23 +1,10 @@
 
 	<form name="headerForm" ng-submit="" novalidate class="simple-form" >
 		<ul id="fieldlist">
-<!-- 	moved to top pane of ordermain 	
-			<li>
-                      <label for="orderNumber" class="requird">Order#:</label>
-                      <input type="text" name="customer" class="k-textbox"  style="width:100%;" ng-model="order.orderInfo.orderNumber"/>
-			</li>
-			<li ng-show="order.orderInfo.orderDate">
-                      <label for="orderDate" class="requird">Order Date:</label>
-                      <input  kendo-datepicker name="orderDate" style="width:110px;"  style="width:100%;" k-options="orderDateOptions"   ng-model="order.orderInfo.orderDate" />
-			</li>
- -->			
-			<li>
-                 <label for="Customer" class="required">Customer:</label>
-                 <customer-input name="customer"  style="width:100%;" ng-model="SO.dataSet.info.customerId"></customer-input>
-			</li>
+
 			<li>
 		    	<label for="Buyer">Buyer:</label>
-				<input type="text"  name="buyer" class="k-textbox" style="width:100%;" ng-model="SO.dataSet.info.buyer">
+				<input kendo-combobox name="buyer" k-options="buyerOptions"  style="width:100%;" ng-model="SO.dataSet.info.buyer" ng-trim="true">
 			</li>
 			<li>
 				<label for="orderName">Order Name:</label>
@@ -27,15 +14,28 @@
 		    	<label for="customerPO">Customer PO#:</label>
 				<input type="text"  name="customerPO" class="k-textbox" style="width:100%;"   ng-model="SO.dataSet.info.customerPO" ng-trim="true"/>
 			</li>
+			<li ng-show="!!SO.dataSet.info.orderNumber">
+                <label for="orderDate" class="requird">Issued :</label>
+                <input kendo-datepicker name="orderDate" style="width:100px;" ng-readonly="true" k-options="orderDateOptions" ng-model="SO.dataSet.info.orderDate" />
+				<input kendo-timepicker name="orderTime" style="width:100px;" ng-readonly="true" k-options="orderTimeOptions" ng-model="SO.dataSet.info.orderTime"/>
+			</li>
 			<li>
 		    	<label for="requiredDate">Required By:</label>
-				<input kendo-datepicker   name="requireDate"  style="width:100px;"  k-options="requireDateOptions" ng-model="SO.dataSet.info.requireDate"/>
-				<input kendo-timepicker   name="requireTime"  style="width:100px;"  k-options="requireTimeOptions" ng-model="SO.dataSet.info.requireTime"/>
+				<input kendo-datepicker   name="requireDate"  style="width:100px;" k-options="requireDateOptions" ng-model="SO.dataSet.info.requireDate"/>
+				<input kendo-timepicker   name="requireTime"  style="width:100px;" k-options="requireTimeOptions" ng-model="SO.dataSet.info.requireTime"/>
+			</li>
+			<li>
+		    	<label for="Rep">Representative:</label>
+				<employee-combobox name="rep"  style="width:100%;" ng-model="SO.dataSet.info.repId">
+			</li>
+			<li ng-show="!!SO.dataSet.info.orderNumber">
+		    	<label for="createBy">Issued By:</label>
+				<employee-combobox name="createBy" style="width:100%;" ng-readonly="true" ng-model="SO.dataSet.info.createBy">
 			</li>
 			
+			
+			
 		</ul>
-
-
 		
 	</form>
 		

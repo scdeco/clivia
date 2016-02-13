@@ -13,7 +13,6 @@
 	<div> 
 		<input type="button" value="Add" ng-click="add()">
 	  	<input type="button" value="OK" ng-click="ok()">
-	  	<label style="margin-left: 100px; font-weight: bold;" >Total:{{total}}</label>
 	  	<input type="button" value="Clear" ng-click="clear()" style="margin-left:100px;">
 	  	<input type="button" value="Cancel" ng-click="cancel()">	
 	</div>

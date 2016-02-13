@@ -3,8 +3,10 @@
 	</form>
 
 	<h3> 
-		Business Name:&nbsp;<span ng-show="dataSet.info.id">{{dataSet.info.businessName}}</span> 
-		<input type="text" id="businessName" name="businessName" class="k-textbox" style='width:400px;' 
+		&nbsp;&nbsp;
+		<span ng-show="dataSet.info.id">{{dataSet.info.businessName}}</span> 
+		<span ng-hide="dataSet.info.id">Business Name:&nbsp;</span>
+		<input type="text" id="businessName" name="businessName" class="k-textbox" style='width:350px;' 
 			ng-model="dataSet.info.businessName" 
 			ng-hide="dataSet.info.id" 
 			ng-trim="true" required validationMessage="Enter {0}"/>
@@ -12,7 +14,7 @@
 
 	<div kendo-splitter="mainSplitter"  
 			k-orientation="'horozontal'"
-			k-panes="[{ collapsible: true, resizable: true, size: '300px'},
+			k-panes="[{ collapsible: true, resizable: true, size: '150px'},
             	      { collapsible: true, resizable: true}]"
             k-options="mainSplitterOptions"
 			style="height:615px;">

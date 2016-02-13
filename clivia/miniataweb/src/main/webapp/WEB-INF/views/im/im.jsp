@@ -1,59 +1,92 @@
 <!DOCTYPE html>
-<html ng-app="crmApp">
+<html ng-app="imApp">
 <head>
 
-	<title>CRM</title>
+	<title>IM</title>
 	<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
 
 	<shared:header/> 
 	<%@include file="../common/factories.jsp"%>
 	<%@include file="../common/directives.jsp"%>
-	<%@include file="crm-script.jsp"%>
+	<%@include file="im-script.jsp"%>
 	
 </head>
 
-<body  ng-controller="crmCtrl">
+<body  ng-controller="inventoryCtrl" spellcheck="false">
 
-<div kendo-splitter="crmSplitter"
+<div kendo-splitter="inventorySplitter"
 	
 		k-panes="[{ collapsible: false, resizable:false, size: '35px'},
                   { collapsible: false,size:'550px'},
                   { collapsible: true, resizable: true}]"
-        k-options="crmsplitterOptions"
+        k-options="inventory.splitterOptions"
 		style="height:900px;">
 		 
 	<div id="top-pane">
+			Brand: <brand-input name="garmentBrandInput" ng-model="inventory.brand"></brand-input>
 	</div>	<!-- top pane of outter splitter -->
 	
 	<div id="middle-pane">
-		<div kendo-toolbar id="crmToolbar" k-options="crmToolbarOptions"></div>
-		<div  kendo-grid="crmCompanyGrid"  k-options="crmCompanyGridOptions"></div>
+		<div kendo-toolbar id="inventoryToolbar" k-options="inventoryToolbarOptions"></div>
+		<div  kendo-grid="inventoryGarmentGrid"  k-options="inventory.garmentGridOptions"></div>
 	</div> <!-- middle pane of outter splitter -->
 	
-	<div id="bottom-pane" style="height:200px;">
+	<div id="bottom-pane" style="height:300px;">
+		<div kendo-tab-strip k-animation="false">
+   			<ul>
+   				<li class="k-state-active">UPC</li>
+   				<li>Transaction</li>
+   			</ul>
+   			<div>
+   				<div kendo-grid="inventoryUpcGrid"  k-options="inventory.upcGridOptions"></div>
+   			</div>
+   			<div>
+   				Transaction
+   			</div>
+   		</div>
+		
 	</div> <!-- bottom pane of outter splitter -->
 	
-</div>	<!-- end of crmSplitter -->
+</div>	<!-- end of inventorySplitter -->
 
-<div kendo-window="companyWindow"
-		k-width="1000"
-	 	k-height="700"
+<div kendo-window="transactionEntryWindow"
+		k-width="850"
+	 	k-height="810"
 	 	k-position="{top: 50, left: 100 }"	
 	 	k-resizable="true"
 		k-draggable="true"
-	 	k-title="'Company'"
+	 	k-title="'Transaction'"
 	 	k-visible="false" 
 	 	k-actions="['Minimiz','Maximize','Close']"
 	 	k-pinned="true"
-	 	k-modal="false"
-	 	k-options="companyWindowOptions">
+	 	k-modal="false">
 
-	<div company="companyCard"></div>
+	<div transaction-entry="transactionEntry"	c-brand="inventory.brand" ></div>
 </div>
+
+<div kendo-window="garmentProductWindow"
+		k-width="600"
+	 	k-height="400"
+	 	k-position="{top: 50, left: 100 }"	
+	 	k-resizable="true"
+		k-draggable="true"
+	 	k-title="'Product'"
+	 	k-visible="false" 
+	 	k-actions="['Minimiz','Maximize','Close']"
+	 	k-modal="false"
+	 	k-pinned="true"
+	 	k-options="garmentProductWindowOptions">
+
+	<div garment-product="garmentProduct" c-brand="inventory.brand"></div>
+</div>
+
 
 </body>
 <style>
-
+	.k-dirty {
+  		border-width:0;
+	}
+	
 	html,body{
 	    margin:0;
 	    padding:0;
@@ -125,7 +158,6 @@
     	right: 0;
     	width: auto;
     	height: auto;
-    	border-width: 0;
 	}
  
 	.k-tabstrip > .k-content {
@@ -196,6 +228,4 @@
 	
 
 </style>
-</html>
-
 </html>

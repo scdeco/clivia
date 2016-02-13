@@ -6,7 +6,7 @@
 orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http, $q, $state,consts,cliviaDDS){
 	var _order={
 			dataSet:{info:{},items:[],deleteds:[]},
-			
+			company:{info:{},contacts:new kendo.data.ObservableArray([]) },
 			setting:{
 				user:{
 					id:1000,
@@ -92,13 +92,42 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
     }
     
 	
+    _order.getCompany=function(){
+    	var companyId=_order.dataSet.info.customerId;
+		if(!!companyId && _order.company.info.companyId!==companyId){
+			var url="../data/companyInfoDao/getitem?name=id&value="+companyId;
+			$http.get(url).
+				success(function(data, status, headers, config) {
+					_order.company.info=data;
+				}).
+				error(function(data, status, headers, config) {
+				});
+			
+			url="../data/companyContactDao/call/findListByCompanyId?param=i:"+companyId;
+			var buyers=_order.company.contacts;
+			buyers.splice(0,buyers.length);
+			$http.get(url).
+				success(function(data, status, headers, config) {
+					if(data){
+						for(var i=0;i<data.length;i++){
+							buyers.push(data[i])
+						}
+					}
+				}).
+				error(function(data, status, headers, config) {
+				});
+
+		}		
+    }
 	
 	//populate data get from server into this model(_order.dataSet)
 	var populate=function(data){
 		_order.clearDataSet();
 		if(!!data) {		//data is not empty
-			if(angular.isDefined(data.info))
+			if(data.info){
 				dataSet.info=data.info;
+			}
+
 			if(data.items)
 				dataSet.items=data.items;
 			
@@ -106,7 +135,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 				var itemType=setting.registeredItemTypes[i].name+"s",
 					dataTable=dataSet[itemType],
 					dataItems=data[itemType];
-				if(angular.isDefined(dataItems))
+				if(dataItems)
 			    	for(var j=0;j<dataItems.length;j++)
 			    		dataTable.push(dataItems[j]);
 			}
@@ -161,6 +190,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 		$http.get(url).
 			success(function(data, status, headers, config) {
 		    	populate(data);
+				_order.getCompany();
 			    deferred.resolve(data);
 			}).
 			error(function(data, status, headers, config) {
@@ -292,7 +322,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 }]); /* end of CliviaOrder */
  
 
-orderApp.controller("orderCtrl",["$scope","$http",function($scope, $http) {
+orderApp.controller("orderCtrl",["$scope",function($scope) {
+	
 	
 }]);
 

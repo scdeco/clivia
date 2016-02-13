@@ -20,7 +20,142 @@ directive('capitalize', function() {
 	     }
 	   };
 }).
-	
+
+directive("employeeCombobox",function(){
+	var template='<input kendo-combobox k-options="employeeOptions" ></input>';
+	return {
+		restrict:"EA",
+		replace:true,
+		scope:true,
+		template:template,
+		link:function(scope,element,attrs){
+
+			var employeeDataSource=new kendo.data.DataSource({  
+					transport: {
+					    read: {
+					        url: '../datasource/employeeInfoDao/read',
+					        type: 'post',
+					        dataType: 'json',
+					        contentType: 'application/json'
+					    },
+					    parameterMap: function(options, operation) {
+					    	//operation is alaways read here.
+
+					    	//add extra parameters to options
+					    	//field projection,return fields that needed instead of all fields of the table
+				    		options.data={select:"id,fullName"};	 						    	
+				            return JSON.stringify(options);
+					    }
+					},
+					
+					schema: {
+					    data: "data",
+					    model: {id: "id"}
+					},
+					
+					serverFiltering: true,		//
+					//pageSize: 15,
+					serverPaging: true,
+					serverSorting: true,
+						sort: [{
+				         field: "fullName",
+				         dir: "asc"
+				     }], 
+              });
+             
+			scope.employeeOptions={
+				filter:"startswith",
+				filtering: function(e) {
+				      var filter = e.filter;
+				      if (! (filter && filter.value)) {
+				        //prevent filtering if the filter does not have value
+				        e.preventDefault();
+				      }
+				  },					
+                dataTextField: "fullName",
+                dataValueField: "id",
+				dataSource: employeeDataSource,
+				autoBind:false,					//
+				minLength:1,					//
+                //height: 400,					
+			}
+		}
+	}
+}).
+
+directive("companyCombobox",function(){
+	var template='<input kendo-combobox k-options="companyOptions" ></input>';
+	return {
+		restrict:"EA",
+		replace:true,
+		scope:true,
+		template:template,
+		link:function(scope,element,attrs){
+
+			var companyDataSource=new kendo.data.DataSource({  
+					transport: {
+					    read: {
+					        url: '../datasource/companyInfoDao/read',
+					        type: 'post',
+					        dataType: 'json',
+					        contentType: 'application/json'
+					    },
+					    parameterMap: function(options, operation) {
+							//operation is alaways read here.
+
+							if(!options.filter)
+								options.filter={filters:[],logic:'and'};
+							
+					    	var filters=options.filter.filters;
+							
+							//prevent retrieving all records by setting id to a negenative vlaue
+							//when first time click on the dropdown arrow without type in any character
+							if(!!options.filter && options.filter.filters.length===0)
+								filters.push({field:'id',operator:'eq',value:-1});
+
+					    	//add extra parameters to options
+					    	//field projection,return fields that needed instead of all fields of the table
+					    		options.data={select:"id,businessName"};	 
+					            return JSON.stringify(options);
+					    },
+					    
+					},
+					
+					schema: {
+					    data: "data",
+					    model: {id: "id"}
+					},
+					
+					serverFiltering: true,		//
+					pageSize: 25,				//maxim return 25 matched records per request
+					serverPaging: true,
+					serverSorting: true,
+						sort: [{
+				         field: "businessName",
+				         dir: "asc"
+				     }], 
+            });
+             
+			scope.companyOptions={
+				filter:"startswith",
+				filtering: function(e) {
+				      var filter = e.filter;
+				      if (! (filter && filter.value)) {
+				        //prevent filtering if the filter does not have value
+				        e.preventDefault();
+				      }
+				  },					
+                dataTextField: "businessName",
+                dataValueField: "id",
+				dataSource: companyDataSource,
+				autoBind:false,					//
+				minLength:3,					//
+                //height: 400,					
+			}
+		}
+	}
+}).
+
 directive("customerInput",["cliviaDDS",function(cliviaDDS){
 	var template='<input kendo-combobox k-options="customerOptions" k-ng-delay="customerOptions" ></input>';
 	return {
@@ -79,6 +214,7 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 		},
 		templateUrl:'../common/garmentinput',
 		link: function(scope,element,attrs){
+			
 			var gridSchema={model: {id: "id",
 				fields: {
 					id: { type: "number"},
@@ -100,47 +236,110 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 					f12: {type:"number"}
 				}}};
 
-			var gridColumns=new kendo.data.ObservableArray([{title:"Colour",template:"<label>#: colour #</label>"}]);
+			var gridColumns=[{title:"Colour",template:"<label>#: colour #</label>"}];
 			var gridData=new kendo.data.ObservableArray([]);
 
+			var readOnlyColumnEditor=function(container, options) {
+		         $("<span>" + options.model.get(options.field)+ "</span>").appendTo(container);
+		     };
+		     
+			var readOnlyColumnEditor=function(container, options) {
+		         $("<span>" + options.model.get(options.field)+ "</span>").appendTo(container);
+		     };
+		     
+		    var quantityColumnEditor=function(container, options) {
+		    		if(options.model.id){
+				        $('<input class="grid-editor" data-bind="value:' + options.field + '"/>')
+			            .appendTo(container)
+			            .kendoNumericTextBox({
+			            	min: 0
+			            });
+		    		}else{
+		    			readOnlyColumnEditor(container, options);
+		    		}
+			};
+			
 			var clearGrid=function(){
-				gridColumns.splice(1, gridColumns.length-1);
 				gridData.splice(0, gridData.length);
-				
-				scope.total=0;
+				gridColumns.splice(1, gridColumns.length-1);
+
 				scope.gridRebind++;
 			};
 
 			
 			var createGrid=function(){
 				if(!scope.garment) return;
+
 				var sizes=scope.garment.sizeRange.split(",");
+				var colours=scope.garment.colourway.split(",");
+				
 				for(var i=0;i<sizes.length;i++){
 					var column={
-							field: "f"+("00"+i).slice(-2),
 							title: sizes[i],
+							field:"f"+("00"+i).slice(-2),
+							editor:quantityColumnEditor,
 							width: 60,
-							//attributes: {class:"gridNumberColumn"}
+							attributes: {style:"text-align: right;"},
+							headerAttributes: {style:"text-align: right;"}
 						};
 					gridColumns.push(column);
 				}
-				gridColumns.push({title: "Total", field:"total",editor:GridWrapper.readOnlyColumnEditor, width: 60});  //,attributes: {style:"text-align: right; font-weight: bold;"}
-				gridColumns.push({title: "Remark",field: "remark"});
-
-				var colours=scope.garment.colourway.split(",");
-				for(var i=0; i<colours.length; i++)
-					gridData.push({id: i, colour: colours[i].trim(),total:null});
+				
+				gridColumns.push({
+						title: "Subtotal", 
+						field:"total", 
+						editor:readOnlyColumnEditor, 
+						width: 80, 
+						attributes: {style:"text-align: right; font-weight: bold;"},
+						headerAttributes: {style:"text-align: right;"}
+				});
+				
+				gridColumns.push({title: "Remark", total:0, field: "remark"});
 
 				scope.gridRebind++;	//cause the grid rebinds
+			
+				var di;
+ 				for(var i=0; i<colours.length; i++){
+ 					di={id: i+1, colour: colours[i].trim()};
+ 					gridData.push(di);
+				}
+ 				di={id: 0, colour: "Subtotal:"};
+ 				gridData.push(di);
 
+ 				clearSubtotal();
 			};
+			
+			var clearSubtotal=function(){
+				var diSubtotal=gridData[gridData.length-1];
+				for(var c=0,field; c<gridColumns.length-3; c++){
+	        		field="f"+("00"+c).slice(-2);
+	        		diSubtotal[field]=0;
+				}
+			}
 			
 			var calcTotal=function(){
 				var total=0;
-				for(var r=0;r<gridData.length;r++)
-					if(gridData[r].total)	
-						total+=gridData[r].total;
-				scope.total=total;
+				
+				clearSubtotal();
+				diSubtotal=gridData[gridData.length-1];
+				
+				for(var r=0,di,t;r<gridData.length-1;r++){
+					
+					di=gridData[r];
+					t=0;
+		        	for(var c=0,field; c<gridColumns.length-3; c++){
+		        		field="f"+("00"+c).slice(-2);
+		        		if(di[field]){
+		        			diSubtotal[field]+=di[field];
+		        			t+=di[field];
+		        		}
+		        	}
+		        	di.total=t;
+		        	total+=t;
+				}
+				
+				diSubtotal.total=total;
+		        		
 			};
 			
 			var closeWindow=function(){
@@ -159,7 +358,7 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 					columns:gridColumns,
 					dataSource:{
 						data:gridData,
-						schema:gridSchema
+						schema:gridSchema,
 					},
 					autoSync: true,
 			        editable: true,
@@ -170,23 +369,22 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 						this.autoFitColumn(0);
 			        },
 			        save:function(e){
-			        	var t=0, changed=false;
+ 			        	var t=0, changed=false;
 			        	
-			        	for(var c=0,field; c<this.columns.length-3; c++){
+ 			        	for(var c=0,field; c<this.columns.length-3; c++){
 			        		field="f"+("00"+c).slice(-2);
 				        	if(typeof e.values[field]!== 'undefined'){
-				        		t+=e.values[field];
-				        		changed=true;
-				        	}else{
-				        		if(e.model[field])	
-				        			t+=e.model[field];
+				        		if(e.values[field]!==e.model[field]){
+					        		changed=true;
+					        		e.model[field]=e.values[field];
+				        		}
+				        		break;
 				        	}
 			        	}
 			        	
 			        	if(changed){
-			        		e.model.total=(t!==0)?t:null;
 			        		calcTotal();
-			        	}
+			        	}  
 			        }
 			};
 			
@@ -214,6 +412,8 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 				
 			scope.add=function(){
 					if(scope.addFunction){
+						if(gridData.length>0)
+							gridData.pop();	//remove the subtotal line
 						scope.addFunction(scope.garment,gridData);
 						scope.clear();
 					}
