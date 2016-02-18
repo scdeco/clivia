@@ -25,12 +25,12 @@
 				<input kendo-timepicker   name="requireTime"  style="width:100px;" k-options="requireTimeOptions" ng-model="SO.dataSet.info.requireTime"/>
 			</li>
 			<li>
-		    	<label for="Rep">Representative:</label>
-				<employee-combobox name="rep"  style="width:100%;" ng-model="SO.dataSet.info.repId">
+		    	<label for="rep">Representative:</label>
+				<auto-combobox name="rep"  style="width:100%;" c-options="repOptions" ng-model="SO.dataSet.info.repId">
 			</li>
 			<li ng-show="!!SO.dataSet.info.orderNumber">
-		    	<label for="createBy">Issued By:</label>
-				<employee-combobox name="createBy" style="width:100%;" ng-readonly="true" ng-model="SO.dataSet.info.createBy">
+		    	<label for="csr">Issued By:</label>
+				<auto-combobox name="csr" style="width:100%;" ng-readonly="true" c-options="csrOptions" ng-model="SO.dataSet.info.createBy">
 			</li>
 			
 			

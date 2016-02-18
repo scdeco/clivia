@@ -41,6 +41,13 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	            
 	       }]
 	    };	
+	$scope.companyOptions={
+		name:"companyComboBox",
+		dataTextField:"businessName",
+		dataValueField:"id",
+		minLength:2,
+		url:'../datasource/companyInfoDao/read',
+	}
     
 	$scope.newOrder=function(){
 		SO.clear();

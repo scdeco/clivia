@@ -6,7 +6,7 @@
 		&nbsp;&nbsp;
 		<span ng-show="dataSet.info.id">{{dataSet.info.businessName}}</span> 
 		<span ng-hide="dataSet.info.id">Business Name:&nbsp;</span>
-		<input type="text" id="businessName" name="businessName" class="k-textbox" style='width:350px;' 
+		<input type="text" id="businessName" name="businessName" class="k-textbox" style='width:400px;' 
 			ng-model="dataSet.info.businessName" 
 			ng-hide="dataSet.info.id" 
 			ng-trim="true" required validationMessage="Enter {0}"/>
@@ -14,10 +14,10 @@
 
 	<div kendo-splitter="mainSplitter"  
 			k-orientation="'horozontal'"
-			k-panes="[{ collapsible: true, resizable: true, size: '150px'},
+			k-panes="[{ collapsible: true, resizable: true, size: '180px'},
             	      { collapsible: true, resizable: true}]"
             k-options="mainSplitterOptions"
-			style="height:615px;">
+			style="height:450px;">
 			
 		<div>		<!-- first pane -->
 			<form name="companyForm" ng-submit="" novalidate class="simple-form">
@@ -55,14 +55,37 @@
 							k-ng-delay="cityOptions" 
 							k-options="cityOptions"/>
 					</li>
-
-
-					
+  
 					<li>
 						<label for="website">Website:</label>
 						<input type="text" id="website" name="remark" class="k-textbox" style="width:100%;"  
 							ng-model="dataSet.info.website"/>
 					</li>
+					
+					<li>
+		    			<label for="rep">Sales Rep.:</label>
+						<auto-combobox name="rep"  style="width:100%;"  c-options="repOptions" ng-model="dataSet.info.repId">
+					</li>
+
+					<li>
+		    			<label for="csr">CSR:</label>
+						<auto-combobox name="csr"  style="width:100%;" c-options="csrOptions" ng-model="dataSet.info.csrId">
+					</li>
+					
+					<li> 
+						<label for="isCustomer">
+        				<input type="checkbox" name="isCustomer"   
+							ng-model="dataSet.info.isCustomer"/>Is Customer
+						</label>
+					</li>
+					
+					<li>
+						<label for="isSupplier">
+        				<input type="checkbox" name="isSupplier"   
+							ng-model="dataSet.info.isSupplier"/>Is Supplier
+						</label>
+					</li>
+					
 					
 				</ul>
 				
@@ -102,9 +125,9 @@
               
               <div style="padding: 1em">	<!-- notes -->
               	<h3>Regular:</h3>
-           	 	<textarea kendo-editor="regularEditor" ng-model="dataSet.info.html"></textarea>
+           	 	<textarea  style="width:100%;height:100px;" ng-model="dataSet.info.html"></textarea>		<!-- not use for now kendo-editor="regularEditor" -->
               	<h3>Pricing:</h3>
-            	<textarea kendo-editor="pricingEditor" ng-model="dataSet.info.priceInfo"></textarea>
+            	<textarea  style="width:100%;height:100px;" ng-model="dataSet.info.priceInfo"></textarea> <!--not use for now kendo-editor="pricingEditor" -->
               </div>
               
               <div style="padding: 1em">

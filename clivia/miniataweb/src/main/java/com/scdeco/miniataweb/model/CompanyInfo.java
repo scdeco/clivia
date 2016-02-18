@@ -31,17 +31,14 @@ public class CompanyInfo {
 	@Column(name="WebSite",length=80)
 	private String website;
 	
-	@Column(name="Sales",length=50)
-	private String sales;
+	@Column(name="RepId")
+	private Integer repId;
 	
-	@Column(name="Csr",length=50)
-	private String csr;
+	@Column(name="CsrId")
+	private Integer csrId;
 	
 	@Column(name="IsCustomer")
-	private Boolean isCustomer=false;
-	
-	@Column(name="IsVendor")
-	private Boolean isVendor=false;
+	private Boolean isCustomer=true;
 	
 	@Column(name="IsSupplier")
 	private Boolean isSupplier=false;
@@ -111,36 +108,28 @@ public class CompanyInfo {
 		this.website = website;
 	}
 
-	public String getSales() {
-		return sales;
+	public Integer getRepId() {
+		return repId;
 	}
 
-	public void setSales(String sales) {
-		this.sales = sales;
+	public void setRepId(Integer repId) {
+		this.repId = repId;
 	}
 
-	public String getCsr() {
-		return csr;
+	public Integer getCsrId() {
+		return csrId;
 	}
 
-	public void setCsr(String csr) {
-		this.csr = csr;
+	public void setCsrId(Integer csrId) {
+		this.csrId = csrId;
 	}
 
 	public Boolean getIsCustomer() {
 		return isCustomer;
 	}
-
+ 
 	public void setIsCustomer(Boolean isCustomer) {
 		this.isCustomer = isCustomer;
-	}
-
-	public Boolean getIsVendor() {
-		return isVendor;
-	}
-
-	public void setIsVendor(Boolean isVendor) {
-		this.isVendor = isVendor;
 	}
 
 	public Boolean getIsSupplier() {
@@ -174,6 +163,5 @@ public class CompanyInfo {
 	public void setSpecialRequirement(String specialRequirement) {
 		this.specialRequirement = specialRequirement;
 	}
-
 
 }

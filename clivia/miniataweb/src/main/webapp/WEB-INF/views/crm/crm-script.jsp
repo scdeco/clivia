@@ -5,7 +5,7 @@ var crmApp = angular.module("crmApp",
 		
 crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,util){
 	
-	var searchTemplate='Select:<company-combobox name="searchCompany" style="width:300px;"  ng-model="search.companyId"> </company-combobox>'+
+	var searchTemplate='Select:<auto-combobox  style="width:300px;"  c-options="search.options" ng-model="search.companyId"> </auto-combobox>'+
 	'<span ng-click="getCompany()" class="k-icon k-i-search"></span>';
 
 	var baseUrl="";	
@@ -21,7 +21,7 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 			link:function(scope){
 
 				scope.clearDataSet=function(){
- 					scope.dataSet.info={};
+ 					scope.dataSet.info={isCustomer:true};
  					for(var i=0,items,itemName;i<scope.companyItemNames.length;i++){
  						itemName=scope.companyItemNames[i];
  						items=scope.dataSet[itemName+'Items'];
@@ -33,7 +33,7 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 				}			    
 			    
 			    scope.clear=function(){
-			    	scope.search={companyId:null};
+			    	scope.search.companyId=null;
 			    	scope.clearDataSet();
 			    }
 			    
@@ -114,15 +114,29 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 			
 			controller:["$scope","cliviaDDS","DataDict","ContactGridWrapper","AddressGridWrapper","JournalGridWrapper",
 			            function($scope,cliviaDDS,DataDict,ContactGridWrapper,AddressGridWrapper,JournalGridWrapper){
-				$scope.$parent[$scope.cName]=$scope;
+				var scope=$scope;
+				
+				scope.$parent[scope.cName]=scope;
 
-				$scope.companyToolbarOptions ={items:[{
+				scope.search={
+						companyId:null,
+						options:{
+							name:"searchComboBox",
+							dataTextField:"businessName",
+							dataValueField:"id",
+							minLength:2,
+							url:'../datasource/companyInfoDao/read',
+							dict:cliviaDDS.getDict("customerInput"),
+						}
+					};
+
+				scope.companyToolbarOptions ={items:[{
 							type: "button",
 							text: "New",
 							id:"btnNew",
 							click: function(e) {
-								$scope.clear();
-								$scope.$apply();
+								scope.clear();
+								scope.$apply();
 							}
 						}, {
 							type: "separator",
@@ -131,7 +145,7 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 							text: "Save",
 							id: "btnSave",
 							click: function(e){
-								$scope.save();
+								scope.save();
 							}
 						}, {
 							type: "separator",
@@ -145,39 +159,48 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 							type: "separator",
 					}]};
 				
-				$scope.companyItemNames=['contact','address','journal'];
+				scope.companyItemNames=['contact','address','journal'];
 				
-				$scope.contactGW=new ContactGridWrapper('contactGrid');
-				$scope.addressGW=new AddressGridWrapper('addressGrid');
-				$scope.journalGW=new JournalGridWrapper('journalGrid');
+				scope.contactGW=new ContactGridWrapper('contactGrid');
+				scope.addressGW=new AddressGridWrapper('addressGrid');
+				scope.journalGW=new JournalGridWrapper('journalGrid');
 				
-				$scope.$on("kendoWidgetCreated", function(event, widget){
-					if (widget ===$scope.contactGrid) {
-						$scope.contactGW.wrapGrid(widget);
+				scope.$on("kendoWidgetCreated", function(event, widget){
+					if (widget ===scope.contactGrid) {
+						scope.contactGW.wrapGrid(widget);
 					}
-					if (widget ===$scope.addressGrid) {
-						$scope.addressGW.wrapGrid(widget);
+					if (widget ===scope.addressGrid) {
+						scope.addressGW.wrapGrid(widget);
 					}
-					if (widget ===$scope.journalGrid) {
-						$scope.journalGW.wrapGrid(widget);
+					if (widget ===scope.journalGrid) {
+						scope.journalGW.wrapGrid(widget);
+						scope.journalGW.getContacts=function(){
+							var items=[];
+							for(var i=0,item,name;i<scope.dataSet.contactItems.length;i++){
+								item=scope.dataSet.contactItems[i];
+								name=(item.firstName?item.firstName:"")+" "+(item.lastName?item.lastName:"");
+								items.push(name.trim());
+							}
+							return items;
+						}
 					}
 				});	
 				
 				
-				$scope.dataSet={info:{html:"test"}};
+				scope.dataSet={info:{html:"test"}};
 				
 				
-				for(var i=0,itemName;i<$scope.companyItemNames.length;i++){
+				for(var i=0,itemName;i<scope.companyItemNames.length;i++){
 					
-					itemName=$scope.companyItemNames[i];
+					itemName=scope.companyItemNames[i];
 					
-					$scope.dataSet[itemName+'Items']=new kendo.data.ObservableArray([]);
-					$scope.dataSet[itemName+'DeletedItems']=[];
+					scope.dataSet[itemName+'Items']=new kendo.data.ObservableArray([]);
+					scope.dataSet[itemName+'DeletedItems']=[];
 					
-					$scope[itemName+'GridSortableOptions'] = $scope[itemName+'GW'].getSortableOptions();
+					scope[itemName+'GridSortableOptions'] = scope[itemName+'GW'].getSortableOptions();
 					
-				 	$scope[itemName+'GridDataSource']=new kendo.data.DataSource({
-				     	data:$scope.dataSet[itemName+'Items'],
+				 	scope[itemName+'GridDataSource']=new kendo.data.DataSource({
+				     	data:scope.dataSet[itemName+'Items'],
 					    schema: {
 					    	model: { id: "id" }
 					    },	//end of schema
@@ -188,10 +211,10 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 				    }); //end of dataSource,
 				    
 				    
-				 	$scope[itemName+'GridOptions']={
+				 	scope[itemName+'GridOptions']={
 							autoSync: true,
-							columns:$scope[itemName+'GW'].gridColumns,
-							dataSource:$scope[itemName+'GridDataSource'],
+							columns:scope[itemName+'GW'].gridColumns,
+							dataSource:scope[itemName+'GridDataSource'],
 					        editable: true,
 					        selectable: "cell",
 					        navigatable: true,
@@ -235,6 +258,25 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 
 				}
 				
+				$scope.repOptions={
+						name:"repComboBox",
+						dataTextField:"fullName",
+						dataValueField:"id",
+						minLength:1,
+						filter:"isRep,eq,true",
+						url:"../datasource/employeeInfoDao/read",
+						dict:cliviaDDS.getDict("employeeInput"),
+					}
+
+				$scope.csrOptions={
+						name:"csrComboBox",
+						dataTextField:"fullName",
+						dataValueField:"id",
+						minLength:1,
+						filter:"isCsr,eq,true",
+						url:"../datasource/employeeInfoDao/read",
+						dict:cliviaDDS.getDict("employeeInput"),
+					}
 				
 				$scope.mainSplitterOptions={
 						resize:function(e){
@@ -312,22 +354,23 @@ crmApp.factory("ContactGridWrapper",["GridWrapper","cliviaDDS",function(GridWrap
 		         name: "phone",
 		         field: "phone",
 		         title: "Phone",
-		         width: 80,
-		     }, {
-		         name: "fax",
-		         field: "fax",
-		         title: "Fax",
-		         width: 80,
+		         width: 120,
 		     }, {
 		         name: "email",
 		         field: "email",
 		         title: "Email",
 		         width:150,
 		     }, {
-		         name: "status",
-		         field: "status",
-		         title: "Inactive",
-		         template: '<input type="checkbox" #= status ? checked="checked" : "" # disabled="disabled" />',
+		         name: "isBuyer",
+		         field: "isBuyer",
+		         title: "Is Buyer",
+		         template: '<input type="checkbox" #= isBuyer ? checked="checked" : "" # disabled="disabled" />',
+		         width: 65,
+		     }, {
+		         name: "isActive",
+		         field: "isActive",
+		         title: "Active",
+		         template: '<input type="checkbox" #= isActive ? checked="checked" : "" # disabled="disabled" />',
 		         width: 65,
 		     }, {
 		    	 name:"remark",
@@ -346,7 +389,7 @@ crmApp.factory("ContactGridWrapper",["GridWrapper","cliviaDDS",function(GridWrap
 	gw.prototype=new GridWrapper();	//implement inheritance
 
 	gw.prototype.addItem=function(isInsert){
-		var item={status:false}; //inactive
+		var item={isActive:true,isBuyer:true}; //inactive
 	    this.addRow(item,isInsert);
 	}
 	
@@ -534,7 +577,7 @@ crmApp.factory("JournalGridWrapper",["GridWrapper","cliviaDDS",function(GridWrap
 		         field: "contact",
 		         title: "Contact",
 		         editor: thisGW.contactColumnEditor,
-		         width: 100,
+		         width: 120,
 		     }, {
 		         name: "content",
 		         field: "content",
@@ -548,6 +591,7 @@ crmApp.factory("JournalGridWrapper",["GridWrapper","cliviaDDS",function(GridWrap
 		thisGW=this;
 	 	thisGW.setColumns(getColumns());
 	 	thisGW.hasDateColumnEditor=true;
+	 	thisGW.getContacts=null;
 	}
 	
 	gw.prototype=new GridWrapper();	//implement inheritance
@@ -576,12 +620,15 @@ crmApp.factory("JournalGridWrapper",["GridWrapper","cliviaDDS",function(GridWrap
 	}
 	
 	gw.prototype.salesColumnEditor=function(container, options) {
-		var items=['Joyce','Jason','Adrien'];
+		var items=[];
 		thisGW.kendoComboBoxEditor(container, options,items);
 	}
 	
 	gw.prototype.contactColumnEditor=function(container, options) {
-		var items= ['tester1','test2'];
+		var items=[];
+		if(thisGW.getContacts){
+			items=thisGW.getContacts();
+		}
 		thisGW.kendoComboBoxEditor(container, options,items);
 	}
 
@@ -606,6 +653,24 @@ crmApp.factory("CompanyGridWrapper",["GridWrapper",function(GridWrapper){
 		         title: "Business Name",
 		         width: 300
 		     }, {
+		         name: "category",
+		         field: "category",
+		         title: "Category",
+				 filterable: { multi:true},
+		         width: 90,
+		     }, {
+		         name: "repName",
+		         field: "repName",
+		         title: "Rep.",
+				 filterable: { multi:true},
+		         width: 90,
+		     }, {
+		         name: "csrName",
+		         field: "csrName",
+		         title: "CSR",
+				 filterable: { multi:true},
+		         width: 90,
+		     }, {
 		         name: "city",
 		         field: "city",
 		         title: "City",
@@ -623,6 +688,12 @@ crmApp.factory("CompanyGridWrapper",["GridWrapper",function(GridWrapper){
 		         title: "Country",
 				 filterable: { multi:true},
 		         width: 85,
+		     }, {
+		         name: "website",
+		         field: "website",
+		         title: "Website",
+		         width: 80,
+		         hidden:true,
 		     }, {
 		         name: "status",
 		         field: "status",
@@ -697,7 +768,14 @@ crmApp.controller("crmCtrl",["$scope","CompanyGridWrapper",function($scope,Compa
 			            }
 			    }, {
 			        type: "separator",
-			}]};
+			    }, {
+			        type: "button",
+			        text: "Export To Excel",
+			        id: "btnExcel",
+			        click: function(e){
+			        	$scope.cgw.grid.saveAsExcel();
+			            }
+	}]};
 	
 	$scope.cgw=new CompanyGridWrapper("crmCompanyGrid");
 	$scope.cgw.doubleClickEvent=function(e) {
@@ -712,7 +790,7 @@ crmApp.controller("crmCtrl",["$scope","CompanyGridWrapper",function($scope,Compa
 	$scope.crmCompanyGridDataSource={
 				transport: {
 				    read: {
-				        url: '../datasource/companyInfoDao/read',
+				        url: '../datasource/companyWithInfoDao/read',
 				        type: 'post',
 				        dataType: 'json',
 				        contentType: 'application/json'
@@ -768,20 +846,7 @@ crmApp.controller("crmCtrl",["$scope","CompanyGridWrapper",function($scope,Compa
  	$scope.companyWindowOptions={
 		activate:function(){
 			$scope.companyCard.mainSplitter.resize();
-	        $("[data-role='editor']").each(function () {
-	            $(this).getKendoEditor().refresh();
-	        });
 		},
-	 	refresh: function () {
-	        $("[data-role='editor']").each(function () {
-	            $(this).getKendoEditor().refresh();
-	        });
-		},
-		resize: function() {
-	        $("[data-role='editor']").each(function () {
-	            $(this).getKendoEditor().refresh();
-	        });
-	  	}
 	}
 		
 	$scope.openCompany=function(companyId){

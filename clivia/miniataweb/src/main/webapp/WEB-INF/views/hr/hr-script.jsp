@@ -5,7 +5,7 @@ var hrApp = angular.module("hrApp",
 		
 hrApp.directive("employee",["$http","cliviaDDS","util",function($http,cliviaDDS,util){
 	
-	var searchTemplate='Select:<employee-combobox id="searchEmployee" name="searchEmployee" style="width:200px;"  ng-model="search.employeeId"></employee-combobox>'+
+	var searchTemplate='Select:<auto-combobox  style="width:200px;" c-options="search.options" ng-model="search.employeeId"></auto-combobox>'+
 	'<span ng-click="getEmployee()" class="k-icon k-i-search"></span>';
 
 	var baseUrl="";	
@@ -119,7 +119,16 @@ hrApp.directive("employee",["$http","cliviaDDS","util",function($http,cliviaDDS,
 				
 				$scope.$parent[$scope.cName]=$scope;
 				
-				$scope.search={};
+				$scope.search={
+						employId:null,
+						options:{
+							name:"searchComboBox",
+							dataTextField:"fullName",
+							dataValueField:"id",
+							minLength:1,
+							url:"../datasource/employeeInfoDao/read",
+						}
+					};
 
 				$scope.employeeToolbarOptions ={items:[{
 							type: "button",
@@ -300,11 +309,13 @@ hrApp.factory("EmployeeGridWrapper",["GridWrapper",function(GridWrapper){
 		         format:"{0:yyyy-MM-dd}",
 		         filterable:{ui:'datepicker'},
 		         editor: thisGW.dateColumnEditor,
+		         hidden:true,
 		         width: 80,
 		     }, {
 		         name: "userName",
 		         field: "userName",
 		         title: "User",
+		         hidden:true,
 		         width: 80,
 		     }, {
 		         name: "department",
@@ -313,11 +324,24 @@ hrApp.factory("EmployeeGridWrapper",["GridWrapper",function(GridWrapper){
 		         filterable:{multi:true},
 		         width: 80,
 		     }, {
+		         name: "position",
+		         field: "position",
+		         title: "Position",
+		         filterable:{multi:true},
+		         hidden:true,
+		         width: 80,
+		     }, {
+		    	 name: "address",
+		    	 field:"address",
+		    	 title:"Address",
+		    	 hidden:true,
+		    	 width:180
+		     }, {
 		         name: "country",
 		         field: "country",
 		         title: "Country",
 		         filterable:{multi:true},
-		         width: 80,
+		         width: 90,
 		     }, {
 		         name: "province",
 		         field: "province",
@@ -330,6 +354,22 @@ hrApp.factory("EmployeeGridWrapper",["GridWrapper",function(GridWrapper){
 		         title: "City",
 		         filterable:{multi:true},
 		         width: 80,
+		     }, {
+		    	 name: "postalCode",
+		    	 field:"postalCode",
+		    	 title:"P.C.",
+		    	 hidden:true,
+		    	 width:80
+		     }, {
+		    	 name: "phone",
+		    	 field:"phone",
+		    	 title:"Phone#",
+		    	 width:100
+		     }, {
+		    	 name: "email",
+		    	 field:"email",
+		    	 title:"Email",
+		    	 width:140
 		         
 		     }, {
 		         name: "isRep",
@@ -337,7 +377,7 @@ hrApp.factory("EmployeeGridWrapper",["GridWrapper",function(GridWrapper){
 		         title: "Rep",
 		         template: '<input type="checkbox" #= isRep ? checked="checked" : "" # disabled="disabled" />',
 		         filterable:{multi: true, dataSource: [{ isRep: true }, { isRep: false }, {isRep:null}]},
-		         width: 70,
+		         width: 65,
 		     }, {
 		         name: "isCsr",
 		         field: "isCsr",
@@ -351,7 +391,7 @@ hrApp.factory("EmployeeGridWrapper",["GridWrapper",function(GridWrapper){
 		         title: "Active",
 		         template: '<input type="checkbox" #= isActive ? checked="checked" : "" # disabled="disabled" />',
 		         filterable:{multi: true, dataSource: [{isActive: true }, {isActive: false }, {isActive:null}]},
-		         width: 80,
+		         width: 75,
 		     }, {
 		    	 name:"remark",
 		         field: "remark",
@@ -413,7 +453,14 @@ hrApp.controller("hrCtrl",["$scope","EmployeeGridWrapper",function($scope,Employ
 			            }
 			    }, {
 			        type: "separator",
-			}]};
+			    }, {
+			        type: "button",
+			        text: "Export To Excel",
+			        id: "btnExcel",
+			        click: function(e){
+			        	$scope.employeeGW.grid.saveAsExcel();
+			            }			
+			    }]};
 	
 	$scope.employeeGW=new EmployeeGridWrapper("hrEmployeeGrid");
 	$scope.employeeGW.doubleClickEvent=function(e) {

@@ -33,6 +33,26 @@ orderApp.controller("orderInfoCtrl", ["$scope","SO","cliviaDDS",function($scope,
 			autoBind:false,					//
 	}
 	
+	$scope.repOptions={
+			name:"repComboBox",
+			dataTextField:"fullName",
+			dataValueField:"id",
+			minLength:1,
+			filter:"isRep,eq,true",
+			url:"../datasource/employeeInfoDao/read",
+			dict:cliviaDDS.getDict("employeeInput"),
+		}
+
+	$scope.csrOptions={
+			name:"csrComboBox",
+			dataTextField:"fullName",
+			dataValueField:"id",
+			minLength:1,
+			filter:"isCsr,eq,true",
+			url:"../datasource/employeeInfoDao/read",
+			dict:cliviaDDS.getDict("employeeInput"),
+		}
+
 	
 }]);
 </script>

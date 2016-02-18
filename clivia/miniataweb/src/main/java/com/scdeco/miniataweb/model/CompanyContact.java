@@ -35,18 +35,18 @@ public class CompanyContact {
 	@Column(name="Phone",length=50)
 	private String phone;
 	
-	@Column(name="Fax",length=50)
-	private String fax;
-	
 	@Column(name="Email",length=100)
 	private String email;
-	
-	@Column(name="Status")
-	private Boolean status;
 	
 	@Column(name="Position",length=20)
 	private String position;
 
+	@Column(name="IsBuyer")
+	private Boolean isBuyer;
+
+	@Column(name="IsActive")
+	private Boolean isActive;
+	
 	@Column(name="Remark",length=200)
 	private String  remark;
 
@@ -114,28 +114,12 @@ public class CompanyContact {
 		this.phone = phone;
 	}
 
-	public String getFax() {
-		return fax;
-	}
-
-	public void setFax(String fax) {
-		this.fax = fax;
-	}
-
 	public String getEmail() {
 		return email;
 	}
 
 	public void setEmail(String email) {
 		this.email = email;
-	}
-
-	public Boolean getStatus() {
-		return status;
-	}
-
-	public void setStatus(Boolean status) {
-		this.status = status;
 	}
 
 	public String getPosition() {
@@ -146,6 +130,22 @@ public class CompanyContact {
 		this.position = position;
 	}
 
+	public Boolean getIsBuyer() {
+		return isBuyer;
+	}
+
+	public void setIsBuyer(Boolean isBuyer) {
+		this.isBuyer = isBuyer;
+	}
+
+	public Boolean getIsActive() {
+		return isActive;
+	}
+
+	public void setIsActive(Boolean isActive) {
+		this.isActive = isActive;
+	}
+
 	public String getRemark() {
 		return remark;
 	}
@@ -153,6 +153,6 @@ public class CompanyContact {
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-	
+
 
 }

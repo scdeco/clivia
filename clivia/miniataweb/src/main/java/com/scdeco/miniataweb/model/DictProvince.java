@@ -12,9 +12,12 @@ public class DictProvince {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private int id;
 	
-	@Column(name="Name",length=30)
+	@Column(name="Name",length=2)
 	private String name;
 
+	@Column(name="FullName",length=30)
+	private String fullName;
+	
 	@Column(name="Country",length=30)
 	private String country;
 
@@ -34,6 +37,14 @@ public class DictProvince {
 		this.name = name;
 	}
 
+	public String getFullName() {
+		return fullName;
+	}
+
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
+
 	public String getCountry() {
 		return country;
 	}
@@ -42,4 +53,5 @@ public class DictProvince {
 		this.country = country;
 	}
 
+	
 }

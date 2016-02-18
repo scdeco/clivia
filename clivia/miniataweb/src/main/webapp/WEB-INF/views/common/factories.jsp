@@ -426,8 +426,12 @@ factory("cliviaDDS",["DataDictSet",function(DataDictSet){
 			mode:"eager"
 		},{
 			name:"customerInput",
-			url:baseUrl+"dict/map?from=companyInfo&textField=businessName&valueField=id&orderBy=businessName",
-			mode:"eager"
+			url:baseUrl+"data/companyInfo/",
+			mode:"onDemand"
+		},{
+			name:"employeeInput",
+			url:baseUrl+"data/employeeInfo/",
+			mode:"onDemand"
 		},{
 			name:"garment",
 			url:baseUrl+"data/garmentInfo/",

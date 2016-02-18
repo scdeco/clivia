@@ -36,8 +36,8 @@
 </div>	<!-- end of crmSplitter -->
 
 <div kendo-window="companyWindow"
-		k-width="1000"
-	 	k-height="700"
+		k-width="1200"
+	 	k-height="600"
 	 	k-position="{top: 50, left: 100 }"	
 	 	k-resizable="true"
 		k-draggable="true"

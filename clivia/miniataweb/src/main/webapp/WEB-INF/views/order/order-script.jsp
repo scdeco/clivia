@@ -98,7 +98,12 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 			var url="../data/companyInfoDao/getitem?name=id&value="+companyId;
 			$http.get(url).
 				success(function(data, status, headers, config) {
-					_order.company.info=data;
+					if(data){
+						_order.company.info=data;
+						if(data.repId && !_order.dataSet.info.id && !_order.dataSet.info.repId){
+							_order.dataSet.info.repId=data.repId;
+						}
+					}
 				}).
 				error(function(data, status, headers, config) {
 				});
@@ -111,6 +116,9 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 					if(data){
 						for(var i=0;i<data.length;i++){
 							buyers.push(data[i])
+						}
+						if(data.length>0 && !_order.dataSet.info.id){
+							_order.dataSet.info.buyer=data[0].fullName;
 						}
 					}
 				}).

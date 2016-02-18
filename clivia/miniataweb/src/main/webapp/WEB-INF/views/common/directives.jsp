@@ -21,163 +21,146 @@ directive('capitalize', function() {
 	   };
 }).
 
-directive("employeeCombobox",function(){
-	var template='<input kendo-combobox k-options="employeeOptions" ></input>';
+directive("autoCombobox",function(){
+	var template='<input kendo-combobox  k-options="comboBoxOptions" ></input>'; 
 	return {
 		restrict:"EA",
 		replace:true,
-		scope:true,
+		require: 'ngModel',
+		scope:{
+			/* c-filter="'isCsr,eq,true'" will be translated into
+			filter: {
+		    		logic: "and",
+		    		filters: [{ field: "isCsr", operator: "eq", value: true}]
+		  		}, */			
+			cOptions:'=',		//{name: dataTextField:, dataValueField:, url: ,filter:,dict:}
+		},
 		template:template,
-		link:function(scope,element,attrs){
+		
+		link:function(scope,element,attrs,controller){	//["scope","element","attrs","controller",
+			scope.kendoComboBox=element.getKendoComboBox();
 
-			var employeeDataSource=new kendo.data.DataSource({  
-					transport: {
-					    read: {
-					        url: '../datasource/employeeInfoDao/read',
-					        type: 'post',
-					        dataType: 'json',
-					        contentType: 'application/json'
-					    },
-					    parameterMap: function(options, operation) {
-					    	//operation is alaways read here.
-
-					    	//add extra parameters to options
-					    	//field projection,return fields that needed instead of all fields of the table
-				    		options.data={select:"id,fullName"};	 						    	
-				            return JSON.stringify(options);
-					    }
-					},
-					
-					schema: {
-					    data: "data",
-					    model: {id: "id"}
-					},
-					
-					serverFiltering: true,		//
-					//pageSize: 15,
-					serverPaging: true,
-					serverSorting: true,
-						sort: [{
-				         field: "fullName",
-				         dir: "asc"
-				     }], 
-              });
-             
-			scope.employeeOptions={
-				filter:"startswith",
-				filtering: function(e) {
-				      var filter = e.filter;
-				      if (! (filter && filter.value)) {
-				        //prevent filtering if the filter does not have value
-				        e.preventDefault();
-				      }
-				  },					
-                dataTextField: "fullName",
-                dataValueField: "id",
-				dataSource: employeeDataSource,
-				autoBind:false,					//
-				minLength:1,					//
-                //height: 400,					
+			if(scope.cName){
+				scope.$parent[scope.cOption.name]=scope;
 			}
-		}
-	}
-}).
 
-directive("companyCombobox",function(){
-	var template='<input kendo-combobox k-options="companyOptions" ></input>';
-	return {
-		restrict:"EA",
-		replace:true,
-		scope:true,
-		template:template,
-		link:function(scope,element,attrs){
-
-			var companyDataSource=new kendo.data.DataSource({  
-					transport: {
-					    read: {
-					        url: '../datasource/companyInfoDao/read',
-					        type: 'post',
-					        dataType: 'json',
-					        contentType: 'application/json'
-					    },
-					    parameterMap: function(options, operation) {
-							//operation is alaways read here.
-
-							if(!options.filter)
-								options.filter={filters:[],logic:'and'};
-							
-					    	var filters=options.filter.filters;
-							
-							//prevent retrieving all records by setting id to a negenative vlaue
-							//when first time click on the dropdown arrow without type in any character
-							if(!!options.filter && options.filter.filters.length===0)
-								filters.push({field:'id',operator:'eq',value:-1});
-
-					    	//add extra parameters to options
-					    	//field projection,return fields that needed instead of all fields of the table
-					    		options.data={select:"id,businessName"};	 
-					            return JSON.stringify(options);
-					    },
-					    
-					},
-					
-					schema: {
-					    data: "data",
-					    model: {id: "id"}
-					},
-					
-					serverFiltering: true,		//
-					pageSize: 25,				//maxim return 25 matched records per request
-					serverPaging: true,
-					serverSorting: true,
-						sort: [{
-				         field: "businessName",
-				         dir: "asc"
-				     }], 
-            });
-             
-			scope.companyOptions={
-				filter:"startswith",
-				filtering: function(e) {
-				      var filter = e.filter;
-				      if (! (filter && filter.value)) {
-				        //prevent filtering if the filter does not have value
-				        e.preventDefault();
-				      }
-				  },					
-                dataTextField: "businessName",
-                dataValueField: "id",
-				dataSource: companyDataSource,
-				autoBind:false,					//
-				minLength:3,					//
-                //height: 400,					
+			scope.clear=function(){
+ 	 			scope.kendoComboBox.selectedIndex=-1;
+				scope.kendoComboBox.value(null);
+				scope.kendoComboBox.text("");
+				scope.kendoComboBox.setDataSource(scope.dataSource); 
 			}
-		}
-	}
-}).
-
-directive("customerInput",["cliviaDDS",function(cliviaDDS){
-	var template='<input kendo-combobox k-options="customerOptions" k-ng-delay="customerOptions" ></input>';
-	return {
-		restrict:"EA",
-		replace:true,
-		scope:true,
-		template:template,
-		link:function(scope,element,attrs){
 			
-			cliviaDDS.getDict("customerInput").getItems()
-				.then(function(items){
-					scope.customerOptions={
-				            dataTextField: "text",
-				            dataValueField: "value",			
-							dataSource: {data:items}, 
-					};
-				},function(error){
-					console.log("dict:"+error);
-				});
-		}
+			var addItem=function(value){
+				if(!scope.cOptions.dict) return;
+				scope.cOptions.dict.getItem(scope.cOptions.dataValueField,value)
+					.then(function(gotItem){
+						if(gotItem){
+							scope.dataSource.add(gotItem);
+							scope.kendoComboBox.text(gotItem[scope.cOptions.dataTextField]);
+						}
+					});
+			}
+			
+			scope.$watch(
+					function(){
+						return controller.$modelValue
+						},
+					function(newValue,oldValue){
+						if (newValue!==oldValue){
+		 					if(!newValue){
+								scope.clear();
+		 					}else{
+		 						var di=scope.dataSource.get(newValue);
+		 						if(!di){
+		 							addItem(newValue);
+		 						}
+		 					}
+						}
+	 					
+	 				});
+			
+		},
+		
+		controller: ['$scope', function($scope) {
+			
+			var scope=$scope;
+			
+			scope.dataSource=new kendo.data.DataSource({  
+				transport: {
+				    read: {
+				        url: scope.cOptions.url,	//'../datasource/employeeInfoDao/read',
+				        type: 'post',
+				        dataType: 'json',
+				        contentType: 'application/json'
+				    },
+				    parameterMap: function(options, operation) {
+				    	//operation is alaways read here.
+						if(!options.filter)
+							options.filter={filters:[],logic:'and'};
+						
+				    	var filters=options.filter.filters;
+
+				    	//prevent retrieving all records by setting id to a negenative vlaue
+						//when first time click on the dropdown arrow without type in any character
+						if(!!options.filter && options.filter.filters.length===0)
+							filters.push({field:scope.cOptions.dataValueField,operator:'eq',value:-1});
+
+				    	//add extra parameters to options
+				    	//field projection,return fields that needed instead of all fields of the table
+			    		options.data={select:scope.cOptions.dataValueField+","+scope.cOptions.dataTextField};	 						    	
+			            return JSON.stringify(options);
+				    }
+				},
+				
+				schema: {
+				    data: "data",
+				    model: {id: scope.cOptions.dataValueField}
+				},
+				
+				serverFiltering: true,		
+
+				//pageSize: 15, maxium records per request
+				
+				serverPaging: true,
+				serverSorting: true,
+					sort: [{
+			         field: scope.cOptions.dataTextField,
+			         dir: "asc"
+			     }], 
+          	});
+			
+			if(scope.cFilter){
+				var filters=[];
+				var s=scope.cFilter.split(',');
+				filters.push({field:s[0],operator:s[1],value:s[2]});
+				scope.dataSource.filter({logic:'and',filters:filters});
+			}
+			
+			scope.comboBoxOptions={
+					filter:"startswith",
+					filtering: function(e) {
+					      var filter = e.filter;
+					      if (! (filter && filter.value)) {
+					        //prevent filtering if the filter does not have value
+					   //     e.preventDefault();
+					      }
+					  },					
+	                dataTextField:scope.cOptions.dataTextField,
+	                dataValueField: scope.cOptions.dataValueField,
+					dataSource: scope.dataSource,
+					autoBind:true,					//
+					minLength:scope.cOptions.minLength?scope.cOptions.minLength:1,					//
+	                //height: 400,		
+	                cascade:function(e){
+	                	this.options
+	                }
+				}
+		}]
+		
 	}
-}]).
+}).
+
 
 directive("brandInput",["cliviaDDS",function(cliviaDDS){
 	var template='<select kendo-dropdownlist k-options="brandOptions" k-ng-delay="brandOptions" ></select>';

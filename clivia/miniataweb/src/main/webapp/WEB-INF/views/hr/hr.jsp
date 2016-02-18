@@ -37,7 +37,7 @@
 
 <div kendo-window="employeeWindow"
 		k-width="600"
-	 	k-height="650"
+	 	k-height="600"
 	 	k-position="{top: 50, left: 100 }"	
 	 	k-resizable="true"
 		k-draggable="true"

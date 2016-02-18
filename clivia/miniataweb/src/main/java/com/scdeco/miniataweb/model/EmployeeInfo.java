@@ -35,7 +35,7 @@ public class EmployeeInfo{
 	@Column(name="Department",length=10)
 	private String department;
 
-	@Column(name="Position",length=10)
+	@Column(name="Position",length=20)
 	private String position;
 	
 	@Column(name="Address",length=100)

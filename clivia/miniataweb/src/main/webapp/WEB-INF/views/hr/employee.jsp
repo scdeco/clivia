@@ -11,7 +11,7 @@
 			k-panes="[{ collapsible: true, resizable: true, size: '200px'},
             	      { collapsible: true, resizable: true}]"
             k-options="mainSplitterOptions"
-			style="height:550px;">
+			style="height:450px;">
 			
 		<div>		<!-- first pane -->
 			<form name="employeeForm" ng-submit="" novalidate class="simple-form">
@@ -162,7 +162,7 @@
               </div>
               
               <div style="padding: 1em">	<!-- notes -->
-           	 	<textarea kendo-editor="noteEditor" ng-model="dataSet.info.note"></textarea>
+           	 	<textarea name="note" style="width:100%;height:300px;" ng-model="dataSet.info.note"></textarea>			<!-- kendo-editor="noteEditor" -->
               </div>
               
               <div style="padding: 1em">
