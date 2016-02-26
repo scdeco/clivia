@@ -21,7 +21,7 @@ directive('capitalize', function() {
 	   };
 }).
 
-directive("autoCombobox",function(){
+directive("mapCombobox",function(){
 	var template='<input kendo-combobox  k-options="comboBoxOptions" ></input>'; 
 	return {
 		restrict:"EA",
@@ -32,23 +32,24 @@ directive("autoCombobox",function(){
 			filter: {
 		    		logic: "and",
 		    		filters: [{ field: "isCsr", operator: "eq", value: true}]
-		  		}, */			
+		  		}, */
+			cName:'@mapDropdownlist',		  		
 			cOptions:'=',		//{name: dataTextField:, dataValueField:, url: ,filter:,dict:}
 		},
 		template:template,
 		
 		link:function(scope,element,attrs,controller){	//["scope","element","attrs","controller",
+
+		    scope.element=element;
+		                                              	   
 			scope.kendoComboBox=element.getKendoComboBox();
 
-			if(scope.cName){
-				scope.$parent[scope.cOption.name]=scope;
-			}
-
+			//not used in angular binding mode
 			scope.clear=function(){
- 	 			scope.kendoComboBox.selectedIndex=-1;
-				scope.kendoComboBox.value(null);
-				scope.kendoComboBox.text("");
-				scope.kendoComboBox.setDataSource(scope.dataSource); 
+ 	 		//	scope.kendoComboBox.selectedIndex=-1;
+			//	scope.kendoComboBox.value(null);
+			//	scope.kendoComboBox.text("");
+			//	scope.kendoComboBox.setDataSource(scope.dataSource); 
 			}
 			
 			var addItem=function(value){
@@ -57,7 +58,7 @@ directive("autoCombobox",function(){
 					.then(function(gotItem){
 						if(gotItem){
 							scope.dataSource.add(gotItem);
-							scope.kendoComboBox.text(gotItem[scope.cOptions.dataTextField]);
+							//scope.kendoComboBox.text(gotItem[scope.cOptions.dataTextField]);
 						}
 					});
 			}
@@ -67,24 +68,21 @@ directive("autoCombobox",function(){
 						return controller.$modelValue
 						},
 					function(newValue,oldValue){
-						if (newValue!==oldValue){
-		 					if(!newValue){
-								scope.clear();
-		 					}else{
-		 						var di=scope.dataSource.get(newValue);
-		 						if(!di){
-		 							addItem(newValue);
-		 						}
+						if (newValue!==oldValue && !!newValue)
+	 						var di=scope.dataSource.get(newValue);
+	 						if(!di){
+	 							addItem(newValue);
 		 					}
 						}
-	 					
-	 				});
+	 				);
 			
 		},
 		
 		controller: ['$scope', function($scope) {
 			
 			var scope=$scope;
+			if(scope.cOptions && scope.cOptions.name)
+				scope.$parent[scope.cOptions.name]=scope;
 			
 			scope.dataSource=new kendo.data.DataSource({  
 				transport: {
@@ -153,7 +151,66 @@ directive("autoCombobox",function(){
 					minLength:scope.cOptions.minLength?scope.cOptions.minLength:1,					//
 	                //height: 400,		
 	                cascade:function(e){
-	                	this.options
+	                	var i=0;
+	                }
+				}
+		}]
+		
+	}
+}).
+
+directive("textCombobox",function(){
+	var template='<input kendo-combobox  k-options="comboBoxOptions" ></input>'; 
+	return {
+		restrict:"EA",
+		replace:true,
+		require: 'ngModel',
+		scope:{
+			cName:'@textCombobox',
+			cOptions:'=',		//{name: , url: ,filter:,dict:}
+		},
+		template:template,
+		
+		link:function(scope,element,attrs,controller){	//["scope","element","attrs","controller",
+		    scope.element=element;
+
+			scope.kendoComboBox=element.getKendoComboBox();
+		
+			scope.getKendoComboBox=function(){
+				element.getKendoComboBox();
+			}
+			
+			scope.$watch(
+					function(){
+							return controller.$modelValue
+						},
+					function(newValue,oldValue){
+							if (newValue!==oldValue){
+								if(!!newValue){
+									var i=0;
+								}else{
+									var j=0;
+/* 									if(newValue==="" && !!oldValue && controller.$modelValue==="")
+										controller.$modelValue=oldValue; */
+								}
+							}
+						}
+	 				);
+			
+		},
+		
+		controller: ['$scope', function($scope) {
+			
+			var scope=$scope;
+			
+			if(scope.cOptions && scope.cOptions.name)
+				scope.$parent[scope.cOptions.name]=scope;
+			
+			scope.comboBoxOptions={
+					dataSource: scope.cOptions.dataSource,
+					autoBind:false,
+	                cascade:function(e){
+	                	var i=0;
 	                }
 				}
 		}]
@@ -162,29 +219,105 @@ directive("autoCombobox",function(){
 }).
 
 
-directive("brandInput",["cliviaDDS",function(cliviaDDS){
-	var template='<select kendo-dropdownlist k-options="brandOptions" k-ng-delay="brandOptions" ></select>';
+directive("brandDropdownlist",["cliviaDDS",function(cliviaDDS){
+	var template='<select kendo-dropdownlist k-options="inputOptions" k-ng-delay="inputOptions" ></select>';
 	return {
 		restrict:"EA",
 		replace:true,
-		scope:true,
+		scope:{
+			cOptions:'=',		//{name:}
+		},
+		
 		template:template,
-		link:function(scope,element,attrs){
+		
+		link:function(scope,element,attrs,controller){
 			
-			cliviaDDS.getDict("garmentBrand").getItems()
+			scope.element=element;
+			
+			scope.getKendoDropDownList=function(){
+				return scope.element.getKendoDropDownList();
+			}
+			
+			scope.getBrandName=function(){
+				return scope.element.text();	
+			}
+			
+			scope.dict.getItems()
 				.then(function(items){
-					scope.brandOptions={
+					var thisItems=[];
+					for(var i=0,item;i<items.length;i++){
+						if(items[i].hasInventory){
+							item={id:items[i].id,name:items[i].name};
+							thisItems.push(item);
+						}
+					}
+					scope.inputOptions={
 				            dataTextField: "name",
-				            dataValueField: "name",			
-							dataSource:{data:items}, 
-							value:"DD",					//default value
+				            dataValueField: "id",			
+							dataSource:{data:thisItems}, 
 					};
-				},function(error){
-					console.log("dict:"+error);
-				});
-		}
+			})},
+			
+		controller: ['$scope', function($scope) {
+			var scope=$scope;
+			scope.dict=cliviaDDS.getDict("brand");
+			if(scope.cOptions && scope.cOptions.name)
+				scope.$parent[scope.cOptions.name]=scope;
+		}]
 	}
 }]).
+
+directive("seasonDropdownlist",["cliviaDDS",function(cliviaDDS){
+	var template='<select kendo-dropdownlist k-options="inputOptions" k-ng-delay="inputOptions" ></select>';
+	return {
+		restrict:"EA",
+		replace:true,
+		scope:{
+			cBrandId:'=',
+			cOptions:'=',		//{name: brandId:}
+		},
+
+		template:template,
+		
+		link:function(scope,element,attrs,controller){
+		    scope.element=element;
+			scope.getKendoDropDownList=function(){
+				return scope.element.getKendoDropDownList();
+			}
+			scope.getSeasonName=function(){
+				var temp=scope.getKendoDropDownList();
+				return temp?temp.text():"";
+			}
+			
+			cliviaDDS.getDict("season").getItems()
+				.then(function(items){
+					var thisItems=[];
+					 
+					for(var i=0,item;i<items.length;i++){
+						if(items[i].brandId===scope.brandId){
+							item={id:items[i].id,name:items[i].name};
+							thisItems.push(item);
+						}
+					}
+					scope.inputOptions={
+				            dataTextField: "name",
+				            dataValueField: "id",			
+							dataSource:{data:thisItems}, 
+					};
+			})},
+		controller: ['$scope', function($scope) {
+			
+			var scope=$scope;
+			scope.brandId=scope.cBrandId?scope.cBrandId:(scope.cOptions && scope.cOptions.brandId ?scope.cOptions.brandId:0);
+			scope.dict=cliviaDDS.getDict("season");
+			
+			if(scope.cOptions && scope.cOptions.name)
+				scope.$parent[scope.cOptions.name]=scope;
+			}]
+				
+	}
+}]).
+
 
 directive("garmentInput",["GridWrapper",function(GridWrapper){
 	
@@ -192,8 +325,9 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 		restrict:"EA",
 		replace:true,
 		scope:{
-			dictGarment:'=',			//type of DataDict
-			addFunction:'='
+			cDictGarment:'=',			//type of DataDict
+			cAddFunction:'=',
+			cSeasonId:'=',
 		},
 		templateUrl:'../common/garmentinput',
 		link: function(scope,element,attrs){
@@ -333,7 +467,7 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 				}
 			};
 			
-			scope.styleNumber="";
+			scope.styleNo="";
 			scope.garment={};
 			scope.gridRebind=0;
 
@@ -372,23 +506,18 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 			};
 			
 			scope.getGrid= function(){
-					var styleNumber=scope.styleNumber.trim().toUpperCase();
-					scope.styleNumber="";
+					var styleNo=scope.styleNo.trim().toUpperCase();
+					scope.styleNo="";
 					clearGrid();
-					if(styleNumber){
-						scope.dictGarment.getItem("styleNumber",styleNumber)
-							.then(function(garment){
-								scope.garment=garment;
-								createGrid();
-							},function(){
-								
-							});
+					if(styleNo){
+						scope.garment=scope.dictGarment.getGarment(scope.seasonId,styleNo);
+						createGrid();
 					}
 				};
 				
 
 			scope.clear=function(){
-					scope.styleNumber="";
+					scope.styleNo="";
 					scope.garment={};
 					clearGrid();
 				};
@@ -414,6 +543,9 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 		},
 			
 		controller: ['$scope', function($scope) {
+			$scope.dictGarment=$scope.cDictGarment;
+			$scope.addFunction=$scope.cAddFunction;
+			$scope.seasonId=$scope.cSeasonId;
 		}]
 	}
 }]).
@@ -455,12 +587,14 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 			replace:false,
 			scope:{
 				cName:'@garmentGrid',
-				cBrand:'=',
+				cBrandId:'=',
+				cSeasonId:'=',
 				cEditable:'=',
 				cDataSource:'=',
 				cPageable:'=',
 				cNewItemFunction:'&',
 			},
+			
 			templateUrl:'../common/garmentgrid',
 			link:function(scope,element,attrs){
 				
@@ -468,9 +602,7 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 				scope.inputWindowName=scope.cName+"InputWindow";
 				
 				var ggw=new GarmentGridWrapper(scope.gridName);	
-				ggw.setBrand(scope.cBrand);	
-				
-				//ggw.setColumns(gridColumns);
+				ggw.setBrandSeason(scope.cBrandId,scope.cSeasonId);		//columns is set in setBrand,so ggw.setColumns(gridColumns) is not needed here.
 				
 				scope.setting={};
 				scope.setting.editing=true;
@@ -482,13 +614,18 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 			        // the event is emitted for every widget; if we have multiple
 			        // widgets in this controller, we need to check that the event
 			        // is for the one we're interested in.
+			        //This happens after dataBound event
 			        if (widget ===scope[scope.gridName]) {
 			        	ggw.wrapGrid(widget);
+			        	ggw.calculateTotal();
 			        	if(scope.cName)
 				        	scope.$parent[scope.cName]={
 			        			name:scope.cName,
 			        			grid:widget,
 			        			gridWrapper:ggw,
+			        			getTotal:function(){
+			        				return ggw.total
+			        				},
 			        			resize:function(gridHeight){
 			        				ggw.resizeGrid(gridHeight);
 			        			},
@@ -526,34 +663,26 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 					       	},
 					       	
 			 		       	save: function(e) {
-					       		if(typeof e.values.styleNumber!== 'undefined'){		//styleNumber changed
+					       		if(typeof e.values.styleNo!== 'undefined'){		//styleNo changed
 						       		console.log("event save:"+JSON.stringify(e.values));
 				  	        		e.preventDefault();
-			 		       			if(e.values.styleNumber===";"){
+			 		       			if(e.values.styleNo===";"){
 					       				ggw.copyPreviousRow();
 					       		 	}else {
-						          		e.model.set("styleNumber",e.values.styleNumber.toUpperCase().trim());
+						          		e.model.set("styleNo",e.values.styleNo.toUpperCase().trim());
 						          		ggw.setCurrentGarment(e.model);
 					          		}
 					          	}else{
 
-					          		var t=0, changed=false;
-					          		
-						        	for(var c=0,field; c<ggw.sizeRangeFields.length; c++){
+						        	for(var c=0,field; c<ggw.season.sizeFields.length; c++){
 						        		field="qty"+("00"+c).slice(-2);
 							        	if(typeof e.values[field]!== 'undefined'){
-							        		t+=e.values[field];
-							        		changed=true;
-							        	}else{
-							        		if(e.model[field])	
-							        			t+=e.model[field];
+							        		e.model[field]=e.values[field];
+							        		ggw.calculateTotal(e.model);
+											break;
 							        	}
 						        	}
 						        	
-						        	if(changed){
-						        		e.model.quantity=(t!==0)?t:null;
-						        		//calcTotal();
-						        	}
 					          	}
 					         },
 					       	
@@ -644,18 +773,19 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 				scope.inputWindowAddFunction=function(garment,dataItems){
 					if(dataItems.length>0){
 						var sizes=util.split(garment.sizeRange);
+						var sizeFields=ggw.season.sizeFields.split(",");
 						for(var r=0,nullRow,di,item;r<dataItems.length;r++){
 							di=dataItems[r];		//dataItem
 						    item=newItem(); 
 						    nullRow=true;
-						    item.styleNumber=garment.styleNumber;
+						    item.styleNo=garment.styleNo;
 						    item.description=garment.styleName;
 						    item.colour=di.colour;
 						    item.quantity=di.total;
 						    item.remark=di.remark;
 							for(var i=0;i<sizes.length;i++){  //exclude colour,total,remark
 								var f="f"+("00"+i).slice(-2); 	//right(2)
-								var q="qty"+("00"+ggw.sizeRangeFields.indexOf(sizes[i])).slice(-2); 
+								var q="qty"+("00"+sizeFields.indexOf(sizes[i])).slice(-2); 
 								item[q]=di[f];
 								if(parseInt(di[f]))
 									nullRow=false;
@@ -663,6 +793,7 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 							if(!nullRow)
 							    ggw.addRow(item,false);
 						}
+						ggw.calculateTotal();
 					}
 				}
 				

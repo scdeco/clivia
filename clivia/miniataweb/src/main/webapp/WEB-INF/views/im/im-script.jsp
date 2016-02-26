@@ -5,9 +5,10 @@ var imApp = angular.module("imApp",
 		
 imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliviaDDS,util){
 	
-	var searchTemplate='<span class="k-textbox k-space-right" style="width: 140px;" >'+
-	'<input type="text" name="searchStyleNumber" class="k-textbox" placeholder="Search Style#" ng-model="searchStyleNumber" capitalize ng-trim="true"/>'+
-	'<span ng-click="getProduct()" class="k-icon k-i-search"></span>' ;
+	var seasonTemplate='<season-dropdownlist  style="width:100px;" c-brand-id="currentSetting.brandId" ng-model="currentSetting.seasonId" />';
+	var searchStyle='<span class="k-textbox k-space-right" style="width: 140px;" >'+
+		'<input type="text" name="searchStyleNo" class="k-textbox" placeholder="Style#" ng-model="search.styleNo" capitalize ng-trim="true"/>'+
+		'<span ng-click="getProduct()" class="k-icon k-i-search"></span>' 
 	
 	var upcNextItemRefTemplate='Next Item Ref#:<input type="text" name="upcNextItemRef" class="k-textbox"  ng-model="upcNextItemRef" style="width: 140px;"/>';
 	
@@ -19,41 +20,78 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 			replace:false,
 			scope:{
 				cName:'@garmentProduct',
-				cBrand:'=',
+				cBrandId:'=',
 				},
 			templateUrl:'product',
 			
 			link:function(scope,element,attrs){
 				
 				scope.clearDataSet=function(){
- 					scope.dataSet.info={
-							brand:scope.cBrand,
-					};
+ 					scope.dataSet.info={};
  					scope.dataSet.upcItems.splice(0,scope.dataSet.upcItems.length);
  					scope.dataSet.deletedUpcItems.splice(0,scope.dataSet.deletedUpcItems.length);
 				}			    
 			    
 			    scope.clear=function(){
-			    	scope.searchTransNumber="";
 			    	scope.clearDataSet();
 			    }
 			    
+	        	scope.setDicts=function(brandId,seasonId){
+	        		if(!(brandId && seasonId)) return;
+	        		
+ 	 				var item=scope.dictSeason.getSeasonL(brandId,seasonId);
+ 	 				
+					if(item && item.categories){
+     	 				var tempCategory=scope.dataSet.info.category;
 
+						var categories=item.categories.split(";");
+						scope.brandCategories.splice(0,scope.brandCategories.length);
+						for(var i=0;i<categories.length;i++){
+							scope.brandCategories.push(categories[i]);
+						}
+						
+						scope.dataSet.info.category=tempCategory;
+					}
+					
+					if(item && item.sizeFields){
+     	 				var tempSizeRange=scope.dataSet.info.sizeRange;
+     	 				
+						var sizeFields=item.sizeFields.split(',');
+						var sizeTypeFields=item.sizeTypeFields.split(';');
+						
+						scope.brandSizes.splice(0,scope.brandSizes.length);
+						for(var i=0,indices;i<sizeTypeFields.length;i++){
+							indices=sizeTypeFields[i].split(',');
+							for(j=0,s=[];j<indices.length;j++){
+								s.push(sizeFields[indices[j]].trim());
+							}
+							scope.brandSizes.push(s.join(' ,'));
+						}
+						scope.dataSet.info.sizeRange=tempSizeRange;
+					}
+	        		
+	        	}
+
+			    
 				scope.getProduct=function(){
-			    	var styleNumber=scope.searchStyleNumber;
-			    	scope.searchStyleNumber="";
-			    	if(styleNumber)
-			    		styleNumber=styleNumber.trim().toUpperCase();
+			    	var styleNo=scope.search.styleNo;
+			    	scope.search.styleNo="";
+			    	if(styleNo)
+			    		styleNo=styleNo.trim().toUpperCase();
 			    	
-			    	if(styleNumber){
-			    		scope.load(styleNumber);
+			    	if(styleNo){
+			    		scope.load(scope.currentSetting.seasonId,styleNo);
 			    	}else{
 						alert("Please input a Style# to search.");
 			    	}
 				}
 
-			    scope.load=function(styleNumber){
-					var url=baseUrl+"get-product?styleNumber="+styleNumber;
+			    scope.load=function(seasonId,styleNo){
+					var url=baseUrl+"get-product?seasonId="+seasonId+"&styleNo="+styleNo;
+					
+					if(seasonId!==scope.currentSetting.seasonId)
+						scope.currentSetting.seasonId=seasonId;
+					
 					scope.clear();
 
 					$http.get(url).
@@ -65,7 +103,13 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 			    }
 
 			    scope.save=function(){
+			    	
 			    	if(!validGarment()) return;
+			    	
+			    	if(!scope.dataSet.info.id){
+			    		scope.dataSet.info.brandId=scope.currentSetting.brandId;
+			    		scope.dataSet.info.seasonId=scope.currentSetting.seasonId;
+			    	}
 			    	
 					var url=baseUrl+"save-product";
 					
@@ -84,22 +128,24 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 			    
 				var populate=function(data){
 					scope.clearDataSet();
-					scope.dataSet.info=data.info;
-					
-					if(data.upcItems && data.upcItems.length>0)
-						scope.sortUpcItems(data.upcItems);
-					
-					for(var i=0,items=data.upcItems;i<items.length;i++){
-						scope.dataSet.upcItems.push(items[i]);
+					if(data){
+						if(data.info)
+							scope.dataSet.info=data.info;
+						
+						if(data.upcItems && data.upcItems.length>0){
+							scope.sortUpcItems(data.upcItems);
+							for(var i=0,items=data.upcItems;i<items.length;i++){
+								scope.dataSet.upcItems.push(items[i]);
+							}
+						}
 					}
-					
 				}
 				
 			 	var validGarment=function(){
 					var isValid=true;
 					var errors="";
 
-					if(!!!scope.dataSet.info.styleNumber){
+					if(!!!scope.dataSet.info.styleNo){
 						errors+="Style# can not be empty.";
 					}
 					if(!!!scope.dataSet.info.styleName){
@@ -211,6 +257,12 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 			controller: ['$scope',"cliviaDDS","DataDict","UpcGridWrapper", function($scope,cliviaDDS,DataDict,UpcGridWrapper) {
 				
 				$scope.productToolbarOptions ={items:[{
+							template:seasonTemplate,		                
+						}, {	
+							template:searchStyle,		                
+						}, {
+							type: "separator",
+						}, {
 							type: "button",
 							text: "New",
 							id:"btnNew",
@@ -229,8 +281,6 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 							}
 						}, {
 							type: "separator",
-						}, {	
-							template:searchTemplate,		                
 						}, {
 							type: "button",
 							text: "Print",
@@ -260,15 +310,30 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 				
 				$scope.upcPrefix="671309";
 				$scope.upcNextItemRef="02087";
+
+				$scope.dictSeason=cliviaDDS.getDict("season");
 				
+          	 	$scope.$watch('dataSet.info.seasonId',function(newValue,oldValue){
+     	 			if(newValue){
+     	 				$scope.setDicts($scope.dataSet.info.brandId,newValue);
+     	 			}
+         	 			
+     	 		});			
+          	 	
+          	 	$scope.currentSetting={
+          	 			brandId:$scope.cBrandId,
+          	 			seasonId:$scope.dictSeason.getCurrentSeasonIdL($scope.cBrandId),
+          	 	}
+
 				$scope.dataSet={
-							info:{brand:$scope.cBrand},
+							info:{brandId:$scope.cBrandId,seasonId:-1},
 							upcItems:new kendo.data.ObservableArray([]),
 							deletedUpcItems:[],
 						}
 				
+				$scope.search={styleNo:""};
 
-				$scope.dictGarmentBrand=cliviaDDS.getDict("garmentBrand");
+				
 				
 				$scope.brandCategories=new kendo.data.ObservableArray([]);
 				$scope.brandSizes=new kendo.data.ObservableArray([]);
@@ -283,33 +348,6 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 						}
 					});	
 	        	
-          	 	$scope.$watch('cBrand',function(newValue,oldValue){
-     	 			if(newValue){
-     					$scope.dictGarmentBrand.getItem("name",newValue)
-     						.then(function(item){
-     							if(item && item.categories){
-     								var categories=item.categories.split(";");
-    								$scope.brandCategories.splice(0,$scope.brandCategories.length);
-     								for(var i=0;i<categories.length;i++){
-     									$scope.brandCategories.push(categories[i]);
-     								}
-     								
-     								var sizeFields=item.sizeFields.split(',');
-     								var sizeTypeFields=item.sizeTypeFields.split(';');
-     								
-     								$scope.brandSizes.splice(0,$scope.brandSizes.length);
-     								for(var i=0,indices;i<sizeTypeFields.length;i++){
-     									indices=sizeTypeFields[i].split(',');
-     									for(j=0,s=[];j<indices.length;j++){
-     										s.push(sizeFields[indices[j]].trim());
-     									}
-     									$scope.brandSizes.push(s.join(' ,'));
-     								}
-     							}
-     						})
-     	 			}
-         	 			
-     	 		});			
 	        	$scope.categoryOptions={
 	        				dataSource: $scope.brandCategories
 	        			};
@@ -391,7 +429,7 @@ imApp.directive('transactionEntry',["$http","cliviaDDS",function($http,cliviaDDS
 			templateUrl:'transaction',
 			link:function(scope,element,attrs){
 				var baseUrl="";
-				var dictUpcUrl="../data/garmentWithDetail/call/findListIn?param=s:styleNumber;s:s;s:";
+				var dictUpcUrl="../data/garmentWithDetail/call/findListIn?param=s:styleNo;s:s;s:";
 				
 				var populate=function(data,action){
 					scope.dataSet.info=data.info;
@@ -575,9 +613,9 @@ imApp.factory("InventoryGridWrapper",["GridWrapper",function(GridWrapper){
 		        headerAttributes:{class:"gridLineNumberHeader"},
 		        width: 25,
 			}, {
-				name:"styleNumber",
+				name:"styleNo",
 				title:"Style#",
-				field:"styleNumber",
+				field:"styleNo",
 				width:80,
 			}, {
 				name:"styleName",
@@ -598,7 +636,7 @@ imApp.factory("InventoryGridWrapper",["GridWrapper",function(GridWrapper){
 				width:140
 			}, {
 				name:"season",
-				title:"Seasons",
+				title:"Season",
 				field:"season",
 				filterable: { multi:true},
 				width:90
@@ -679,8 +717,8 @@ imApp.factory("UpcGridWrapper",["GridWrapper",function(GridWrapper){
 		        headerAttributes:{class:"gridLineNumberHeader"},
 		        width: 25,
 			}, {
-		         name: "upcNumber",
-		         field: "upcNumber",
+		         name: "upcNo",
+		         field: "upcNo",
 		         title: "UPC",
 		         width: 140
 		     }, {
@@ -768,7 +806,7 @@ imApp.factory("inventory",["InventoryGridWrapper","UpcGridWrapper",function(Inve
 	var garmentGridDataSource = new kendo.data.DataSource({
 			transport: {
 			    read: {
-			        url: 'http://' + window.location.host + '/miniataweb/datasource/garmentInfoDao/read',
+			        url: '../datasource/garmentWithInfoDao/read',
 			        type: 'post',
 			        dataType: 'json',
 			        contentType: 'application/json'
@@ -787,7 +825,7 @@ imApp.factory("inventory",["InventoryGridWrapper","UpcGridWrapper",function(Inve
  	     	filter: garmentGridFilter,
 
  		    sort: [{
-		         field: "styleNumber",
+		         field: "styleNo",
 		         dir: "asc"
 		     }], 
 			schema: {
@@ -814,7 +852,7 @@ imApp.factory("inventory",["InventoryGridWrapper","UpcGridWrapper",function(Inve
 		     },
 		     filter: upcGridFilter,
 		     sort: [{
-		         field: "upcNumber",
+		         field: "upcNo",
 		         dir: "asc"
 		     }],
 //		     pageSize: 10,
@@ -829,9 +867,9 @@ imApp.factory("inventory",["InventoryGridWrapper","UpcGridWrapper",function(Inve
 		 });
 	
 	var garmentGridFilter=[{
-        field: "brand",
+        field: "brandId",
         operator: "eq",
-        value: "-"
+        value: -1
     }];
 	
 	var upcGridFilter=[{
@@ -847,7 +885,9 @@ imApp.factory("inventory",["InventoryGridWrapper","UpcGridWrapper",function(Inve
 	
 	var inventory={
 			
-		brand:'',
+		brand:{},
+		
+		brandId:2,
 		
 		inventoryGW:igw,
 		
@@ -876,7 +916,7 @@ imApp.factory("inventory",["InventoryGridWrapper","UpcGridWrapper",function(Inve
 			
 		    change:function(){
 				inventory.currentItem=this.dataItem(this.select());
-				loadDetail(inventory.currentItem.id);
+				loadDetail(inventory.currentItem.garmentId);
 		    },
 		    
 		},
@@ -907,7 +947,7 @@ imApp.factory("inventory",["InventoryGridWrapper","UpcGridWrapper",function(Inve
 		 
 		 load:function(){
 			 this.currentItem={};
-			 garmentGridFilter[0].value=this.brand;
+			 garmentGridFilter[0].value=this.brandId;
 			 garmentGridDataSource.filter(garmentGridFilter);
 			 loadDetail(-1);	//clear detail
 		 }
@@ -921,7 +961,7 @@ imApp.controller("inventoryCtrl",["$scope","inventory" ,function($scope,inventor
 	inventory.inventoryGW.doubleClickEvent=function(e) {
     	var di=$scope.inventory.inventoryGW.getCurrentDataItem();
      	if(di){
-    		$scope.openProduct(di.styleNumber);
+    		$scope.openProduct(di.seasonId,di.styleNo);
    		}
      }
 
@@ -939,7 +979,7 @@ imApp.controller("inventoryCtrl",["$scope","inventory" ,function($scope,inventor
 		        id:"btnEdit",
 		        click: function(e) {
 		        	if(inventory.currentItem){
-			    		$scope.openProduct(inventory.currentItem.styleNumber);
+			    		$scope.openProduct(inventory.currentItem.styleNo);
 		       		}else{
 		       			alert("Please select an item to edit.");	
 		       		}
@@ -979,6 +1019,13 @@ imApp.controller("inventoryCtrl",["$scope","inventory" ,function($scope,inventor
  	$scope.garmentProductWindowOptions={
 		activate:function(){
 			$scope.garmentProduct.mainSplitter.resize();
+		},
+		open:function(){
+			//$scope.brandInput.readOnly=true;
+		},
+		close:function(){
+			//$scope.brandInput.readOnly=false;
+			
 		}
 	}
 
@@ -994,7 +1041,7 @@ imApp.controller("inventoryCtrl",["$scope","inventory" ,function($scope,inventor
 		}
 	});	
 	
-	$scope.$watch("inventory.brand",function(){
+	$scope.$watch("inventory.brandId",function(){
 		inventory.load();
 	});
 	
@@ -1004,13 +1051,14 @@ imApp.controller("inventoryCtrl",["$scope","inventory" ,function($scope,inventor
 		$scope.transactionEntryWindow.open();
 	}
 	
-	$scope.openProduct=function(styleNumber){
-		if(!!styleNumber){
-			$scope.garmentProduct.load(inventory.currentItem.styleNumber);
+	$scope.openProduct=function(seasonId,styleNo){
+		if(!!styleNo){
+			$scope.garmentProduct.load(seasonId,styleNo);
 		}else{
 			$scope.garmentProduct.clear();
 		}
 		$scope.$apply();
+		$scope.garmentProductWindow.title($scope.brandInput.getBrandName);
 		$scope.garmentProductWindow.open();
 	}
 	

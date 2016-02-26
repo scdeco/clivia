@@ -23,9 +23,6 @@ public class OrderInfo {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 		
-	@Column(name="OrderId")
-	private int orderId;
-	
 	@Column(name="OrderNumber", length=20, unique=true, nullable=false)
 	private String orderNumber;
 
@@ -95,14 +92,6 @@ public class OrderInfo {
 
 	public void setId(int id) {
 		this.id = id;
-	}
-
-	public int getOrderId() {
-		return orderId;
-	}
-
-	public void setOrderId(int orderId) {
-		this.orderId = orderId;
 	}
 
 	public String getOrderNumber() {

@@ -12,28 +12,18 @@ public class DictGarmentBrand {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private int id;
 	
-	@Column(name="LineNumber")
-	private int lineNumber;	
+	@Column(name="LineNo")
+	private int lineNo;	
 	
 	@Column(name="Name",length=50)
 	private String name;
-	
-	@Column(name="SizeFields",length=100)
-	private String sizeFields;
-	
-	@Column(name="SizeTitles",length=100)
-	private String sizeTitles;
-	
-	@Column(name="SizeTypes")
-	private String sizeTypes;
-	
-	@Column(name="SizeTypeFields")
-	private String sizeTypeFields;
-	
-	@Column(name="Categories",length=500)
-	private String categories;
 
+	@Column(name="ShortName",length=50)
+	private String shortName;
 	
+	@Column(name="HasInventory")
+	private Boolean hasInventory;
+
 	public int getId() {
 		return id;
 	}
@@ -42,12 +32,12 @@ public class DictGarmentBrand {
 		this.id = id;
 	}
 
-	public int getLineNumber() {
-		return lineNumber;
+	public int getLineNo() {
+		return lineNo;
 	}
 
-	public void setLineNumber(int lineNumber) {
-		this.lineNumber = lineNumber;
+	public void setLineNo(int lineNo) {
+		this.lineNo = lineNo;
 	}
 
 	public String getName() {
@@ -58,52 +48,19 @@ public class DictGarmentBrand {
 		this.name = name;
 	}
 
-	public String getSizeFields() {
-		return sizeFields;
+	public String getShortName() {
+		return shortName;
 	}
 
-	public void setSizeFields(String sizeFields) {
-		this.sizeFields = sizeFields;
+	public void setShortName(String shortName) {
+		this.shortName = shortName;
 	}
 
-	public String getSizeTitles() {
-		return sizeTitles;
+	public Boolean getHasInventory() {
+		return hasInventory;
 	}
 
-	public void setSizeTitles(String sizeTitles) {
-		this.sizeTitles = sizeTitles;
+	public void setHasInventory(Boolean hasInventory) {
+		this.hasInventory = hasInventory;
 	}
-
-	public String getSizeTypes() {
-		return sizeTypes;
-	}
-
-	public void setSizeTypes(String sizeTypes) {
-		this.sizeTypes = sizeTypes;
-	}
-
-	public String getSizeTypeFields() {
-		return sizeTypeFields;
-	}
-
-	public void setSizeTypeFields(String sizeTypeFields) {
-		this.sizeTypeFields = sizeTypeFields;
-	}
-
-	public String getCategories() {
-		return categories;
-	}
-
-	public void setCategories(String categories) {
-		this.categories = categories;
-	}
-
-	
-	
-	
-	
-	
-	
-	
-
 }

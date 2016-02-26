@@ -16,12 +16,6 @@ public class OrderInfoDao extends GenericDao<OrderInfo> {
 		return list.isEmpty()?null:list.get(0);		
 	}
 
-	public OrderInfo findByOrderId(Integer orderId) {
-		List<OrderInfo> list=this.findList(super.createCriteria().add(Restrictions.eq("orderId",orderId)));
-		
-		return list.isEmpty()?null:list.get(0);		
-	}
-	
 	public void deleteOrder(OrderInfo cliviaOrder) {
 		this.delete(cliviaOrder);		
 		

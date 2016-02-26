@@ -29,6 +29,6 @@
 	 	k-actions="['Maximize']"
 	 	k-modal="false">
 	 	
-	 <div garment-input	dict-garment="dictGarment" add-function="inputWindowAddFunction"></div>
+	 <div garment-input	c-season-id="cSeasonId" c-dict-garment="dictGarment" c-add-function="inputWindowAddFunction"></div>
 	 
 </div>

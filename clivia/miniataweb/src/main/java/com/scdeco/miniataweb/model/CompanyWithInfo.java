@@ -10,8 +10,8 @@ import org.hibernate.annotations.Formula;
 public class CompanyWithInfo {
 
 	@Id
-	@Column(name="companyId")
-	private int companyId;
+	@Column(name="id")
+	private int id;
 	
 	@Column(name="BusinessName")
 	private String businessName;
@@ -64,8 +64,8 @@ public class CompanyWithInfo {
 	@Formula("concat(csrFirstName,' ',ifnull(csrLastName,''))")
 	private String csrName;
 
-	public int getCompanyId() {
-		return companyId;
+	public int getId() {
+		return id;
 	}
 
 	public String getBusinessName() {

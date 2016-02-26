@@ -64,12 +64,12 @@
 					
 					<li>
 		    			<label for="rep">Sales Rep.:</label>
-						<auto-combobox name="rep"  style="width:100%;"  c-options="repOptions" ng-model="dataSet.info.repId">
+						<map-combobox name="rep"  style="width:100%;"  c-options="repOptions" ng-model="dataSet.info.repId">
 					</li>
 
 					<li>
 		    			<label for="csr">CSR:</label>
-						<auto-combobox name="csr"  style="width:100%;" c-options="csrOptions" ng-model="dataSet.info.csrId">
+						<map-combobox name="csr"  style="width:100%;" c-options="csrOptions" ng-model="dataSet.info.csrId">
 					</li>
 					
 					<li> 

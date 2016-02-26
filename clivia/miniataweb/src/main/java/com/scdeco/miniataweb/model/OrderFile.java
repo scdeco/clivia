@@ -26,8 +26,8 @@ public class OrderFile {
 	@Column(name="OrderItemId")
 	private int orderItemId;
 	
-	@Column(name="LineNumber")
-	private int lineNumber;
+	@Column(name="LineNo")
+	private int lineNo;
 	
 	@Column(name="FileName",length=255)
 	String fileName;
@@ -42,6 +42,69 @@ public class OrderFile {
 	
 	@Column(name="Remark", length=255)
 	String remark;
-	
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(int orderId) {
+		this.orderId = orderId;
+	}
+
+	public int getOrderItemId() {
+		return orderItemId;
+	}
+
+	public void setOrderItemId(int orderItemId) {
+		this.orderItemId = orderItemId;
+	}
+
+	public int getLineNo() {
+		return lineNo;
+	}
+
+	public void setLineNo(int lineNo) {
+		this.lineNo = lineNo;
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public LocalDateTime getUploadAt() {
+		return uploadAt;
+	}
+
+	public void setUploadAt(LocalDateTime uploadAt) {
+		this.uploadAt = uploadAt;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
 	
 }

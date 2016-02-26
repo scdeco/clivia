@@ -7,7 +7,7 @@
 	Order#:<span style="font-weight: bold;">{{SO.dataSet.info.orderNumber}}</span>&nbsp;&nbsp;&nbsp; Account: <span style="font-weight: bold;">{{SO.company.info.businessName}}</span>
 </div>
 <div ng-hide="!!SO.dataSet.info.orderNumber">
-	  Customer: <auto-combobox   style="width:300px;" c-options="companyOptions" ng-model="SO.dataSet.info.customerId" ng-blur="SO.getCompany()"/>
+	  Customer: <map-combobox   style="width:300px;" c-options="companyOptions" ng-model="SO.dataSet.info.customerId" ng-blur="SO.getCompany()"/>
 </div>
 
 <div kendo-splitter="outterSplitter"

@@ -45,10 +45,10 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 		name:"companyComboBox",
 		dataTextField:"businessName",
 		dataValueField:"id",
-		minLength:2,
+		minLength:1,
 		url:'../datasource/companyInfoDao/read',
 	}
-    
+     
 	$scope.newOrder=function(){
 		SO.clear();
 		$state.go('main.blankitem');
@@ -56,9 +56,8 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	
 	
 	$scope.getOrder=function(){
-		SO.clear();
 		if(!!$scope.searchOrderNumber){
-			
+			SO.clear();
 			SO.retrieve($scope.searchOrderNumber)
 				.then(function(data){
 				    if(data){

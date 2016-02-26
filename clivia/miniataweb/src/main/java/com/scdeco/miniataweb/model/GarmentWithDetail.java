@@ -14,17 +14,27 @@ public class GarmentWithDetail {
 	@Column(name="garmentId")
 	private Integer garmentId;
 		
-	@Column(name="StyleNumber",length=20)
-	private String styleNumber;
+	@Column(name="StyleNo",length=20)
+	private String styleNo;
 
 	@Column(name="StyleName", length=50)
 	private String styleName;
+
+	@Column(name="BrandId")
+	private int brandId;
 	
 	@Column(name="Brand",length=30)
 	private String brand;
+
+	@Column(name="seasonId")
+	private int seasonId;
 	
-	@Column(name="UPCNumber",length=12)		//barcode
-	private String upcNumber;
+	@Column(name="Season",length=30)
+	private String season;
+	
+	
+	@Column(name="UPCNo",length=12)		//barcode
+	private String upcNo;
 
 	@Column(name="Colour",length=50)
 	private String colour;
@@ -40,29 +50,42 @@ public class GarmentWithDetail {
 	
 	@Column(name="PQ")
 	private Integer pq;
+	
 
 	public Integer getUpcId() {
 		return upcId;
 	}
-	
+
 	public Integer getGarmentId() {
 		return garmentId;
 	}
 
-	public String getStyleNumber() {
-		return styleNumber;
+	public String getStyleNo() {
+		return styleNo;
 	}
 
 	public String getStyleName() {
 		return styleName;
 	}
 
+	public int getBrandId() {
+		return brandId;
+	}
+
 	public String getBrand() {
 		return brand;
 	}
 
-	public String getUpcNumber() {
-		return upcNumber;
+	public int getSeasonId() {
+		return seasonId;
+	}
+
+	public String getSeason() {
+		return season;
+	}
+
+	public String getUpcNo() {
+		return upcNo;
 	}
 
 	public String getColour() {

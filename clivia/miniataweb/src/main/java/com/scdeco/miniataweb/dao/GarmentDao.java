@@ -34,9 +34,9 @@ public class GarmentDao {
 		return garment;
 	}
 	
-	public Garment getGarmentProductByStyleNumber(String styleNumber){
+	public Garment getGarmentProductByStyleNumber(int seasonId,String styleNo){
 		Garment garment=null;
-		GarmentInfo info=garmentInfoDao.findByStyleNumber(styleNumber);
+		GarmentInfo info=garmentInfoDao.findByStyleNumber(seasonId,styleNo);
 		
 		if (info!=null){
 			garment=this.getGarmentProductById(info.getId());

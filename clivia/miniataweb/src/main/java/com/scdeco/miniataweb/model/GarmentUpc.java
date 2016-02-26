@@ -17,8 +17,8 @@ public class GarmentUpc {
 	@Column(name="GarmentId", nullable = false)	
 	private int garmentId;
 	
-	@Column(name="UPCNumber",length=12)		//barcode
-	private String upcNumber;
+	@Column(name="UPCNo",length=12)		//barcode
+	private String upcNo;
 
 	@Column(name="Colour",length=50,nullable=false)
 	private String colour;
@@ -54,12 +54,12 @@ public class GarmentUpc {
 		this.garmentId = garmentId;
 	}
 
-	public String getUpcNumber() {
-		return upcNumber;
+	public String getUpcNo() {
+		return upcNo;
 	}
 
-	public void setUpcNumber(String upcNumber) {
-		this.upcNumber = upcNumber;
+	public void setUpcNo(String upcNo) {
+		this.upcNo = upcNo;
 	}
 
 	public String getColour() {

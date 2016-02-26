@@ -46,56 +46,53 @@ public class OrderDao {
 	public void save(OrderClivia order){
 		
 		OrderInfo orderInfo=order.getInfo();
-		if(!(orderInfo.getOrderId()>0)){
-			Integer orderId=cliviaAutoNumberDao.getNextNumber("OrderId");
+		
+		boolean isNewOrder=orderInfo.getId()<=0;
+		
+		if(isNewOrder){
 			Integer orderNumber=cliviaAutoNumberDao.getNextNumber("OrderNumber");
-			orderInfo.setOrderId(orderId);
 			orderInfo.setOrderNumber('S'+orderNumber.toString());
 			orderInfo.setOrderDate(LocalDate.now());
 			orderInfo.setOrderTime(LocalTime.now());
-			
-			if(order.getItems()!=null){
-				
-				for(OrderItem orderItem:order.getItems()){
-					orderItem.setOrderId(orderId);
-				}
-			}
-			
-			if(order.getLineItems()!=null){
-				for(OrderLineItem lineItem:order.getLineItems()){
-					lineItem.setOrderId(orderId);
-				}
-				
-			}
-			
-			if(order.getImageItems()!=null){
-				for(OrderImage imageItem:order.getImageItems()){
-					imageItem.setOrderId(orderId);
-				}
-				
-			}
+		}
 
-		}
-		else{
-			List<Map<String,String>> deletedItems=order.getDeleteds();
-			System.out.println("deleted:"+deletedItems);
-			for(Map<String,String> item:deletedItems){
-					String daoName=item.get("entity");
-		        	int id=Integer.parseInt(item.get("id"));
-		        	switch (daoName){
-		        	case "lineItem":
-		        		orderLineItemDao.deleteById(id);
-		        		break;
-		        	case "imageItem":
-		        		orderImageDao.deleteById(id);
-		        		break;
-		        	}
-		        	
-		     }				
-			
-		}
-		
 		orderInfoDao.saveOrUpdate(orderInfo);
+		
+		int orderId= orderInfo.getId();
+
+		if(order.getItems()!=null){
+			for(OrderItem orderItem:order.getItems()){
+				orderItem.setOrderId(orderId);
+			}
+		}
+			
+		if(order.getLineItems()!=null){
+			for(OrderLineItem lineItem:order.getLineItems()){
+				lineItem.setOrderId(orderId);
+			}
+		}
+			
+		if(order.getImageItems()!=null){
+			for(OrderImage imageItem:order.getImageItems()){
+				imageItem.setOrderId(orderId);
+			}
+		}
+
+		List<Map<String,String>> deletedItems=order.getDeleteds();
+		System.out.println("deleted:"+deletedItems);
+		for(Map<String,String> item:deletedItems){
+				String daoName=item.get("entity");
+	        	int id=Integer.parseInt(item.get("id"));
+	        	switch (daoName){
+	        	case "lineItem":
+	        		orderLineItemDao.deleteById(id);
+	        		break;
+	        	case "imageItem":
+	        		orderImageDao.deleteById(id);
+	        		break;
+	        	}
+	        	
+	     }				
 		
 		if(order.getItems()!=null){
 			for(OrderItem orderItem:order.getItems()){
@@ -119,9 +116,9 @@ public class OrderDao {
 	
 	
 
-	public OrderClivia getOrderByOrderId(int orderId){
+	public OrderClivia getOrderById(int orderId){
 		OrderClivia order=null;
-		OrderInfo orderInfo=orderInfoDao.findByOrderId(orderId);
+		OrderInfo orderInfo=orderInfoDao.findById(orderId);
 		if(orderInfo!=null){
 			order=new OrderClivia();
 			order.setInfo(orderInfo);
@@ -141,20 +138,11 @@ public class OrderDao {
 		OrderClivia order=null;
 		OrderInfo orderInfo=orderInfoDao.findByOrderNumber(orderNumber);
 		if (orderInfo!=null){
-			order=this.getOrderByOrderId(orderInfo.getOrderId());
+			order=this.getOrderById(orderInfo.getId());
 		}
 		return order;
 	}
 	
-	public OrderClivia getOrderById(int id){
-		OrderClivia order=null;
-		OrderInfo orderInfo=orderInfoDao.findById(id);
-		if (orderInfo!=null){
-			order=this.getOrderByOrderId(orderInfo.getOrderId());
-		}
-		return order;
-	}
-
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
 	public void deleteOrder(OrderClivia order){
 		orderLineItemDao.deleteAll(order.getLineItems());

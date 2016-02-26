@@ -18,8 +18,8 @@ public class GarmentTransDetail {
 	@Column(name="UpcId", nullable = false)	
 	private int upcId;
 
-	@Column(name="RowNumber")
-	private Integer rowNumber;
+	@Column(name="RowNo")
+	private Integer rowNo;
 	
 	@Column(name="Quantity")	//+:in,-:out
 	private Integer quantity;
@@ -51,12 +51,12 @@ public class GarmentTransDetail {
 		this.upcId = upcId;
 	}
 
-	public Integer getRowNumber() {
-		return rowNumber;
+	public Integer getRowNo() {
+		return rowNo;
 	}
 
-	public void setRowNumber(Integer rowNumber) {
-		this.rowNumber = rowNumber;
+	public void setRowNo(Integer rowNo) {
+		this.rowNo = rowNo;
 	}
 
 	public Integer getQuantity() {

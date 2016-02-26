@@ -5,7 +5,7 @@
 		
 		registeredItemTypes:[{
 				name:"lineItem",
-				hasDetail:true
+				hasDetail:false
 			},{
 				name:"imageItem",	
 				hasDetail:false
@@ -33,7 +33,7 @@
 				 text: "DD Line Item", 
 				 icon: "insert-n",
 				 id:"lineitemdd",
-				 spec:"DD",
+				 spec:"2",				//brandId
 				 itemType:"lineItem"
 			},{
 				type: "separator" 
@@ -53,8 +53,8 @@
 				text: "Image", 
 				icon: "insert-m",
 			   	id:"imageitem",
-				 spec:"",
-				 itemType: "imageItem"
+				spec:"",
+				itemType: "imageItem"
 			},{ 
 				text: "File", 
 				icon: "insert-s",

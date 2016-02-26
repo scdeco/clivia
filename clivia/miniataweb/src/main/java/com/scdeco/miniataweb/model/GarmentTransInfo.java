@@ -19,8 +19,8 @@ public class GarmentTransInfo {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
-	@Column(name="TransNumber", length=20, unique=true, nullable=false)	
-	private String transNumber;
+	@Column(name="TransNo", length=20, unique=true, nullable=false)	
+	private String transNo;
 	
 	@Column(name="Brand",length=20)
 	private String brand;
@@ -35,10 +35,10 @@ public class GarmentTransInfo {
 	@Column(name="Type")		//0:Manual, 1:Invoice
 	private Integer type;
 	
-	@Column(name="BatchNumber",length=50) 
-	private String batchNumber;
+	@Column(name="BatchNo",length=50) 
+	private String batchNo;
 
-	@Column(name="Reference", length=50)		//PONumber Or SONumber
+	@Column(name="Reference", length=50)		//PONo Or SONo
 	private String reference;
 	
 	@Column(name="Packaging",length=50)
@@ -66,12 +66,12 @@ public class GarmentTransInfo {
 		this.id = id;
 	}
 
-	public String getTransNumber() {
-		return transNumber;
+	public String getTransNo() {
+		return transNo;
 	}
 
-	public void setTransNumber(String transNumber) {
-		this.transNumber = transNumber;
+	public void setTransNo(String transNo) {
+		this.transNo = transNo;
 	}
 
 	public String getBrand() {
@@ -106,12 +106,12 @@ public class GarmentTransInfo {
 		this.type = type;
 	}
 
-	public String getBatchNumber() {
-		return batchNumber;
+	public String getBatchNo() {
+		return batchNo;
 	}
 
-	public void setBatchNumber(String batchNumber) {
-		this.batchNumber = batchNumber;
+	public void setBatchNo(String batchNo) {
+		this.batchNo = batchNo;
 	}
 
 	public String getReference() {

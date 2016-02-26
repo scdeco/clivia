@@ -1,44 +1,28 @@
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"  pageEncoding="ISO-8859-1"%>
-<%@taglib prefix="kendo" uri="http://www.kendoui.com/jsp/tags"%>
-<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
+<!DOCTYPE html>
+<html ng-app="orderApp">
+<head>
 
-<shared:header></shared:header>
-<div id="version"><h2>Version:${version}</h2></div>
+	<title>Order</title>
+	<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
+
+	<shared:header/> 
+
+</head>
 <div id="login">
-	<form name="form1" action="login" method="post">
-		<table >
-		    <tr>
-			        <td colspan="2">Please login</td>
-		    </tr>
-		    <tr>
-		            <td>Username:</td>
-		            <td>
-		            	<input type="text" name="username" value="${username}" size="20">
-		            </td>		            
+	<div class="alert alert-danger" ng-show="error">
+		There was a problem logging in. Please try again.
+	</div>
 
-		    </tr>
-		    <tr>
-		            <td>Password:</td>
-		            <td><input type="text" name="password" value="${password}" size="20"></td>
-		    </tr>
-		    <tr>
-		    	    <td colspan="2"><input type="submit" name="submit" value="Login"> </td>
-		    </tr>
-		    <tr>
-		            <td>Date:</td>
-		            <td><input id="datepicker"/> 
-		                <script>
-				            $(function() {
-		        	    	    $("#datepicker").kendoDatePicker();
-		            		});
-		        		</script>    
-		            </td>
-		    </tr>
-		    <tr>
-		    	    <td colspan="2"><kendo:editor name="editor">${text}</kendo:editor>
-		    	    </td>
-		    </tr>
-		</table>
+	<form role="form" ng-submit="login()">
+		<div class="form-group">
+			<label for="username">Username:</label> <input type="text"
+				class="form-control" id="username" name="username" ng-model="credentials.username"/>
+		</div>
+		<div class="form-group">
+			<label for="password">Password:</label> <input type="password"
+				class="form-control" id="password" name="password" ng-model="credentials.password"/>
+		</div>
+		<button type="submit" class="btn btn-primary">Submit</button>
 	</form>
 </div>
 	

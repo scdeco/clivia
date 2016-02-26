@@ -1,12 +1,12 @@
 <div>	   	
 	<form name="addStyle" ng-submit="getGrid()" novalidate>
 		<span class="k-textbox k-space-right" style="width: 140px;" >
-		<input type="text"  class="k-textbox" placeholder="Search Style#" ng-model="styleNumber"/>
+		<input type="text"  class="k-textbox" placeholder="Search Style#" ng-model="styleNo"/>
 		<label ng-click="getGrid()" class="k-icon k-i-search"></label>
 		</span>
 	</form>
 			
-	<h4>{{garment.styleNumber}}:&nbsp;{{garment.styleName}}</h4>
+	<h4>{{garment.styleNo}}:&nbsp;{{garment.styleName}}</h4>
 	
 	<div  kendo-grid="styleGrid" id="styleGrid"  k-options="gridOptions"  k-rebind="gridRebind" k-height=200></div> 		
 	

@@ -5,7 +5,7 @@
 	<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
 	<shared:header/> 
 	
-	<%@include file="../common/embdesign.jsp"%>
+	<%@include file="embdesign.jsp"%>
 	<%@include file="../common/factories.jsp"%>
 	<%@include file="../common/directives.jsp"%>
 </head>

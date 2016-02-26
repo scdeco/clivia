@@ -17,7 +17,7 @@ orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
                    			if(e.id!="additem"){
                    				var menuItem=SO.getRegisteredOrderItem(e.id);
                               	var item=SO.addOrderItem(menuItem.itemType,menuItem.text,menuItem.spec);
-                              	SO.setCurrentOrderItem(item.orderItemId);
+                              	SO.setCurrentOrderItem(item.id);
                    			}
                    		}
 	            	  
@@ -42,7 +42,7 @@ orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
             	  	 item=items.splice(e.oldIndex,1)[0];
             		 items.splice(e.newIndex,0,item);
             		 for(var i=0;i<items.length;i++)
-            			 items[i].lineNumber=i+1;
+            			 items[i].lineNo=i+1;
             		 buttons=SO.instance.itemButtons;
             		 button=buttons.splice(e.oldIndex,1)[0];
             		 buttons.splice(e.newIndex,0,button);

@@ -16,11 +16,8 @@ public class OrderItem {
 	@Column(name="OrderId")
 	private int orderId;
 	
-	@Column(name="OrderItemId")
-	private int orderItemId;
-	
-	@Column(name="LineNumber")
-	private int lineNumber;
+	@Column(name="LineNo")
+	private int lineNo;
 	
 	@Column(name="Title", length=50)
 	private String title;
@@ -33,7 +30,7 @@ public class OrderItem {
 
 	@Column(name="SpecDetail", length=255)
 	private String specDetail;
-	
+
 	public int getId() {
 		return id;
 	}
@@ -50,20 +47,12 @@ public class OrderItem {
 		this.orderId = orderId;
 	}
 
-	public int getOrderItemId() {
-		return orderItemId;
+	public int getLineNo() {
+		return lineNo;
 	}
 
-	public void setOrderItemId(int orderItemId) {
-		this.orderItemId = orderItemId;
-	}
-
-	public int getLineNumber() {
-		return lineNumber;
-	}
-
-	public void setLineNumber(int lineNumber) {
-		this.lineNumber = lineNumber;
+	public void setLineNo(int lineNo) {
+		this.lineNo = lineNo;
 	}
 
 	public String getTitle() {
@@ -97,7 +86,5 @@ public class OrderItem {
 	public void setSpecDetail(String specDetail) {
 		this.specDetail = specDetail;
 	}
-
-	
 
 }

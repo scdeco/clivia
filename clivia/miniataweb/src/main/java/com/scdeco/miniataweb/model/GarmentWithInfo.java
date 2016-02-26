@@ -7,11 +7,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class GarmentInfo  {
-
+public class GarmentWithInfo {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+	@Column(name="garmentId")
+	private int garmentId;
 		
 	@Column(name="StyleNo", length=20,unique=true,nullable=false)
 	private String styleNo;
@@ -21,9 +20,15 @@ public class GarmentInfo  {
 	
 	@Column(name="brandId")
 	private int brandId;
+
+	@Column(name="brand",length=50)
+	private String brand;
 	
 	@Column(name="seasonId")
 	private int seasonId;
+
+	@Column(name="season",length=50)
+	private String season;
 	
 	@Column(name="Description", length=200)
 	private String description;
@@ -64,147 +69,83 @@ public class GarmentInfo  {
 	@Column(name="Remark",length=500)
 	private String  remark;
 
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
+	public int getGarmentId() {
+		return garmentId;
 	}
 
 	public String getStyleNo() {
 		return styleNo;
 	}
 
-	public void setStyleNo(String styleNo) {
-		this.styleNo = styleNo;
-	}
-
 	public String getStyleName() {
 		return styleName;
-	}
-
-	public void setStyleName(String styleName) {
-		this.styleName = styleName;
 	}
 
 	public int getBrandId() {
 		return brandId;
 	}
 
-	public void setBrandId(int brandId) {
-		this.brandId = brandId;
+	public String getBrand() {
+		return brand;
 	}
 
 	public int getSeasonId() {
 		return seasonId;
 	}
 
-	public void setSeasonId(int seasonId) {
-		this.seasonId = seasonId;
+	public String getSeason() {
+		return season;
 	}
 
 	public String getDescription() {
 		return description;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
 	public String getFeature() {
 		return feature;
-	}
-
-	public void setFeature(String feature) {
-		this.feature = feature;
 	}
 
 	public String getKeyword() {
 		return keyword;
 	}
 
-	public void setKeyword(String keyword) {
-		this.keyword = keyword;
-	}
-
 	public String getCategory() {
 		return category;
-	}
-
-	public void setCategory(String category) {
-		this.category = category;
 	}
 
 	public String getColourway() {
 		return colourway;
 	}
 
-	public void setColourway(String colourway) {
-		this.colourway = colourway;
-	}
-
 	public String getSizeRange() {
 		return sizeRange;
-	}
-
-	public void setSizeRange(String sizeRange) {
-		this.sizeRange = sizeRange;
 	}
 
 	public Integer getQoh() {
 		return qoh;
 	}
 
-	public void setQoh(Integer qoh) {
-		this.qoh = qoh;
-	}
-
 	public Integer getSq() {
 		return sq;
-	}
-
-	public void setSq(Integer sq) {
-		this.sq = sq;
 	}
 
 	public Integer getPq() {
 		return pq;
 	}
 
-	public void setPq(Integer pq) {
-		this.pq = pq;
-	}
-
 	public Double getWsp() {
 		return wsp;
-	}
-
-	public void setWsp(Double wsp) {
-		this.wsp = wsp;
 	}
 
 	public Double getRrp() {
 		return rrp;
 	}
 
-	public void setRrp(Double rrp) {
-		this.rrp = rrp;
-	}
-
 	public Boolean getUsed() {
 		return used;
 	}
 
-	public void setUsed(Boolean used) {
-		this.used = used;
-	}
-
 	public String getRemark() {
 		return remark;
-	}
-
-	public void setRemark(String remark) {
-		this.remark = remark;
 	}
 }

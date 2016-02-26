@@ -14,7 +14,7 @@ public class OrderItemDao extends GenericDao<OrderItem> {
 		List<OrderItem> list=this.findList(
 				super.createCriteria()
 					.add(Restrictions.eq("orderId", orderId))
-					.addOrder(Order.asc("lineNumber")));
+					.addOrder(Order.asc("lineNo")));
 		return list;
 	}
 }

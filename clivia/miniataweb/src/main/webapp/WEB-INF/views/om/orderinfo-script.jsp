@@ -26,11 +26,8 @@ orderApp.controller("orderInfoCtrl", ["$scope","SO","cliviaDDS",function($scope,
 	}
 	
 	$scope.buyerOptions={
-			dataSource:SO.company.contacts,
-			filter:"startswith",
-            dataTextField: "fullName",
-            dataValueField: "fullName",
-			autoBind:false,					//
+			name:"buyerComboBox",
+			dataSource:SO.company.buyerDataSource,
 	}
 	
 	$scope.repOptions={
@@ -53,6 +50,7 @@ orderApp.controller("orderInfoCtrl", ["$scope","SO","cliviaDDS",function($scope,
 			dict:cliviaDDS.getDict("employeeInput"),
 		}
 
+	
 	
 }]);
 </script>

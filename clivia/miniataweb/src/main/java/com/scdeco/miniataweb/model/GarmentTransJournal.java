@@ -22,8 +22,8 @@ public class GarmentTransJournal {
 	@Column(name="UpcId", nullable = false)	
 	private int upcId;
 	
-	@Column(name="RefNumber")
-	private String refNumber; 
+	@Column(name="RefNo")
+	private String refNo; 
 	
 	@Column(name="Type")		//0:manual 1:invoice(out) 2:receipt(in)
 	private Integer type;
@@ -41,5 +41,69 @@ public class GarmentTransJournal {
 
 	@Column(name="Remark")
 	private String remark;
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getUpcId() {
+		return upcId;
+	}
+
+	public void setUpcId(int upcId) {
+		this.upcId = upcId;
+	}
+
+	public String getRefNo() {
+		return refNo;
+	}
+
+	public void setRefNo(String refNo) {
+		this.refNo = refNo;
+	}
+
+	public Integer getType() {
+		return type;
+	}
+
+	public void setType(Integer type) {
+		this.type = type;
+	}
+
+	public Integer getQuantity() {
+		return quantity;
+	}
+
+	public void setQuantity(Integer quantity) {
+		this.quantity = quantity;
+	}
+
+	public LocalDate getTransDate() {
+		return transDate;
+	}
+
+	public void setTransDate(LocalDate transDate) {
+		this.transDate = transDate;
+	}
+
+	public Integer getOperaterUserId() {
+		return operaterUserId;
+	}
+
+	public void setOperaterUserId(Integer operaterUserId) {
+		this.operaterUserId = operaterUserId;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
 	
 }

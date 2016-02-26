@@ -39,8 +39,9 @@ public class GarmentController {
 	}
 	
 	@RequestMapping(value="get-product",method=RequestMethod.GET)
-	public @ResponseBody  Garment getGarmentProduct(@RequestParam("styleNumber") String styleNumber){
-		return garmentDao.getGarmentProductByStyleNumber(styleNumber);
+	public @ResponseBody  Garment getGarmentProduct(@RequestParam("seasonId") int seasonId,
+													@RequestParam("styleNo") String styleNo){
+		return garmentDao.getGarmentProductByStyleNumber(seasonId,styleNo);
 	}
 
 	@RequestMapping(value="save-product",method=RequestMethod.POST)

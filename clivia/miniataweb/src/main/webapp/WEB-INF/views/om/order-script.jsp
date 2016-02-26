@@ -5,8 +5,18 @@
  //SO
 orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http, $q, $state,consts,cliviaDDS){
 	var _order={
-			dataSet:{info:{},items:[],deleteds:[]},
-			company:{info:{},contacts:new kendo.data.ObservableArray([]) },
+			dataSet:{
+					info:{},
+					items:[],
+					deleteds:[]
+				},
+				
+			company:{
+					info:{},
+					contacts:[],
+					buyerDataSource:new kendo.data.DataSource({data:[]}),					
+				},
+				
 			setting:{
 				user:{
 					id:1000,
@@ -19,7 +29,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 				
 				url:{
 					base:consts.baseUrl,
-					order:consts.baseUrl+"order/",
+					order:consts.baseUrl+"im/",
 					library:consts.baseUrl+"library/",
 					},
 				layout:{
@@ -37,7 +47,9 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 				
 			dds:{
 				garment:cliviaDDS.getDict("garment"),
-				image:cliviaDDS.createDict("image",consts.baseUrl+"data/libImage/","onDemand")
+				image:cliviaDDS.createDict("image",consts.baseUrl+"data/libImage/","onDemand"),
+				brand:cliviaDDS.getDict("brand"),
+				season:cliviaDDS.getDict("season"),
 				},
 				
 			instance:{
@@ -58,6 +70,10 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 		 for(var i=0;i<setting.registeredOrderItems.length;i++)
 			 if(setting.registeredOrderItems[i].id===id){
 				 item=setting.registeredOrderItems[i];
+/* 				 if(item.itemType==="lineItem" && item.itemType!=="Generic"){
+					 var a=item.spec.split(":");
+					 item.spec+=";"+getCurrentSeason(a[1]);
+				 } */
 				 break;
 			 }
 		return item;
@@ -75,8 +91,12 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
     }
     
 	_order.clearDataSet=function(){
-
-		dataSet.info={orderId:0,orderNumber:'',customerId:''};
+		var info=dataSet.info;
+		
+		for(var p in info)
+		    if(info.hasOwnProperty(p))
+		        info[p] = null;
+		
 		dataSet.items.splice(0,dataSet.items.length);
 		for(var i=0;i<_order.setting.registeredItemTypes.length;i++){
 			var dt=dataSet[_order.setting.registeredItemTypes[i].name+"s"];
@@ -109,17 +129,30 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 				});
 			
 			url="../data/companyContactDao/call/findListByCompanyId?param=i:"+companyId;
-			var buyers=_order.company.contacts;
-			buyers.splice(0,buyers.length);
+
+			_order.company.contacts=[];
 			$http.get(url).
 				success(function(data, status, headers, config) {
 					if(data){
+						_order.company.contacts=data;
+						var buyers=[];
 						for(var i=0;i<data.length;i++){
-							buyers.push(data[i])
+							buyers.push(data[i].fullName)
 						}
-						if(data.length>0 && !_order.dataSet.info.id){
-							_order.dataSet.info.buyer=data[0].fullName;
-						}
+						
+						//PROBABEALY A KENDO'S BUG HERE
+						//AFTER SET DATA TO DATASOURCE, THE VALUE OF THE COMBOBOX WAS SET TO "" (EMPTY STRING),
+						//IF THE COMBOBOX IS CLICKED ONCE(SHOW UP THE DOPDOWN LSIT), THERE IS NO SUCH PROBLEM,
+						//SO WE KEEP THE VALUE OF BUYER AND SET IT BACK AFTER CHANGING DATA OF DATASOURCE  
+						var temp=_order.dataSet.info.buyer;
+						_order.company.buyerDataSource.data(buyers);
+						if(_order.dataSet.info.buyer!==temp)
+							_order.dataSet.info.buyer=temp;
+						
+						//auto set the first contact as buyer if there's only one contact 
+ 						//if(data.length>0 && !_order.dataSet.info.id){
+						//	_order.dataSet.info.buyer=data[0].fullName;
+						//}
 					}
 				}).
 				error(function(data, status, headers, config) {
@@ -157,8 +190,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 		var dataTable=dataSet[dataTableName];
 		if(dataTable){
 	    	for(var i=0;i<dataTable.length;i++){
-	    		dataTable[i].id="";
-	    		dataTable[i].orderId=0;
+	    		dataTable[i].id=null;
+	    		dataTable[i].orderId=null;
 	    	}
 		}
 	}
@@ -192,7 +225,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 	//retrieve data from server with provided orderNumber and populate into order's dataSet
 	_order.retrieve=function(orderNumber){
 
-		var url=setting.url.order+"get-order?number="+orderNumber;
+		var url="get-order?number="+orderNumber;
 		var deferred = $q.defer();
 		
 		$http.get(url).
@@ -211,7 +244,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 	
 	_order.save=function() {
 
-		var url=setting.url.order+"save-order";
+		var url="save-order";
 		
 		/*implement on server isde
 			if(!$scope.order.orderInfo.orderDate)
@@ -235,7 +268,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 	
 	_order.remove=function(){
 
-		var url=setting.url.order+"delete-order";
+		var url="delete-order";
 		var deferred = $q.defer();
 		
 		$http.post(url, dataSet.info.orderNumber).
@@ -279,7 +312,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
  	_order.getOrderItem=function(itemId){
  		var dataItem=null;
  		for(var i=0;i<dataSet.items.length;i++)
- 			if(itemId===dataSet.items[i].orderItemId){
+ 			if(itemId===dataSet.items[i].id){
  				dataItem=dataSet.items[i];
  				break;
  			}
@@ -291,7 +324,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
  		var buttons=instance.itemButtons;
  		var button=null;
  		for(var i=0;i<buttons.length;i++){
- 			if(buttons[i].id==="btn"+item.orderItemId){
+ 			if(buttons[i].id==="btn"+item.id){
  				button=buttons[i];
  				break;
  			}
@@ -300,7 +333,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
  	}
 
  	_order.addOrderItemButton=function(orderItem){
-        button={text:orderItem.title, id: "btn"+orderItem.orderItemId, icon: "insert-n",togglable: true, group: "OrderItem"};
+        button={text:orderItem.title, id: "btn"+orderItem.id, icon: "insert-n",togglable: true, group: "OrderItem"};
         instance.itemButtons.push(button);
         return button;
  	}
@@ -309,8 +342,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
      	var orderItemId= dataSet.items.length+1;
      	var orderItem={
     			orderId:dataSet.info.orderId ,
-    			orderItemId:orderItemId,
-    			lineNumber: orderItemId,
+    			id:orderItemId,
+    			LineNo: orderItemId,
 	     		title:title,
  				type:type,
  				spec:spec

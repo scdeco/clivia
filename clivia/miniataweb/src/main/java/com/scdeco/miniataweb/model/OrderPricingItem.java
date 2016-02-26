@@ -20,12 +20,8 @@ public class OrderPricingItem {
 	@Column(name="OrderItemId")
 	private int orderItemId;
 	
-	@Column(name="OrderPricingItemId")
-	private int orderPricingItemId;
-	
-	
-	@Column(name="LineNumber")
-	private int lineNumber;	
+	@Column(name="LineNo")
+	private int lineNo;	
 	
 	@Column(name="IosId")
 	private int iosId;
@@ -65,6 +61,141 @@ public class OrderPricingItem {
 	
 	@Column(name="Remark")
 	private String remark;
-	
 
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(int orderId) {
+		this.orderId = orderId;
+	}
+
+	public int getOrderItemId() {
+		return orderItemId;
+	}
+
+	public void setOrderItemId(int orderItemId) {
+		this.orderItemId = orderItemId;
+	}
+
+	public int getLineNo() {
+		return lineNo;
+	}
+
+	public void setLineNo(int lineNo) {
+		this.lineNo = lineNo;
+	}
+
+	public int getIosId() {
+		return iosId;
+	}
+
+	public void setIosId(int iosId) {
+		this.iosId = iosId;
+	}
+
+	public String getItemNumber() {
+		return itemNumber;
+	}
+
+	public void setItemNumber(String itemNumber) {
+		this.itemNumber = itemNumber;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public BigDecimal getOrderQty() {
+		return orderQty;
+	}
+
+	public void setOrderQty(BigDecimal orderQty) {
+		this.orderQty = orderQty;
+	}
+
+	public BigDecimal getFinishQty() {
+		return finishQty;
+	}
+
+	public void setFinishQty(BigDecimal finishQty) {
+		this.finishQty = finishQty;
+	}
+
+	public BigDecimal getInvoiceQty() {
+		return invoiceQty;
+	}
+
+	public void setInvoiceQty(BigDecimal invoiceQty) {
+		this.invoiceQty = invoiceQty;
+	}
+
+	public String getUnit() {
+		return unit;
+	}
+
+	public void setUnit(String unit) {
+		this.unit = unit;
+	}
+
+	public BigDecimal getOrderPrice() {
+		return orderPrice;
+	}
+
+	public void setOrderPrice(BigDecimal orderPrice) {
+		this.orderPrice = orderPrice;
+	}
+
+	public BigDecimal getInvoicePrice() {
+		return invoicePrice;
+	}
+
+	public void setInvoicePrice(BigDecimal invoicePrice) {
+		this.invoicePrice = invoicePrice;
+	}
+
+	public BigDecimal getOrderAmt() {
+		return orderAmt;
+	}
+
+	public void setOrderAmt(BigDecimal orderAmt) {
+		this.orderAmt = orderAmt;
+	}
+
+	public BigDecimal getFinishAmt() {
+		return finishAmt;
+	}
+
+	public void setFinishAmt(BigDecimal finishAmt) {
+		this.finishAmt = finishAmt;
+	}
+
+	public BigDecimal getInvoiceAmt() {
+		return invoiceAmt;
+	}
+
+	public void setInvoiceAmt(BigDecimal invoiceAmt) {
+		this.invoiceAmt = invoiceAmt;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+	
 }

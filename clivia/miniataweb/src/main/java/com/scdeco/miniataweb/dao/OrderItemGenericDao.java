@@ -6,10 +6,10 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 
 public class OrderItemGenericDao<T> extends GenericDao<T> {
-	public List<T> FindListByOrderItemId(Integer orderId,Integer orderItemId) {
+	public List<T> FindListByOrderItemId(Integer orderItemId) {
 		List<T> list=this.findList(super.createCriteria()
-				.add(Restrictions.eq("orderId", orderId))
-				.add(Restrictions.eq("orderItemId", orderItemId)));
+				.add(Restrictions.eq("orderItemId", orderItemId))
+				.addOrder(Order.asc("lineNo")));
 		return list;
 	}
 
@@ -17,7 +17,7 @@ public class OrderItemGenericDao<T> extends GenericDao<T> {
 		List<T> list=this.findList(super.createCriteria()
 				.add(Restrictions.eq("orderId", orderId))
 				.addOrder(Order.asc("orderItemId"))
-				.addOrder(Order.asc("lineNumber")));
+				.addOrder(Order.asc("lineNo")));
 		return list;
 	}	
 

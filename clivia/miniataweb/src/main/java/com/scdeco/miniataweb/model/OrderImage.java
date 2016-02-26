@@ -19,8 +19,8 @@ public class OrderImage {
 	@Column(name="OrderItemId")
 	private int orderItemId;
 	
-	@Column(name="LineNumber")
-	private int lineNumber;
+	@Column(name="LineNo")
+	private int lineNo;
 	
 	@Column(name="Remark", length=255)
 	String remark;
@@ -52,12 +52,12 @@ public class OrderImage {
 		this.orderItemId = orderItemId;
 	}
 
-	public int getLineNumber() {
-		return lineNumber;
+	public int getLineNo() {
+		return lineNo;
 	}
 
-	public void setLineNumber(int lineNumber) {
-		this.lineNumber = lineNumber;
+	public void setLineNo(int lineNo) {
+		this.lineNo = lineNo;
 	}
 
 	public String getRemark() {
@@ -75,6 +75,6 @@ public class OrderImage {
 	public void setImageId(int imageId) {
 		this.imageId = imageId;
 	}
-	
+
 	
 }

@@ -4,7 +4,7 @@
 
 			<li>
 		    	<label for="Buyer">Buyer:</label>
-				<input kendo-combobox name="buyer" k-options="buyerOptions"  style="width:100%;" ng-model="SO.dataSet.info.buyer" ng-trim="true">
+				<input text-combobox name="buyer" style="width:100%;" c-options="buyerOptions" ng-model="SO.dataSet.info.buyer">
 			</li>
 			<li>
 				<label for="orderName">Order Name:</label>
@@ -26,11 +26,11 @@
 			</li>
 			<li>
 		    	<label for="rep">Representative:</label>
-				<auto-combobox name="rep"  style="width:100%;" c-options="repOptions" ng-model="SO.dataSet.info.repId">
+				<map-combobox name="rep"  style="width:100%;" c-options="repOptions" ng-model="SO.dataSet.info.repId">
 			</li>
 			<li ng-show="!!SO.dataSet.info.orderNumber">
 		    	<label for="csr">Issued By:</label>
-				<auto-combobox name="csr" style="width:100%;" ng-readonly="true" c-options="csrOptions" ng-model="SO.dataSet.info.createBy">
+				<map-combobox name="csr" style="width:100%;" ng-readonly="true" c-options="csrOptions" ng-model="SO.dataSet.info.createBy">
 			</li>
 			
 			

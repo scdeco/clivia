@@ -11,24 +11,24 @@ public class OrderLineItem {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
-	
+
 	@Column(name="OrderId")
 	private int orderId;
 	
 	@Column(name="OrderItemId")
 	private int orderItemId;
 	
-	@Column(name="OrderLineItemId")
-	private int orderLineItemId;
+	@Column(name="LinenNo")
+	private int lineNo;
 	
-	@Column(name="LineNumber")
-	private int lineNumber;
+	@Column(name="BrandId")
+	private int brandId;
 	
-	@Column(name="Brand",length=30)
-	private String brand;
+	@Column(name="SeasonId")
+	private int seasonId;
 	
-	@Column(name="StyleNumber",length=20)
-	private String styleNumber;
+	@Column(name="StyleNo",length=20)
+	private String styleNo;
 	
 	@Column(name="Description",length=255)
 	private String description;
@@ -80,15 +80,16 @@ public class OrderLineItem {
 	
 	@Column(name="Qty13")
 	private Integer qty13;
-	
+
+	@Column(name="Qty14")
+	private Integer qty14;
 	
 	@Column(name="Quantity")
 	private Integer quantity;
 		
 	@Column(name="Remark",length=50)
 	private String remark;
-	
-	
+
 	public int getId() {
 		return id;
 	}
@@ -109,40 +110,40 @@ public class OrderLineItem {
 		return orderItemId;
 	}
 
-	public void setOrderItemId(int orderItemId) {
+	public void setOrderItemLid(int orderItemId) {
 		this.orderItemId = orderItemId;
 	}
 
-	public int getOrderLineItemId() {
-		return orderLineItemId;
+	public int getLineNo() {
+		return lineNo;
 	}
 
-	public void setOrderLineItemId(int orderLineItemId) {
-		this.orderLineItemId = orderLineItemId;
+	public void setLineNo(int lineNo) {
+		this.lineNo = lineNo;
 	}
 
-	public int getLineNumber() {
-		return lineNumber;
+	public int getBrandId() {
+		return brandId;
 	}
 
-	public void setLineNumber(int lineNumber) {
-		this.lineNumber = lineNumber;
+	public void setBrandId(int brandId) {
+		this.brandId = brandId;
 	}
 
-	public String getBrand() {
-		return brand;
+	public int getSeasonId() {
+		return seasonId;
 	}
 
-	public void setBrand(String brand) {
-		this.brand = brand;
+	public void setSeasonId(int seasonId) {
+		this.seasonId = seasonId;
 	}
 
-	public String getStyleNumber() {
-		return styleNumber;
+	public String getStyleNo() {
+		return styleNo;
 	}
 
-	public void setStyleNumber(String styleNumber) {
-		this.styleNumber = styleNumber;
+	public void setStyleNo(String styleNo) {
+		this.styleNo = styleNo;
 	}
 
 	public String getDescription() {
@@ -281,6 +282,14 @@ public class OrderLineItem {
 		this.qty13 = qty13;
 	}
 
+	public Integer getQty14() {
+		return qty14;
+	}
+
+	public void setQty14(Integer qty14) {
+		this.qty14 = qty14;
+	}
+
 	public Integer getQuantity() {
 		return quantity;
 	}
@@ -296,6 +305,6 @@ public class OrderLineItem {
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-	
+
 	
 }

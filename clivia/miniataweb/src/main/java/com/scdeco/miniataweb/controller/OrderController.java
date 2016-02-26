@@ -1,6 +1,7 @@
 package com.scdeco.miniataweb.controller;
 
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +15,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.scdeco.miniataweb.dao.DictOrderInsertableItemDao;
+import com.scdeco.miniataweb.dao.EmployeeInfoDao;
 import com.scdeco.miniataweb.dao.OrderDao;
 import com.scdeco.miniataweb.model.DictOrderInsertableItem;
+import com.scdeco.miniataweb.model.EmployeeInfo;
 import com.scdeco.miniataweb.model.OrderClivia;
+import com.scdeco.miniataweb.model.OrderInfo;
 
 
 @Controller
-@RequestMapping("/order/*")
+@RequestMapping("/om/*")
 public class OrderController {
 	
 	@Autowired
@@ -28,6 +32,9 @@ public class OrderController {
 	
 	@Autowired
 	private DictOrderInsertableItemDao dictOrderInsertableItemDao;
+	
+	@Autowired
+	private EmployeeInfoDao employeeInfoDao;
 
 	@RequestMapping(value="/",method=RequestMethod.GET)
 	public String order(Model model) {
@@ -36,7 +43,7 @@ public class OrderController {
 		System.out.println("insertable:"+orderInsertableItems);
 		model.addAttribute("orderInsertableItems",orderInsertableItems);
 		
-		return "order/order";
+		return "om/order";
 	}
 	
 	
@@ -44,7 +51,7 @@ public class OrderController {
 	@RequestMapping(value="{detail}",method=RequestMethod.GET)
 	public String orderMain(@PathVariable String detail) {
 		System.out.println("detail:"+detail);
-		return "order/"+detail;
+		return "om/"+detail;
 	}
 
 	
@@ -62,7 +69,12 @@ public class OrderController {
 	}
 
 	@RequestMapping(value="save-order",method=RequestMethod.POST)
-	public @ResponseBody  OrderClivia saveOrder(@RequestBody OrderClivia order){
+	public @ResponseBody  OrderClivia saveOrder(@RequestBody OrderClivia order,Principal principal){
+		String username=principal.getName();
+		EmployeeInfo employeeInfo=employeeInfoDao.findByUsername(username);
+		OrderInfo orderInfo=order.getInfo();
+		orderInfo.setCreateBy(employeeInfo.getId());
+		
 		orderDao.save(order);
 		return order;
 	}

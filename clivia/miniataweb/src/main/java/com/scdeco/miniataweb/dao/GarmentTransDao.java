@@ -60,7 +60,7 @@ public class GarmentTransDao {
 		GarmentTransInfo  info=garmentTrans.getInfo();
 		if(!(info.getId()>0)){
 			Integer transNumber=cliviaAutoNumberDao.getNextNumber("GarmentTransNumber");
-			info.setTransNumber("GT"+transNumber.toString());
+			info.setTransNo("GT"+transNumber.toString());
 		}else{
 			deleteGarmentTransDetailByTransId(info.getId());
 		}

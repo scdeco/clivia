@@ -3,8 +3,9 @@
 	</form>
 
 	<h3> 
-		Brand:&nbsp;{{dataSet.info.brand}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Style#:&nbsp;<span ng-show="dataSet.info.id">{{dataSet.info.styleNumber}}</span> 
-		<input type="text" id="styleNumber" name="styleNumber" class="k-textbox" ng-model="dataSet.info.styleNumber" ng-hide="dataSet.info.id" capitalize ng-trim="true" required validationMessage="Enter {0}"/>
+		<label style="margin-left:10px;">Style#:</label> 
+		<span ng-show="dataSet.info.id">{{dataSet.info.styleNo}}</span> 
+		<input type="text" id="styleNo" name="styleNo" class="k-textbox" ng-model="dataSet.info.styleNo" ng-hide="dataSet.info.id" capitalize ng-trim="true" required validationMessage="Enter {0}"/>
 	</h3>
 
 	<div kendo-splitter="mainSplitter"  

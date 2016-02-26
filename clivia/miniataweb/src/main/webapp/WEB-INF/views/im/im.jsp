@@ -23,7 +23,7 @@
 		style="height:900px;">
 		 
 	<div id="top-pane">
-			Brand: <brand-input name="garmentBrandInput" ng-model="inventory.brand"></brand-input>
+			Brand: <brand-dropdownlist c-options="{name:'brandInput'}"  ng-model="inventory.brandId" ></brand-dropdownlist>
 	</div>	<!-- top pane of outter splitter -->
 	
 	<div id="middle-pane">
@@ -61,12 +61,12 @@
 	 	k-pinned="true"
 	 	k-modal="false">
 
-	<div transaction-entry="transactionEntry"	c-brand="inventory.brand" ></div>
+	<!-- <div transaction-entry="transactionEntry"	c-brand-id="inventory.brandId" ></div> -->
 </div>
 
 <div kendo-window="garmentProductWindow"
-		k-width="600"
-	 	k-height="400"
+		k-width="1200"
+	 	k-height="900"
 	 	k-position="{top: 50, left: 100 }"	
 	 	k-resizable="true"
 		k-draggable="true"
@@ -77,7 +77,7 @@
 	 	k-pinned="true"
 	 	k-options="garmentProductWindowOptions">
 
-	<div garment-product="garmentProduct" c-brand="inventory.brand"></div>
+	<div garment-product="garmentProduct" c-brand-id="inventory.brandId" ></div>
 </div>
 
 

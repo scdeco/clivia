@@ -4,7 +4,7 @@
 	</form>
 
 	<h3> 
-		Brand:&nbsp;{{dataSet.info.brand}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Transaction#:&nbsp;{{dataSet.info.transNumber}}
+		Brand:&nbsp;{{dataSet.info.brandId}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Transaction#:&nbsp;{{dataSet.info.transNumber}}
 	</h3>
 <!-- 	<brand-input name="garmentBrandInput" ng-model="dataSet.info.brand"></brand-input> -->
 	<table >
