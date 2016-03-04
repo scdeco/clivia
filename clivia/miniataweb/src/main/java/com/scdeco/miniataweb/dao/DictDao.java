@@ -24,7 +24,6 @@ public class DictDao {
 		return sessionFactory.getCurrentSession();
 	}
 
-	
 	/*return a list[text,value]*/
 	@SuppressWarnings("rawtypes")
 	public List getDict(String from,String textField,String valueField,String orderBy){

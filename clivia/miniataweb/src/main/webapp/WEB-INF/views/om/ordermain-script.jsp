@@ -38,7 +38,16 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	                type: "button",
 	                text: "Print",
 	                id:"btnPrint"
-	            
+	            }, {
+	                type: "separator",
+	            }, {
+	                type: "button",
+	                text: "Upc",
+	                id:"btnUpc",
+	                click: function(e) {
+		                	$scope.generateUpcs();
+		                }
+	                
 	       }]
 	    };	
 	$scope.companyOptions={
@@ -48,28 +57,34 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 		minLength:1,
 		url:'../datasource/companyInfoDao/read',
 	}
-     
+
+	$scope.generateUpcs=function(){
+		SO.generateUpcs();
+	};	
+	
+	
 	$scope.newOrder=function(){
 		SO.clear();
-		$state.go('main.blankitem');
+		SO.setCurrentOrderItem(0);		//$state.go('main.blankitem');
 	};	
 	
 	
 	$scope.getOrder=function(){
+		
 		if(!!$scope.searchOrderNumber){
 			SO.clear();
 			SO.retrieve($scope.searchOrderNumber)
 				.then(function(data){
 				    if(data){
-			    		for(var i=0;i<SO.dataSet.items.length;i++)
-			    			SO.addOrderItemButton(SO.dataSet.items[i]);
+				    	var items=SO.dataSet.items;
+			    		for(var i=0;i<items.length;i++)
+			    			SO.addOrderItemButton(items[i]);
 
 			    		//retrieve all items here
 			    		//SO.dict.getRemoteImages();
 			    		
-			    		
-			    		
-				    	SO.setCurrentOrderItem(0);
+			    		var orderItemId=items.length>0?items[0].id:0;
+				    	SO.setCurrentOrderItem(orderItemId);
 				    }else{
 				    	alert("Can not find order:"+$scope.searchOrderNumber+".");
 				    }
@@ -86,11 +101,23 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	}
 	
 	$scope.saveOrder=function(){
-
+		
 		SO.save()
 			.then(function(data){
 			    if(data){
-		    	
+			    	//adjust new orderitem button orderItemId value
+			    	
+			    	var items=SO.dataSet.items;
+			    	var currentId=0;
+			    	for(var i=0,item,button;i<items.length;i++){
+			    		item=items[i];
+			    		button=SO.instance.itemButtons[item.lineNo-1];
+			    		button.orderItemId=item.id;
+			    		if(button.selected)
+			    			currentId=button.orderItemId;
+			    	}		
+		    		SO.setCurrentOrderItem(currentId);
+			    	
 			    }else{
 		    		alert("Can not find order:"+$scope.searchOrderNumber+".");
 			    }

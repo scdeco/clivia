@@ -220,7 +220,7 @@ directive("textCombobox",function(){
 
 
 directive("brandDropdownlist",["cliviaDDS",function(cliviaDDS){
-	var template='<select kendo-dropdownlist k-options="inputOptions" k-ng-delay="inputOptions" ></select>';
+	var template='<select kendo-dropdownlist k-options="inputOptions" k-ng-delay="inputOptions"></select>';
 	return {
 		restrict:"EA",
 		replace:true,
@@ -243,21 +243,21 @@ directive("brandDropdownlist",["cliviaDDS",function(cliviaDDS){
 			}
 			
 			scope.dict.getItems()
-				.then(function(items){
-					var thisItems=[];
-					for(var i=0,item;i<items.length;i++){
-						if(items[i].hasInventory){
-							item={id:items[i].id,name:items[i].name};
-							thisItems.push(item);
-						}
+			.then(function(items){
+				var thisItems=[];
+				 
+				for(var i=0;i<items.length;i++){
+					if(items[i].hasInventory){
+						thisItems.push(items[i]);
 					}
-					scope.inputOptions={
-				            dataTextField: "name",
-				            dataValueField: "id",			
-							dataSource:{data:thisItems}, 
-					};
-			})},
-			
+				}
+				scope.inputOptions={
+			            dataTextField: "name",
+			            dataValueField: "id",			
+						dataSource:{data:thisItems}, 
+				};
+		})},
+
 		controller: ['$scope', function($scope) {
 			var scope=$scope;
 			scope.dict=cliviaDDS.getDict("brand");
@@ -289,14 +289,13 @@ directive("seasonDropdownlist",["cliviaDDS",function(cliviaDDS){
 				return temp?temp.text():"";
 			}
 			
-			cliviaDDS.getDict("season").getItems()
+			scope.dict.getItems()
 				.then(function(items){
 					var thisItems=[];
 					 
-					for(var i=0,item;i<items.length;i++){
+					for(var i=0;i<items.length;i++){
 						if(items[i].brandId===scope.brandId){
-							item={id:items[i].id,name:items[i].name};
-							thisItems.push(item);
+							thisItems.push(items[i]);
 						}
 					}
 					scope.inputOptions={
@@ -580,6 +579,7 @@ directive('checkSelect', ['$compile', function ($compile) {
 	 return directive;
 }]).
 
+
 directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(GarmentGridWrapper,cliviaDDS,util){
 
 	var directive={
@@ -587,12 +587,13 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 			replace:false,
 			scope:{
 				cName:'@garmentGrid',
-				cBrandId:'=',
-				cSeasonId:'=',
+				cBrand:'=',
+				cSeason:'=',
 				cEditable:'=',
 				cDataSource:'=',
 				cPageable:'=',
 				cNewItemFunction:'&',
+				cRegisterDeletedItemFunction:'&',
 			},
 			
 			templateUrl:'../common/garmentgrid',
@@ -600,9 +601,16 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 				
 				scope.gridName=scope.cName+"Grid";
 				scope.inputWindowName=scope.cName+"InputWindow";
-				
+
 				var ggw=new GarmentGridWrapper(scope.gridName);	
-				ggw.setBrandSeason(scope.cBrandId,scope.cSeasonId);		//columns is set in setBrand,so ggw.setColumns(gridColumns) is not needed here.
+				ggw.setBrandSeason(scope.cBrand,scope.cSeason);		//columns is set in setBrand,so ggw.setColumns(gridColumns) is not needed here.
+
+				scope.$watch("cSeason",function(newValue,oldValue){
+					if(newValue && newValue!==oldValue){
+						ggw.setBrandSeason(scope.cBrand,scope.cSeason);		//columns is set in setBrand,so ggw.setColumns(gridColumns) is not needed here.
+						ggw.grid.setOptions({columns:ggw.gridColumns});
+					}
+				});
 				
 				scope.setting={};
 				scope.setting.editing=true;
@@ -623,6 +631,9 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 			        			name:scope.cName,
 			        			grid:widget,
 			        			gridWrapper:ggw,
+			        			hasRow:function(){
+			        				return !!(ggw.getRowCount());
+			        			},
 			        			getTotal:function(){
 			        				return ggw.total
 			        				},
@@ -630,10 +641,10 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 			        				ggw.resizeGrid(gridHeight);
 			        			},
 			        			
-			        			create:function(brand){
+ /* 			        			create:function(brand){
 			        				ggw.setBrand(brand);
 			        				ggw.grid.setOptions({columns:ggw.gridColumns});
-			        			},
+			        			}, */
 			        			
 			        			
 			        	}
@@ -668,6 +679,8 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 				  	        		e.preventDefault();
 			 		       			if(e.values.styleNo===";"){
 					       				ggw.copyPreviousRow();
+						        		ggw.calculateTotal(e.model);
+					       				scope.$apply();	//show changes
 					       		 	}else {
 						          		e.model.set("styleNo",e.values.styleNo.toUpperCase().trim());
 						          		ggw.setCurrentGarment(e.model);
@@ -753,7 +766,7 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 				
 				var addRow=function(isInsert){
 					var item=newItem();
-					item.brand=scope.cBrand;
+					item.brandId=scope.cBrand.id;
 				    ggw.addRow(item,isInsert);
 				}
 							
@@ -761,7 +774,13 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 					var dataItem=ggw.getCurrentDataItem();
 				    if (dataItem) {
 				        if (confirm('Please confirm to delete the selected row.')) {
+					    	if(dataItem.id && scope.cRegisterDeletedItemFunction){
+					    		var register=scope.cRegisterDeletedItemFunction();
+					    		register(dataItem);
+					    	}
 							ggw.deleteRow(dataItem);
+							ggw.calculateTotal();
+							scope.$apply();
 				        }
 				    }
 			   		else {
@@ -800,6 +819,190 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 			}
 			
 	}
+	return directive;
+}]).
+
+directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrapper,cliviaDDS,util){
+	var directive={
+			restrict:'EA',
+			replace:false,
+			scope:{
+				cName:'@billGrid',
+				cEditable:'=',
+				cDataSource:'=',
+				cPageable:'=',
+				cNewItemFunction:'&',
+				cRegisterDeletedItemFunction:'&',
+			},
+			
+			templateUrl:'../common/billgrid',
+			link:function(scope,element,attrs){	
+				scope.gridName=scope.cName+"Grid";
+
+				var bgw=new BillGridWrapper(scope.gridName);	
+				bgw.setColumns();
+				
+				scope.$on("kendoWidgetCreated", function(event, widget){
+
+					if (widget ===scope[scope.gridName]) {
+			        	bgw.wrapGrid(widget);
+			        	//bgw.calculateTotal();
+
+			        	if(scope.cName){
+				        	scope.$parent[scope.cName]={
+			        			name:scope.cName,
+			        			grid:widget,
+			        			gridWrapper:bgw,
+			        			hasRow:function(){
+			        				return !!(bgw.getRowCount());
+			        				},
+			        			getTotal:function(){
+			        				return bgw.total
+			        				},
+			        			resize:function(gridHeight){
+			        				bgw.resizeGrid(gridHeight);
+			        				},
+				        	}
+			        	}
+			        }
+			    });	
+
+				scope.setting={};
+				scope.setting.editing=true;
+				
+				scope.gridSortableOptions = bgw.getSortableOptions();
+				
+				scope.gridOptions = {
+						autoSync: true,
+				        columns: bgw.gridColumns,
+				        dataSource: scope.cDataSource,
+				        editable: scope.cEditable,
+				        pageable:scope.cPageable,
+				        selectable: "cell",
+				        navigatable: true,
+				        resizable: true,
+					//events:		 
+				       	dataBinding: function(e) {
+				       		console.log("event binding:"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
+				       	},
+				       	
+				       	dataBound:function(e){
+				       		console.log("event databound:");
+				       	},
+				       	
+		 		       	save: function(e) {
+		 		       		if(typeof e.values.snpId!== 'undefined'){
+		 		       			var unit="";
+		 		       			if(e.values.snpId){
+		 		       				var snpItem=bgw.getSnpItem(e.values.snpId);
+		 		       				unit=(snpItem)?snpItem.unit:"";		 		       				
+		 		       			}
+		 		       			e.model.set("unit",unit);
+		 		       		}else{
+			 		       		var field;
+
+					       		if(typeof e.values.orderQty!== 'undefined')
+					       			field="orderQty";
+					       		if(typeof e.values.orderPrice!== 'undefined')
+					       			field="orderPrice";
+					       		
+					       		if(field){
+					       			e.model[field]=e.values[field];
+									bgw.calculateTotal(e.model);				       			
+					       		}
+		 		       		}
+				         },
+				       	
+				         //row or cloumn changed
+				       	change:function(e){
+/* 				       		var row=ggw.getCurrentRow();
+				       		console.log("event change:");
+				       		var	newRowUid=row?row.dataset["uid"]:"";
+			        		if((typeof newRowUid!=="undefined") && (ggw.currentRowUid!==newRowUid)){		//row changed
+			        			ggw.currentRowUid=newRowUid;
+			        			var dataItem=ggw.getCurrentDataItem();
+			        			if(dataItem){
+				        			ggw.setCurrentGarment(dataItem);
+				        			//$state.go('main.lineItem.detail',{orderItemId:orderItemId,lineItemId:dataItem.lineNumber});
+			        			}
+			        		};
+ */				       	},
+				       	
+				        edit:function(e){
+				        	console.log("event edit:");
+						    var editingCell=bgw.getEditingCell();
+						    if(!!editingCell){
+						    	this.select(editingCell);
+					        	console.log("set editing cell:");
+						    }
+				        }
+
+			}; //end of garmetnGridOptions
+
+								
+			scope.gridContextMenuOptions={
+				closeOnClick:true,
+				filter:".gridLineNumber,.gridLineNumberHeader",
+				target:'#'+scope.gridName,
+				select:function(e){
+				
+					switch(e.item.id){
+						case "menuAdd":
+							scope.setting.editing=true;
+							if(!bgw.isEditing)
+								bgw.enableEditing(true);
+							addRow(false);
+							break;
+						case "menuInsert":
+							addRow(true);
+							break;
+						case "menuDelete":
+							deleteRow();
+							break;
+					}
+					
+				}
+				
+			};
+			
+			
+			var newItem=function(){
+				if(!scope.cNewItemFunction)
+					scope.cNewItemFunction=function(){
+							return {};
+						};
+				var item=scope.cNewItemFunction();
+				return item();
+			}
+			
+			var addRow=function(isInsert){
+				var item=newItem();
+			    bgw.addRow(item,isInsert);
+			}
+						
+			var deleteRow=function (){
+				var dataItem=bgw.getCurrentDataItem();
+			    if (dataItem) {
+			        if (confirm('Please confirm to delete the selected row.')) {
+				    	if(dataItem.id && scope.cRegisterDeletedItemFunction){
+				    		var register=scope.cRegisterDeletedItemFunction();
+				    		register(dataItem);
+				    	}
+						bgw.deleteRow(dataItem);
+						bgw.calculateTotal();
+						scope.$apply();
+			        }
+			    }
+		   		else {
+		        	alert('Please select a  row to delete.');
+		   		}
+			    
+			}
+
+				
+		}	//end of billGrid:link
+	}
+	
 	return directive;
 }]);
 

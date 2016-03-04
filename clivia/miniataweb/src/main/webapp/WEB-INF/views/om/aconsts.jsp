@@ -1,6 +1,8 @@
 <script>
 	orderApp.constant("consts",{
 		
+		maxTmpId:10000,
+		
 		baseUrl:"/miniataweb/",
 		
 		registeredItemTypes:[{
@@ -13,7 +15,7 @@
 				name:"designItem",	
 				hasDetail:false
 			},{
-				name:"pricingItem",	
+				name:"billItem",	
 				hasDetail:false
 			},{
 				name:"fileItem",
@@ -24,25 +26,27 @@
 			}],
 			
 		registeredOrderItems:[{ 
+				 text: "Bill", 
+				 icon: "insert-n",
+				 id:"billitem",
+				 spec:"",
+				 itemType: "billItem"
+			},{
+				 type: "separator" 
+			},{
 			   	 text: "Line Item", 
 				 icon: "insert-n",
 				 id: "lineitem",
 				 spec: "Generic",
 				 itemType: "lineItem"		//datatable
 			},{
-				 text: "DD Line Item", 
+				 text: "Double Diamond", 
 				 icon: "insert-n",
 				 id:"lineitemdd",
 				 spec:"2",				//brandId
 				 itemType:"lineItem"
 			},{
 				type: "separator" 
-			},{
-				 text: "Pricing Item", 
-				 icon: "insert-n",
-				 id:"pricingitem",
-				 spec:"",
-				 itemType: "pricingItem"
 			},{
 				text: "Design", 
 				icon: "insert-m",

@@ -5,7 +5,7 @@ var crmApp = angular.module("crmApp",
 		
 crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,util){
 	
-	var searchTemplate='Select:<auto-combobox  style="width:300px;"  c-options="search.options" ng-model="search.companyId"> </auto-combobox>'+
+	var searchTemplate='Select:<map-combobox  style="width:300px;"  c-options="search.options" ng-model="search.companyId"> </map-combobox>'+
 	'<span ng-click="getCompany()" class="k-icon k-i-search"></span>';
 
 	var baseUrl="";	

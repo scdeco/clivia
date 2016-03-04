@@ -13,7 +13,6 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 	var upcNextItemRefTemplate='Next Item Ref#:<input type="text" name="upcNextItemRef" class="k-textbox"  ng-model="upcNextItemRef" style="width: 140px;"/>';
 	
 	var baseUrl="";
-
 	
 	var directive={
 			restrict:'EA',
@@ -307,11 +306,24 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 							}
 						}]};
 				
+				if($scope.cName)
+		        	$scope.$parent[$scope.cName]=$scope;		//expose this scope to parent scope with cName
 				
 				$scope.upcPrefix="671309";
 				$scope.upcNextItemRef="02087";
 
 				$scope.dictSeason=cliviaDDS.getDict("season");
+
+          	 	$scope.currentSetting={
+          	 			brandId:$scope.cBrandId,
+          	 			seasonId:$scope.dictSeason.getCurrentSeasonIdL($scope.cBrandId),
+          	 	}
+				
+				$scope.dataSet={
+						info:{brandId:$scope.cBrandId,seasonId:-1},
+						upcItems:new kendo.data.ObservableArray([]),
+						deletedUpcItems:[],
+					}
 				
           	 	$scope.$watch('dataSet.info.seasonId',function(newValue,oldValue){
      	 			if(newValue){
@@ -320,16 +332,7 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
          	 			
      	 		});			
           	 	
-          	 	$scope.currentSetting={
-          	 			brandId:$scope.cBrandId,
-          	 			seasonId:$scope.dictSeason.getCurrentSeasonIdL($scope.cBrandId),
-          	 	}
 
-				$scope.dataSet={
-							info:{brandId:$scope.cBrandId,seasonId:-1},
-							upcItems:new kendo.data.ObservableArray([]),
-							deletedUpcItems:[],
-						}
 				
 				$scope.search={styleNo:""};
 
@@ -340,7 +343,6 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 				
 				$scope.ugw=new UpcGridWrapper("productUpcGrid");
          	 	
-	        	$scope.$parent[$scope.cName]=$scope;		//expose this scope to parent scope with cName
 
 				$scope.$on("kendoWidgetCreated", function(event, widget){
 						if (widget ===$scope.productUpcGrid) {
@@ -424,7 +426,7 @@ imApp.directive('transactionEntry',["$http","cliviaDDS",function($http,cliviaDDS
 			replace:false,
 			scope:{
 				cName:'@transactionEntry',
-				cBrand:'=',
+				cBrandId:'=',
 			},
 			templateUrl:'transaction',
 			link:function(scope,element,attrs){
@@ -452,7 +454,7 @@ imApp.directive('transactionEntry',["$http","cliviaDDS",function($http,cliviaDDS
 
 				scope.newItemFunction=function(){
 				    return {
-					    	brand:scope.dataSet.info.brand,
+					    	brandId:scope.dataSet.info.brandId,
 					    };
 				}
 			    
@@ -554,6 +556,9 @@ imApp.directive('transactionEntry',["$http","cliviaDDS",function($http,cliviaDDS
 			controller:['$scope',"cliviaDDS","DataDict", function($scope,cliviaDDS,DataDict) {
 				var scope=$scope;
 				
+				if(scope.cName)
+		        	scope.$parent[scope.cName]=scope;
+				
 				scope.transToolbarOptions = {items:[{
 						type: "button",
 						text: "New",
@@ -582,21 +587,16 @@ imApp.directive('transactionEntry',["$http","cliviaDDS",function($http,cliviaDDS
 				}]};				
 				
 				scope.dictGarment=cliviaDDS.getDict("garment");
+				
 				scope.dictUpc=new DataDict("garemnt-upc","","lazy");
 				
 				scope.lineItems=new kendo.data.ObservableArray([]);
 
-          	 	scope.$watch('dataSet.info.brand',function(newValue,oldValue){
+          	 	scope.$watch('dataSet.info.brandId',function(newValue,oldValue){
 	     	 			if(scope.garmentEntryGrid && newValue!==oldValue)
 	         	 			scope.garmentEntryGrid.create(newValue);
 	     	 		});			
 
-          	 	scope.$on("kendoWidgetCreated", function(event, widget){
-			        if (scope.garmentEntryGrid && widget ===scope.garmentEntryGrid.grid) {
-			        	if(scope.cName)
-				        	scope.$parent[scope.cName]=scope;
-			        }
-			    });			
 				
 			}]
 	}
@@ -956,8 +956,14 @@ imApp.factory("inventory",["InventoryGridWrapper","UpcGridWrapper",function(Inve
 }]);
 
 
-imApp.controller("inventoryCtrl",["$scope","inventory" ,function($scope,inventory){
+imApp.controller("inventoryCtrl",["$scope","inventory","cliviaDDS",function($scope,inventory,cliviaDDS){
 	$scope.inventory=inventory;
+	var brandDict=cliviaDDS.getDict("brand");
+	brandDict.getItem("id",inventory.brnadId)
+		.then(function(brand){
+			inventory.brand=brand;
+		});
+	
 	inventory.inventoryGW.doubleClickEvent=function(e) {
     	var di=$scope.inventory.inventoryGW.getCurrentDataItem();
      	if(di){
@@ -1041,8 +1047,10 @@ imApp.controller("inventoryCtrl",["$scope","inventory" ,function($scope,inventor
 		}
 	});	
 	
-	$scope.$watch("inventory.brandId",function(){
-		inventory.load();
+	$scope.$watch("inventory.brandId",function(newValue,oldValue){
+		var i=0;
+		inventory.brand=$scope.brandInput.dict.getLocalItem("id",inventory.brnadId);
+		//inventory.load();
 	});
 	
 	$scope.openTransaction=function(){

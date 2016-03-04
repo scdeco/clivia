@@ -61,7 +61,7 @@
 	 	k-pinned="true"
 	 	k-modal="false">
 
-	<!-- <div transaction-entry="transactionEntry"	c-brand-id="inventory.brandId" ></div> -->
+	 <div transaction-entry="transactionEntry"	c-brand-id="inventory.brandId" ></div>
 </div>
 
 <div kendo-window="garmentProductWindow"

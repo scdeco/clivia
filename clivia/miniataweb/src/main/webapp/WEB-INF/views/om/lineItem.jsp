@@ -8,17 +8,23 @@
 				style="height: 550px; width: 100%;">    
 				
 		<div style="margin:6px;"><!-- top pane-->
-		
-		    <label>{{garmentBrandName}} <span>--{{seasonInput.getSeasonName()}}</span></label> 
-		    <label style="margin-left:20px;">Season:</label>
-		    	<!-- ng-show="garmentGrid.getRowCount()" -->
+			<b>
+		    <label>{{brand.name}} <span ng-show="garmentGrid.hasRow()">--{{season.name}}</span></label> 
 		    
-		    <season-dropdownlist  c-options="{name:'seasonInput',brandId:garmentBrandId}" ng-model="garmentSeasonId" ng-hide="garmentGrid.getRowCount()"></season-dropdownlist>
+	    	<label style="margin-left:20px;" ng-hide="garmentGrid.hasRow()">Season: 
+	    		<season-dropdownlist  
+	    			c-options="{name:'seasonInput',brandId:brand.id}" 
+	    			ng-model="seasonId">
+	    			
+	    		</season-dropdownlist>
+	    	</label>
 
+		    <label style="margin-left:40px;">Total:&nbsp;{{garmentGrid.getTotal()}}&nbsp;pcs</label>
+
+			</b>
 		    <label style="margin-left:20px;"><input type="checkbox"  style="vertical-align:middle;"
 		    	   ng-model="setting.showUsedSizeRangeOnly"
 		    	   ng-click="onClickLineItemEditing()">Show used size range only</label>
-		    <label style="margin-left:40px;">Total:&nbsp;{{garmentGrid.getTotal()}}&nbsp;pcs</label>
 
 	    </div> <!-- end of top pane-->
     
@@ -27,9 +33,10 @@
     					c-editable="true" 
     					c-data-source="garmentGridDataSource" 
     					c-pageable="false" 
-    					c-brand-id="garmentBrandId"
-    					c-season-id="garmentSeasonId" 
-    					c-new-item-function="newItemFunction"></div> 
+    					c-brand="brand"
+    					c-season="season" 
+    					c-new-item-function="newItemFunction"
+    					c-register-deleted-item-function="registerDeletedItemFunction"></div> 
    		</div> 	
  		
  		

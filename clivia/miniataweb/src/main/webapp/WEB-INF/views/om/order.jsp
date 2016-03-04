@@ -17,7 +17,7 @@
 	<%@include file="orderinfo-script.jsp"%>
 	<%@include file="orderitem-script.jsp"%>
 
- 	<%@include file="pricingitem-script.jsp"%> 
+ 	<%@include file="billitem-script.jsp"%> 
 	<%@include file="lineitem-script.jsp"%> 
 	<%@include file="lineitemdetail-script.jsp"%> 
 	<%@include file="imageitem-script.jsp"%> 

@@ -31,7 +31,7 @@ public class DataController {
     	return result;
     }
 	
-	
+	//get unique record by value of id or key property202507
     @SuppressWarnings("rawtypes")
 	@RequestMapping(value="/{daoName}/getitem",method = RequestMethod.GET)
     public  @ResponseBody  Object  getItem(@PathVariable String daoName,
@@ -43,6 +43,7 @@ public class DataController {
        return result;
     }
 	
+    //get set of unique records by set of vaule of id or key property
     @SuppressWarnings("rawtypes")
 	@RequestMapping(value="/{daoName}/getitems",method = RequestMethod.GET)
     public  @ResponseBody  List  getItems(@PathVariable String daoName,
@@ -60,8 +61,16 @@ public class DataController {
     public  @ResponseBody  List  sql(@PathVariable String daoName,
     								  @RequestBody SqlRequest sqlRequest){
 
-        GenericDao dao=getDao(daoName);
-    	List result=dao.findList(sqlRequest);
+    	List result=null;
+    	
+    	if("generic".equals(daoName.toLowerCase().trim())){
+    		GenericDao dao=getDao("dictGarmentBrand");
+    		result=dao.findListBySQL(sqlRequest);
+    	}else{
+    		GenericDao dao=getDao(daoName);
+    		result=dao.findList(sqlRequest);
+    	}
+    	
     	return result;
     }
     

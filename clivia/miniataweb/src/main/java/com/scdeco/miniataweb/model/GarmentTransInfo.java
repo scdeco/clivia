@@ -22,8 +22,8 @@ public class GarmentTransInfo {
 	@Column(name="TransNo", length=20, unique=true, nullable=false)	
 	private String transNo;
 	
-	@Column(name="Brand",length=20)
-	private String brand;
+	@Column(name="BrandId",length=20)
+	private String brandId;
 	
 	
 	@Column(name="Description")
@@ -74,12 +74,12 @@ public class GarmentTransInfo {
 		this.transNo = transNo;
 	}
 
-	public String getBrand() {
-		return brand;
+	public String getBrandId() {
+		return brandId;
 	}
 
-	public void setBrand(String brand) {
-		this.brand = brand;
+	public void setBrandId(String brandId) {
+		this.brandId = brandId;
 	}
 
 	public String getDescription() {

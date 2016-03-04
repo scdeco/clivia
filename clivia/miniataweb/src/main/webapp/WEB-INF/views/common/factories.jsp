@@ -3,9 +3,7 @@
 
 clivia=angular.module("clivia",["kendo.directives" ]);
 
-clivia.
-
-factory("util",["$http","$q",function($http,$q){
+clivia.factory("util",["$http","$q",function($http,$q){
 	return {
 		findIndex:function(items,propertyName,propertyValue){
 			var result=-1;
@@ -48,18 +46,28 @@ factory("util",["$http","$q",function($http,$q){
 		},
 		
 		getRemote:function(url,data){
+			var processSuccess=function(data, status, headers, config) {
+				if(data){
+					deferred.resolve(data)
+				}else{
+					deferred.reject("error:1");
+				}
+			}
+			var processError=function(data, status, headers, config) {
+				deferred.reject("error:2");
+			}
+			
 			var deferred = $q.defer();
-			$http.get(url).
-				success(function(data, status, headers, config) {
-					if(data){
-						deferred.resolve(data)
-					}else{
-						deferred.reject("error:1");
-					}
-				}).
-				error(function(data, status, headers, config) {
-					deferred.reject("error:2");
-				});			
+			
+			if(!data){
+				$http.get(url).
+					success(processSuccess).
+					error(processError);			
+			}else{
+				$http.post(url,data).
+					success(processSuccess).
+					error(processError);			
+			}
 			
 			return deferred.promise;
 		},
@@ -86,15 +94,17 @@ factory("util",["$http","$q",function($http,$q){
 
 factory("DataDict",["$q","util",function($q,util){
 	
-	var DataDict=function(name,url,mode){
+	var DataDict=function(name,url,mode,data){
 		if(name.name){
 			this.name=name.name;
 			this.url=name.url;
 			this.loadMode=!!name.mode?name.mode:"lazy";		//lazy,onDemand,eager
+			this.data=name.data;
 		}else{
 			this.name=name;
 			this.url=url;
 			this.loadMode=!!mode?mode:"lazy";		//lazy,onDemand,eager
+			this.data=data;
 		}
 		this.items=[];
 		this.isLoading=false;
@@ -126,9 +136,9 @@ factory("DataDict",["$q","util",function($q,util){
 		waitForLoaded:function(deferred){
 			this.waitingDeferred.unshift(deferred);
 			if(this.waitingDeferred.length===1){
-				var url=this.url,self=this;
+				var self=this;
 				
-				util.getRemote(url)
+				util.getRemote(this.url,this.data)
 					.then(function(loaded){
 						self.finishLoading(true,loaded);
 					},function(error){
@@ -235,6 +245,24 @@ factory("DataDict",["$q","util",function($q,util){
 				}
 			}
 			return items;
+		},
+		
+		//To get an arrry of {text:textFieldValue,value:valueFieldValue} for the named dict
+		//textFieldValue comes from textFieldName and value comes from valueFieldName
+		//used for kendo grid map column,
+		//			name:"snpId",
+		//		    field: "snpId",
+		//		    title: "Item",
+		//		    values:cliviaDDS.getMap("snp","id","name"),
+		getMap:function(valueFieldName,textFieldName){
+			var maps=[],items=this.items;
+			
+			for(var i=0,item,map;i<items.length;i++){
+				item=items[i];
+				map={value:item[valueFieldName],text:item[textFieldName]};
+				maps.push(map);
+			}
+			return maps;
 		},
 		
 		//Return a promise.If resolved,data is the none null item;otherwise rejected with error info
@@ -362,10 +390,10 @@ factory("DataDict",["$q","util",function($q,util){
 	};
 	
 	return DataDict;
-}]).
+}]);
 
 
-factory("DataDictSet",["DataDict","util", function(DataDict,util){
+clivia.factory("DataDictSet",["DataDict","util", function(DataDict,util){
 	var dds=function(dicts){
 		this.dicts=[];
 		this.addDicts(dicts);
@@ -373,15 +401,25 @@ factory("DataDictSet",["DataDict","util", function(DataDict,util){
 	
 	dds.prototype={
 			
-		createDict:function(name,url,mode){
-			return new DataDict(name,url,mode);		
+		createDict:function(name,url,mode,data){
+			return new DataDict(name,url,mode,data);		
 		},
 		
-	
+		//To get an arrry of {text:textFieldValue,value:valueFieldValue} for the named dict
+		//textFieldValue comes from textFieldName and value comes from valueFieldName
+		//used for kendo grid map column,
+		//			name:"snpId",
+		//		    field: "snpId",
+		//		    title: "Item",
+		//		    values:cliviaDDS.getMap("snp","id","name"),
+		getMap:function(name,valueFieldName,textFieldName){
+			return this.getDict(name).getMap(valueFieldName,textFieldName);
+		},
+		
 		getDict:function(name){
 			return util.find(this.dicts,"name",name);
 		},
-		
+
 		
 		getDicts:function(strNames){
 			var result=[];
@@ -418,15 +456,21 @@ factory("DataDictSet",["DataDict","util", function(DataDict,util){
 					dict.load();
 			}
 		},
-			
+				
 	};
 	
 	return dds;
-}]).
+}]);
 //data dictionary set
-factory("cliviaDDS",["DataDictSet",function(DataDictSet){
+clivia.factory("cliviaDDS",["DataDictSet",function(DataDictSet){
 	var baseUrl="/miniataweb/";
 	var dicts=[{
+			name:"snp",
+//			url:baseUrl+"dict/map?from=dictSNP&textField=name&valueField=id&orderBy=lineNo",
+			url:baseUrl+"data/dictSnp/sql",
+			mode:"eager",
+			data:{orderby:"lineNo"},
+		},{
 			name:"city",
 			url:baseUrl+"dict/get?from=dictCity&textField=name&orderBy=name",
 			mode:"eager"
@@ -560,10 +604,10 @@ factory("cliviaDDS",["DataDictSet",function(DataDictSet){
 	
 
 	return cliviaDDS
-}]).
+}]);
 
 //dataSource set
-factory("cliviaDSS",["cliviaDDS",function(cliviaDDS){
+clivia.factory("cliviaDSS",["cliviaDDS",function(cliviaDDS){
 	var customerInput=new kendo.data.DataSource({
 		 transport: {
  	        read: {
@@ -578,9 +622,9 @@ factory("cliviaDSS",["cliviaDDS",function(cliviaDDS){
 	return{
 		customerInput:customerInput,
 	}	
-}]).
+}]);
 
-factory("GridWrapper",function(){
+clivia.factory("GridWrapper",function(){
 			//constructor, need a kendoGrid's name
 			var GridWrapper=function(gridName,gridColumns){
 				this.gridName=gridName;
@@ -795,13 +839,13 @@ factory("GridWrapper",function(){
 				return index;
 			}
 
-			//lineNumber starts from 1
-			GridWrapper.prototype.setLineNumber=function (){
+			//lineNo starts from 1
+			GridWrapper.prototype.setLineNo=function (){
 				var ds=this.grid.dataSource;
 				var dataItems=ds.view();
 				var skip = !!ds.skip()?ds.skip():0;
 				for(var i=0;i<dataItems.length;i++){ 
-					dataItems[i].lineNumber=i+skip+1;
+					dataItems[i].lineNo=i+skip+1;
 				}
 			}
 			
@@ -820,7 +864,7 @@ factory("GridWrapper",function(){
 
 		        if(!isInsert){ //append to last row
 				    dataSource.add(dataItem);
-				    this.setLineNumber();
+				    this.setLineNo();
 				    if(dataSource.totalPages()>1)		//without the line will casue problem when add row  
 				    	dataSource.page(dataSource.totalPages());
 			    	this.grid.editRow(this.grid.tbody.children().last());
@@ -828,7 +872,7 @@ factory("GridWrapper",function(){
 						var rowIdx =this.getCurrentRowIndex();
 			    	var idx = this.getCurrentDataItemIndex();
 				    dataSource.insert((!!idx)?idx:0,dataItem);
-				    this.setLineNumber();
+				    this.setLineNo();
 			    	this.grid.editRow(this.getRow(rowIdx));
 			    }
 		        var cell=this.getEditingCell();
@@ -839,7 +883,7 @@ factory("GridWrapper",function(){
 			    if (dataItem) {
 		        	this.grid.dataSource.remove(dataItem);
 		        	this.currentRow=-1;
-		        	this.setLineNumber();
+		        	this.setLineNo();
 		        	this.grid.table.focus();
 			    }					
 			}		
@@ -886,7 +930,7 @@ factory("GridWrapper",function(){
 		                 	 di= ds.getByUid(e.item.data("uid"));
 		                 ds.remove(di);
 		                 ds.insert(idx, di);
-		 				 self.setLineNumber();
+		 				 self.setLineNo();
 		                 ds.sync();
 		                 
 		                 if(typeof self.dragSorted!='undefined')
@@ -894,7 +938,6 @@ factory("GridWrapper",function(){
 		                }
 		            };
 			}
-			
 			
 			
 			GridWrapper.prototype.enableEditing=function(editing){
@@ -907,17 +950,19 @@ factory("GridWrapper",function(){
 			
 			//called from parenet resize event
 			GridWrapper.prototype.resizeGrid=function(gridHeight){
-			    var gridElement =this.grid.element, 
-			        dataArea = gridElement.find(".k-grid-content"),
+			    var gridElement =this.grid.element;
+			    if(gridElement){
+			        var dataArea = gridElement.find(".k-grid-content"),
 //			        gridHeight = gridElement.innerHeight()-37,
-			        otherElements = gridElement.children().not(".k-grid-content"),
-			        otherElementsHeight = 0;
+			        	otherElements = gridElement.children().not(".k-grid-content"),
+			        	otherElementsHeight = 0;
 
 			    	otherElements.each(function(){
 				        otherElementsHeight += $(this).outerHeight();
 					    });
 			    	gridElement.innerHeight(gridHeight);
 			   		dataArea.height(gridHeight - otherElementsHeight);
+				}
 			};	
 			
 		    
@@ -954,15 +999,13 @@ factory("GridWrapper",function(){
 		     
 			return GridWrapper;
 			
-}). /* end of GridWrapper */	
+}); /* end of GridWrapper */	
 
 //GarmentGridWrapper inherited from GridWrapper
-factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function(GridWrapper,cliviaDDS,DataDict,$q){
+clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function(GridWrapper,cliviaDDS,DataDict,$q){
 
 	 var thisGGW;
-	 var dictSeason=cliviaDDS.getDict("season");
-	 
-	 var getColumns=function(brandId,seasonId){
+	 var getColumns=function(){
 		 
 		    var sizeRangeFields=thisGGW.season.sizeFields.split(",");
 		    var sizeRangeTitles=thisGGW.season.sizeTitles.split(",");
@@ -988,6 +1031,7 @@ factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function
 					name:"description",
 				    field: "description",
 				    title: "Name",
+				    editor: thisGGW.readOnlyColumnEditor,
 				    width: 240
 				}, {
 					name:"colour",
@@ -1051,27 +1095,19 @@ factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function
 		this.dict={colourway:[],sizeRange:[]};
 		this.dictGarment=cliviaDDS.getDict("garment");
 		this.total=0;
-		this.brandId=0;
-		this.seasonId=0;
 		
 		thisGGW=this;
 	}
 	 
 	GarmentGridWrapper.prototype=new GridWrapper();
 	
-	GarmentGridWrapper.prototype.setBrandSeason=function(brandId,seasonId){
-		this.season=dictSeason.getSeasonL(brandId,seasonId);
-		this.brandId=brandId?brandId:2;  	//default DD
-		this.seasonId=seasonId?seasonId:2;
-		var gridColumns=getColumns();
-		this.setColumns(gridColumns);
+	//must set before calling wrapegrid
+	GarmentGridWrapper.prototype.setBrandSeason=function(brand,season){
+		this.season=season;
+		this.brand=brand;
+		this.setColumns(getColumns());
 	}
 
-	//must set before calling wrapegrid
-	GarmentGridWrapper.prototype.setSeason=function(seasonId){
-		this.setBrandSeason(this.brandId,seasonId);
- 	}
-	
 	
 	GarmentGridWrapper.prototype.setRowDict=function(){
   		var colourway=[],sizeRange=[];
@@ -1100,7 +1136,7 @@ factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function
 			if(this.currentGarment && this.currentGarment.styleNo===styleNo){
 		    	model.set("description",this.currentGarment.styleName);
 			}else{
-				garment=this.dictGarment.getGarment(this.seasonId,styleNo);
+				garment=this.dictGarment.getGarment(this.season.id,styleNo);
 				if(garment){
 					thisGGW.currentGarment=garment;
 			    	model.set("description",thisGGW.currentGarment.styleName);
@@ -1242,18 +1278,19 @@ factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function
 		var total=0;
 		for(var r=0,di,t;r<dataItems.length;r++){
 			di=dataItems[r];		//dataItem
-			if(currentDataItem && di.uid===currentDataItem.uid)
+			if(currentDataItem && di.uid===currentDataItem.uid){
 				di=currentDataItem;
-			t=0;
-			for(var i=0;i<thisGGW.season.sizeFields.length;i++){  //exclude colour,total,remark
-				var field="qty"+("00"+i).slice(-2); 	//right(2)
-				var quantity=parseInt(di[field]);
-				if(quantity){
-					t+=quantity;	
+	 			t=0;
+				for(var i=0;i<thisGGW.season.sizeFields.length;i++){  //exclude colour,total,remark
+					var field="qty"+("00"+i).slice(-2); 	//right(2)
+					var quantity=parseInt(di[field]);
+					if(quantity){
+						t+=quantity;	
+					}
 				}
+				di.set("quantity",t); 
 			}
-			di.set("quantity",t);
-			total+=t;
+			total+=di.quantity?di.quantity:0;
 		}
 		
 		this.total=total;
@@ -1284,7 +1321,6 @@ factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function
 	        }
 	    })
 	}				    
-	
 
 	GarmentGridWrapper.prototype.sizeQtyEditor=function(container, options) {
 		if(thisGGW.reorderRowEnabled) return;
@@ -1300,5 +1336,118 @@ factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",function
 	
 	return GarmentGridWrapper;
 }]); /* end of GarmentGridWrapper */
+
+//BillGridWrapper inherited from GridWrapper
+clivia.factory("BillGridWrapper",["GridWrapper","cliviaDDS","DataDict",function(GridWrapper,cliviaDDS,DataDict){
+	
+	 var thisGGW;
+
+	 var getColumns=function(){
+
+		 var gridColumns=[{
+			        name:"lineNumber",
+			        title: "#",
+			        //locked: true, if true will cause the wrong cell get focus when add new row
+			        attributes:{class:"gridLineNumber"},
+			        headerAttributes:{class:"gridLineNumberHeader"},
+			        width: 25,
+				}, {			
+					name:"snpId",
+				    field: "snpId",
+				    title: "Item",
+				    values:thisGGW.dictSnp.getMap("id","name"),
+				    width: 150
+				}, {
+					name:"description",
+				    field: "description",
+				    title: "Description",
+				    width: 400
+				}, {
+					name:"orderQty",
+				    field: "orderQty",
+				    title: "Quantity",
+				    width: 80,
+				    attributes:{style:"text-align:right;"}
+				}, {
+					name:"unit",
+				    field: "unit",
+				    title: "Unit",
+				    width: 60,
+				    attributes:{style:"text-align:center;"}
+				}, {
+					name:"orderPrice",
+				    field: "orderPrice",
+				    title: "Price",
+				    format: "{0:c}",
+				    width: 80,
+				    attributes:{style:"text-align:right;"}
+				}, {
+					name:"orderAmt",
+				    field: "orderAmt",
+				    title: "Amount",
+				    editor: thisGGW.readOnlyColumnEditor,
+				    format: "{0:c}",
+				    width: 80,
+				    attributes:{style:"text-align:right;"}
+				}, {
+					name:"remark",
+				    field: "remark",
+				    title: "Remark"
+					//the column is extended if its width is not set   
+			}];
+			
+			return gridColumns;
+		}
+		
+	 var BillGridWrapper=function(gridName){
+		 
+		GridWrapper.call(this,gridName);
+
+		thisGGW=this;
+		this.dictSnp=cliviaDDS.getDict("snp");
+		this.total=0;
+		this.setColumns=function(){this.gridColumns=getColumns()};		
+	}
+	 
+	BillGridWrapper.prototype=new GridWrapper();
+	
+/* 	BillGridWrapper.prototype.snpColumnEditor=function(container, options) {
+			//if(thisGGW.reorderRowEnabled) return;
+		    $('<input class="grid-editor" data-value-primitive="true"  data-bind="value:' + options.field + '"/>')
+		    	.appendTo(container)
+		    	.kendoDropDownList({
+			        dataSource: { data:cliviaDDS.getDict("snp").items},
+		            dataTextField:"text",
+		            dataValueField:"value"
+		    })
+		}				     
+ */	 
+	BillGridWrapper.prototype.calculateTotal=function(currentDataItem) {
+		if(!this.grid) return;
+		var dataItems=this.grid.dataItems();
+		var total=0;
+		for(var r=0,di,amt;r<dataItems.length;r++){
+			di=dataItems[r];		//dataItem
+			if(currentDataItem && di.uid===currentDataItem.uid){
+				di=currentDataItem;
+	 			amt=(di.orderQty?di.orderQty:0)*(di.orderPrice?di.orderPrice:0);
+				if(amt!==di.orderAmt)
+					di.set("orderAmt",amt);
+			}
+			total+=di.orderAmt?di.orderAmt:0;
+		}
+		
+		this.total=total;
+		return total;
+	}
+ 
+	 BillGridWrapper.prototype.getSnpItem=function(snpId){
+		 return thisGGW.dictSnp.getLocalItem("id",snpId);
+	 }
+
+
+	return BillGridWrapper;
+	
+}]); /* end of BillGridWrapper */
 
 </script>

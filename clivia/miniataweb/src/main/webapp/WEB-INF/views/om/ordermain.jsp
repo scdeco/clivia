@@ -42,14 +42,14 @@
 	</div> <!-- middle pane of outter splitter -->
 	
 	<div id="bottom-pane" style="height:300px;">
-				<pre>
-					dataSet:{{SO.dataSet|json}}
-					buttons:{{SO.instance.itemButtons}}
-					dictGarments:{{SO.dict.garments|json}}
-					dictImages:{{SO.dict.images|json}}
-					
+<pre>
+	dataSet:{{SO.dataSet|json}}
+	buttons:{{SO.instance.itemButtons}}
+	dictGarments:{{SO.dict.garments|json}}
+	dictImages:{{SO.dict.images|json}}
 	
-				</pre>
+
+</pre>
 	</div> <!-- bottom pane of outter splitter -->
 	
 </div>

@@ -1,5 +1,5 @@
 <div kendo-sortable k-options="gridSortableOptions">
-	<div  kendo-grid="{{gridName}}" id="{{gridName}}" k-options="gridOptions" ></div>
+	<div  kendo-grid="{{gridName}}" id="{{gridName}}" k-options="gridOptions"></div>
 </div>
 
 <ul kendo-context-menu k-options="gridContextMenuOptions">
@@ -29,6 +29,6 @@
 	 	k-actions="['Maximize']"
 	 	k-modal="false">
 	 	
-	 <div garment-input	c-season-id="cSeasonId" c-dict-garment="dictGarment" c-add-function="inputWindowAddFunction"></div>
+	 <div garment-input	c-season-id="cSeason.id" c-dict-garment="dictGarment" c-add-function="inputWindowAddFunction"></div>
 	 
 </div>

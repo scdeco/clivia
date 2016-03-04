@@ -8,7 +8,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 			dataSet:{
 					info:{},
 					items:[],
-					deleteds:[]
+					deleteds:[],
+					upcs:[]
 				},
 				
 			company:{
@@ -54,7 +55,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 				
 			instance:{
 				itemButtons:new kendo.data.ObservableArray([]),
-				currentItemId:0
+				currentItemId:0,
+				tmpId:1,
 				}};
 
 	var dataSet=_order.dataSet, dict=_order.dict, setting=_order.setting, instance=_order.instance;
@@ -79,13 +81,17 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 		return item;
 	}
 
-	//setting
+	//setting,used by item.id,lineitem.id..., 
+	_order.getTmpId=function(){
+		return ++_order.instance.tmpId;
+	}
 	
     _order.clearDicts=function(){
 		_order.dds.image.clear();
     }
     
     _order.clearInstance=function(){
+    	instance.tmpId=0;
     	instance.currentItemId=0;
     	instance.itemButtons.splice(0,instance.itemButtons.length);
     }
@@ -102,7 +108,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 			var dt=dataSet[_order.setting.registeredItemTypes[i].name+"s"];
 			dt.splice(0,dt.length);
 		}
-		dataSet.deleteds.splice(0,dataSet.deleteds.length);		
+		dataSet.deleteds.splice(0,dataSet.deleteds.length);	
+		dataSet.upcs.splice(0,dataSet.upcs.length);
 	}
 
     _order.clear=function(){
@@ -180,6 +187,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 			    	for(var j=0;j<dataItems.length;j++)
 			    		dataTable.push(dataItems[j]);
 			}
+			
+			
 		}
 	}
 	
@@ -287,27 +296,31 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 	_order.setCurrentOrderItem=function(orderItemId){
         var dataItem=null;
 		
-		if(orderItemId===0 && instance.itemButtons.length>0) 
-			orderItemId=parseInt(instance.itemButtons[0].id.substr(3))
-		
+        var oldId=instance.currentItemId;
+        
 		instance.currentItemId=orderItemId;	
-			
 		if(orderItemId>0) {
-	        for(var i=0;i<instance.itemButtons.length;i++)
-		       	 instance.itemButtons[i].selected= instance.itemButtons[i].id===("btn"+orderItemId);
+	        for(var i=0;i<instance.itemButtons.length;i++){
+        		instance.itemButtons[i].selected=instance.itemButtons[i].orderItemId===orderItemId;
+	        }
+		       	  
 	        dataItem=_order.getOrderItem(orderItemId);
 		}
 		
-		if(dataItem)
- 		  	 $state.go('main.'+dataItem.type,{orderItemId:orderItemId});
-		else
+		if(dataItem){
+			if(instance.currentItemId!==oldId){
+	 		  	 $state.go('main.'+dataItem.type,{orderItemId:orderItemId});
+			}
+		}else{
 			$state.go('main.blankitem');
+		}
  	};
  	
  	
  	_order.getCurrentOrderItem=function(){
  		return _order.getOrderItem(instance.currentItemId)
  	}
+ 	
  	
  	_order.getOrderItem=function(itemId){
  		var dataItem=null;
@@ -324,7 +337,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
  		var buttons=instance.itemButtons;
  		var button=null;
  		for(var i=0;i<buttons.length;i++){
- 			if(buttons[i].id==="btn"+item.id){
+ 			if(buttons[i].orderItemId===item.id){
  				button=buttons[i];
  				break;
  			}
@@ -333,31 +346,154 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
  	}
 
  	_order.addOrderItemButton=function(orderItem){
-        button={text:orderItem.title, id: "btn"+orderItem.id, icon: "insert-n",togglable: true, group: "OrderItem"};
+ 		
+        button={
+        		text:orderItem.title, 
+        		id: "btn"+orderItem.id, 
+        		icon: "insert-n",
+        		togglable: true, 
+        		group: "OrderItem",
+        		orderItemId:orderItem.id,
+        	};
+        
         instance.itemButtons.push(button);
         return button;
  	}
  	
     _order.addOrderItem = function(type,title,spec) {
-     	var orderItemId= dataSet.items.length+1;
+     	var orderItemId=_order.getTmpId();
      	var orderItem={
     			orderId:dataSet.info.orderId ,
     			id:orderItemId,
-    			LineNo: orderItemId,
+    			lineNo:dataSet.items.length+1,
 	     		title:title,
  				type:type,
  				spec:spec
      		};
+     	if(type==="lineItem"){
+     		var brand=_order.getBrandFromSpec(spec);
+     		if(brand.hasInventory){
+     			var season=_order.getSeasonFromSpec(spec);
+     			orderItem.spec=season.brandId+":"+season.id;
+     		}
+     	}
      	dataSet.items.push(orderItem);
      	_order.addOrderItemButton(orderItem)
      	return orderItem;
        };	
        
-    _order.removeOrderItem=function(){
-       	 //$scope.order.orderItems.pop();
+    _order.removeOrderItem=function(orderItem){
+    	
+    	var idx=orderItem.lineNo-1;
+    	var items=_order.dataSet.items,
+    		itemButtons=_order.instance.itemButtons;
+    	
+    	//remove the orderItem from  _order.dataSet.items
+    	items.splice(idx,1);
+    	
+    	//set lineNo same as item index+1
+		for(var i=0;i<items.length;i++)
+   			 items[i].lineNo=i+1;
+    	
+    	//remove the item button from _order.instance.itemButtons
+    	itemButtons.splice(idx,1);
+    	
+    	//set new current orderItem. if no more item, set to blank.
+    	if (idx===items.length)
+    		idx--;
+    	idx=idx>=0?items[idx].id:0;
+   		_order.setCurrentOrderItem(idx);
+   		
+   		//register to deleted items
+	   	_order.registerDeletedItem("item",orderItem.id);
+	   	
+    	//get dataTable from the dataSet, orderItem.type is the dataTable name
+	   	 var dis=_order.dataSet[orderItem.type+"s"];  
+		 for(var i=dis.length-1;i>=0;i--){
+			 di=dis[i];
+			 if(di.orderItemId===orderItem.id){
+				 
+		   		 //register to deleted items 
+				_order.registerDeletedItem(orderItem.type,di.id);
+		   		
+				 //remove from the dataTable
+			    dis.splice(i,1);
+			 }
+		 }
+   		 
         };
        
+	_order.registerDeletedItem=function(entity,id){
+		if(id>=consts.maxTmpId){
+			var deletedItem={entity:entity,id:id};
+			dataSet.deleteds.push(deletedItem);
+		}
+	}
 	
+	
+	_order.generateUpcs=function(){
+		var upcs=dataSet.upcs;
+		
+		upcs.splice(0,dataSet.upcs.length);
+		
+		var orderItems=dataSet.items;
+		for(var i=0,orderItem;i<orderItems.length;i++){
+			orderItem=orderItems[i];
+			if(orderItem.type==="lineItem"){
+				var brand=_order.getBrandFromSpec(orderItem.spec);
+				if(brand.hasInventory){
+					var season=_order.getSeasonFromSpec(orderItem.spec);
+					var sizes=season.sizeFields.split(",");
+					var lineItems=dataSet.lineItems;
+					for(var j=0,lineItem,styleNo;j<lineItems.length;j++){
+						lineItem=lineItems[j];
+						if(lineItem.orderItemId===orderItem.id && lineItem.styleNo && lineItem.colour){
+							
+							for(var j=0,field,qty,upc;j<14;j++){
+								field="qty"+("00"+i).slice(-2);
+								qty=lineItem[field]?lineItem[field]:0;
+								if(qty){
+									upc={
+										seasonId:lineItem.seasonId,
+										styleNo:lineItem.styleNo,
+										colour:lineItem.colour,
+										size:sizes[j],
+										qty:qty
+									}
+									upcs.push(upc);
+								}
+							}
+							
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	_order.getBrandFromSpec=function(orderItemSpec){
+		var brand=null;
+		if(orderItemSpec){
+		   	var specs=orderItemSpec.split(":");
+			brand=_order.dds.brand.getLocalItem("id",parseInt(specs[0]));
+		}
+		return brand;
+	}
+	
+	_order.getSeasonFromSpec=function(orderItemSpec){
+		var season=null;
+		if(orderItemSpec){
+			var specs=orderItemSpec.split(":");
+			if(specs.length>1){
+				season=_order.dds.season.getSeasonL(parseInt(specs[0]),parseInt(specs[1]));
+			}else{
+				season=_order.dds.season.getCurrentSeasonL(parseInt(specs[0]));
+			}
+		}
+		return season; 
+	}
+	
+        
    	return _order;
 	
 }]); /* end of CliviaOrder */

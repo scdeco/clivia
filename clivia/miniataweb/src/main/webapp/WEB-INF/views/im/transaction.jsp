@@ -6,7 +6,6 @@
 	<h3> 
 		Brand:&nbsp;{{dataSet.info.brandId}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Transaction#:&nbsp;{{dataSet.info.transNumber}}
 	</h3>
-<!-- 	<brand-input name="garmentBrandInput" ng-model="dataSet.info.brand"></brand-input> -->
 	<table >
 		<tr>
 			<td class="header leftcolumn">Stock:</td>
@@ -73,7 +72,7 @@
 	</table>
 
 	<div>
-   		<div garment-grid="garmentEntryGrid" c-editable="true" c-data-source="garmentEntryGridDataSource" c-pageable="false" c-brand="dataSet.info.brand" c-new-item-function="newItemFunction"></div> 
+   <!-- 		<div garment-grid="garmentEntryGrid" c-editable="true" c-data-source="garmentEntryGridDataSource" c-pageable="false" c-brand="brand" c-season="season" c-new-item-function="newItemFunction"></div>  -->
 	
 	</div>
 	

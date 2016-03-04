@@ -23,8 +23,13 @@ orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
 	            	  
 	              }],
              toggle:function(e){
-            	 var itemId=parseInt(e.id.substr(3));
-               	 SO.setCurrentOrderItem(itemId);
+            	 for(var i=0,button;i<$scope.itemButtons.length;i++){
+            		 button=$scope.itemButtons[i];
+            		 if(button.id===e.id){
+                       	 SO.setCurrentOrderItem(button.orderItemId);
+            			 break;
+            		 }
+            	 }
              }
  	 };
      
@@ -40,12 +45,15 @@ orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
              change: function(e) {
             	 var items=SO.dataSet.items,
             	  	 item=items.splice(e.oldIndex,1)[0];
-            		 items.splice(e.newIndex,0,item);
-            		 for(var i=0;i<items.length;i++)
-            			 items[i].lineNo=i+1;
-            		 buttons=SO.instance.itemButtons;
+            	 
+           		 items.splice(e.newIndex,0,item);
+           		 for(var i=0;i<items.length;i++)
+           			 items[i].lineNo=i+1;
+           		 
+           		 var buttons=SO.instance.itemButtons,
             		 button=buttons.splice(e.oldIndex,1)[0];
-            		 buttons.splice(e.newIndex,0,button);
+           		 
+            	 buttons.splice(e.newIndex,0,button);
              }
               		 
      };
@@ -57,9 +65,8 @@ orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
  			open: function(e){
  				if ($(e.item).is("li"))  return;
  				$scope.currentItemButton=SO.getCurrentOrderItemButton();
- 				menuText="<input type='text' class='k-textbox' ng-model='currentItemButton.text'>"
- 				var items = 
- 	            this.setOptions({
+ 				var menuText="<input type='text' class='k-textbox' ng-model='currentItemButton.text'>"
+ 				var items = this.setOptions({
  	                dataSource: [{
 	 	 	                text: "Change Title", 
 	 	 	                items: [{text:menuText,encoded: false, value: "menuRename"}]
@@ -71,7 +78,7 @@ orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
  			},
  			close:function(e){
  				if($(e.item).is("li") && $scope.currentItemButton){
- 					item=SO.getCurrentOrderItem();
+ 					var item=SO.getCurrentOrderItem();
  					if($scope.currentItemButton.text!==item.title){
  						item.title=$scope.currentItemButton.text;
  					}
@@ -80,7 +87,10 @@ orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
  			select: function(e){
  				if($(e.item).is("li") && e.item.textContent==="Remove"){
 	 				this.close();
- 					alert("remove");
+	 				var item=SO.getCurrentOrderItem()
+	 				if (confirm('Please confirm to remove the selected item: '+item.title+'.')) {
+	 					SO.removeOrderItem(item);
+	 				}
  				}
  				
  			}

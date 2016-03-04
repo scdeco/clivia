@@ -9,11 +9,11 @@ orderApp.controller("lineItemCtrl",["$scope","$state","SO",
 	$scope.SO=SO;
 
 	var orderItem=SO.getCurrentOrderItem(); 
-	var orderItemId =orderItem.id;
 	
     $scope.lineItemSplitterOptions={
     	resize:function(e){
-			var panes=e.sender.element.children(".k-pane"),
+
+    		var panes=e.sender.element.children(".k-pane"),
 			gridHeight=$(panes[1]).innerHeight();
 	      	window.setTimeout(function(){
 	      		if($scope.garmentGrid)
@@ -23,18 +23,17 @@ orderApp.controller("lineItemCtrl",["$scope","$state","SO",
     	}		
     }
     
-   	var specs=orderItem.spec.split(":");
-	$scope.garmentBrandId=parseInt(specs[0]);
-	$scope.garmentBrandName=SO.dds.brand.getBrandNameL($scope.garmentBrandId);
+
+	$scope.brand=SO.getBrandFromSpec(orderItem.spec);
+	$scope.season=SO.getSeasonFromSpec(orderItem.spec);
+	$scope.seasonId=$scope.season.id;
 	
-	if(specs.length>1)
-		$scope.garmentSeasonId=parseInt(specs[1]);
-	else{
-		var season=SO.dds.season.getCurrentSeasonL($scope.garmentBrandId);
-		$scope.garmentSeasonId=season.id;
-	}
-	
-	$scope.totalQty=0;
+	$scope.$watch("seasonId",function(newValue,oldValue){
+		if(newValue && newValue!=oldValue){
+			$scope.season=SO.dds.season.getSeasonL($scope.brand.id,parseInt(newValue));
+			orderItem.spec=$scope.brand.id+":"+$scope.season.id;
+		}
+	});
 	
  	$scope.garmentGridDataSource=new kendo.data.DataSource({
  		        	data:SO.dataSet.lineItems, 
@@ -45,24 +44,29 @@ orderApp.controller("lineItemCtrl",["$scope","$state","SO",
    		    	    filter: {
 		    	        field: "orderItemId",
 		    	        operator: "eq",
-		    	        value: orderItem.id
+		    	        value: orderItem.id,
 		    	    },    
 		    	    
 		    	    serverFiltering:false,
 		    	    pageSize: 0,			//paging in pager
 
 		        }); //end of dataSource,
-		    	
+	
+	//pass to garmentGird directive to create new lineitem		        
 	$scope.newItemFunction=function(){
 		    return {
 			    	orderId:SO.dataSet.info.orderId,
-			    	orderItemId:orderItemId, 
-			    	brandId:$scope.garmentBrandId,
-			    	seasonId:$scope.garmentSeasonId
+			    	orderItemId:orderItem.id, 
+			    	brandId:$scope.brand.id,
+			    	seasonId:$scope.season.id,
 			    }
 		}
+		        
+	//pass to garmentGird directive to register removed lineitem		        
+	$scope.registerDeletedItemFunction=function(dataItem){
+		SO.registerDeletedItem(orderItem.type,dataItem.id);
+	}
 				
-
 }]); 
 
 

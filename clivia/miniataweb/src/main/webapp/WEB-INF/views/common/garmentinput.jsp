@@ -11,8 +11,8 @@
 	<div  kendo-grid="styleGrid" id="styleGrid"  k-options="gridOptions"  k-rebind="gridRebind" k-height=200></div> 		
 	
 	<div> 
-		<input type="button" value="Add" ng-click="add()">
 	  	<input type="button" value="OK" ng-click="ok()">
+		<input type="button" value="Add" ng-click="add()">
 	  	<input type="button" value="Clear" ng-click="clear()" style="margin-left:100px;">
 	  	<input type="button" value="Cancel" ng-click="cancel()">	
 	</div>

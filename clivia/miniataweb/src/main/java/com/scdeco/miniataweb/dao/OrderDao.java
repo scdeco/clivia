@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.scdeco.miniataweb.model.OrderBillItem;
 import com.scdeco.miniataweb.model.OrderClivia;
 import com.scdeco.miniataweb.model.OrderImage;
 import com.scdeco.miniataweb.model.OrderInfo;
@@ -29,7 +30,7 @@ public class OrderDao {
 	private OrderLineItemDao orderLineItemDao;
 
 	@Autowired
-	private OrderPricingItemDao orderPricingItemDao;
+	private OrderBillItemDao orderBillItemDao;
 	
 	@Autowired
 	private OrderImageDao orderImageDao;
@@ -40,7 +41,7 @@ public class OrderDao {
 	@Autowired
 	private CliviaAutoNumberDao cliviaAutoNumberDao;
 	
-	
+	private static int MAX_TMP_ID=10000;
 	
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
 	public void save(OrderClivia order){
@@ -58,45 +59,24 @@ public class OrderDao {
 
 		orderInfoDao.saveOrUpdate(orderInfo);
 		
-		int orderId= orderInfo.getId();
+		removeDeletedItems(order);
 
-		if(order.getItems()!=null){
-			for(OrderItem orderItem:order.getItems()){
-				orderItem.setOrderId(orderId);
-			}
-		}
-			
-		if(order.getLineItems()!=null){
-			for(OrderLineItem lineItem:order.getLineItems()){
-				lineItem.setOrderId(orderId);
-			}
-		}
-			
-		if(order.getImageItems()!=null){
-			for(OrderImage imageItem:order.getImageItems()){
-				imageItem.setOrderId(orderId);
-			}
-		}
-
-		List<Map<String,String>> deletedItems=order.getDeleteds();
-		System.out.println("deleted:"+deletedItems);
-		for(Map<String,String> item:deletedItems){
-				String daoName=item.get("entity");
-	        	int id=Integer.parseInt(item.get("id"));
-	        	switch (daoName){
-	        	case "lineItem":
-	        		orderLineItemDao.deleteById(id);
-	        		break;
-	        	case "imageItem":
-	        		orderImageDao.deleteById(id);
-	        		break;
-	        	}
-	        	
-	     }				
+		setOrderId(order);
 		
 		if(order.getItems()!=null){
 			for(OrderItem orderItem:order.getItems()){
+				int tmpOrderItemId=orderItem.getId();
+				if(tmpOrderItemId<MAX_TMP_ID)
+					orderItem.setId(0);
 				orderItemDao.saveOrUpdate(orderItem);
+				if(tmpOrderItemId<MAX_TMP_ID)
+					setOrderItemId(order,tmpOrderItemId,orderItem.getId());
+			}
+		}
+
+		if(order.getBillItems()!=null){
+			for(OrderBillItem billItem:order.getBillItems()){
+				orderBillItemDao.saveOrUpdate(billItem);
 			}
 		}
 		
@@ -113,8 +93,6 @@ public class OrderDao {
 		}
 	}
 	
-	
-	
 
 	public OrderClivia getOrderById(int orderId){
 		OrderClivia order=null;
@@ -122,11 +100,17 @@ public class OrderDao {
 		if(orderInfo!=null){
 			order=new OrderClivia();
 			order.setInfo(orderInfo);
+			
 			List<OrderItem> orderItems=orderItemDao.FindListByOrderId(orderId);
 			order.setItems(orderItems);
-			List<OrderLineItem> lineItems=orderLineItemDao.FindListByOrderId(orderId);
+			
+			List<OrderBillItem> billItems=orderBillItemDao.findListByOrderId(orderId);
+			order.setBillItems(billItems);
+
+			List<OrderLineItem> lineItems=orderLineItemDao.findListByOrderId(orderId);
 			order.setLineItems(lineItems);
-			List<OrderImage> imageItems=orderImageDao.FindListByOrderId(orderId);
+			
+			List<OrderImage> imageItems=orderImageDao.findListByOrderId(orderId);
 			order.setImageItems(imageItems);
 		}
 			
@@ -145,10 +129,96 @@ public class OrderDao {
 	
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
 	public void deleteOrder(OrderClivia order){
+		
+		orderBillItemDao.deleteAll(order.getBillItems());
 		orderLineItemDao.deleteAll(order.getLineItems());
 		orderImageDao.deleteAll(order.getImageItems());
 		orderItemDao.deleteAll(order.getItems());
 		orderInfoDao.delete(order.getInfo());
 	}
+	
+	
+	private void setOrderId(OrderClivia order){
+		int orderId=order.getInfo().getId();
+		
+		if(order.getItems()!=null){
+			for(OrderItem orderItem:order.getItems()){
+				orderItem.setOrderId(orderId);
+			}
+		}
+
+		if(order.getBillItems()!=null){
+			for(OrderBillItem billItem:order.getBillItems()){
+				billItem.setOrderId(orderId);
+			}
+		}
+		
+		if(order.getLineItems()!=null){
+			for(OrderLineItem lineItem:order.getLineItems()){
+				lineItem.setOrderId(orderId);
+			}
+		}
+			
+		if(order.getImageItems()!=null){
+			for(OrderImage imageItem:order.getImageItems()){
+				imageItem.setOrderId(orderId);
+			}
+		}		
+	}
+	
+	private void setOrderItemId(OrderClivia order,int tmpOrderItemId,int newOrderItemId){
+		
+		if(order.getLineItems()!=null){
+			for(OrderLineItem lineItem:order.getLineItems()){
+				if(lineItem.getOrderItemId()==tmpOrderItemId)
+					lineItem.setOrderItemId(newOrderItemId);
+			}
+		}
+			
+		if(order.getBillItems()!=null){
+			for(OrderBillItem billItem:order.getBillItems()){
+				if(billItem.getOrderItemId()==tmpOrderItemId)
+					billItem.setOrderItemId(newOrderItemId);
+			}
+		}
+			
+		if(order.getImageItems()!=null){
+			for(OrderImage imageItem:order.getImageItems()){
+				if(imageItem.getOrderItemId()==tmpOrderItemId)
+					imageItem.setOrderItemId(newOrderItemId);
+			}
+		}		
+	}
+	
+	
+	private void removeDeletedItems(OrderClivia order){
+		List<Map<String,String>> deletedItems=order.getDeleteds();
+		if(!deletedItems.isEmpty()){
+			System.out.println("deleted:"+deletedItems);
+			
+			for(Map<String,String> item:deletedItems){
+					String daoName=item.get("entity");
+		        	int id=Integer.parseInt(item.get("id"));
+		        	
+		        	switch (daoName){
+		        	case "item":
+		        		orderItemDao.deleteById(id);
+		        		break;
+		        	case "lineItem":
+		        		orderLineItemDao.deleteById(id);
+		        		break;
+		        	case "billItem":
+		        		orderBillItemDao.deleteById(id);
+		        		break;
+		        	case "imageItem":
+		        		orderImageDao.deleteById(id);
+		        		break;
+		        	}
+		        	
+		     }				
+		}
+	}
+	
+	
 	
 }

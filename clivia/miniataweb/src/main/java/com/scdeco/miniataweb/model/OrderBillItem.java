@@ -9,7 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class OrderPricingItem {
+public class OrderBillItem {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
@@ -23,8 +23,8 @@ public class OrderPricingItem {
 	@Column(name="LineNo")
 	private int lineNo;	
 	
-	@Column(name="IosId")
-	private int iosId;
+	@Column(name="snpId")
+	private int snpId;
 	
 	@Column(name="ItemNumber", length=20)
 	private String itemNumber;
@@ -94,12 +94,12 @@ public class OrderPricingItem {
 		this.lineNo = lineNo;
 	}
 
-	public int getIosId() {
-		return iosId;
+	public int getSnpId() {
+		return snpId;
 	}
 
-	public void setIosId(int iosId) {
-		this.iosId = iosId;
+	public void setSnpId(int snpId) {
+		this.snpId = snpId;
 	}
 
 	public String getItemNumber() {

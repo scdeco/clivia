@@ -110,7 +110,7 @@ public class OrderLineItem {
 		return orderItemId;
 	}
 
-	public void setOrderItemLid(int orderItemId) {
+	public void setOrderItemId(int orderItemId) {
 		this.orderItemId = orderItemId;
 	}
 

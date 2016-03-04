@@ -51,6 +51,11 @@ public class GarmentWithDetail {
 	@Column(name="PQ")
 	private Integer pq;
 	
+	@Column(name="WSP")			//whole sale price
+	private Double wsp;
+	
+	@Column(name="RRP")			//recommended retail price
+	private Double rrp;
 
 	public Integer getUpcId() {
 		return upcId;
@@ -106,6 +111,14 @@ public class GarmentWithDetail {
 
 	public Integer getPq() {
 		return pq;
+	}
+
+	public Double getWsp() {
+		return wsp;
+	}
+
+	public Double getRrp() {
+		return rrp;
 	}
 
 }

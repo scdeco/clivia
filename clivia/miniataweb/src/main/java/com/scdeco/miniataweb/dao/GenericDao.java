@@ -139,6 +139,29 @@ public abstract class GenericDao<T> {
 		return result;
 	}
 	
+	@SuppressWarnings("rawtypes")
+	public  List findListBySQL(SqlRequest sqlRequest){
+		
+		StringBuilder sql=new StringBuilder();
+		
+		if(sqlRequest.getSelect()!=null)
+			sql.append("select "+sqlRequest.getSelect());
+		
+		if(sqlRequest.getFrom()!=null)
+			sql.append(" from "+sqlRequest.getFrom());
+		
+		if(sqlRequest.getWhere()!=null)
+			sql.append(" where "+sqlRequest.getWhere());
+
+		if(sqlRequest.getOrderby()!=null)
+			sql.append(" Order By "+sqlRequest.getOrderby());
+
+		SQLQuery sqlQuery=getSession().createSQLQuery(sql.toString());
+		
+		
+		return sqlQuery.list();
+	}
+	
 	@SuppressWarnings("unchecked")
 	public List<T> findList(Criteria criteria) {
 		return criteria.list();
