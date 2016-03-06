@@ -5,7 +5,7 @@
 <ul kendo-context-menu k-options="gridContextMenuOptions">
        
   	<li id="menuAdd">Add</li>
-  	<li id="menuAddWindow">Add With dialog...</li>
+  	<li ng-show="cBrand.hasInventory" id="menuAddWindow">Add With dialog...</li>
   	<li id="menuInsert">Insert</li>
   	<li id="menuDelete">Delete</li>
   	<li class="k-separator"></li>		          

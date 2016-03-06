@@ -37,12 +37,13 @@
 			   	 text: "Line Item", 
 				 icon: "insert-n",
 				 id: "lineitem",
-				 spec: "Generic",
+				 spec: "1",
 				 itemType: "lineItem"		//datatable
 			},{
 				 text: "Double Diamond", 
 				 icon: "insert-n",
 				 id:"lineitemdd",
+				 snpId:14,
 				 spec:"2",				//brandId
 				 itemType:"lineItem"
 			},{

@@ -33,7 +33,6 @@ directive("mapCombobox",function(){
 		    		logic: "and",
 		    		filters: [{ field: "isCsr", operator: "eq", value: true}]
 		  		}, */
-			cName:'@mapDropdownlist',		  		
 			cOptions:'=',		//{name: dataTextField:, dataValueField:, url: ,filter:,dict:}
 		},
 		template:template,
@@ -53,7 +52,8 @@ directive("mapCombobox",function(){
 			}
 			
 			var addItem=function(value){
-				if(!scope.cOptions.dict) return;
+				if(!(scope.cOptions.dict&&value)) return;
+				
 				scope.cOptions.dict.getItem(scope.cOptions.dataValueField,value)
 					.then(function(gotItem){
 						if(gotItem){
@@ -166,7 +166,6 @@ directive("textCombobox",function(){
 		replace:true,
 		require: 'ngModel',
 		scope:{
-			cName:'@textCombobox',
 			cOptions:'=',		//{name: , url: ,filter:,dict:}
 		},
 		template:template,
@@ -674,7 +673,7 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 					       	},
 					       	
 			 		       	save: function(e) {
-					       		if(typeof e.values.styleNo!== 'undefined'){		//styleNo changed
+					       		if(ggw.brand.hasInventory && typeof e.values.styleNo!== 'undefined'){		//styleNo changed
 						       		console.log("event save:"+JSON.stringify(e.values));
 				  	        		e.preventDefault();
 			 		       			if(e.values.styleNo===";"){
@@ -798,6 +797,7 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 						    item=newItem(); 
 						    nullRow=true;
 						    item.styleNo=garment.styleNo;
+						    item.garmentId=garment.id;
 						    item.description=garment.styleName;
 						    item.colour=di.colour;
 						    item.quantity=di.total;

@@ -47,6 +47,13 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	                click: function(e) {
 		                	$scope.generateUpcs();
 		                }
+	            }, {
+	                type: "button",
+	                text: "Bill",
+	                id:"btnBill",
+	                click: function(e) {
+		                	$scope.generateBillableItems();
+		                }
 	                
 	       }]
 	    };	
@@ -60,8 +67,14 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 
 	$scope.generateUpcs=function(){
 		SO.generateUpcs();
+		$scope.$apply();
 	};	
 	
+	$scope.generateBillableItems=function(){
+		var currentOrderItem=SO.getCurrentOrderItem();
+		SO.generateBillableItems(currentOrderItem);
+		$scope.$apply();
+	};	
 	
 	$scope.newOrder=function(){
 		SO.clear();

@@ -491,8 +491,14 @@ clivia.factory("cliviaDDS",["DataDictSet",function(DataDictSet){
 //			mode:"eager"
  		},{
 			name:"garment",
-			url:baseUrl+"data/garmentInfo/get",
+			url:baseUrl+"data/generic/sql",
+			data:{select:"id,brandId,seasonId,styleNo,styleName,colourway,sizeRange,rrp,wsp",from:"garmentInfo",orderby:"seasonId,styleNo"},
 			mode:"eager"
+		},{
+			name:"garmentWithUpc",
+			url:baseUrl+"data/generic/sql",
+			data:{select:"brandId,seasonId,garmentId,upcId,styleNo,colour,size",from:"garmentWithDetail",orderby:"seasonId,garmentId"},
+			mode:"lazy"
 		},{
 			name:"brand",
 			url:baseUrl+"data/dictGarmentBrand/get",
@@ -508,14 +514,37 @@ clivia.factory("cliviaDDS",["DataDictSet",function(DataDictSet){
 	var cliviaDDS=new DataDictSet(dicts);
 	
 	var dictGarment=cliviaDDS.getDict("garment");
-	
+	dictGarment.fields=dictGarment.data.select.split(",");
+
 	dictGarment.getGarment=function(seasonId,styleNo){
 		var items=this.items;
 		var result;
+		var idxSeasonId=2;//this.fields.indexOf["seasonId"],
+			idxStyleNo=3;//this.fields.indexOf["styleNo"];
+		
 		for(var i=0,item;i<items.length;i++){
 			item=items[i];
-			if(item.seasonId===seasonId && item.styleNo===styleNo){
-				result=item;
+			if(item[idxSeasonId]===seasonId && item[idxStyleNo]===styleNo){
+				result={}
+				for(var j=0;j<this.fields.length;j++)
+				result[this.fields[j]]=item[j];
+				break;
+			}
+		}
+		return result;
+	}
+
+	dictGarment.getGarmentById=function(garmentId){
+		var items=this.items;
+		var result;
+		var idxGarmentId=0
+		
+		for(var i=0,item;i<items.length;i++){
+			item=items[i];
+			if(item[idxGarmentId]===garmentId){
+				result={}
+				for(var j=0;j<this.fields.length;j++)
+				result[this.fields[j]]=item[j];
 				break;
 			}
 		}
@@ -1011,7 +1040,7 @@ clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",f
 		    var sizeRangeTitles=thisGGW.season.sizeTitles.split(",");
 			var sizeQtyWidth=40;
 			var sizeQtyEditor=thisGGW.sizeQtyEditor;
-			var sizeQtyTemplate=thisGGW.sizeQtyTemplate;
+	//		var sizeQtyTemplate=thisGGW.sizeQtyTemplate;
 			var sizeQtyAttr={style:"text-align:right;"};
 			
 			var gridColumns=[{
@@ -1023,6 +1052,12 @@ clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",f
 			        width: 25,
 			
 				}, {			
+					name:"garmentId",
+				    field: "garmentId",
+				    title: "Garment Id",
+				    hidden:true,
+				    width: 0
+				}, {			
 					name:"styleNo",
 				    field: "styleNo",
 				    title: "Style",
@@ -1031,13 +1066,13 @@ clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",f
 					name:"description",
 				    field: "description",
 				    title: "Name",
-				    editor: thisGGW.readOnlyColumnEditor,
+				    editor:thisGGW.brand.hasInventory?thisGGW.readOnlyColumnEditor:null,
 				    width: 240
 				}, {
 					name:"colour",
 				    field: "colour",
 				    title: "Colour",
-				    editor:thisGGW.colourColumnEditor,
+				    editor:thisGGW.brand.hasInventory?thisGGW.colourColumnEditor:null,
 				    width: 150
 				}, {
 					name:"remark",
@@ -1047,7 +1082,7 @@ clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",f
 			}];
 			
 			if(sizeRangeFields.length>0){		
-				var j=4;
+				var j=5;
 				for(var i=0;i<sizeRangeFields.length;i++){
 					var field="qty"+("00"+i).slice(-2);
 					gridColumns.splice(j++,0,{
@@ -1131,15 +1166,18 @@ clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",f
 		var styleNo=model.styleNo;
 		if(!styleNo){
 			this.currentGarment=null;
+			model.set("garmentId",null);
 			this.setRowDict();
 		}else{
 			if(this.currentGarment && this.currentGarment.styleNo===styleNo){
 		    	model.set("description",this.currentGarment.styleName);
+		    	model.set("garmentId",this.currentGarment.id);
 			}else{
 				garment=this.dictGarment.getGarment(this.season.id,styleNo);
 				if(garment){
 					thisGGW.currentGarment=garment;
 			    	model.set("description",thisGGW.currentGarment.styleName);
+			    	model.set("garmentId",this.currentGarment.id);
 					thisGGW.setRowDict();
 				}
 			}
@@ -1326,7 +1364,7 @@ clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",f
 		if(thisGGW.reorderRowEnabled) return;
 		var column=thisGGW.getGridColumn(options.field);
 		if(column)
-			if(thisGGW.dict.sizeRange.indexOf(column.title)<0)
+			if(thisGGW.brand.hasInventory && thisGGW.dict.sizeRange.indexOf(column.title)<0)
 		        $("<span>-</span>").appendTo(container);
 			else
 				thisGGW.numberColumnEditor(container,options);

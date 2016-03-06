@@ -8,21 +8,24 @@
 				style="height: 550px; width: 100%;">    
 				
 		<div style="margin:6px;"><!-- top pane-->
+			
 			<b>
-		    <label>{{brand.name}} <span ng-show="garmentGrid.hasRow()">--{{season.name}}</span></label> 
-		    
-	    	<label style="margin-left:20px;" ng-hide="garmentGrid.hasRow()">Season: 
-	    		<season-dropdownlist  
-	    			c-options="{name:'seasonInput',brandId:brand.id}" 
-	    			ng-model="seasonId">
-	    			
-	    		</season-dropdownlist>
-	    	</label>
+			<span ng-show="brand.hasInventory">
+			    <label>{{brand.name}} <span ng-show="garmentGrid.hasRow()">--{{season.name}}</span></label> 
+			    
+		    	<label  style="margin-left:20px;" ng-hide="garmentGrid.hasRow()">Season: 
+		    		<season-dropdownlist  
+		    			c-options="{name:'seasonInput',brandId:brand.id}" 
+		    			ng-model="seasonId">
+		    			
+		    		</season-dropdownlist>
+		    	</label>
+			</span>
 
 		    <label style="margin-left:40px;">Total:&nbsp;{{garmentGrid.getTotal()}}&nbsp;pcs</label>
 
 			</b>
-		    <label style="margin-left:20px;"><input type="checkbox"  style="vertical-align:middle;"
+		    <label ng-show="brand.hasInventory" style="margin-left:20px;"><input type="checkbox"  style="vertical-align:middle;"
 		    	   ng-model="setting.showUsedSizeRangeOnly"
 		    	   ng-click="onClickLineItemEditing()">Show used size range only</label>
 

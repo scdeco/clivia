@@ -30,6 +30,9 @@ public class OrderItem {
 
 	@Column(name="SpecDetail", length=255)
 	private String specDetail;
+	
+	@Column(name="snpId")
+	private Integer snpId;
 
 	public int getId() {
 		return id;
@@ -87,4 +90,12 @@ public class OrderItem {
 		this.specDetail = specDetail;
 	}
 
-}
+	public Integer getSnpId() {
+		return snpId;
+	}
+
+	public void setSnpId(Integer snpId) {
+		this.snpId = snpId;
+	}
+
+	}

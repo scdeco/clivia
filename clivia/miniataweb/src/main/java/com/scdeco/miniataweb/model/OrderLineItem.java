@@ -27,6 +27,9 @@ public class OrderLineItem {
 	@Column(name="SeasonId")
 	private int seasonId;
 	
+	@Column(name="GarmentId")
+	private int garmentId;
+
 	@Column(name="StyleNo",length=20)
 	private String styleNo;
 	
@@ -136,6 +139,14 @@ public class OrderLineItem {
 
 	public void setSeasonId(int seasonId) {
 		this.seasonId = seasonId;
+	}
+
+	public int getGarmentId() {
+		return garmentId;
+	}
+
+	public void setGarmentId(int garmentId) {
+		this.garmentId = garmentId;
 	}
 
 	public String getStyleNo() {
@@ -305,6 +316,5 @@ public class OrderLineItem {
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-
 	
 }

@@ -16,7 +16,7 @@ orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
                    		click:function(e) {
                    			if(e.id!="additem"){
                    				var menuItem=SO.getRegisteredOrderItem(e.id);
-                              	var item=SO.addOrderItem(menuItem.itemType,menuItem.text,menuItem.spec);
+                              	var item=SO.addOrderItem(menuItem);		//enuItem.itemType,menuItem.text,menuItem.spec
                               	SO.setCurrentOrderItem(item.id);
                    			}
                    		}
