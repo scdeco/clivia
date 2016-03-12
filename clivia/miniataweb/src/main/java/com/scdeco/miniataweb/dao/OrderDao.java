@@ -16,6 +16,7 @@ import com.scdeco.miniataweb.model.OrderImage;
 import com.scdeco.miniataweb.model.OrderInfo;
 import com.scdeco.miniataweb.model.OrderItem;
 import com.scdeco.miniataweb.model.OrderLineItem;
+import com.scdeco.miniataweb.model.OrderUpc;
 
 @Repository ("orderDao")
 public class OrderDao {
@@ -39,6 +40,9 @@ public class OrderDao {
 	private OrderEmbDesignDao orderEmbDesignDao;
 	
 	@Autowired
+	private OrderUpcDao orderUpcDao;
+
+	@Autowired
 	private CliviaAutoNumberDao cliviaAutoNumberDao;
 	
 	private static int MAX_TMP_ID=10000;
@@ -55,21 +59,22 @@ public class OrderDao {
 			orderInfo.setOrderNumber('S'+orderNumber.toString());
 			orderInfo.setOrderDate(LocalDate.now());
 			orderInfo.setOrderTime(LocalTime.now());
+		}else{
+			removeDeletedItems(order.getDeleteds());
+			orderUpcDao.deleteListByOrderId(orderInfo.getId());
 		}
 
 		orderInfoDao.saveOrUpdate(orderInfo);
 		
-		removeDeletedItems(order);
-
 		setOrderId(order);
 		
 		if(order.getItems()!=null){
 			for(OrderItem orderItem:order.getItems()){
 				int tmpOrderItemId=orderItem.getId();
-				if(tmpOrderItemId<MAX_TMP_ID)
+				if(isNewOrder||tmpOrderItemId<MAX_TMP_ID)
 					orderItem.setId(0);
 				orderItemDao.saveOrUpdate(orderItem);
-				if(tmpOrderItemId<MAX_TMP_ID)
+				if(isNewOrder||tmpOrderItemId<MAX_TMP_ID)
 					setOrderItemId(order,tmpOrderItemId,orderItem.getId());
 			}
 		}
@@ -89,6 +94,12 @@ public class OrderDao {
 		if(order.getImageItems()!=null){
 			for(OrderImage imageItem:order.getImageItems()){
 				orderImageDao.saveOrUpdate(imageItem);
+			}
+		}
+		
+		if(order.getUpcs()!=null){
+			for(OrderUpc upc:order.getUpcs()){
+				orderUpcDao.saveOrUpdate(upc);
 			}
 		}
 	}
@@ -164,6 +175,13 @@ public class OrderDao {
 				imageItem.setOrderId(orderId);
 			}
 		}		
+		
+		if(order.getUpcs()!=null){
+			for(OrderUpc orderUpc:order.getUpcs()){
+				orderUpc.setOrderId(orderId);
+			}
+		}
+		
 	}
 	
 	private void setOrderItemId(OrderClivia order,int tmpOrderItemId,int newOrderItemId){
@@ -191,8 +209,7 @@ public class OrderDao {
 	}
 	
 	
-	private void removeDeletedItems(OrderClivia order){
-		List<Map<String,String>> deletedItems=order.getDeleteds();
+	private void removeDeletedItems(List<Map<String,String>> deletedItems){
 		if(!deletedItems.isEmpty()){
 			System.out.println("deleted:"+deletedItems);
 			

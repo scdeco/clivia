@@ -21,7 +21,11 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 			link:function(scope){
 
 				scope.clearDataSet=function(){
- 					scope.dataSet.info={isCustomer:true};
+ 					scope.dataSet.info={
+ 							discount:0.20,
+ 							useWsp:true,
+ 							isCustomer:true
+ 						};
  					for(var i=0,items,itemName;i<scope.companyItemNames.length;i++){
  						itemName=scope.companyItemNames[i];
  						items=scope.dataSet[itemName+'Items'];
@@ -277,6 +281,17 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 						url:"../datasource/employeeInfoDao/read",
 						dict:cliviaDDS.getDict("employeeInput"),
 					}
+				$scope.discountOptions={
+						min: 0,
+		             	max: 1,
+			            step: 0.01,
+			            format: "{0:p0}",
+			            decimals:2
+				}
+				
+				$scope.termOptions={
+						dataSource:["Prepaid","Net 15 Days","Net 30 Days","Net 45 Days","Net 60 Days","2%/10/N30","2%/10/N45","2%/10/N60"],
+				}
 				
 				$scope.mainSplitterOptions={
 						resize:function(e){
@@ -688,6 +703,25 @@ crmApp.factory("CompanyGridWrapper",["GridWrapper",function(GridWrapper){
 		         title: "Country",
 				 filterable: { multi:true},
 		         width: 85,
+		     }, {
+		         name: "discount",
+		         field: "discount",
+		         title: "% Off",
+		         width: 60,
+		     }, {
+		         name: "term",
+		         field: "term",
+		         title: "Term",
+		         width: 100,
+		         
+ 		     }, {
+		         name: "useWsp",
+		         field: "useWsp",
+		         title: "Use WSP",
+		         width: 80,
+		         template: '<input type="checkbox" #= useWsp ? checked="checked" : "" # disabled="disabled" />',
+		         filterable:{multi: true, dataSource: [{ useWsp: true }, { useWsp: false }, {useWsp:null}]}, 
+		         
 		     }, {
 		         name: "website",
 		         field: "website",

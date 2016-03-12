@@ -22,8 +22,8 @@ public class OrderItem {
 	@Column(name="Title", length=50)
 	private String title;
 	
-	@Column(name="Type", length=20)
-	private String type;
+	@Column(name="TypeId", length=20)
+	private Integer typeId;
 	
 	@Column(name="Spec", length=255)
 	private String spec;
@@ -31,6 +31,7 @@ public class OrderItem {
 	@Column(name="SpecDetail", length=255)
 	private String specDetail;
 	
+	//if >0,this item is billable,and bill to the snpId
 	@Column(name="snpId")
 	private Integer snpId;
 
@@ -66,12 +67,12 @@ public class OrderItem {
 		this.title = title;
 	}
 
-	public String getType() {
-		return type;
+	public Integer getTypeId() {
+		return typeId;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setTypeId(Integer typeId) {
+		this.typeId = typeId;
 	}
 
 	public String getSpec() {
@@ -98,4 +99,6 @@ public class OrderItem {
 		this.snpId = snpId;
 	}
 
-	}
+	
+
+}

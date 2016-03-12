@@ -3,7 +3,7 @@
 	var orderApp = angular.module("orderApp",
 			[ "ui.router", "kendo.directives","clivia" ]);
  //SO
-orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http, $q, $state,consts,cliviaDDS){
+orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",function($http, $q, $state,consts,cliviaDDS,util){
 	var _order={
 			dataSet:{
 					info:{},
@@ -47,10 +47,12 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 				},
 				
 			dds:{
-				garment:cliviaDDS.getDict("garment"),
 				image:cliviaDDS.createDict("image",consts.baseUrl+"data/libImage/","onDemand"),
+				
+				garment:cliviaDDS.getDict("garment"),
 				brand:cliviaDDS.getDict("brand"),
 				season:cliviaDDS.getDict("season"),
+				upc:cliviaDDS.getDict("upc"),
 				},
 				
 			instance:{
@@ -66,22 +68,27 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 		dataSet[setting.registeredItemTypes[i].name+"s"]=new kendo.data.ObservableArray([]);	
 	}
 	
+	_order.getRegisteredItemType=function(id){
+		 var item=null;
+		 for(var i=0;i<setting.registeredItemTypes.length;i++)
+			 if(setting.registeredItemTypes[i].id===id){
+				 item=setting.registeredItemTypes[i];
+				 break;
+			 }
+		return item;
+	}
 	
 	_order.getRegisteredOrderItem=function(id){
 		 var item=null;
 		 for(var i=0;i<setting.registeredOrderItems.length;i++)
 			 if(setting.registeredOrderItems[i].id===id){
 				 item=setting.registeredOrderItems[i];
-/* 				 if(item.itemType==="lineItem" && item.itemType!=="Generic"){
-					 var a=item.spec.split(":");
-					 item.spec+=";"+getCurrentSeason(a[1]);
-				 } */
 				 break;
 			 }
 		return item;
 	}
 
-	//setting,used by item.id,lineitem.id..., 
+	//setting,used by item.id,lineitem.id,billItemId..., 
 	_order.getTmpId=function(){
 		return ++_order.instance.tmpId;
 	}
@@ -97,11 +104,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
     }
     
 	_order.clearDataSet=function(){
-		var info=dataSet.info;
-		
-		for(var p in info)
-		    if(info.hasOwnProperty(p))
-		        info[p] = null;
+		util.clearProperties(dataSet.info);
 		
 		dataSet.items.splice(0,dataSet.items.length);
 		for(var i=0;i<_order.setting.registeredItemTypes.length;i++){
@@ -193,42 +196,57 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 	}
 	
 	
-	//set rowId and orderId of tables in dataSet to empty for repeat order
-	var clearRowIdAndOrderId=function (dataTableName){
-		
-		var dataTable=dataSet[dataTableName];
-		if(dataTable){
-	    	for(var i=0;i<dataTable.length;i++){
-	    		dataTable[i].id=null;
-	    		dataTable[i].orderId=null;
-	    	}
-		}
-	}
-	
 	_order.isNew=function(){
 		return !dataSet.info.id;
 	}
 
 	
 	_order.repeat=function(){
-		var customerId=dataSet.info.customerId,buyer=dataSet.info.buyer,orderName=dataSet.info.OrderName;
 		
-		dataSet.info={
-				orderId:0,
-				orderNumber:'',
-				customerId:customerId,
-				buyer:buyer,
-				orderName:orderName
+		var customerId=dataSet.info.customerId,
+			buyer=dataSet.info.buyer,
+			orderName=dataSet.info.orderName;
+			repId=dataSet.info.repId;
+		
+		util.clearProperties(dataSet.info);	
+		
+		dataSet.info.customerId=customerId,
+		dataSet.info.buyer=buyer;
+		dataSet.info.orderName=orderName;
+		dataSet.info.repId=repId;
+		
+		var mapOrderItemId={};
+		
+		for(var i=0,orderItem,orderItemId;i<dataSet.items.length;i++){
+			orderItem=dataSet.items[i];
+			orderItemId=String(orderItem.id);
+			orderItem.id= _order.getTmpId();
+			orderItem.orderId=null;
+			mapOrderItemId[orderItemId]=orderItem.id;
 		}
 		
-		clearRowIdAndOrderId("items");
+		var itemButtons=_order.instance.itemButtons;
+		for(var i=0,ib;i<itemButtons.length;i++){
+			ib=itemButtons[i];
+			ib.orderItemId=mapOrderItemId[String(ib.orderItemId)];
+		}
+		
+		var itemTypes=_order.setting.registeredItemTypes;
+		for(var i=0;i<itemTypes.length;i++){
+			var dt=itemTypes[i].name+"s";
+			var dataItems=dataSet[dt];
+			if(dataItems){
+		    	for(var i=0,di;i<dataItems.length;i++){
+		    		di=dataItems[i];
+		    		di.id=null;
+		    		di.orderId=null;
+		    		di.orderItemId=mapOrderItemId[String(di.orderItemId)];
+		    	}
+			}
+		}
 
 		_order.deleteds=[];		
 
-		for(var i=0;i<_order.registeredItemTypes.length;i++){
-			var itemType=_order.registeredItemTypes[i].name+"s";
-			clearRowIdAndOrderId(itemType);
-		}
 	}
 	
 	//retrieve data from server with provided orderNumber and populate into order's dataSet
@@ -309,7 +327,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 		
 		if(dataItem){
 			if(instance.currentItemId!==oldId){
-	 		  	 $state.go('main.'+dataItem.type,{orderItemId:orderItemId});
+				var type=_order.getRegisteredItemType(dataItem.typeId);
+	 		  	 $state.go('main.'+type.name,{orderItemId:orderItemId});
 			}
 		}else{
 			$state.go('main.blankitem');
@@ -367,12 +386,12 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
     			id:orderItemId,
     			lineNo:dataSet.items.length+1,
 	     		title:menuItem.text,
- 				type:menuItem.itemType,
- 				spec:menuItem.spec,
+ 				typeId:menuItem.itemTypeId,
  				snpId:menuItem.snpId,
+ 				spec:menuItem.spec,
      		};
      	
-     	if(menuItem.itemType==="lineItem"){
+     	if(menuItem.itemTypeId===2){		//"lineItem"
      		var brand=_order.getBrandFromSpec(menuItem.spec);
    			var season=_order.getSeasonFromSpec(menuItem.spec);
    			orderItem.spec=season.brandId+":"+season.id;
@@ -405,10 +424,11 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
    		_order.setCurrentOrderItem(idx);
    		
    		//register to deleted items
-	   	_order.registerDeletedItem("item",orderItem.id);
+	   	_order.registerDeletedItem("item",orderItem.id,true);
 	   	
-    	//get dataTable from the dataSet, orderItem.type is the dataTable name
-	   	 var dis=_order.dataSet[orderItem.type+"s"];  
+    	//get dataTable from the dataSet, orderItem.typeId registeredItemType.name is the dataTable name
+		 var type=_order.getRegisteredItemType(dataItem.typeId);
+	   	 var dis=_order.dataSet[type.name+"s"];  
 		 for(var i=dis.length-1;i>=0;i--){
 			 di=dis[i];
 			 if(di.orderItemId===orderItem.id){
@@ -423,8 +443,9 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
    		 
         };
        
-	_order.registerDeletedItem=function(entity,id){
-		if(id>=consts.maxTmpId){
+	_order.registerDeletedItem=function(entity,id,hasDependent){
+		var flag=(!!hasDependent)?id>=consts.maxTmpId:!!id
+		if(flag){
 			var deletedItem={entity:entity,id:id};
 			dataSet.deleteds.push(deletedItem);
 		}
@@ -432,7 +453,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 	
 	_order.generateBillableItems=function(billOrderItem){
 		if(!billOrderItem) return;
-		if(billOrderItem.type!=="billItem") return;
+		if(billOrderItem.typeId!==1) return;	//not a billItem	
 		
 		var	billableItems=[];
 		var billableIdx={};
@@ -440,13 +461,17 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 		var orderId=_order.dataSet.info.id;
 		var dictGarment=_order.dds.garment;
 		
+		var useWsp=true;
+		var discount=0.20;
+		
 		for(var i=0,orderItem;i<orderItems.length;i++){
 			orderItem=orderItems[i];
 			if(orderItem.snpId){
-				if(orderItem.type==="lineItem" ){
-					if(!billableIdx[orderItem.type])
-						billableIdx[orderItem.type]={};
-					var idx=billableIdx[orderItem.type];
+				if(orderItem.typeId===2){		//"lineItem"
+					var strTypeId=String(orderItem.typeId);
+					if(!billableIdx[strTypeId])
+						billableIdx[strTypeId]={};
+					var idx=billableIdx[strTypeId];
 					var lineItems=dataSet.lineItems;
 					
 					for(var j=0,f,sid,lineItem,billableItem;j<lineItems.length;j++){
@@ -462,16 +487,21 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 							}else{
 								var garment=dictGarment.getGarmentById(lineItem.garmentId);
 								if(garment){
+									var listPrice=useWsp?garment.wsp:garment.rrp;
 									billableItem={
 											orderId:orderId,
 											orderItemId:billOrderItem.id,											
 											snpId:orderItem.snpId,
-											type:orderItem.type,
-											key:lineItem.garmentId,
-											description:lineItem.styleNo+"--"+lineItem.description,
+											itemTypeId:orderItem.typeId,
+											itemNumber:lineItem.styleNo,
+											billingKey:String(lineItem.garmentId),
+											description:lineItem.description,
 											unit:"PCS",
 											orderQty:lineItem.quantity,
-											orderPrice:garment.wsp,
+											listPrice:listPrice,
+											discount:discount,
+											orderPrice:(discount>0 && discount<1)?listPrice*(1-discount):listPrice,
+											orderAmt:0,
 										}
 									f=billableItems.push(billableItem);
 									idx[sid]=f-1;
@@ -488,42 +518,43 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 		var billItems=dataSet.billItems;
 		var billItemsIdx={};
 		
-		for(var i=0,item;i<billItems.lenght;i++){
+		for(var i=0,item;i<billItems.length;i++){
 			item=billItems[i];
-			if(item.type){			//auto generated item
-				if(!billItemsIndex[item.type])
-					billItemsIndex[item.type]={};
-				var idx=billItemsIdx[item.type];
-				idx[String(item.key)]=i;
-				billItems[i].notChecked=true;
+			if(item.itemTypeId){			//auto generated item
+				var strItemTypeId=String(item.itemTypeId);
+				if(!billItemsIdx[strItemTypeId])
+					billItemsIdx[strItemTypeId]={};
+				var idx=billItemsIdx[strItemTypeId];
+				idx[String(item.billingKey)]=i;
+				billItems[i].checked=false;
 			}
 		}
 		
 		var newAddBillItems=[];
 
-		for (var i=0,j,idx,found,billableItem;i<billableItems.length;i++){
+		for (var i=0,j,idx,billableItem,notFound;i<billableItems.length;i++){
 			billableItem=billableItems[i];
 			
-			idx=billItemsIdx[billableItem.snpId];
-			j=-1;
-			if(idx){
-				j=idx[String(billableItem.key)];
-				if(j>=0){
-					billItem=billItems[j];
-					billItem.orderQty=billableItem.orderQty;
-					billItem.notChecked=false;
-				}		
-			}
-			if(j<0){
+			idx=billItemsIdx[String(billableItem.itemTypeId)];
+			j=idx?idx[String(billableItem.billingKey)]:notFound;
+			
+			if(j>=0){	
+				//if found, only quantity need to change and recalcuate the amount using the original price,
+				//price might has been chaneged by user
+				billItem=billItems[j];
+				billItem.orderQty=billableItem.orderQty;
+				//billItem.orderAmt=billableItem.orderQty*billItem.orderPrice;	
+				billItem.checked=true;
+			}else{
+				//billableItem.orderAmt=billableItem.orderQty*billableItem.orderPrice;
 				billItem=billableItem;
 				newAddBillItems.push(billItem);
 			}
-			billItem.orderAmt=billItem.orderQty*billItem.orderPrice;
 		}
 		
 		for(var i=billItems.length-1,item;i>=0;i--){
 			item=billItems[i];
-			if(item.type && item.notChecked)
+			if(item.type && !item.checked)
 				billItems.splice(i,1);
 		}
 		
@@ -531,39 +562,160 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 			billItems.unshift(newAddBillItems[i]);
 		
 	}
+
+ 	_order.getStyleGridHtml=function(garmentId,print){
+		if(!garmentId) return;
+		var garId=parseInt(garmentId);
+		var garment=_order.dds.garment.getGarmentById(garId);
+		if(!garment) return;
+		var season=_order.dds.season.getLocalItem("id",garment.seasonId)
+		
+		
+		//use util.split to split the string with delimiter "," and trim the result
+		var sizes=util.split(garment.sizeRange);
+		var colours=util.split(garment.colourway);
+		
+		//sizefields in lineItem
+		var sizeFields=util.split(season.sizeFields);	
+		
+		var data=[];
+		var colourIndex={};
+
+		for(var i=0,row;i<colours.length;i++){
+			//0 is colour,and sizes.length+1 is total qty of the colour, 1 to sizes.length is qty of size
+			row=new Array(sizes.length+2);		
+			row[0]=colours[i];
+			colourIndex[colours[i]]=i;
+			data.push(row);
+		}
+		var idxColourQty=sizes.length+1;
+		
+		var lineItems=_order.dataSet.lineItems;
+		for(var i=0,r,lineItem,row;i<lineItems.length;i++){
+			lineItem=lineItems[i];
+			if(lineItem.garmentId===garId){
+				r=colourIndex[lineItem.colour];
+				if(r>=0){
+					row=data[r];
+					for(var j=0,k,field,qty;j<sizeFields.length;j++){
+						field="qty"+("00"+j).slice(-2); 	//right(2)
+						var qty=parseInt(lineItem[field]);
+						if(qty){
+							k=sizes.indexOf(sizeFields[j])+1;	//first is colour column
+							row[k]=row[k]?row[k]+qty:qty;
+							row[idxColourQty]=row[idxColourQty]?row[idxColourQty]+qty:qty;
+						}
+					}
+				}
+			}
+		}
+		
+		var html="<table class='billDetailLineItem'>";
+		html+="<tr><th class='tal'>Colour</th>";
+		for(var i=0;i<sizes.length;i++){
+			html+="<th class='billDetailQty tar'>"+sizes[i]+"</th>";
+		}
+		html+="<th class='tar lineqty'>Line Qty</th></tr>";
+		
+		for(var i=0,row;i<colours.length;i++){
+			row=data[i];
+			if(!print || row[row.length-1]){
+				html+="<tr><td class='tal'>"+colours[i]+"</td>";
+				for(var j=1;j<row.length;j++){
+					html+="<td class='tar'>"+(row[j]?row[j]:"")+"</td>";
+				}
+				html+="</tr>";
+			}
+		}
+		
+		html+="</table>";
+		
+		return html;
+		
+	}	
+ 	
+ 	_order.getBillHeaderHtml=function(){
+ 		
+ 		
+ 	}
+
+ 	
+ 	_order.printBill=function(billItems,lineItemOnly){
+		var html="<table class='printBillItem'>";
+		
+		html+="<tr><th class='tal style'>Style</th><th class='tal desc'>Description</th><th class='tar qty'>Quantity</th><th class='tar price'>Unit Price</th><th class='tar amt'>Amount</th></tr>";
+ 		
+		var totalQty=0,totalAmt=0;
+ 		for(var i=0,bi,h,p;i<billItems.length;i++){
+ 			bi=billItems[i];
+ 			
+ 			totalAmt+=bi.orderAmt?bi.orderAmt:0;
+ 			totalQty+=bi.orderQty?bi.orderQty:0;
+ 			
+ 			if(lineItemOnly?bi.itemTypeId===2:true){
+	 			html+="<tr class='lineitemrow'><td class='tal'>"+(bi.itemNumber?bi.itemNumber:"")+"</td>"+
+			 			"<td class='tal'>"+(bi.description?bi.description:"")+"</td>"+
+	 		 			"<td class='tar'>"+(bi.orderQty?kendo.toString(bi.orderQty,"##,#"):"")+"</td>"+
+			 			"<td class='tar'>"+(bi.orderPrice?kendo.toString(bi.orderPrice, "0.00"):"")+"</td>"+
+			 			"<td class='tar'>"+(bi.orderAmt?kendo.toString(bi.orderAmt, "c"):"")+"</td>"; 
+				if(bi.itemTypeId===2){		//lineItem
+					h=_order.getStyleGridHtml(parseInt(bi.billingKey),true);
+					if(h)
+			 			html+="<tr class='styletablerow'><td></td>"+
+			 			"<td colspan='2'><div class='styletable'>"+h+"</div></td>"+
+			 			"<td></td>"+
+			 			"<td></td></tr>";
+				}
+ 			}
+ 		}
+ 		
+ 		html+="<tr class='totalrow'><td colspan='2'>Total:</td><td>"+kendo.toString(totalQty,"##,#")+
+ 			"</td><td colspan='2'>"+kendo.toString(totalAmt,"c")+ "</td></tr></table>";
+ 		
+ 		html+="<style> table{border-collapse: collapse;border-width:0; } "+
+ 			" table.printBillItem{width:100%;}"+
+ 			" th {border-bottom: 1px solid black;}"+
+ 	//		" tr.lineitemrow {background-color:#c0c0c0 !important;}" +
+ 			" tr.lineitemrow > td {padding-top:10px;} "+
+ 			" tr.styletablerow > td {padding-bottom:15px;} "+
+ 	//		" table.printBillItem>tbody>tr:last-child>td {border-bottom: 1px solid black;}"+
+ 			"tr.totalrow td{font-size:10pt; font-weight: bold;text-align:right;border-bottom: 1px solid black;border-top: 1px solid black; padding:10px 2px;}"+
+ 			" div.styletable{padding-left:50px; float:left;} "+ 
+ 			" div.styletable td {padding:2px 6px; font-size:8pt;} "+
+ 			" .tal{text-align:left;} .tac{text-align: center;} .tar{text-align: right;} </style>";		//th.desc{width:300pt;} td.billDetailQty{width:25px;}
+ 		
+ 		util.print(html);
+ 	}
 	
 	_order.generateUpcs=function(){
+		var dictUpc=_order.dds.upc;
+
 		var upcs=dataSet.upcs;
-		
 		upcs.splice(0,dataSet.upcs.length);
 		
 		var orderItems=dataSet.items;
 		var orderId=_order.dataSet.info.id;
+		var idxUpc={};
+		
 		for(var i=0,orderItem;i<orderItems.length;i++){
 			orderItem=orderItems[i];
-			if(orderItem.type==="lineItem"){
+			if(orderItem.typeId===2){ //"lineItem"
 				var brand=_order.getBrandFromSpec(orderItem.spec);
 				if(brand.hasInventory){
 					var season=_order.getSeasonFromSpec(orderItem.spec);
-					var sizes=season.sizeFields.split(",");
+					var sizes=util.split(season.sizeFields);
 					var lineItems=dataSet.lineItems;
 					for(var j=0,lineItem;j<lineItems.length;j++){
 						lineItem=lineItems[j];
-						if(lineItem.orderItemId===orderItem.id && lineItem.styleNo && lineItem.colour){
+						if(lineItem.orderItemId===orderItem.id && lineItem.garmentId && lineItem.colour){
 							
-							
-							for(var f=0,field,qty,upc;f<14;f++){
+							for(var f=0,field,qty,upc,upcId;f<14;f++){
 								field="qty"+("00"+f).slice(-2);
 								qty=lineItem[field]?lineItem[field]:0;
 								if(qty){
-									upc={
-										orderId:orderId,
-										seasonId:lineItem.seasonId,
-										styleNo:lineItem.styleNo,
-										colour:lineItem.colour,
-										size:sizes[f],
-										qty:qty
-									}
+									//might need to create index here, if need to combine									
+									upcId=dictUpc.getUpcId(lineItem.garmentId,lineItem.colour,sizes[f]);
+									upc={upcId:upcId,orderQty:qty};
 									upcs.push(upc);
 								}
 							}	//end of for:f	
@@ -573,6 +725,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 				}
 			}
 		}	//end of for:i
+		
+		
 	}
 	
 	_order.getBrandFromSpec=function(orderItemSpec){
@@ -589,9 +743,9 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS",function($http
 		if(orderItemSpec){
 			var specs=orderItemSpec.split(":");
 			if(specs.length>1){
-				season=_order.dds.season.getSeasonL(parseInt(specs[0]),parseInt(specs[1]));
+				season=_order.dds.season.getLocalItem("id",parseInt(specs[1]));
 			}else{
-				season=_order.dds.season.getCurrentSeasonL(parseInt(specs[0]));
+				season=_order.dds.season.getCurrentSeason(parseInt(specs[0]));
 			}
 		}
 		return season; 

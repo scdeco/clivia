@@ -11,6 +11,9 @@ public class OrderClivia {
 	private List<OrderLineItem> lineItems;
 	private List<OrderImage> imageItems;
 	private List<Map<String,String>> deleteds;
+	private List<OrderUpc> upcs;
+	
+	
 	public OrderInfo getInfo() {
 		return info;
 	}
@@ -46,6 +49,12 @@ public class OrderClivia {
 	}
 	public void setDeleteds(List<Map<String, String>> deleteds) {
 		this.deleteds = deleteds;
+	}
+	public List<OrderUpc> getUpcs() {
+		return upcs;
+	}
+	public void setUpcs(List<OrderUpc> upcs) {
+		this.upcs = upcs;
 	}
 	
 

@@ -6,21 +6,27 @@
 		baseUrl:"/miniataweb/",
 		
 		registeredItemTypes:[{
-				name:"lineItem",
-				hasDetail:false
-			},{
-				name:"imageItem",	
-				hasDetail:false
-			},{
-				name:"designItem",	
-				hasDetail:false
-			},{
+				id:1,
 				name:"billItem",	
 				hasDetail:false
 			},{
+				id:2,
+				name:"lineItem",
+				hasDetail:false
+			},{
+				id:3,
+				name:"designItem",	
+				hasDetail:false
+			},{
+				id:4,
+				name:"imageItem",	
+				hasDetail:false
+			},{
+				id:5,
 				name:"fileItem",
 				hasDetail:false
 			},{
+				id:6,
 				name:"emailItem",	
 				hasDetail:false
 			}],
@@ -30,7 +36,8 @@
 				 icon: "insert-n",
 				 id:"billitem",
 				 spec:"",
-				 itemType: "billItem"
+				 itemType: "billItem",
+				 itemTypeId:1,
 			},{
 				 type: "separator" 
 			},{
@@ -38,14 +45,16 @@
 				 icon: "insert-n",
 				 id: "lineitem",
 				 spec: "1",
-				 itemType: "lineItem"		//datatable
+				 itemType: "lineItem",		//datatable
+				 itemTypeId:2,
 			},{
 				 text: "Double Diamond", 
 				 icon: "insert-n",
 				 id:"lineitemdd",
 				 snpId:14,
 				 spec:"2",				//brandId
-				 itemType:"lineItem"
+				 itemType:"lineItem",
+				 itemTypeId:2,
 			},{
 				type: "separator" 
 			},{
@@ -53,25 +62,30 @@
 				icon: "insert-m",
 			   	id:"designitem",
 				spec:"",
-				itemType: "designItem"
+				itemType: "designItem",
+				itemTypeId:3,
 			},{ 
 				text: "Image", 
 				icon: "insert-m",
 			   	id:"imageitem",
 				spec:"",
-				itemType: "imageItem"
+				itemType: "imageItem",
+				itemTypeId:4,
+
 			},{ 
 				text: "File", 
 				icon: "insert-s",
 			   	id:"fileitem",
 				spec:"",
-				itemType: "fileItem"
+				itemType: "fileItem",
+				itemTypeId:5,
 			},{ 
 				text: "Email", 
 				icon: "insert-s",
 			   	id:"emailitem",
 				spec:"",
-				itemType: "emailItem"
+				itemType: "emailItem",
+				itemTypeId:6,
 			},{ 
 				text: "Send&Receive",
 				icon: "insert-s",

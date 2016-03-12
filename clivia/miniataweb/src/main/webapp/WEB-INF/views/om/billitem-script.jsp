@@ -1,6 +1,6 @@
 <script>
-orderApp.controller("billItemCtrl",["$scope","$state","SO",
-         function($scope,$state,SO){
+orderApp.controller("billItemCtrl",["$scope","$state","$sce","SO",
+         function($scope,$state,$sce,SO){
 	
 	if(SO.instance.currentItemId===0) return;
 	
@@ -57,9 +57,25 @@ orderApp.controller("billItemCtrl",["$scope","$state","SO",
 		        
 	//pass to moneyGird directive to register removed lineitem		        
 	$scope.registerDeletedItemFunction=function(dataItem){
-		SO.registerDeletedItem(orderItem.type,dataItem.id);
+		SO.registerDeletedItem("billItem",dataItem.id);
 	}
+	
+	//generate auto bill items from lineItems...
+	SO.generateBillableItems(orderItem);
+	
+	$scope.getBillDetailFunction=function(billItem){
+		var html;
+		//if itemTypeId===2, the item is from lineItem and its billingKey is a string of garmentId
+		if(billItem && billItem.itemTypeId===2){
+			html=SO.getStyleGridHtml(billItem.billingKey);
+		}
+		
+		if(!html)
+			html="<div></div>";
+		$scope.htmlBillItemDetail=$sce.trustAsHtml(html); 
+	};
+	
 
-
+	
 }]);
 </script>

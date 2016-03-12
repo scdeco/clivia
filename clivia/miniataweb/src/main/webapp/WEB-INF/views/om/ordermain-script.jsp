@@ -37,24 +37,20 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	            }, {
 	                type: "button",
 	                text: "Print",
-	                id:"btnPrint"
+	                id:"btnPrint",
+	                click: function(e) {
+	                	$scope.printOrder();
+	                }	                
 	            }, {
 	                type: "separator",
-	            }, {
+ 	            }, {
 	                type: "button",
 	                text: "Upc",
 	                id:"btnUpc",
 	                click: function(e) {
 		                	$scope.generateUpcs();
 		                }
-	            }, {
-	                type: "button",
-	                text: "Bill",
-	                id:"btnBill",
-	                click: function(e) {
-		                	$scope.generateBillableItems();
-		                }
-	                
+ 	                
 	       }]
 	    };	
 	$scope.companyOptions={
@@ -71,6 +67,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	};	
 	
 	$scope.generateBillableItems=function(){
+		
 		var currentOrderItem=SO.getCurrentOrderItem();
 		SO.generateBillableItems(currentOrderItem);
 		$scope.$apply();
@@ -82,6 +79,28 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	};	
 	
 	
+	$scope.printOrder=function(){
+		var orderItem=SO.getCurrentOrderItem();
+		if(orderItem.typeId===1){	//billItem
+			var dataSource=new kendo.data.DataSource({
+						     	data:SO.dataSet.billItems, 
+						   	    filter: {field: "orderItemId", operator: "eq",value: orderItem.id },    
+							    sort:{field:"lineNo"},
+						    }); //end of dataSource,
+						    
+			dataSource.fetch(function() {
+				  var billItems = dataSource.view();
+				  SO.printBill(billItems,true)		//print billItems that from lineitem(typeid===2) only
+				});
+		}
+		
+	}
+
+	$scope.repeatOrder=function(){
+		SO.repeat();
+		$scope.$apply();
+	}
+
 	$scope.getOrder=function(){
 		
 		if(!!$scope.searchOrderNumber){

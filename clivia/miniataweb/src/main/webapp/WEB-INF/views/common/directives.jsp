@@ -358,10 +358,6 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 		         $("<span>" + options.model.get(options.field)+ "</span>").appendTo(container);
 		     };
 		     
-			var readOnlyColumnEditor=function(container, options) {
-		         $("<span>" + options.model.get(options.field)+ "</span>").appendTo(container);
-		     };
-		     
 		    var quantityColumnEditor=function(container, options) {
 		    		if(options.model.id){
 				        $('<input class="grid-editor" data-bind="value:' + options.field + '"/>')
@@ -673,24 +669,30 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 					       	},
 					       	
 			 		       	save: function(e) {
+				 		       	console.log("event save:"+JSON.stringify(e.values));
+			 		       		
 					       		if(ggw.brand.hasInventory && typeof e.values.styleNo!== 'undefined'){		//styleNo changed
-						       		console.log("event save:"+JSON.stringify(e.values));
-				  	        		e.preventDefault();
+						       		
+					       			//stop accept the default value,use the value after processed below
+					       			e.preventDefault();
 			 		       			if(e.values.styleNo===";"){
 					       				ggw.copyPreviousRow();
-						        		ggw.calculateTotal(e.model);
-					       				scope.$apply();	//show changes
+					       				setTimeout(function(){
+					       						ggw.calculateTotal();
+					       						scope.$apply();	//show changes
+											},1);
 					       		 	}else {
 						          		e.model.set("styleNo",e.values.styleNo.toUpperCase().trim());
 						          		ggw.setCurrentGarment(e.model);
 					          		}
 					          	}else{
-
 						        	for(var c=0,field; c<ggw.season.sizeFields.length; c++){
 						        		field="qty"+("00"+c).slice(-2);
 							        	if(typeof e.values[field]!== 'undefined'){
-							        		e.model[field]=e.values[field];
-							        		ggw.calculateTotal(e.model);
+						       				setTimeout(function(){
+					       						ggw.calculateTotal(true);
+					       						scope.$apply();
+											},1);
 											break;
 							        	}
 						        	}
@@ -700,26 +702,24 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 					       	
 					         //row or cloumn changed
 					       	change:function(e){
-					       		var row=ggw.getCurrentRow();
-					       		console.log("event change:");
+/* 					       		var row=ggw.getCurrentRow();
 					       		var	newRowUid=row?row.dataset["uid"]:"";
 				        		if((typeof newRowUid!=="undefined") && (ggw.currentRowUid!==newRowUid)){		//row changed
-				        			ggw.currentRowUid=newRowUid;
+				        			ggw.currentRowUid=newRowUid; */
+				        		if(ggw.rowChanged()){
 				        			var dataItem=ggw.getCurrentDataItem();
-				        			if(dataItem){
-					        			ggw.setCurrentGarment(dataItem);
+				        			ggw.setCurrentGarment(dataItem);
 					        			//$state.go('main.lineItem.detail',{orderItemId:orderItemId,lineItemId:dataItem.lineNumber});
-				        			}
 				        		};
 					       	},
 					       	
 					        edit:function(e){
 					        	console.log("event edit:");
+					        	//without code below,when navigate with keybord like tab key, the editing cell will not be selected 
 							    var editingCell=ggw.getEditingCell();
 							    if(!!editingCell){
 							    	this.select(editingCell);
-						        	console.log("set editing cell:");
-							    }
+							    } 
 
 					        }
 
@@ -772,7 +772,11 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 				var deleteRow=function (){
 					var dataItem=ggw.getCurrentDataItem();
 				    if (dataItem) {
-				        if (confirm('Please confirm to delete the selected row.')) {
+				    	var confirmed=true;
+				        if (dataItem.quantity){
+				        	confirmed=confirm('Please confirm to delete the selected row.');	
+				        }
+				        if(confirmed){
 					    	if(dataItem.id && scope.cRegisterDeletedItemFunction){
 					    		var register=scope.cRegisterDeletedItemFunction();
 					    		register(dataItem);
@@ -833,6 +837,7 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 				cPageable:'=',
 				cNewItemFunction:'&',
 				cRegisterDeletedItemFunction:'&',
+				cGetBillDetailFunction:'&',
 			},
 			
 			templateUrl:'../common/billgrid',
@@ -846,7 +851,10 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 
 					if (widget ===scope[scope.gridName]) {
 			        	bgw.wrapGrid(widget);
-			        	//bgw.calculateTotal();
+			        	bgw.calculateTotal(true);
+			        	
+			        	//without setTimeout,scope.$apply() will cause digesting error
+			        	setTimeout(function(){scope.$apply();},100);
 
 			        	if(scope.cName){
 				        	scope.$parent[scope.cName]={
@@ -881,16 +889,19 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 				        selectable: "cell",
 				        navigatable: true,
 				        resizable: true,
-					//events:		 
+						
+				        //events:		 
 				       	dataBinding: function(e) {
-				       		console.log("event binding:"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
+				       		console.log("bill grid event: binding--"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
 				       	},
 				       	
 				       	dataBound:function(e){
-				       		console.log("event databound:");
+				       		console.log("bill grid event: dataBound");
 				       	},
 				       	
 		 		       	save: function(e) {
+				       		console.log("bill grid event: save");
+				       		
 		 		       		if(typeof e.values.snpId!== 'undefined'){
 		 		       			var unit="";
 		 		       			if(e.values.snpId){
@@ -898,46 +909,65 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 		 		       				unit=(snpItem)?snpItem.unit:"";		 		       				
 		 		       			}
 		 		       			e.model.set("unit",unit);
-		 		       		}else{
-			 		       		var field;
+		 		       		}
+		 		       		if(typeof e.values.orderQty!== 'undefined' || 
+		 		       		   typeof e.values.listPrice!== 'undefined'||
+		 		       		   typeof e.values.orderPrice!== 'undefined'||
+		 		       		   typeof e.values.discount!== 'undefined'){
+		 		       			
+		 		       			if(typeof e.values.listPrice!== 'undefined'){
+		 		       				var orderPrice=calculateOrderPrice(e.values.listPrice,e.model.discount)
+		 		       				if(orderPrice>0)
+		 		       					e.model.set("orderPrice",orderPrice);
+		 		       			}
+		 		       			if(typeof e.values.discount!== 'undefined'){
+		 		       				var orderPrice=calculateOrderPrice(e.model.listPrice,e.values.discount)
+		 		       				if(orderPrice>0)
+		 		       					e.model.set("orderPrice",orderPrice);
+		 		       			}
+		 		       			if(typeof e.values.orderPrice!== 'undefined'){
+		 		       				if(e.model.listPrice>0){
+		 		       					var discount=(1-e.values.orderPrice/e.model.listPrice);
+		 		       					e.model.set("discount",discount);
+		 		       				}
+		 		       			}
+		 		       			//value in model have not been set into dataitems in bgw.so wait for the update finish.
+		 		       			setTimeout(function(){
+		 		       					bgw.calculateTotal(true);
+		 		       					scope.$apply();
+		 		       				},1);
 
-					       		if(typeof e.values.orderQty!== 'undefined')
-					       			field="orderQty";
-					       		if(typeof e.values.orderPrice!== 'undefined')
-					       			field="orderPrice";
-					       		
-					       		if(field){
-					       			e.model[field]=e.values[field];
-									bgw.calculateTotal(e.model);				       			
-					       		}
 		 		       		}
 				         },
 				       	
 				         //row or cloumn changed
 				       	change:function(e){
-/* 				       		var row=ggw.getCurrentRow();
-				       		console.log("event change:");
-				       		var	newRowUid=row?row.dataset["uid"]:"";
-			        		if((typeof newRowUid!=="undefined") && (ggw.currentRowUid!==newRowUid)){		//row changed
-			        			ggw.currentRowUid=newRowUid;
-			        			var dataItem=ggw.getCurrentDataItem();
-			        			if(dataItem){
-				        			ggw.setCurrentGarment(dataItem);
+				       		console.log("bill grid event: change");
+				       	
+			        		if(bgw.rowChanged()){
+					       		console.log("bill grid event: row changed");
+					       		setTimeout(function(){
+				        			var dataItem=bgw.getCurrentDataItem();
+				        			getBillDetail(dataItem);
+				        			scope.$apply();
+					       		},1)
 				        			//$state.go('main.lineItem.detail',{orderItemId:orderItemId,lineItemId:dataItem.lineNumber});
-			        			}
 			        		};
- */				       	},
+
+				       		
+				       	}, 
 				       	
 				        edit:function(e){
-				        	console.log("event edit:");
+				        	console.log("bill grid event: edit");
+				        	
+/* 				        	//without code below,when navigate with keybord like tab key, the editing cell will not be selected 
 						    var editingCell=bgw.getEditingCell();
 						    if(!!editingCell){
 						    	this.select(editingCell);
-					        	console.log("set editing cell:");
-						    }
+						    } 				        	 */
 				        }
 
-			}; //end of garmetnGridOptions
+			}; //end of billGridOptions
 
 								
 			scope.gridContextMenuOptions={
@@ -965,6 +995,21 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 				
 			};
 			
+			var calculateOrderPrice=function(listPrice,discount){
+				var result=0;
+				if(listPrice>0 && discount>0 && discount<1)
+					result=listPrice*(1-discount);
+				return result;
+			}
+			
+			var getBillDetail=function(billItem){
+				var detail;
+				if(scope.cGetBillDetailFunction){
+					var f=scope.cGetBillDetailFunction({billItem:billItem});
+				}
+				return detail;
+			}
+			
 			
 			var newItem=function(){
 				if(!scope.cNewItemFunction)
@@ -982,8 +1027,12 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 						
 			var deleteRow=function (){
 				var dataItem=bgw.getCurrentDataItem();
+		    	var confirmed=true;
 			    if (dataItem) {
-			        if (confirm('Please confirm to delete the selected row.')) {
+			        if (dataItem.orderAmt){
+			        	confirmed=confirm('Please confirm to delete the selected row.');	
+			        }
+			        if(confirmed){
 				    	if(dataItem.id && scope.cRegisterDeletedItemFunction){
 				    		var register=scope.cRegisterDeletedItemFunction();
 				    		register(dataItem);

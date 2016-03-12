@@ -57,6 +57,23 @@ public class DataController {
 
     //get  records from table by sql
     @SuppressWarnings("rawtypes")
+	@RequestMapping(value="/{daoName}/sql",method = RequestMethod.GET)
+    public  @ResponseBody  List  sql(@PathVariable String daoName,
+    								 @RequestParam("cmd") String sql){
+
+    	List result=null;
+    	
+    	if("generic".equals(daoName.toLowerCase().trim())){
+    		GenericDao dao=getDao("dictGarmentBrand");
+    		result=dao.findListBySQL(sql);
+    	}
+    	
+    	return result;
+    }
+    
+    
+    //get  records from table by sql
+    @SuppressWarnings("rawtypes")
 	@RequestMapping(value="/{daoName}/sql",method = RequestMethod.POST)
     public  @ResponseBody  List  sql(@PathVariable String daoName,
     								  @RequestBody SqlRequest sqlRequest){

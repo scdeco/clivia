@@ -8,7 +8,9 @@
 				style="height: 550px; width: 100%;">    
 				
 		<div style="margin:6px;"><!-- top pane-->
-
+		
+			<label style="margin-left:40px;">Total:&nbsp;{{billGrid.getTotal()}}</label>
+				
 	    </div> <!-- end of top pane-->
     
     	<div>  	
@@ -17,15 +19,45 @@
     					c-data-source="billGridDataSource" 
     					c-pageable="false" 
     					c-new-item-function="newItemFunction"
-    					c-register-deleted-item-function="registerDeletedItemFunction">
+    					c-register-deleted-item-function="registerDeletedItemFunction"
+    					c-get-bill-detail-function="getBillDetailFunction(billItem)">
     		</div> 
    		</div> 	
  		
  		
 		<div>   <!--  bottom pane -->	
-			<div id="billitemdetail" ui-view></div>
+				<div id="billitemdetail" ng-bind-html="htmlBillItemDetail"	></div>	
+<!-- 			<div id="billitemdetail" ui-view></div> -->
 		</div>  <!-- end of bottom pane -->	
     </div>
 	 
 </div>
 
+<style>
+ 
+#billitemdetail table, th, td {
+    border: 1px dotted gray;
+    border-collapse: collapse;
+}
+#billitemdetail table, th, td {
+    padding: 5px;
+}
+#billitemdetail table tr:nth-child(even) {
+    background-color: #eee;
+}
+#billitemdetail table tr:nth-child(odd) {
+   background-color:#fff;
+}
+#billitemdetail table th	{
+    background-color: black;
+    color: white;
+}
+
+.billDetailLineItem {
+   text-align: right;  
+ }
+
+.billDetailQty{
+	width:40px;
+}
+</style>

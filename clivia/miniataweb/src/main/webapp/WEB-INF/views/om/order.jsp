@@ -89,7 +89,7 @@
 		text-align: right;
 	}		 
 	
-	/* 	the grid in styleWindow	 */
+	/* 	the grid in garmentInput Window	 */
 	#styleGrid .k-grid-content tr td:not(:last-child){
  	   text-align: right;
 	  }		

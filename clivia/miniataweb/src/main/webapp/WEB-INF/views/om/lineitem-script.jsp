@@ -30,7 +30,7 @@ orderApp.controller("lineItemCtrl",["$scope","$state","SO",
 	
 	$scope.$watch("seasonId",function(newValue,oldValue){
 		if(newValue && newValue!=oldValue){
-			$scope.season=SO.dds.season.getSeasonL($scope.brand.id,parseInt(newValue));
+			$scope.season=SO.dds.season.getLocalItem("id",parseInt(newValue));
 			orderItem.spec=$scope.brand.id+":"+$scope.season.id;
 		}
 	});
@@ -64,7 +64,7 @@ orderApp.controller("lineItemCtrl",["$scope","$state","SO",
 		        
 	//pass to garmentGird directive to register removed lineitem		        
 	$scope.registerDeletedItemFunction=function(dataItem){
-		SO.registerDeletedItem(orderItem.type,dataItem.id);
+		SO.registerDeletedItem("lineItem",dataItem.id);
 	}
 				
 }]); 

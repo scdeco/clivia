@@ -139,6 +139,7 @@ public abstract class GenericDao<T> {
 		return result;
 	}
 	
+	
 	@SuppressWarnings("rawtypes")
 	public  List findListBySQL(SqlRequest sqlRequest){
 		
@@ -159,6 +160,12 @@ public abstract class GenericDao<T> {
 		SQLQuery sqlQuery=getSession().createSQLQuery(sql.toString());
 		
 		
+		return sqlQuery.list();
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public  List findListBySQL(String sql){
+		SQLQuery sqlQuery=getSession().createSQLQuery(sql);
 		return sqlQuery.list();
 	}
 	

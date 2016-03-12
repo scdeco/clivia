@@ -17,7 +17,7 @@
 			k-panes="[{ collapsible: true, resizable: true, size: '180px'},
             	      { collapsible: true, resizable: true}]"
             k-options="mainSplitterOptions"
-			style="height:450px;">
+			style="height:600px;">
 			
 		<div>		<!-- first pane -->
 			<form name="companyForm" ng-submit="" novalidate class="simple-form">
@@ -70,6 +70,25 @@
 					<li>
 		    			<label for="csr">CSR:</label>
 						<map-combobox name="csr"  style="width:100%;" c-options="csrOptions" ng-model="dataSet.info.csrId">
+					</li>
+
+					<li>
+						<label for="discount">Discount:</label>
+						<input kendo-numerictextbox name="discount" style="width:60px;"  
+							ng-model="dataSet.info.discount" k-options="discountOptions"/> &nbsp;&nbsp;Off
+					</li>
+
+					<li>
+						<label for="term">Term:</label>
+						<input kendo-dropdownlist name="term" style="width:100%;"  
+							ng-model="dataSet.info.term" k-options="termOptions"/>
+					</li>
+
+					<li> 
+						<label for="useWsp">
+        				<input type="checkbox" name="useWsp"   
+							ng-model="dataSet.info.useWsp"/>Use WSP for DD
+						</label>
 					</li>
 					
 					<li> 

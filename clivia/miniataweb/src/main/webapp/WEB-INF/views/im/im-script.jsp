@@ -38,7 +38,7 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 	        	scope.setDicts=function(brandId,seasonId){
 	        		if(!(brandId && seasonId)) return;
 	        		
- 	 				var item=scope.dictSeason.getSeasonL(brandId,seasonId);
+ 	 				var item=scope.dictSeason.getLocalItem(seasonId);
  	 				
 					if(item && item.categories){
      	 				var tempCategory=scope.dataSet.info.category;
@@ -316,7 +316,7 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 
           	 	$scope.currentSetting={
           	 			brandId:$scope.cBrandId,
-          	 			seasonId:$scope.dictSeason.getCurrentSeasonIdL($scope.cBrandId),
+          	 			seasonId:$scope.dictSeason.getCurrentSeasonId($scope.cBrandId),
           	 	}
 				
 				$scope.dataSet={

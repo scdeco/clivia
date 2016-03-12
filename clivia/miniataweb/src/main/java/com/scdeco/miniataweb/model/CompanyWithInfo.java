@@ -1,5 +1,7 @@
 package com.scdeco.miniataweb.model;
 
+import java.math.BigDecimal;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -42,6 +44,16 @@ public class CompanyWithInfo {
 	
 	@Column(name="IsSupplier")
 	private Boolean isSupplier=false;
+	
+	@Column(name="UseWSP")
+	private Boolean useWsp=true;
+	
+	@Column(name="Term",length=50)
+	private String term;
+	
+	//peecentage off
+	@Column(name="Discount")
+	private BigDecimal discount;
 	
 	@Column(name="Status")
 	private Integer status;
@@ -108,6 +120,18 @@ public class CompanyWithInfo {
 		return isSupplier;
 	}
 
+	public Boolean getUseWsp() {
+		return useWsp;
+	}
+
+	public String getTerm() {
+		return term;
+	}
+
+	public BigDecimal getDiscount() {
+		return discount;
+	}
+
 	public Integer getStatus() {
 		return status;
 	}
@@ -134,6 +158,6 @@ public class CompanyWithInfo {
 
 	public String getCsrName() {
 		return csrName;
-	}	
+	}
 
 }
