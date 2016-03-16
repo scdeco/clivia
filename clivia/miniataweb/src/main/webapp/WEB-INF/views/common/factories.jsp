@@ -1438,10 +1438,11 @@ clivia.factory("BillGridWrapper",["GridWrapper","cliviaDDS","DataDict",function(
 				    attributes:{style:"text-align:right;"}
 				}, {
 					name:"orderAmt",
-				    field: "orderAmt",
+//				    field: "orderAmt",
 				    title: "Amount",
-				    editor: thisGGW.readOnlyColumnEditor,
-				    format: "{0:c}",
+				    template: '#=kendo.format("{0:c}", orderAmt)#',
+//				    editor: thisGGW.readOnlyColumnEditor,
+//				    format: "{0:c}",
 				    width: 80,
 				    attributes:{style:"text-align:right;"}
 				}, {
@@ -1515,5 +1516,59 @@ clivia.factory("BillGridWrapper",["GridWrapper","cliviaDDS","DataDict",function(
 	return BillGridWrapper;
 	
 }]); /* end of BillGridWrapper */
+
+
+clivia.factory("ImageGridWrapper",["GridWrapper","cliviaDDS","DataDict",function(GridWrapper,cliviaDDS,DataDict){
+	
+	 var thisGGW;
+
+	 var getColumns=function(){
+
+		 var gridColumns=[{
+			        name:"lineNumber",
+			        title: "#",
+			        //locked: true, if true will cause the wrong cell get focus when add new row
+			        attributes:{class:"gridLineNumber"},
+			        headerAttributes:{class:"gridLineNumberHeader"},
+			        width: 25,
+				}, {			
+					name:"imageId",
+				    title: "image",
+				    template:'<img ng-src="data:image/JPEG;base64,{{getImage(#:imageId#).thumbnail}}" alt="{{#:imageId#}} image">',
+				    width: 150
+				}, {
+					name:"originalFileName",
+				    field: "originalFileName",
+				    title: "File Name",
+				    width: 120
+				}, {
+					name:"description",
+				    field: "description",
+				    title: "Description",
+				    width: 250
+				}, {
+					name:"remark",
+				    field: "remark",
+				    title: "Remark"
+					//the column is extended if its width is not set   
+			}];
+			
+			return gridColumns;
+		}
+		
+	 var ImageGridWrapper=function(gridName){
+		 
+		GridWrapper.call(this,gridName);
+		thisGGW=this;
+		this.setColumns=function(){this.gridColumns=getColumns()};		
+	}
+	 
+	ImageGridWrapper.prototype=new GridWrapper();
+	
+	return ImageGridWrapper;
+	
+}]); /* end of ImageGridWrapper */
+
+
 
 </script>

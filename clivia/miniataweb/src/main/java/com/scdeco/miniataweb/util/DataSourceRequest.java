@@ -441,7 +441,7 @@ public class DataSourceRequest {
     
         page(criteria, getTake(), getSkip());        
         
-        DataSourceResult result = new DataSourceResult();
+        DataSourceResult result = new DataSourceResult(); 
         
         result.setTotal(total);
         
@@ -453,7 +453,7 @@ public class DataSourceRequest {
         	
         	project(criteria,data);		    //Added by Jacob for projection
 
-       	result.setData(criteria.list());	
+        	result.setData(criteria.list());	
         }
         
         List<AggregateDescriptor> aggregates = getAggregate();

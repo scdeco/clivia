@@ -13,9 +13,9 @@
 <div kendo-splitter="outterSplitter"
 		k-orientation="'vertical'"
 		k-panes="[{ collapsible: false, resizable: false, size: '30px',collapsed: false },
-                  { collapsible: false,size:'500px'},
+                  { collapsible: false,size:'900px'},
                   { collapsible: false, resizable: true}]"
-		 style="height:900px;">
+		 style="height:1000px;">
 		 
 	<div id="top-pane">
 		
@@ -41,13 +41,12 @@
 		
 	</div> <!-- middle pane of outter splitter -->
 	
-	<div id="bottom-pane" style="height:300px;">
+	<div id="bottom-pane" >
+	</div> <!-- bottom pane of outter splitter -->
+</div>
 <pre>
 	dataSet:{{SO.dataSet|json}}
 	instance:{{SO.instance|json}}
 	dds:{{SO.dds|json}}
 
 </pre>
-	</div> <!-- bottom pane of outter splitter -->
-	
-</div>

@@ -90,7 +90,11 @@ directive("mapCombobox",function(){
 				        url: scope.cOptions.url,	//'../datasource/employeeInfoDao/read',
 				        type: 'post',
 				        dataType: 'json',
-				        contentType: 'application/json'
+				        contentType: 'application/json',
+				        
+				    	//add extra parameters to options
+				    	//field projection,return fields that needed instead of all fields of the table
+				        data:{select:scope.cOptions.dataValueField+","+scope.cOptions.dataTextField}
 				    },
 				    parameterMap: function(options, operation) {
 				    	//operation is alaways read here.
@@ -104,10 +108,7 @@ directive("mapCombobox",function(){
 						if(!!options.filter && options.filter.filters.length===0)
 							filters.push({field:scope.cOptions.dataValueField,operator:'eq',value:-1});
 
-				    	//add extra parameters to options
-				    	//field projection,return fields that needed instead of all fields of the table
-			    		options.data={select:scope.cOptions.dataValueField+","+scope.cOptions.dataTextField};	 						    	
-			            return JSON.stringify(options);
+				    	return JSON.stringify(options);
 				    }
 				},
 				
@@ -122,7 +123,7 @@ directive("mapCombobox",function(){
 				
 				serverPaging: true,
 				serverSorting: true,
-					sort: [{
+				sort: [{
 			         field: scope.cOptions.dataTextField,
 			         dir: "asc"
 			     }], 
@@ -1050,6 +1051,410 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 
 				
 		}	//end of billGrid:link
+	}
+	
+	return directive;
+}]).
+
+directive('imageGrid',["ImageGridWrapper","cliviaDDS","util",function(ImageGridWrapper,cliviaDDS,util){
+	var directive={
+			restrict:'EA',
+			replace:false,
+			scope:{
+				cName:'@imageGrid',
+				cEditable:'=',
+				cDataSource:'=',
+				cPageable:'=',
+				cDictImage:'=',
+				cNewItemFunction:'&',
+				cRegisterDeletedItemFunction:'&',
+				cShowImageDetailFunction:'&',
+			},
+			
+			templateUrl:'../common/imagegrid',
+			link:function(scope,element,attrs){	
+				scope.gridName=scope.cName+"Grid";
+
+				var igw=new ImageGridWrapper(scope.gridName);	
+				igw.setColumns();
+				
+				scope.$on("kendoWidgetCreated", function(event, widget){
+
+					if (widget ===scope[scope.gridName]) {
+			        	igw.wrapGrid(widget);
+			        	
+			        	if(scope.cName){
+				        	scope.$parent[scope.cName]={
+			        			name:scope.cName,
+			        			grid:widget,
+			        			gridWrapper:igw,
+			        			resize:function(gridHeight){
+			        				igw.resizeGrid(gridHeight);
+			        				},
+				        	}
+			        	}
+			        }
+			    });	
+
+				scope.setting={};
+				scope.setting.editing=true;
+				
+				scope.gridSortableOptions = igw.getSortableOptions();
+				
+				scope.gridOptions = {
+						autoSync: true,
+				        columns: igw.gridColumns,
+				        dataSource: scope.cDataSource,
+				        editable: scope.cEditable,
+				        pageable:scope.cPageable,
+				        selectable: "cell",
+				        navigatable: true,
+				        resizable: true,
+						
+				        //events:		 
+				       	dataBinding: function(e) {
+				       		console.log("image grid event: binding--"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
+				       	},
+				       	
+				       	dataBound:function(e){
+				       		console.log("image grid event: dataBound");
+				       	},
+				       	
+		 		       	save: function(e) {
+				       		console.log("image grid event: save");
+				         },
+				       	
+				         //row or cloumn changed
+				       	change:function(e){
+				       		console.log("image grid event: change");
+				       	
+			        		if(igw.rowChanged()){
+					       		console.log("image grid event: row changed");
+					       		setTimeout(function(){
+				        			var dataItem=igw.getCurrentDataItem();
+				        			showImageDetail(dataItem);
+				        			scope.$apply();
+					       		},1)
+				        			//$state.go('main.lineItem.detail',{orderItemId:orderItemId,lineItemId:dataItem.lineNumber});
+			        		};
+
+				       		
+				       	}, 
+				       	
+				        edit:function(e){
+				        	console.log("image grid event: edit");
+				        	
+/* 				        	//without code below,when navigate with keybord like tab key, the editing cell will not be selected 
+						    var editingCell=igw.getEditingCell();
+						    if(!!editingCell){
+						    	this.select(editingCell);
+						    } 				        	 */
+				        }
+
+			}; //end of imageGridOptions
+
+								
+			scope.gridContextMenuOptions={
+				closeOnClick:true,
+				filter:".gridLineNumber,.gridLineNumberHeader",
+				target:'#'+scope.gridName,
+				select:function(e){
+				
+					switch(e.item.id){
+						case "menuAdd":
+							scope.setting.editing=true;
+							if(!igw.isEditing)
+								igw.enableEditing(true);
+//							addRow(false);
+							break;
+						case "menuUpload":
+//							addRow(true);
+							break;
+						case "menuDelete":
+							deleteRow();
+							break;
+					}
+					
+				}
+				
+			};
+			
+			scope.getImage=function(imageId){
+				return scope.cDictImage.getLocalItem('id',imageId);
+			}
+			
+			var showImageDetail=function(imageItem){
+				if(scope.cShowImageDetailFunction){
+					scope.cShowImageDetailFunction({imageItem:imageItem});
+				}
+			}
+			
+			
+			var newItem=function(){
+				if(!scope.cNewItemFunction)
+					scope.cNewItemFunction=function(){
+							return {};
+						};
+				var item=scope.cNewItemFunction();
+				return item();
+			}
+			
+			var addRow=function(isInsert){
+				var item=newItem();
+			    igw.addRow(item,isInsert);
+			}
+						
+			var deleteRow=function (){
+				var dataItem=igw.getCurrentDataItem();
+		    	var confirmed=true;
+			    if (dataItem) {
+			        if (dataItem.orderAmt){
+			        	confirmed=confirm('Please confirm to delete the selected row.');	
+			        }
+			        if(confirmed){
+				    	if(dataItem.id && scope.cRegisterDeletedItemFunction){
+				    		var register=scope.cRegisterDeletedItemFunction();
+				    		register(dataItem);
+				    	}
+						igw.deleteRow(dataItem);
+			        }
+			    }
+		   		else {
+		        	alert('Please select a  row to delete.');
+		   		}
+			    
+			}
+
+				
+		}	//end of imageGrid:link
+	}
+	
+	return directive;
+}]).
+
+directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridWrapper,cliviaDDS,util){
+	var directive={
+			restrict:'EA',
+			replace:false,
+			scope:{
+				cName:'@imageGrid',
+				cEditable:'=',
+				cDataSource:'=',
+				cPageable:'=',
+				cDictImage:'=',
+				cNewItemFunction:'&',
+				cRegisterDeletedItemFunction:'&',
+			},
+			
+			templateUrl:'../common/imageview',
+			link:function(scope,element,attrs){	
+				scope.gridName=scope.cName+"Grid";
+
+				var igw=new ImageGridWrapper(scope.gridName);	
+				igw.setColumns();
+				
+				scope.$on("kendoWidgetCreated", function(event, widget){
+
+					if (widget ===scope[scope.gridName]) {
+			        	igw.wrapGrid(widget);
+			        	
+			        	if(scope.cName){
+				        	scope.$parent[scope.cName]={
+			        			name:scope.cName,
+			        			grid:widget,
+			        			gridWrapper:igw,
+			        			resize:function(gridHeight){
+			        				igw.resizeGrid(gridHeight);
+			        				},
+				        	}
+			        	}
+			        }
+			    });	
+
+				scope.setting={};
+				scope.setting.editing=true;
+				
+				scope.gridSortableOptions = igw.getSortableOptions();
+				
+				scope.gridOptions = {
+						autoSync: true,
+				        columns: igw.gridColumns,
+				        dataSource: scope.cDataSource,
+				        editable: scope.cEditable,
+				        pageable:scope.cPageable,
+				        selectable: "cell",
+				        navigatable: true,
+				        resizable: true,
+						
+				        //events:		 
+				       	dataBinding: function(e) {
+				       		console.log("image grid event: binding--"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
+				       	},
+				       	
+				       	dataBound:function(e){
+				       		console.log("image grid event: dataBound");
+				       	},
+				       	
+		 		       	save: function(e) {
+				       		console.log("image grid event: save");
+				         },
+				       	
+				         //row or cloumn changed
+				       	change:function(e){
+				       		console.log("image grid event: change");
+				       	
+			        		if(igw.rowChanged()){
+					       		console.log("image grid event: row changed");
+					       		setTimeout(function(){
+				        			var dataItem=igw.getCurrentDataItem();
+				        			showImageDetail(dataItem);
+				        			scope.$apply();
+					       		},1)
+				        			//$state.go('main.lineItem.detail',{orderItemId:orderItemId,lineItemId:dataItem.lineNumber});
+			        		};
+
+				       		
+				       	}, 
+				       	
+				        edit:function(e){
+				        	console.log("image grid event: edit");
+				        	
+/* 				        	//without code below,when navigate with keybord like tab key, the editing cell will not be selected 
+						    var editingCell=igw.getEditingCell();
+						    if(!!editingCell){
+						    	this.select(editingCell);
+						    } 				        	 */
+				        }
+
+			}; //end of imageGridOptions
+
+								
+			scope.gridContextMenuOptions={
+				closeOnClick:true,
+				filter:".gridLineNumber,.gridLineNumberHeader",
+				target:'#'+scope.gridName,
+				select:function(e){
+				
+					switch(e.item.id){
+						case "menuAdd":
+							scope.setting.editing=true;
+							if(!igw.isEditing)
+								igw.enableEditing(true);
+//							addRow(false);
+							break;
+						case "menuUpload":
+							scope.newUploadWindow.open();
+							break;
+						case "menuRemove":
+							deleteRow();
+							break;
+					}
+					
+				}
+				
+			};
+
+			
+			scope.newUploadWindowOptions={
+					open:function(e){
+//						$scope.imageItemToolbar.enable("#btnAdd",false);				
+					},
+					close:function(e){
+//						$scope.imageItemToolbar.enable("#btnAdd");				
+					}
+			}
+			 
+			scope.newUploadOptions={
+					async:{
+						 saveUrl: '../lib/image/upload',
+						 removeUrl:'../lib/image/removeupload',
+						 autoUpload: false,
+						 batch: false   
+						 /* The selected files will be uploaded in separate requests */
+					},
+					
+					localization:{
+						uploadSelectedFiles: 'Upload'
+					},
+					upload:function (e) {
+					   // e.data = {user: SO.setting.user.userName};
+					},
+					success: function (e) {
+					    if(e.response.status==="success"){
+							var data = e.response.data;
+							
+							if(data){
+								scope.cDictImage.addItem(data);
+								addRow(data,false);
+							}
+				    	}
+					},
+					error:function(e){
+			//	 		alert("failed:"+JSON.stringify(e.response.data));
+					},
+					complete:function(e){
+					}
+			};
+						
+			
+			scope.getImage=function(imageId){
+				return scope.cDictImage.getLocalItem('id',imageId);
+			}
+			
+		
+			var newItem=function(dataItem){
+				if(!scope.cNewItemFunction)
+					scope.cNewItemFunction=function(){
+							return {};
+						};
+				var f=scope.cNewItemFunction();
+				return f(dataItem);
+			}
+			
+			var addRow=function(data,isInsert){
+				var item=newItem(data);
+			    igw.addRow(item,isInsert);
+			}
+						
+			var deleteRow=function (){
+				var dataItem=igw.getCurrentDataItem();
+		    	var confirmed=true;
+			    if (dataItem) {
+			        if (dataItem.orderAmt){
+			        	confirmed=confirm('Please confirm to remove the selected row.');	
+			        }
+			        if(confirmed){
+				    	if(dataItem.id && scope.cRegisterDeletedItemFunction){
+				    		var register=scope.cRegisterDeletedItemFunction();
+				    		register(dataItem);
+				    	}
+						igw.deleteRow(dataItem);
+			        }
+			    }
+		   		else {
+		        	alert('Please select a  row to delete.');
+		   		}
+			    
+			}
+
+			showImageDetail=function(dataItem){
+				var imageId=dataItem.imageId;
+				if(imageId){
+					var url="../lib/image/getimage?id="+imageId;
+					util.getRemote(url).then(
+						function(data, status, headers, config) {
+						    	scope.previewOriginalImage=data;
+							},
+						function(data, status, headers, config) {
+								scope.previewOriginalImage=null;
+						});					
+				}else{
+					$scope.previewOriginalImage=null;
+				}
+
+			};			
+				
+		}	//end of imageGrid:link
 	}
 	
 	return directive;

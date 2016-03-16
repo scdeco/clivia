@@ -15,10 +15,12 @@ import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.transform.AliasToEntityMapResultTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.scdeco.miniataweb.util.CliviaAliasToEntityMapResultTransformer;
 import com.scdeco.miniataweb.util.CliviaUtils;
 import com.scdeco.miniataweb.util.DataSourceRequest;
 import com.scdeco.miniataweb.util.DataSourceResult;
@@ -159,13 +161,19 @@ public abstract class GenericDao<T> {
 
 		SQLQuery sqlQuery=getSession().createSQLQuery(sql.toString());
 		
+		if(sqlRequest.getMapResult()!=null && sqlRequest.getMapResult())
+			sqlQuery.setResultTransformer(CliviaAliasToEntityMapResultTransformer.INSTANCE);
 		
 		return sqlQuery.list();
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public  List findListBySQL(String sql){
+	public  List findListBySQL(String sql,Boolean mapResult){
 		SQLQuery sqlQuery=getSession().createSQLQuery(sql);
+		
+		if(mapResult!=null && mapResult)
+			sqlQuery.setResultTransformer(CliviaAliasToEntityMapResultTransformer.INSTANCE);
+				
 		return sqlQuery.list();
 	}
 	

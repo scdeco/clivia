@@ -6,7 +6,7 @@ public class SqlRequest {
 		private String from;
 		private String where;
 		private String orderby;
-		
+		private Boolean mapResult;
 		public String getSelect() {
 			return select;
 		}
@@ -30,6 +30,12 @@ public class SqlRequest {
 		}
 		public void setOrderby(String orderby) {
 			this.orderby = orderby;
+		}
+		public Boolean getMapResult() {
+			return mapResult;
+		}
+		public void setMapResult(Boolean mapResult) {
+			this.mapResult = mapResult;
 		}
 		
 }

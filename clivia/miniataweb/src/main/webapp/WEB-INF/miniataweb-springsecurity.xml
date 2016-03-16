@@ -20,7 +20,9 @@
     <security:authentication-provider>
       <security:user-service>
         <security:user name="zhang" password="zhangpassword" authorities="ROLE_USER, ROLE_ADMIN" />
-        <security:user name="bob" password="bobspassword" authorities="ROLE_USER" />
+        <security:user name="peter" password="999" authorities="ROLE_USER" />
+        <security:user name="leo" password="4728" authorities="ROLE_USER" />
+        <security:user name="adrian" password="2756" authorities="ROLE_USER" />
       </security:user-service>
     </security:authentication-provider>
   </security:authentication-manager>

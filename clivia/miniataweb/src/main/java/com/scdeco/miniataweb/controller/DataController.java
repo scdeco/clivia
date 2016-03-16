@@ -59,13 +59,13 @@ public class DataController {
     @SuppressWarnings("rawtypes")
 	@RequestMapping(value="/{daoName}/sql",method = RequestMethod.GET)
     public  @ResponseBody  List  sql(@PathVariable String daoName,
-    								 @RequestParam("cmd") String sql){
+    								 @RequestParam("cmd") String sql, @RequestParam(value="map",required=false) Boolean mapResult){
 
     	List result=null;
     	
     	if("generic".equals(daoName.toLowerCase().trim())){
     		GenericDao dao=getDao("dictGarmentBrand");
-    		result=dao.findListBySQL(sql);
+    		result=dao.findListBySQL(sql,mapResult);
     	}
     	
     	return result;

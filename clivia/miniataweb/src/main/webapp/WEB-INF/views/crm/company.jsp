@@ -144,9 +144,9 @@
               
               <div style="padding: 1em">	<!-- notes -->
               	<h3>Regular:</h3>
-           	 	<textarea  style="width:100%;height:100px;" ng-model="dataSet.info.html"></textarea>		<!-- not use for now kendo-editor="regularEditor" -->
+           	 	<textarea  class="k-textbox" style="width:100%;height:100px;" ng-model="dataSet.info.regularInstructions"></textarea>		<!-- not use for now kendo-editor="regularEditor" -->
               	<h3>Pricing:</h3>
-            	<textarea  style="width:100%;height:100px;" ng-model="dataSet.info.priceInfo"></textarea> <!--not use for now kendo-editor="pricingEditor" -->
+            	<textarea  class="k-textbox" style="width:100%;height:100px;" ng-model="dataSet.info.pricingInstructions"></textarea>		<!--not use for now kendo-editor="pricingEditor" -->
               </div>
               
               <div style="padding: 1em">

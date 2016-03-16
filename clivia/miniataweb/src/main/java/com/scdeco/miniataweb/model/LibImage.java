@@ -54,6 +54,9 @@ public class LibImage {
 	@Column(name="FilePath")
 	private String filePath;
 
+	@Column(name="Used")
+	private Integer used;
+
 	public int getId() {
 		return id;
 	}
@@ -134,14 +137,12 @@ public class LibImage {
 		this.filePath = filePath;
 	}
 
-	@Override
-	public String toString() {
-		return "LibImage [id=" + id + ", originalFileName=" + originalFileName
-				+ ", description=" + description + ", size=" + size
-				+ ", uploadAt=" + uploadAt + ", uploadBy=" + uploadBy
-				+ ", remark=" + remark + ", thumbnail="
-				+ (thumbnail==null?"null":"blob") + ", fileName=" + fileName
-				+ ", filePath=" + filePath + "]";
+	public Integer getUsed() {
+		return used;
+	}
+
+	public void setUsed(Integer used) {
+		this.used = used;
 	}
 
 }

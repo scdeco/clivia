@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.scdeco.miniataweb.model.Garment;
+import com.scdeco.miniataweb.model.GarmentImage;
 import com.scdeco.miniataweb.model.GarmentInfo;
 import com.scdeco.miniataweb.model.GarmentUpc;
 
@@ -20,6 +21,8 @@ public class GarmentDao {
 	@Autowired
 	GarmentUpcDao garmentUpcDao;
 	
+	@Autowired
+	GarmentImageDao garmentImageDao;
 	
 	public Garment getGarmentProductById(int id){
 		Garment garment=null;
@@ -30,6 +33,10 @@ public class GarmentDao {
 			
 			List<GarmentUpc> upcItems=garmentUpcDao.findListByGarmentId(id);
 			garment.setUpcItems(upcItems);
+
+			List<GarmentImage> imageItems=garmentImageDao.findListByGarmentId(id);
+			garment.setImageItems(imageItems);
+		
 		}
 		return garment;
 	}
@@ -58,9 +65,18 @@ public class GarmentDao {
 			garmentUpcDao.deleteById(upcId);
 		}
 		
+		for(int imageId:garment.getDeletedImageItems()){
+			garmentImageDao.deleteById(imageId);
+		}
+		
 		for(GarmentUpc upcItem:garment.getUpcItems()){
 			upcItem.setGarmentId(garmentId);
 			garmentUpcDao.saveOrUpdate(upcItem);
+		}
+
+		for(GarmentImage imageItem:garment.getImageItems()){
+			imageItem.setGarmentId(garmentId);
+			garmentImageDao.saveOrUpdate(imageItem);
 		}
 	}
 	
@@ -74,9 +90,14 @@ public class GarmentDao {
 			}else if(info.getUsed()){
 				result="This garment is used and can not delete.";
 			}else{
-				List<GarmentUpc> list=garment.getUpcItems();
-				if (!list.isEmpty())
-					garmentUpcDao.deleteAll(list);
+				List<GarmentUpc> upcList=garment.getUpcItems();
+				if (!upcList.isEmpty())
+					garmentUpcDao.deleteAll(upcList);
+
+				List<GarmentImage> imageList=garment.getImageItems();
+				if (!imageList.isEmpty())
+					garmentImageDao.deleteAll(imageList);
+				
 				garmentInfoDao.delete(info);
 			}
 		}else{

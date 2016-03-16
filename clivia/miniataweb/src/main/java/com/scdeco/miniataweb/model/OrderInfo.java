@@ -46,12 +46,10 @@ public class OrderInfo {
 	@Column(name="RequireDate")
 	private LocalDate requireDate;
 	
-	
 	@JsonSerialize(using=CliviaLocalTimeJsonSerializer.class)
 	@JsonDeserialize(using = CliviaLocalTimeJsonDeserializer.class)
 	@Column(name="RequireTime")
 	private LocalTime requireTime;
-
 	
 	@JsonSerialize(using=CliviaLocalDateJsonSerializer.class)
 	@JsonDeserialize(using = CliviaLocalDateJsonDeserializer.class)

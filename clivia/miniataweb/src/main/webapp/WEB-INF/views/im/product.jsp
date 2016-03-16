@@ -1,5 +1,5 @@
 	<form name="searchForm" ng-submit="getProduct()" novalidate >
-		<div kendo-toolbar id="producttoolbar" k-options="productToolbarOptions"></div>
+		<div kendo-toolbar="producttoolbar" id="producttoolbar" k-options="productToolbarOptions"></div>
 	</form>
 
 	<h3> 
@@ -17,8 +17,8 @@
 			
 		<div>		<!-- first pane -->
 			<form name="productForm" ng-submit="" novalidate class="simple-form">
+			
 				<ul id="fieldlist">
-					
 					<li>
 				    	<label for="styleName" class="required">Style Name:</label>
 						<input type="text" id="styleName" name="styleName" class="k-textbox" style="width:100%;"
@@ -90,7 +90,17 @@
 		
 		<div>	<!--second pane -->
 			
-			<div kendo-grid="productUpcGrid" k-options="productUpcGridOptions"></div>
+			<div kendo-grid="productUpcGrid" ng-show="showUpcView" k-options="productUpcGridOptions"></div>
+			
+			<div image-view="imageGrid" ng-hide="showUpcView"
+	    					c-editable="true" 
+	    					c-data-source="imageGridDataSource" 
+	    					c-pageable="false" 
+	    					c-dict-image="dictImage"
+	    					c-new-item-function="newImageItemFunction"
+	    					c-register-deleted-item-function="registerDeletedImageItemFunction"
+	    					style="height:800px;">
+	    		</div> 
 			
 	 	</div> 	<!--end of second pane-->
 

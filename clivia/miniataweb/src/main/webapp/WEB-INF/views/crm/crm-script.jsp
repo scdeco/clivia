@@ -650,8 +650,6 @@ crmApp.factory("JournalGridWrapper",["GridWrapper","cliviaDDS",function(GridWrap
 	return gw;
 }]); //end of JournalGridWrapper
 
-
-
 crmApp.factory("CompanyGridWrapper",["GridWrapper",function(GridWrapper){
 	var thisGW;
 	var getColumns=function(){
@@ -707,6 +705,7 @@ crmApp.factory("CompanyGridWrapper",["GridWrapper",function(GridWrapper){
 		         name: "discount",
 		         field: "discount",
 		         title: "% Off",
+		         format: "{0:p0}",
 		         width: 60,
 		     }, {
 		         name: "term",

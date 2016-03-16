@@ -31,7 +31,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				url:{
 					base:consts.baseUrl,
 					order:consts.baseUrl+"im/",
-					library:consts.baseUrl+"library/",
+					library:consts.baseUrl+"lib/",
 					},
 				layout:{
 					lineItemGrid:{},

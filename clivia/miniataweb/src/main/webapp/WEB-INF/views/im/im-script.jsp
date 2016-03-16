@@ -28,8 +28,10 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 				scope.clearDataSet=function(){
  					scope.dataSet.info={};
  					scope.dataSet.upcItems.splice(0,scope.dataSet.upcItems.length);
+ 					scope.dataSet.imageItems.splice(0,scope.dataSet.imageItems.length);
  					scope.dataSet.deletedUpcItems.splice(0,scope.dataSet.deletedUpcItems.length);
-				}			    
+ 					scope.dataSet.deletedImageItems.splice(0,scope.dataSet.deletedImageItems.length);
+				}	    
 			    
 			    scope.clear=function(){
 			    	scope.clearDataSet();
@@ -137,6 +139,14 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 								scope.dataSet.upcItems.push(items[i]);
 							}
 						}
+
+						if(data.imageItems && data.imageItems.length>0){
+							scope.getImages(data.imageItems);
+							for(var i=0,items=data.imageItems;i<items.length;i++){
+								scope.dataSet.dataItems.push(items[i]);
+							}
+						}
+						
 					}
 				}
 				
@@ -250,61 +260,101 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 			 		}
 			 		scope.$apply();
 			 	}
+			 	
+				scope.getImages=function(dataItems){
+					var imageString="";
+					for(var i=0;i<dataItems.length;i++){
+						if(dataItems[i].imageId){
+							imageString+=","+dataItems[i].imageId;
+						}
+					}
+					if(imageString!==""){
+						imageString=imageString.substring(1);
+						scope.dictImage.getItems("id",imageString)
+							.then(function(){
+								
+							},function(){
+								
+							});
+						
+					}
+				}
 
 			},
 			
 			controller: ['$scope',"cliviaDDS","DataDict","UpcGridWrapper", function($scope,cliviaDDS,DataDict,UpcGridWrapper) {
 				
-				$scope.productToolbarOptions ={items:[{
-							template:seasonTemplate,		                
-						}, {	
-							template:searchStyle,		                
-						}, {
-							type: "separator",
-						}, {
-							type: "button",
-							text: "New",
-							id:"btnNew",
-							click: function(e) {
-								$scope.clear();
-								$scope.$apply();
-							}
-						}, {
-							type: "separator",
-						}, {	
-							type: "button",
-							text: "Save",
-							id: "btnSave",
-							click: function(e){
-								$scope.save();
-							}
-						}, {
-							type: "separator",
-						}, {
-							type: "button",
-							text: "Print",
-							id:"btnPrint"
-						}, {
-							type: "separator",
-						}, {	
-							type: "button",
-							text: "Generate Items",
-							id: "btnGenItem",
-							click: function(e){
-								$scope.generateUpcItems();
-							}
-						}, {
-							type: "separator",
-						}, {	
-							template:upcNextItemRefTemplate,		                
-						}, {	
-							type: "button",
-							text: "Generate UPC#",
-							id: "btnGenUpc",
-							click: function(e){
-								$scope.generateUpcNumber($scope.dataSet.upcItems);
-							}
-						}]};
+				$scope.productToolbarOptions ={
+					items:[{
+								template:seasonTemplate,		                
+							}, {	
+								template:searchStyle,		                
+							}, {
+								type: "separator",
+							}, {
+								type: "button",
+								text: "New",
+								id:"btnNew",
+								click: function(e) {
+									$scope.clear();
+									$scope.$apply();
+								}
+							}, {
+								type: "separator",
+							}, {	
+								type: "button",
+								text: "Save",
+								id: "btnSave",
+								click: function(e){
+									$scope.save();
+								}
+							}, {
+								type: "separator",
+							}, {
+								type: "button",
+								text: "Print",
+								id:"btnPrint"
+							}, {
+								type: "separator",
+							}, {
+						        type: "buttonGroup",
+	                            buttons: [
+	                                 {  text: "UPC", togglable: true, group:"changeView", toggle:changeView, selected: true},
+	                                 {  text: "Image", togglable: true, group:"changeView", toggle:changeView}
+	                             ]							
+							}, {
+								type: "separator",
+							}, {	
+								type: "button",
+								text: "Generate Items",
+								id: "btnGenItem",
+								click: function(e){
+									$scope.generateUpcItems();
+								}
+							}, {
+								type: "separator",
+							}, {	
+								template:upcNextItemRefTemplate,		                
+							}, {	
+								type: "button",
+								text: "Generate UPC#",
+								id: "btnGenUpc",
+								click: function(e){
+									$scope.generateUpcNumber($scope.dataSet.upcItems);
+								}
+							}],
+					 toggle: function(e) {
+						 $scope.showUpcView=!(e.target.text()==="Image" && e.checked );
+						 $scope.$apply();
+					 }
+				};
+				
+				
+				$scope.showUpcView=true;
+				
+				var changeView=function(){
+					$scope.producttoolbar;
+				}
 				
 				if($scope.cName)
 		        	$scope.$parent[$scope.cName]=$scope;		//expose this scope to parent scope with cName
@@ -314,6 +364,8 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 
 				$scope.dictSeason=cliviaDDS.getDict("season");
 
+				$scope.dictImage=cliviaDDS.createDict("image","../data/libImage/","onDemand"),
+					
           	 	$scope.currentSetting={
           	 			brandId:$scope.cBrandId,
           	 			seasonId:$scope.dictSeason.getCurrentSeasonId($scope.cBrandId),
@@ -323,6 +375,8 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 						info:{brandId:$scope.cBrandId,seasonId:-1},
 						upcItems:new kendo.data.ObservableArray([]),
 						deletedUpcItems:[],
+						imageItems:new kendo.data.ObservableArray([]),
+						deletedImageItems:[],
 					}
 				
           	 	$scope.$watch('dataSet.info.seasonId',function(newValue,oldValue){
@@ -336,7 +390,6 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 				
 				$scope.search={styleNo:""};
 
-				
 				
 				$scope.brandCategories=new kendo.data.ObservableArray([]);
 				$scope.brandSizes=new kendo.data.ObservableArray([]);
@@ -380,6 +433,22 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 		
 					    }); //end of dataSource,
          	 	
+			    $scope.imageGridDataSource=new kendo.data.DataSource({
+			    	    	data:$scope.dataSet.imageItems,
+						    schema: {
+						        model: {
+						            id: "id",
+					                fields: {
+					                    imageId:{type: "number"}
+					                }
+						        }
+						    },
+						    
+						    serverFiltering:false,
+						    pageSize: 0,
+		
+				        });					    
+					    
          	 	
 				$scope.productUpcGridOptions={
 							autoSync: true,
@@ -404,8 +473,19 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 						}
 				}
 				
+				$scope.newImageItemFunction=function(dataItem){
+				    return {
+					    	imageId:dataItem.id,
+					    }
+				}
+			
+				$scope.registerDeletedImageItemFunction=function(dataItem){
+					if(dataItem.id)
+						scope.dataSet.deletedImageItems.push(dataItem.id);
+				}				
 				
-			}],
+				
+		}],
 	}
 	
 	return directive;	
@@ -838,7 +918,7 @@ imApp.factory("inventory",["InventoryGridWrapper","UpcGridWrapper",function(Inve
 	var upcGridDataSource = new kendo.data.DataSource({
 		     transport: {
 		         read: {
-		             url: 'http://' + window.location.host + '/miniataweb/datasource/garmentUpcDao/read',
+		             url: '../datasource/garmentUpcDao/read',
 		             type: 'post',
 		             dataType: 'json',
 		             contentType: 'application/json'

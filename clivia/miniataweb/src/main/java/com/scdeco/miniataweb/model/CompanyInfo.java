@@ -58,11 +58,12 @@ public class CompanyInfo {
 	@Column(name="Status")
 	private Integer status;
 	
-	@Column(name="SalesNote",columnDefinition="TEXT")
-	private String salesNote;
 	
-	@Column(name="SpecialRequirement",columnDefinition="TEXT")
-	private String specialRequirement;
+	@Column(name="RegularInstructions",columnDefinition="TEXT")
+	private String regularInstructions;
+	
+	@Column(name="PricingInstructions",columnDefinition="TEXT")
+	private String pricingInstructions;
 
 	public int getId() {
 		return id;
@@ -184,21 +185,22 @@ public class CompanyInfo {
 		this.status = status;
 	}
 
-	public String getSalesNote() {
-		return salesNote;
+	public String getRegularInstructions() {
+		return regularInstructions;
 	}
 
-	public void setSalesNote(String salesNote) {
-		this.salesNote = salesNote;
+	public void setRegularInstructions(String regularInstructions) {
+		this.regularInstructions = regularInstructions;
 	}
 
-	public String getSpecialRequirement() {
-		return specialRequirement;
+	public String getPricingInstructions() {
+		return pricingInstructions;
 	}
 
-	public void setSpecialRequirement(String specialRequirement) {
-		this.specialRequirement = specialRequirement;
+	public void setPricingInstructions(String pricingInstructions) {
+		this.pricingInstructions = pricingInstructions;
 	}
+
 
 
 }

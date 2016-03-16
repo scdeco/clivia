@@ -2,10 +2,10 @@
     <div kendo-splitter="lineItemSplitter"
 				k-orientation="'vertical'"
 				k-panes="[{ collapsible: false, resizable:false,size:'40px'},
-						   { collapsible: false, resizable:true,size:'350px', min:'100px'},
+						   { collapsible: false, resizable:true,size:'600px', min:'100px'},
                     	  { collapsible: true}]"
                 k-Options="lineItemSplitterOptions"
-				style="height: 550px; width: 100%;">    
+				style="height: 800px; width: 100%;">    
 				
 		<div style="margin:6px;"><!-- top pane-->
 			

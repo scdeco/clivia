@@ -55,7 +55,7 @@ orderApp.controller("billItemCtrl",["$scope","$state","$sce","SO",
 			    }
 		}
 		        
-	//pass to moneyGird directive to register removed lineitem		        
+	//pass to billGrid directive to register removed billitem		        
 	$scope.registerDeletedItemFunction=function(dataItem){
 		SO.registerDeletedItem("billItem",dataItem.id);
 	}
@@ -76,6 +76,11 @@ orderApp.controller("billItemCtrl",["$scope","$state","$sce","SO",
 	};
 	
 
+	$scope.getTotalAmount=function(){
+		if(!$scope.billGrid) return "";
+		var totalAmt=$scope.billGrid.getTotal();
+		return totalAmt?kendo.toString(totalAmt,"c"):"";
+	}
 	
 }]);
 </script>
