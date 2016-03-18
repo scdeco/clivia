@@ -2,7 +2,6 @@ package com.scdeco.miniataweb.model;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

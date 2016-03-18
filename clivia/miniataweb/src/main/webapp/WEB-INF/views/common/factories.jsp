@@ -107,7 +107,26 @@ clivia.factory("util",["$http","$q",function($http,$q){
 			    printWin.focus();
 /*			    printWin.print();
 			    printWin.close(); */
-			}		
+			},
+		uploadImage:function(file,url){
+				var deferred = $q.defer();
+
+	            var fd = new FormData();
+	               fd.append('file', file,"pasteimage.jpg"); 
+	            
+	               $http.post(url, fd, {
+	                  transformRequest: angular.identity,
+	                  headers: {'Content-Type': undefined}
+	            	   })
+	            
+	               .success(function(e){
+	            	   deferred.resolve(e);
+	              		 })
+	               .error(function(){
+	               	});
+	            return deferred.promise;
+			}
+		
 	}	
 }]).
 

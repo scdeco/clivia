@@ -1,5 +1,6 @@
 package com.scdeco.miniataweb.dao;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -10,13 +11,11 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.scdeco.miniataweb.model.OrderBillItem;
 import com.scdeco.miniataweb.model.OrderClivia;
-import com.scdeco.miniataweb.model.OrderImage;
 import com.scdeco.miniataweb.model.OrderInfo;
 import com.scdeco.miniataweb.model.OrderItem;
-import com.scdeco.miniataweb.model.OrderLineItem;
 import com.scdeco.miniataweb.model.OrderUpc;
+import com.scdeco.miniataweb.util.CliviaApplicationContext;
 
 @Repository ("orderDao")
 public class OrderDao {
@@ -28,27 +27,20 @@ public class OrderDao {
 	private OrderItemDao orderItemDao;
 	
 	@Autowired
-	private OrderLineItemDao orderLineItemDao;
-
-	@Autowired
-	private OrderBillItemDao orderBillItemDao;
-	
-	@Autowired
-	private OrderImageDao orderImageDao;
-	
-	@Autowired
-	private OrderEmbDesignDao orderEmbDesignDao;
-	
-	@Autowired
 	private OrderUpcDao orderUpcDao;
 
 	@Autowired
 	private CliviaAutoNumberDao cliviaAutoNumberDao;
 	
 	private static int MAX_TMP_ID=10000;
+
+	final String[] registeredOrderItemNames=new String[]{"lineItems","billItems","imageItems","contactItems"};
+	final String[] registeredOrderItemDaoNames=new String[]{"orderLineItem","orderBillItem","orderImage","orderContact"};
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
-	public void save(OrderClivia order){
+	public void save(OrderClivia order) 
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
 		
 		OrderInfo orderInfo=order.getInfo();
 		
@@ -78,25 +70,24 @@ public class OrderDao {
 					setOrderItemId(order,tmpOrderItemId,orderItem.getId());
 			}
 		}
+		
+		Class orderClass= order.getClass();
+		
+		for(int i=0;i<registeredOrderItemNames.length;i++){
+			
+			Field itemListField = orderClass.getDeclaredField(registeredOrderItemNames[i]);
+			itemListField.setAccessible(true);
+			List itemList=(List) itemListField.get(order);
+			
+			if(itemList!=null){
+				GenericDao dao=getDao(registeredOrderItemDaoNames[i]);
+				for(Object item:itemList){
+					dao.saveOrUpdate(item);
+				}
 
-		if(order.getBillItems()!=null){
-			for(OrderBillItem billItem:order.getBillItems()){
-				orderBillItemDao.saveOrUpdate(billItem);
 			}
-		}
-		
-		if(order.getLineItems()!=null){
-			for(OrderLineItem lineItem:order.getLineItems()){
-				orderLineItemDao.saveOrUpdate(lineItem);
-			}
-		}
-		
-		if(order.getImageItems()!=null){
-			for(OrderImage imageItem:order.getImageItems()){
-				orderImageDao.saveOrUpdate(imageItem);
-			}
-		}
-		
+		}		
+
 		if(order.getUpcs()!=null){
 			for(OrderUpc upc:order.getUpcs()){
 				orderUpcDao.saveOrUpdate(upc);
@@ -104,8 +95,10 @@ public class OrderDao {
 		}
 	}
 	
-
-	public OrderClivia getOrderById(int orderId){
+	@SuppressWarnings({ "rawtypes" })
+	public OrderClivia getOrderById(int orderId) 
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
+		
 		OrderClivia order=null;
 		OrderInfo orderInfo=orderInfoDao.findById(orderId);
 		if(orderInfo!=null){
@@ -114,22 +107,28 @@ public class OrderDao {
 			
 			List<OrderItem> orderItems=orderItemDao.FindListByOrderId(orderId);
 			order.setItems(orderItems);
+		
+			Class orderClass= order.getClass();
 			
-			List<OrderBillItem> billItems=orderBillItemDao.findListByOrderId(orderId);
-			order.setBillItems(billItems);
+			for(int i=0;i<registeredOrderItemNames.length;i++){
+				Field itemListField = orderClass.getDeclaredField(registeredOrderItemNames[i]);
+				itemListField.setAccessible(true);
 
-			List<OrderLineItem> lineItems=orderLineItemDao.findListByOrderId(orderId);
-			order.setLineItems(lineItems);
-			
-			List<OrderImage> imageItems=orderImageDao.findListByOrderId(orderId);
-			order.setImageItems(imageItems);
+				OrderItemGenericDao dao=(OrderItemGenericDao) getDao(registeredOrderItemDaoNames[i]);
+				
+				List  itemList=dao.findListByOrderId(orderId);
+				itemListField.set(order, itemList);
+			}
+
 		}
 			
 		return order;
 		
 	}
 	
-	public OrderClivia getOrderByOrderNumber(String orderNumber){
+	public OrderClivia getOrderByOrderNumber(String orderNumber) 
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
+		
 		OrderClivia order=null;
 		OrderInfo orderInfo=orderInfoDao.findByOrderNumber(orderNumber);
 		if (orderInfo!=null){
@@ -138,18 +137,35 @@ public class OrderDao {
 		return order;
 	}
 	
+	//not test yet
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
-	public void deleteOrder(OrderClivia order){
+	public void deleteOrder(OrderClivia order) 
+					throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
 		
-		orderBillItemDao.deleteAll(order.getBillItems());
-		orderLineItemDao.deleteAll(order.getLineItems());
-		orderImageDao.deleteAll(order.getImageItems());
+		orderUpcDao.deleteAll(order.getUpcs());
+
+		Class orderClass= order.getClass();
+		
+		for(int i=0;i<registeredOrderItemNames.length;i++){
+			Field itemField = orderClass.getDeclaredField(registeredOrderItemNames[i]);
+			itemField.setAccessible(true);
+			List itemList=(List) itemField.get(order);
+			
+			if(itemList!=null){
+				GenericDao dao=getDao(registeredOrderItemDaoNames[i]);
+				dao.deleteAll(itemList);
+			}
+		}
+		
 		orderItemDao.deleteAll(order.getItems());
 		orderInfoDao.delete(order.getInfo());
 	}
 	
-	
-	private void setOrderId(OrderClivia order){
+	@SuppressWarnings({ "rawtypes" })
+	private void setOrderId(OrderClivia order) 
+					throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
+		
 		int orderId=order.getInfo().getId();
 		
 		if(order.getItems()!=null){
@@ -158,24 +174,25 @@ public class OrderDao {
 			}
 		}
 
-		if(order.getBillItems()!=null){
-			for(OrderBillItem billItem:order.getBillItems()){
-				billItem.setOrderId(orderId);
-			}
-		}
+		Class orderClass= order.getClass();
 		
-		if(order.getLineItems()!=null){
-			for(OrderLineItem lineItem:order.getLineItems()){
-				lineItem.setOrderId(orderId);
-			}
-		}
+		for(int i=0;i<registeredOrderItemNames.length;i++){
+			Field itemField = orderClass.getDeclaredField(registeredOrderItemNames[i]);
+			itemField.setAccessible(true);
+			List itemList=(List) itemField.get(order);
 			
-		if(order.getImageItems()!=null){
-			for(OrderImage imageItem:order.getImageItems()){
-				imageItem.setOrderId(orderId);
+			if(itemList!=null){
+				GenericDao dao=getDao(registeredOrderItemDaoNames[i]);
+
+				Class itemClass=dao.getEntityClass();
+				Field fieldOrderItemId=itemClass.getDeclaredField("orderId");
+				fieldOrderItemId.setAccessible(true);
+				for(Object item:itemList){
+					fieldOrderItemId.setInt(item, orderId);
+				}
 			}
-		}		
-		
+		}
+
 		if(order.getUpcs()!=null){
 			for(OrderUpc orderUpc:order.getUpcs()){
 				orderUpc.setOrderId(orderId);
@@ -184,58 +201,57 @@ public class OrderDao {
 		
 	}
 	
-	private void setOrderItemId(OrderClivia order,int tmpOrderItemId,int newOrderItemId){
+	@SuppressWarnings({ "rawtypes" })
+	private void setOrderItemId(OrderClivia order,int tmpOrderItemId,int newOrderItemId) 
+				throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
 		
-		if(order.getLineItems()!=null){
-			for(OrderLineItem lineItem:order.getLineItems()){
-				if(lineItem.getOrderItemId()==tmpOrderItemId)
-					lineItem.setOrderItemId(newOrderItemId);
+		Class orderClass= order.getClass();
+		
+		for(int i=0;i<registeredOrderItemNames.length;i++){
+			Field itemField = orderClass.getDeclaredField(registeredOrderItemNames[i]);
+			itemField.setAccessible(true);
+			List itemList=(List) itemField.get(order);
+			
+			if(itemList!=null){
+				GenericDao dao=getDao(registeredOrderItemDaoNames[i]);
+
+				Class itemClass=dao.getEntityClass();
+				Field fieldOrderItemId=itemClass.getDeclaredField("orderItemId");
+				fieldOrderItemId.setAccessible(true);
+				for(Object item:itemList){
+					if(fieldOrderItemId.getInt(item)==tmpOrderItemId)
+						fieldOrderItemId.setInt(item, newOrderItemId);
+				}
 			}
 		}
-			
-		if(order.getBillItems()!=null){
-			for(OrderBillItem billItem:order.getBillItems()){
-				if(billItem.getOrderItemId()==tmpOrderItemId)
-					billItem.setOrderItemId(newOrderItemId);
-			}
-		}
-			
-		if(order.getImageItems()!=null){
-			for(OrderImage imageItem:order.getImageItems()){
-				if(imageItem.getOrderItemId()==tmpOrderItemId)
-					imageItem.setOrderItemId(newOrderItemId);
-			}
-		}		
+		
 	}
 	
-	
+	@SuppressWarnings("rawtypes")
 	private void removeDeletedItems(List<Map<String,String>> deletedItems){
 		if(!deletedItems.isEmpty()){
 			System.out.println("deleted:"+deletedItems);
 			
 			for(Map<String,String> item:deletedItems){
-					String daoName=item.get("entity");
 		        	int id=Integer.parseInt(item.get("id"));
 		        	
-		        	switch (daoName){
-		        	case "item":
-		        		orderItemDao.deleteById(id);
-		        		break;
-		        	case "lineItem":
-		        		orderLineItemDao.deleteById(id);
-		        		break;
-		        	case "billItem":
-		        		orderBillItemDao.deleteById(id);
-		        		break;
-		        	case "imageItem":
-		        		orderImageDao.deleteById(id);
-		        		break;
-		        	}
+					char[] c=item.get("entity").toCharArray();
+					c[0]=Character.toUpperCase(c[0]);
+					String daoName="order"+new String(c);
+		        	
+					GenericDao dao=getDao(daoName);
+		        	dao.deleteById(id);
 		        	
 		     }				
 		}
 	}
 	
-	
+    @SuppressWarnings("rawtypes")
+	private GenericDao getDao(String daoName){
+    	
+    	if(!daoName.toLowerCase().endsWith("dao"))
+    		daoName+="Dao";
+    	return ((GenericDao)CliviaApplicationContext.getBean(daoName));
+    }
 	
 }

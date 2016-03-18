@@ -52,6 +52,7 @@ orderApp.controller("billItemCtrl",["$scope","$state","$sce","SO",
 			    	orderId:SO.dataSet.info.orderId,
 			    	orderItemId:orderItem.id, 
 			    	snpId:0,
+			    	orderAmt:0,
 			    }
 		}
 		        

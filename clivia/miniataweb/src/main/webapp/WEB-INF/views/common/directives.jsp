@@ -1381,12 +1381,7 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 					},
 					success: function (e) {
 					    if(e.response.status==="success"){
-							var data = e.response.data;
-							
-							if(data){
-								scope.cDictImage.addItem(data);
-								addRow(data,false);
-							}
+							handleSuccess(e.response.data);
 				    	}
 					},
 					error:function(e){
@@ -1437,7 +1432,7 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 			    
 			}
 
-			showImageDetail=function(dataItem){
+			var showImageDetail=function(dataItem){
 				var imageId=dataItem.imageId;
 				if(imageId){
 					var url="../lib/image/getimage?id="+imageId;
@@ -1449,10 +1444,42 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 								scope.previewOriginalImage=null;
 						});					
 				}else{
-					$scope.previewOriginalImage=null;
+					scope.previewOriginalImage=null;
 				}
 
-			};			
+			};		
+			
+			scope.handlePaste=function(e) {
+				var items=e.originalEvent.clipboardData.items;
+			    for (var i = 0 ; i < items.length ; i++) {
+			        var item = items[i];
+			        console.log("Item: " + item.type);
+			        item.getAsString(function(s){
+			        	console.log("-----"+s);
+			        	});
+			       
+			        if (item.type.indexOf("image")!==-1) {
+			            util.uploadImage(item.getAsFile(),'../lib/image/upload').then(
+			            		function(e){
+			            			if(!e.message)
+				            			handleSuccess(e.data);
+			            			});
+			           
+			        } else {
+			            console.log("Discardingimage paste data");
+			        }
+			    }
+			}
+			
+		
+			
+			var handleSuccess=function(data){
+				if(data){
+					scope.cDictImage.addItem(data);
+					addRow(data,false);
+				}
+			}
+
 				
 		}	//end of imageGrid:link
 	}

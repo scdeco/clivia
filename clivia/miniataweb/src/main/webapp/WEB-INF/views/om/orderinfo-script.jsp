@@ -49,9 +49,6 @@ orderApp.controller("orderInfoCtrl", ["$scope","SO","cliviaDDS",function($scope,
 			url:"../datasource/employeeInfoDao/read",
 			dict:cliviaDDS.getDict("employeeInput"),
 		}
-
-	
-	
 }]);
 </script>
 	

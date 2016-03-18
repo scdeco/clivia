@@ -33,6 +33,10 @@
 				<map-combobox name="csr" style="width:100%;" ng-readonly="true" c-options="csrOptions" ng-model="SO.dataSet.info.createBy">
 			</li>
 			
+			<li>
+				<label for="remark">Remark:</label>
+			    <textarea  class="k-textbox" style="width:100%;height:100px;" ng-model="SO.dataSet.info.remark"></textarea>		
+			</li>
 			
 			
 		</ul>

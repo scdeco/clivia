@@ -83,6 +83,10 @@ public class OrderInfo {
 
 	@Column(name="RepId")
 	private Integer repId;
+	
+	@Column(name="Remark",length=255)
+	private String remark;
+	
 
 	public int getId() {
 		return id;
@@ -218,6 +222,14 @@ public class OrderInfo {
 
 	public void setRepId(Integer repId) {
 		this.repId = repId;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
 	}
 	
 

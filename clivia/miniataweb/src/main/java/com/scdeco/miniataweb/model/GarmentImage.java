@@ -1,23 +1,25 @@
 package com.scdeco.miniataweb.model;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+@Entity
 public class GarmentImage {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
 	@Column(name="GarmentId", nullable = false)	
-	private int garmentId;
+	private Integer garmentId;
 	
 	@Column(name="ImageId", nullable = false)	
-	private int imageId;
+	private Integer imageId;
 	
-	@Column(name="Desc", length=200)
-	private String desc;
+	@Column(name="Description", length=200)
+	private String description;
 
 	public int getId() {
 		return id;
@@ -27,29 +29,28 @@ public class GarmentImage {
 		this.id = id;
 	}
 
-	public int getGarmentId() {
+	public Integer getGarmentId() {
 		return garmentId;
 	}
 
-	public void setGarmentId(int garmentId) {
+	public void setGarmentId(Integer garmentId) {
 		this.garmentId = garmentId;
 	}
 
-	public int getImageId() {
+	public Integer getImageId() {
 		return imageId;
 	}
 
-	public void setImageId(int imageId) {
+	public void setImageId(Integer imageId) {
 		this.imageId = imageId;
 	}
 
-	public String getDesc() {
-		return desc;
+	public String getDescription() {
+		return description;
 	}
 
-	public void setDesc(String desc) {
-		this.desc = desc;
+	public void setDescription(String description) {
+		this.description = description;
 	}
-
 	
 }

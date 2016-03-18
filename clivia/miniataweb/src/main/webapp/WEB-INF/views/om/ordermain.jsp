@@ -44,9 +44,9 @@
 	<div id="bottom-pane" >
 	</div> <!-- bottom pane of outter splitter -->
 </div>
-<pre>
+<!-- <pre>
 	dataSet:{{SO.dataSet|json}}
 	instance:{{SO.instance|json}}
 	dds:{{SO.dds|json}}
 
-</pre>
+</pre> -->

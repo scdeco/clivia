@@ -63,13 +63,16 @@ public class OrderController {
 	}*/
 
 	@RequestMapping(value="get-order",method=RequestMethod.GET)
-	public @ResponseBody  OrderClivia getOrder(@RequestParam("number") String orderNumber){
+	public @ResponseBody  OrderClivia getOrder(@RequestParam("number") String orderNumber)
+				throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
+		
 		System.out.println("Order#:"+orderNumber);
 		return orderDao.getOrderByOrderNumber(orderNumber);
 	}
 
 	@RequestMapping(value="save-order",method=RequestMethod.POST)
-	public @ResponseBody  OrderClivia saveOrder(@RequestBody OrderClivia order,Principal principal){
+	public @ResponseBody  OrderClivia saveOrder(@RequestBody OrderClivia order,Principal principal) 
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
 		String username=principal.getName();
 		EmployeeInfo employeeInfo=employeeInfoDao.findByUsername(username);
 		OrderInfo orderInfo=order.getInfo();
@@ -80,7 +83,9 @@ public class OrderController {
 	}
 	
 	@RequestMapping(value="delete-order",method=RequestMethod.POST)
-	public @ResponseBody  OrderClivia deleteOrder(@RequestBody OrderClivia order){
+	public @ResponseBody  OrderClivia deleteOrder(@RequestBody OrderClivia order) 
+				throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
+		
 		orderDao.deleteOrder(order);
 		return order;
 	}

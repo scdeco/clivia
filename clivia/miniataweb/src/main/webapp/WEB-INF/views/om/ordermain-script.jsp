@@ -90,7 +90,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 						    
 			dataSource.fetch(function() {
 				  var billItems = dataSource.view();
-				  SO.printBill(billItems,true)		//print billItems that from lineitem(typeid===2) only
+				  SO.printBill(billItems,false)		//print billItems that from lineitem(typeid===2) only
 				});
 		}
 		
