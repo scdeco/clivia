@@ -30,10 +30,8 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
  						itemName=scope.companyItemNames[i];
  						items=scope.dataSet[itemName+'Items'];
  						items.splice(0,items.length);
- 						
- 						items=scope.dataSet[itemName+'DeletedItems'];
- 						items.splice(0,items.length);
  					}
+ 					scope.dataSet.deleteds=[];
 				}			    
 			    
 			    scope.clear=function(){
@@ -66,8 +64,11 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 
 			    scope.save=function(){
 			    	if(!validCompany()) return;
-			    	
 					var url=baseUrl+"save-company";
+					
+					if(scope.companyForm.$dirty)
+						scope.dataSet.info.isDirty=true;
+
 					
 					$http.post(url,scope.dataSet).
 						  success(function(data, status, headers, config) {
@@ -96,6 +97,8 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 							}
 						}
 					}
+					
+					scope.companyForm.$setPristine();
 				}
 				
 			 	var validCompany=function(){
@@ -165,33 +168,7 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 				
 				scope.companyItemNames=['contact','address','journal'];
 				
-				scope.contactGW=new ContactGridWrapper('contactGrid');
-				scope.addressGW=new AddressGridWrapper('addressGrid');
-				scope.journalGW=new JournalGridWrapper('journalGrid');
-				
-				scope.$on("kendoWidgetCreated", function(event, widget){
-					if (widget ===scope.contactGrid) {
-						scope.contactGW.wrapGrid(widget);
-					}
-					if (widget ===scope.addressGrid) {
-						scope.addressGW.wrapGrid(widget);
-					}
-					if (widget ===scope.journalGrid) {
-						scope.journalGW.wrapGrid(widget);
-						scope.journalGW.getContacts=function(){
-							var items=[];
-							for(var i=0,item,name;i<scope.dataSet.contactItems.length;i++){
-								item=scope.dataSet.contactItems[i];
-								name=(item.firstName?item.firstName:"")+" "+(item.lastName?item.lastName:"");
-								items.push(name.trim());
-							}
-							return items;
-						}
-					}
-				});	
-				
-				
-				scope.dataSet={info:{html:"test"}};
+				scope.dataSet={info:{html:"test"}, deleteds:[]};
 				
 				
 				for(var i=0,itemName;i<scope.companyItemNames.length;i++){
@@ -199,9 +176,6 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 					itemName=scope.companyItemNames[i];
 					
 					scope.dataSet[itemName+'Items']=new kendo.data.ObservableArray([]);
-					scope.dataSet[itemName+'DeletedItems']=[];
-					
-					scope[itemName+'GridSortableOptions'] = scope[itemName+'GW'].getSortableOptions();
 					
 				 	scope[itemName+'GridDataSource']=new kendo.data.DataSource({
 				     	data:scope.dataSet[itemName+'Items'],
@@ -214,52 +188,6 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 
 				    }); //end of dataSource,
 				    
-				    
-				 	scope[itemName+'GridOptions']={
-							autoSync: true,
-							columns:scope[itemName+'GW'].gridColumns,
-							dataSource:scope[itemName+'GridDataSource'],
-					        editable: true,
-					        selectable: "cell",
-					        navigatable: true,
-					        resizable: true,
-					};
-				    
-				    
-					$scope[itemName+'GridContextMenuOptions']={
-							closeOnClick:true,
-							filter:".gridLineNumber,.gridLineNumberHeader",
-							target:'#'+itemName+'Grid',
-							select:function(e){
-								if(!e.item.id) return;
-
-								var itemGW='',operation='',itemName='';
-								
-								for(var i=0,p,operations=['Add','Insert','Delete'];i<operations.length;i++){
-									p=e.item.id.indexOf(operations[i]);
-									if(p>0){
-										operation=operations[i];
-										itemName=e.item.id.slice(0,p);
-										itemGW=$scope[itemName+'GW'];
-										break;
-									}
-								}
-								switch(operation){
-									case "Add":
-										itemGW.addItem(false,$scope.dataSet.info);
-										break;
-									case "Insert":
-										itemGW.addItem(true,$scope.dataSet.info);
-										break;
-									case "Delete":
-										var id=itemGW.deleteItem();
-										if(id>0)
-											$scope.dataSet[itemName+'DeletedItems'].push(id);
-										break;
-								}
-							}
-					};
-
 				}
 				
 				$scope.repOptions={
@@ -326,329 +254,57 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 						};
 				});
 				
+				$scope.newContactItemFunction=function(){
+				    return {isActive:true,isBuyer:true};
+				}
+
+				$scope.newAddressItemFunction=function(){
+					var item={billing:false,shipping:true};
+					var info=$scope.dataSet.info;
+					if(info){
+						if(info.country)
+							item.country=info.country;
+						if(info.province)
+							item.province=info.province;
+						if(info.city)
+							item.city=info.city;
+					}
+				    return item;
+				}
+
+				$scope.newJournalItemFunction=function(){
+				    return {};
+				}
+				
+				var registerDeletedItem=function(itemType,id){
 					
+					var item= {entity:itemType,id:id};
+					$scope.dataSet.deleteds.push(item);
+				}
+				
+				$scope.registerDeletedContactItemFunction=function(dataItem){
+					registerDeletedItem("contact",dataItem.id);
+				}				
+
+				$scope.registerDeletedAddressItemFunction=function(dataItem){
+					registerDeletedItem("address",dataItem.id);
+				}				
+
+				$scope.registerDeletedJournalItemFunction=function(dataItem){
+					registerDeletedItem("journal",dataItem.id);
+				}				
 			}]};
-	return directive 
+	
+	return directive;
 	
 	
 }]);//end of directive company 
 
 
-crmApp.factory("ContactGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapper,cliviaDDS){
-	var thisGW;
-	var getColumns=function(){
-		return [{
-		        name:"lineNumber",
-		        title: "#",
-		        attributes:{class:"gridLineNumber"},
-		        headerAttributes:{class:"gridLineNumberHeader"},
-		        width: 25,
-			}, {
-		         name: "title",
-		         field: "title",
-		         title: "Title",
-		         editor:thisGW.titleColumnEditor,
-		         width: 60
-		     }, {
-		         name: "firstName",
-		         field: "firstName",
-		         title: "First Name",
-		         width: 80,
-		     }, {
-		         name: "lastName",
-		         field: "lastName",
-		         title: "Last Name",
-		         width: 80,
-		     }, {
-		         name: "position",
-		         field: "position",
-		         title: "Position",
-		         editor:thisGW.positionColumnEditor,
-		         width: 80,
-		     }, {
-		         name: "phone",
-		         field: "phone",
-		         title: "Phone",
-		         width: 120,
-		     }, {
-		         name: "email",
-		         field: "email",
-		         title: "Email",
-		         width:150,
-		     }, {
-		         name: "isBuyer",
-		         field: "isBuyer",
-		         title: "Is Buyer",
-		         template: '<input type="checkbox" #= isBuyer ? checked="checked" : "" # disabled="disabled" />',
-		         width: 65,
-		     }, {
-		         name: "isActive",
-		         field: "isActive",
-		         title: "Active",
-		         template: '<input type="checkbox" #= isActive ? checked="checked" : "" # disabled="disabled" />',
-		         width: 65,
-		     }, {
-		    	 name:"remark",
-		         field: "remark",
-		         title: "Remark",
-		}];
-	}
-	
-	var gw=function(gridName){
-		
-		GridWrapper.call(this,gridName);
-		thisGW=this;
-	 	this.setColumns(getColumns());
-	}
-	
-	gw.prototype=new GridWrapper();	//implement inheritance
-
-	gw.prototype.addItem=function(isInsert){
-		var item={isActive:true,isBuyer:true}; //inactive
-	    this.addRow(item,isInsert);
-	}
-	
-	gw.prototype.deleteItem=function(){
-		var dataItem=this.getCurrentDataItem();
-		var deletedId=0;
-
-	    if (dataItem) {
-	        if (confirm('Please confirm to delete the selected row.')) {
-				this.deleteRow(dataItem);
-				deletedId=dataItem.id;
-	        }
-	    }
-   		else {
-        	alert('Please select a  row to delete.');
-   		}
-	    return deletedId;
-	}
-
-	gw.prototype.titleColumnEditor=function(container, options) {
-		var items=['Mr.','Mrs.','Ms.','Miss'];
-		thisGW.kendoComboBoxEditor(container, options,items);
-	}
-	
-	gw.prototype.positionColumnEditor=function(container, options) {
-		var items=['Owner','Buyer','Accountant'];
-		thisGW.kendoComboBoxEditor(container, options,items);
-	}
-	
-	return gw;
-}]); //end of ContactGridWrapper
-
-crmApp.factory("AddressGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapper,cliviaDDS){
-	var thisGW;
-	
-	var dictProvince=cliviaDDS.getDict('province');
-	var dictCity=cliviaDDS.getDict('city');
-
-	var getColumns=function(){
-
-		return [{
-		        name:"lineNumber",
-		        title: "#",
-		        attributes:{class:"gridLineNumber"},
-		        headerAttributes:{class:"gridLineNumberHeader"},
-		        width: 25,
-			}, {
-		         name: "address",
-		         field: "address",
-		         title: "Adddress",
-		         width: 200
-		     }, {
-		         name: "country",
-		         field: "country",
-		         title: "Country",
-		         editor:thisGW.countryColumnEditor,
-		         width: 80,
-		     }, {
-		         name: "province",
-		         field: "province",
-		         title: "Province",
-		         editor: thisGW.provinceColumnEditor,
-		         width: 75,
-		     }, {
-		         name: "city",
-		         field: "city",
-		         title: "City",
-		         editor: thisGW.cityColumnEditor,
-		         width: 85,
-		     }, {
-		         name: "postalCode",
-		         field: "postalCode",
-		         title: "Postal Code",
-		         width: 80,
-
-		     }, {
-		         name: "billing",
-		         field: "billing",
-		         title: "Billing",
-		         template: '<input type="checkbox" #= billing ? checked="checked" : "" # disabled="disabled" />',
-		         width: 50,
-		     }, {
-		         name: "shipping",
-		         field: "shipping",
-		         title: "Shipping",
-		         template:'<input type="checkbox" #= shipping ? checked="checked" : "" # disabled="disabled" />',
-		         width:65,
-		     }, {
-		    	 name:"remark",
-		         field: "remark",
-		         title: "Remark",
-		}];
-	}
-	
-	var gw=function(gridName){
-		
-		GridWrapper.call(this,gridName);
-		thisGW=this;
-	 	this.setColumns(getColumns());
-	}
-	
-	gw.prototype=new GridWrapper();	//implement inheritance
-	
-	gw.prototype.addItem=function(isInsert,info){
-		var item={billing:false,shipping:true};
-		if(info){
-			if(info.country)
-				item.country=info.country;
-			if(info.province)
-				item.province=info.province;
-			if(info.city)
-				item.city=info.city;
-		}
-			
-	    this.addRow(item,isInsert);
-	}
-	
-	gw.prototype.deleteItem=function(){
-		var dataItem=this.getCurrentDataItem();
-		var deletedId=0;
-	    if (dataItem) {
-	        if (confirm('Please confirm to delete the selected row.')) {
-				this.deleteRow(dataItem);
-				deletedId=dataItem.id;
-	        }
-	    }else {
-        	alert('Please select a  row to delete.');
-   		}
-	    return deletedId;
-	}
-	gw.prototype.countryColumnEditor=function(container, options) {
-		var items=['Canada','USA'];
-		thisGW.kendoComboBoxEditor(container, options,items);
-	}
-	
-	gw.prototype.provinceColumnEditor=function(container, options) {
-		var items=dictProvince.items;
-		thisGW.kendoComboBoxEditor(container, options,items);
-	}
-	
-	gw.prototype.cityColumnEditor=function(container, options) {
-		var items= dictCity.items;
-		thisGW.kendoComboBoxEditor(container, options,items);
-	}
-
-	return gw;
-}]); //end of AddressGridWrapper
 
 
-crmApp.factory("JournalGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapper,cliviaDDS){
-	var thisGW;
-	
-	var dictProvince=cliviaDDS.getDict('province');
-	var dictCity=cliviaDDS.getDict('city');
 
-	var getColumns=function(){
 
-		return [{
-		        name:"lineNumber",
-		        title: "#",
-		        attributes:{class:"gridLineNumber"},
-		        headerAttributes:{class:"gridLineNumberHeader"},
-		        width: 25,
-			}, {
-		         name: "event",
-		         field: "event",
-		         title: "Event",
-		         editor: thisGW.actionColumnEditor,
-		         width: 90
-		     }, {
-		         name: "sales",
-		         field: "sales",
-		         title: "Sales",
-		         editor: thisGW.salesColumnEditor,
-		         width: 75,
-		     }, {
-		         name: "date",
-		         field: "date",
-		         title: "Date",
-		         format:"{0:yyyy-MM-dd}",
-		         width: 100,
-		         editor: thisGW.dateColumnEditor,
-		     }, {
-		         name: "contact",
-		         field: "contact",
-		         title: "Contact",
-		         editor: thisGW.contactColumnEditor,
-		         width: 120,
-		     }, {
-		         name: "content",
-		         field: "content",
-		         title: "Content",
-		}];
-	}
-	
-	var gw=function(gridName){
-		
-		GridWrapper.call(this,gridName);
-		thisGW=this;
-	 	thisGW.setColumns(getColumns());
-	 	thisGW.hasDateColumnEditor=true;
-	 	thisGW.getContacts=null;
-	}
-	
-	gw.prototype=new GridWrapper();	//implement inheritance
-	
-	gw.prototype.addItem=function(isInsert){
-		var item={};
-	    this.addRow(item,isInsert);
-	}
-	
-	gw.prototype.deleteItem=function(){
-		var dataItem=this.getCurrentDataItem();
-		var deletedId=0;
-	    if (dataItem) {
-	        if (confirm('Please confirm to delete the selected row.')) {
-				this.deleteRow(dataItem);
-				deletedId=dataItem.id;
-	        }
-	    }else {
-        	alert('Please select a  row to delete.');
-   		}
-	    return deletedId;
-	}
-	gw.prototype.actionColumnEditor=function(container, options) {
-		var items=['Call','Letter','Visit','Email'];
-		thisGW.kendoComboBoxEditor(container, options,items);
-	}
-	
-	gw.prototype.salesColumnEditor=function(container, options) {
-		var items=[];
-		thisGW.kendoComboBoxEditor(container, options,items);
-	}
-	
-	gw.prototype.contactColumnEditor=function(container, options) {
-		var items=[];
-		if(thisGW.getContacts){
-			items=thisGW.getContacts();
-		}
-		thisGW.kendoComboBoxEditor(container, options,items);
-	}
-
-	return gw;
-}]); //end of JournalGridWrapper
 
 crmApp.factory("CompanyGridWrapper",["GridWrapper",function(GridWrapper){
 	var thisGW;

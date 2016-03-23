@@ -9,13 +9,13 @@ import javax.persistence.Id;
 import org.hibernate.annotations.Formula;
 
 @Entity
-public class CompanyContact {
+public class CompanyContact  extends CliviaSuperModel{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
 	@Column(name="CompanyId")
-	private Integer companyId;
+	private int companyId=0;
 	
 	@Column(name="LineNo")
 	private Integer lineNo;
@@ -58,11 +58,11 @@ public class CompanyContact {
 		this.id = id;
 	}
 
-	public Integer getCompanyId() {
+	public int getCompanyId() {
 		return companyId;
 	}
 
-	public void setCompanyId(Integer companyId) {
+	public void setCompanyId(int companyId) {
 		this.companyId = companyId;
 	}
 

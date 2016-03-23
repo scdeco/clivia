@@ -40,23 +40,29 @@ public class GarmentController {
 	
 	@RequestMapping(value="get-product",method=RequestMethod.GET)
 	public @ResponseBody  Garment getGarmentProduct(@RequestParam("seasonId") int seasonId,
-													@RequestParam("styleNo") String styleNo){
-		return garmentDao.getGarmentProductByStyleNumber(seasonId,styleNo);
+													@RequestParam("styleNo") String styleNo) 
+					throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException{
+		
+		return garmentDao.getByStyleNumber(seasonId,styleNo);
 	}
 
 	@RequestMapping(value="save-product",method=RequestMethod.POST)
-	public @ResponseBody  Garment saveGarmentProduct(@RequestBody Garment garment){
+	public @ResponseBody  Garment saveGarmentProduct(@RequestBody Garment garment) 
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
+		
 		garmentDao.save(garment);
 		return garment;
 	}
 	
 	@RequestMapping(value="delete-product",method=RequestMethod.GET)
-	public @ResponseBody  String deleteGarmentProduct(@RequestParam("id") Integer id){
+	public @ResponseBody  String deleteGarmentProduct(@RequestParam("id") Integer id) 
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
+		
 		String result="";
 		
 		int garmentId=id;
 		if(garmentId>0){
-			result=garmentDao.delete(garmentId);
+			garmentDao.delete(garmentId);
 		}else{
 			result="Not a saved garment.";
 		}

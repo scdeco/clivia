@@ -121,27 +121,27 @@
               </ul>
           
               <div style="padding: 1em">
-              	<div kendo-sortable k-options="contactGridSortableOptions">
-			  		<div kendo-grid="contactGrid" id="contactGrid" k-options="contactGridOptions"></div>
-			  	</div>
-			  	<ul kendo-context-menu k-options="contactGridContextMenuOptions">
-				  	<li id="contactAdd">Add</li>
-				  	<li id="contactInsert">Insert</li>
-				  	<li id="contactDelete">Delete</li>
-				</ul>
+              		<div clivia-grid="contactGrid" 
+              			c-grid-wrapper-name="'ContactGridWrapper'"
+    					c-editable="true" 
+    					c-data-source="contactGridDataSource" 
+    					c-pageable="false" 
+    					c-new-item-function="newContactItemFunction"
+    					c-register-deleted-item-function="registerDeletedContactItemFunction">
+    				</div>
               </div>
           
               <div style="padding: 1em">
-              	<div kendo-sortable k-options="addressGridSortableOptions">
-					<div kendo-grid="addressGrid" id="addressGrid" k-options="addressGridOptions"></div>
-				</div>
-			  	<ul kendo-context-menu k-options="addressGridContextMenuOptions">
-				  	<li id="addressAdd">Add</li>
-				  	<li id="addressInsert">Insert</li>
-				  	<li id="addressDelete">Delete</li>
-				</ul>
+              		<div clivia-grid="addressGrid" 
+              			c-grid-wrapper-name="'AddressGridWrapper'"
+    					c-editable="true" 
+    					c-data-source="addressGridDataSource" 
+    					c-pageable="false" 
+    					c-new-item-function="newAddressItemFunction"
+    					c-register-deleted-item-function="registerDeletedAddressItemFunction">
+    				</div>
               </div>
-              
+          
               <div style="padding: 1em">	<!-- notes -->
               	<h3>Regular:</h3>
            	 	<textarea  class="k-textbox" style="width:100%;height:100px;" ng-model="dataSet.info.regularInstructions"></textarea>		<!-- not use for now kendo-editor="regularEditor" -->
@@ -150,18 +150,22 @@
               </div>
               
               <div style="padding: 1em">
-				<div kendo-grid="journalGrid" id="journalGrid" k-options="journalGridOptions"></div>
-			  	<ul kendo-context-menu k-options="journalGridContextMenuOptions">
-				  	<li id="journalAdd">Add</li>
-				  	<li id="journalInsert">Insert</li>
-				  	<li id="journalDelete">Delete</li>
-				</ul>
+              		<div clivia-grid="journalGrid" 
+              			c-grid-wrapper-name="'JournalGridWrapper'"
+    					c-editable="true" 
+    					c-data-source="journalGridDataSource" 
+    					c-pageable="false" 
+    					c-new-item-function="newJournalItemFunction"
+    					c-register-deleted-item-function="registerDeletedJournalItemFunction">
+    				</div>
               </div>
             </div><!--end of tabstrip-->
 	 	</div> 	<!--end of second pane-->
 
 	</div>  <!--end of mainSplitter -->
  		
- 		
+<pre>
+dataSet:{{dataSet|json}}
+</pre> 		
  		
  		

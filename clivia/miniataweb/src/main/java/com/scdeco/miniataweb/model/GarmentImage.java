@@ -7,16 +7,16 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class GarmentImage {
+public class GarmentImage extends CliviaSuperModel {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
 	@Column(name="GarmentId", nullable = false)	
-	private Integer garmentId;
+	private int garmentId;
 	
 	@Column(name="ImageId", nullable = false)	
-	private Integer imageId;
+	private int imageId;
 	
 	@Column(name="Description", length=200)
 	private String description;
@@ -29,19 +29,19 @@ public class GarmentImage {
 		this.id = id;
 	}
 
-	public Integer getGarmentId() {
+	public int getGarmentId() {
 		return garmentId;
 	}
 
-	public void setGarmentId(Integer garmentId) {
+	public void setGarmentId(int garmentId) {
 		this.garmentId = garmentId;
 	}
 
-	public Integer getImageId() {
+	public int getImageId() {
 		return imageId;
 	}
 
-	public void setImageId(Integer imageId) {
+	public void setImageId(int imageId) {
 		this.imageId = imageId;
 	}
 
@@ -52,5 +52,5 @@ public class GarmentImage {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
+
 }

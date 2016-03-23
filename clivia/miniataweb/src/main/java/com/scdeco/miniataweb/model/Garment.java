@@ -1,14 +1,15 @@
 package com.scdeco.miniataweb.model;
 
 import java.util.List;
+import java.util.Map;
 
 public class Garment {
 	
 	private GarmentInfo info;
 	private List<GarmentUpc> upcItems;
 	private List<GarmentImage> imageItems;
-	private int[] deletedUpcItems;
-	private int[] deletedImageItems;
+	List<Map<String,String>> deleteds;
+	
 	
 	public GarmentInfo getInfo() {
 		return info;
@@ -28,17 +29,11 @@ public class Garment {
 	public void setImageItems(List<GarmentImage> imageItems) {
 		this.imageItems = imageItems;
 	}
-	public int[] getDeletedUpcItems() {
-		return deletedUpcItems;
+	public List<Map<String, String>> getDeleteds() {
+		return deleteds;
 	}
-	public void setDeletedUpcItems(int[] deletedUpcItems) {
-		this.deletedUpcItems = deletedUpcItems;
-	}
-	public int[] getDeletedImageItems() {
-		return deletedImageItems;
-	}
-	public void setDeletedImageItems(int[] deletedImageItems) {
-		this.deletedImageItems = deletedImageItems;
+	public void setDeleteds(List<Map<String, String>> deleteds) {
+		this.deleteds = deleteds;
 	}
 	
 }

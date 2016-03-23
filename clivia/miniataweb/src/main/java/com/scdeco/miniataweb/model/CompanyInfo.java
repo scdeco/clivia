@@ -9,7 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class CompanyInfo {
+public class CompanyInfo  extends CliviaSuperModel{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

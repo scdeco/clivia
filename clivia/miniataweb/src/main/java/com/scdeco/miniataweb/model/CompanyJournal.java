@@ -15,13 +15,13 @@ import com.scdeco.miniataweb.util.CliviaLocalDateJsonDeserializer;
 import com.scdeco.miniataweb.util.CliviaLocalDateJsonSerializer;
 
 @Entity
-public class CompanyJournal {
+public class CompanyJournal  extends CliviaSuperModel{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
 	@Column(name="CompanyId")
-	private Integer companyId;
+	private int companyId=0;
 	
 	@Column(name="Event",length=30)
 	private String event;
@@ -49,11 +49,11 @@ public class CompanyJournal {
 		this.id = id;
 	}
 
-	public Integer getCompanyId() {
+	public int getCompanyId() {
 		return companyId;
 	}
 
-	public void setCompanyId(Integer companyId) {
+	public void setCompanyId(int companyId) {
 		this.companyId = companyId;
 	}
 

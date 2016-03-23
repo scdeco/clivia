@@ -1,6 +1,5 @@
 <script>
 'user strict';
-
 clivia.
 directive('capitalize', function() {
 	   return {
@@ -923,8 +922,9 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 		 		       			}
 		 		       			if(typeof e.values.discount!== 'undefined'){
 		 		       				var orderPrice=calculateOrderPrice(e.model.listPrice,e.values.discount)
-		 		       				if(orderPrice>0)
+		 		       				if(orderPrice>0){
 		 		       					e.model.set("orderPrice",orderPrice);
+		 		       				}
 		 		       			}
 		 		       			if(typeof e.values.orderPrice!== 'undefined'){
 		 		       				if(e.model.listPrice>0){
@@ -1471,8 +1471,6 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 			    }
 			}
 			
-		
-			
 			var handleSuccess=function(data){
 				if(data){
 					scope.cDictImage.addItem(data);
@@ -1485,6 +1483,156 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 	}
 	
 	return directive;
+}]).
+
+directive('cliviaGrid',["cliviaGridWrapperFactory","cliviaDDS","util",function(cliviaGridWrapperFactory,cliviaDDS,util){
+	var directive={
+			restrict:'EA',
+			replace:false,
+			scope:{
+				cName:'@cliviaGrid',
+				cGridWrapperName:'=',
+				cEditable:'=',
+				cDataSource:'=',
+				cPageable:'=',
+				cNewItemFunction:'&',
+				cRegisterDeletedItemFunction:'&',
+			},
+			
+			templateUrl:'../common/cliviagrid',
+			link:function(scope,element,attrs){	
+				scope.gridName=scope.cName+"Grid";
+
+				var gw=cliviaGridWrapperFactory.getGridWrapper(scope.cGridWrapperName,scope.gridName);	
+				
+				scope.$on("kendoWidgetCreated", function(event, widget){
+
+					if (widget ===scope[scope.gridName]) {
+			        	gw.wrapGrid(widget);
+			        	
+			        	if(scope.cName){
+				        	scope.$parent[scope.cName]={
+			        			name:scope.cName,
+			        			grid:widget,
+			        			gridWrapper:gw,
+			        			resize:function(gridHeight){
+			        					gw.resizeGrid(gridHeight);
+			        				},
+				        	}
+			        	}
+			        }
+			    });	
+
+				scope.setting={};
+				scope.setting.editing=true;
+				
+				scope.gridSortableOptions = gw.getSortableOptions();
+				
+				scope.gridOptions = {
+						autoSync: true,
+				        columns: gw.gridColumns,
+				        dataSource: scope.cDataSource,
+				        editable: scope.cEditable,
+				        pageable:scope.cPageable,
+				        selectable: "cell",
+				        navigatable: true,
+				        resizable: true,
+						
+				        //events:		 
+				       	dataBinding: function(e) {
+				       		console.log("contact grid event: binding--"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
+				       	},
+				       	
+				       	dataBound:function(e){
+				       		console.log("contact grid event: dataBound");
+				       	},
+				       	
+		 		       	save: function(e) {
+				       		console.log("contact grid event: save");
+				         },
+				       	
+				         //row or cloumn changed
+				       	change:function(e){
+				       		console.log("contact grid event: change");
+				       	}, 
+				       	
+				        edit:function(e){
+				        	console.log("contact grid event: edit");
+				        	
+/* 				        	//without code below,when navigate with keybord like tab key, the editing cell will not be selected 
+						    var editingCell=gw.getEditingCell();
+						    if(!!editingCell){
+						    	this.select(editingCell);
+						    } 				        	 */
+				        }
+
+			}; //end of billGridOptions
+
+								
+			scope.gridContextMenuOptions={
+				closeOnClick:true,
+				filter:".gridLineNumber,.gridLineNumberHeader",
+				target:'#'+scope.gridName,
+				select:function(e){
+				
+					switch(e.item.id){
+						case "menuAdd":
+							scope.setting.editing=true;
+							if(!gw.isEditing)
+								gw.enableEditing(true);
+							addRow(false);
+							break;
+						case "menuInsert":
+							addRow(true);
+							break;
+						case "menuDelete":
+							deleteRow();
+							break;
+					}
+					
+				}
+				
+			};
+			
+			var newItem=function(){
+				if(!scope.cNewItemFunction)
+					scope.cNewItemFunction=function(){
+							return {};
+						};
+				var item=scope.cNewItemFunction();
+				return item();
+			}
+			
+			var addRow=function(isInsert){
+				var item=newItem();
+			    gw.addRow(item,isInsert);
+			}
+						
+			
+			var deleteRow=function (){
+				var dataItem=gw.getCurrentDataItem();
+		    	var confirmed=true;
+			    if (dataItem) {
+			        if (dataItem.orderAmt){
+			        	confirmed=confirm('Please confirm to delete the selected row.');	
+			        }
+			        if(confirmed){
+				    	if(dataItem.id && scope.cRegisterDeletedItemFunction){
+				    		var register=scope.cRegisterDeletedItemFunction();
+				    		register(dataItem);
+				    	}
+						gw.deleteRow(dataItem);
+			        }
+			    }else {
+		        	alert('Please select a  row to delete.');
+		   		}
+			    
+			}
+		}	//end of contactGrid:link
+	}
+	
+	return directive;
 }]);
+
 
 </script>

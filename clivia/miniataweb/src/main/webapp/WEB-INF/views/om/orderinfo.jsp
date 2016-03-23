@@ -1,5 +1,5 @@
 
-	<form name="headerForm" ng-submit="" novalidate class="simple-form" >
+	<form name="infoForm" ng-submit="" novalidate class="simple-form" >
 		<ul id="fieldlist">
 
 			<li>

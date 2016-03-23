@@ -29,8 +29,7 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
  					scope.dataSet.info={};
  					scope.dataSet.upcItems.splice(0,scope.dataSet.upcItems.length);
  					scope.dataSet.imageItems.splice(0,scope.dataSet.imageItems.length);
- 					scope.dataSet.deletedUpcItems.splice(0,scope.dataSet.deletedUpcItems.length);
- 					scope.dataSet.deletedImageItems.splice(0,scope.dataSet.deletedImageItems.length);
+ 					scope.dataSet.deleteds=[];
 				}	    
 			    
 			    scope.clear=function(){
@@ -107,6 +106,9 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 			    	
 			    	if(!validGarment()) return;
 			    	
+			    	if(scope.productForm.$dirty)
+			    		scope.dataSet.info.isDirty=true;
+			    		
 			    	if(!scope.dataSet.info.id){
 			    		scope.dataSet.info.brandId=scope.currentSetting.brandId;
 			    		scope.dataSet.info.seasonId=scope.currentSetting.seasonId;
@@ -143,11 +145,13 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 						if(data.imageItems && data.imageItems.length>0){
 							scope.getImages(data.imageItems);
 							for(var i=0,items=data.imageItems;i<items.length;i++){
-								scope.dataSet.dataItems.push(items[i]);
+								scope.dataSet.imageItems.push(items[i]);
 							}
 						}
 						
 					}
+					
+					scope.productForm.$setPristine();
 				}
 				
 			 	var validGarment=function(){
@@ -374,9 +378,8 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 				$scope.dataSet={
 						info:{brandId:$scope.cBrandId,seasonId:-1},
 						upcItems:new kendo.data.ObservableArray([]),
-						deletedUpcItems:[],
 						imageItems:new kendo.data.ObservableArray([]),
-						deletedImageItems:[],
+						deleteds:[],
 					}
 				
           	 	$scope.$watch('dataSet.info.seasonId',function(newValue,oldValue){
@@ -480,8 +483,11 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 				}
 			
 				$scope.registerDeletedImageItemFunction=function(dataItem){
-					if(dataItem.id)
-						scope.dataSet.deletedImageItems.push(dataItem.id);
+					if(dataItem.id){
+						var deletedItem={entity:"image",id:dataItem.id};
+						scope.dataSet.deleteds.push(deletedItem);
+						
+					}
 				}				
 				
 				

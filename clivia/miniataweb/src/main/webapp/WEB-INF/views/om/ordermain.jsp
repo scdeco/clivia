@@ -30,7 +30,8 @@
 				style="height: 100%; width: 100%;">
 				
 			<div id="left-pane">
-				<div ui-view="orderinfo"></div>
+<!-- 				<div ui-view="orderinfo"></div> -->
+				<div order-info="orderInfo"></div>
 			</div> <!-- left pane -->
 			
 			<div id="right-pane">
@@ -44,9 +45,9 @@
 	<div id="bottom-pane" >
 	</div> <!-- bottom pane of outter splitter -->
 </div>
-<!-- <pre>
+ <pre>
 	dataSet:{{SO.dataSet|json}}
-	instance:{{SO.instance|json}}
-	dds:{{SO.dds|json}}
+<!-- 	instance:{{SO.instance|json}} -->
+<!-- 	dds:{{SO.dds|json}} -->
 
-</pre> -->
+</pre> 

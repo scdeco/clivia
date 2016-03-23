@@ -64,7 +64,7 @@ public class OrderController {
 
 	@RequestMapping(value="get-order",method=RequestMethod.GET)
 	public @ResponseBody  OrderClivia getOrder(@RequestParam("number") String orderNumber)
-				throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
+				throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
 		
 		System.out.println("Order#:"+orderNumber);
 		return orderDao.getOrderByOrderNumber(orderNumber);

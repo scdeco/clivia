@@ -138,7 +138,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				error(function(data, status, headers, config) {
 				});
 			
-			url="../data/companyContactDao/call/findListByCompanyId?param=i:"+companyId;
+			url="../data/companyContactDao/call/findListBySuperId?param=s:companyId;i:"+companyId;
 
 			_order.company.contacts=[];
 			$http.get(url).
@@ -502,6 +502,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 											discount:discount,
 											orderPrice:(discount>0 && discount<1)?listPrice*(1-discount):listPrice,
 											orderAmt:0,
+											isDirty:true,
 										}
 									f=billableItems.push(billableItem);
 									idx[sid]=f-1;

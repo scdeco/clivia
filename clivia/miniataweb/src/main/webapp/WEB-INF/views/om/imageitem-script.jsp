@@ -9,9 +9,10 @@ orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,funct
 	
 	var getImages=function(dataItems){
 		var imageString="";
-		for(var i=0;i<dataItems.length;i++){
-			if(dataItems[i].imageId){
-				imageString+=","+dataItems[i].imageId;
+		for(var i=0,imageId;i<dataItems.length;i++){
+			imageId=dataItems[i].imageId;
+			if( imageId && !SO.dds.image.getLocalItem("id",imageId)){
+				imageString+=","+imageId;
 			}
 		}
 		if(imageString!==""){
@@ -66,7 +67,7 @@ orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,funct
 
 	
 	$scope.registerDeletedItemFunction=function(dataItem){
-		SO.registerDeletedItem("imageItem",dataItem.id);
+		SO.registerDeletedItem("image",dataItem.id);
 	}
 	
 	

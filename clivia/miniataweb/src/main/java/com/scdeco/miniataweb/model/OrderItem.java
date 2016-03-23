@@ -7,7 +7,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class OrderItem {
+public class OrderItem extends CliviaSuperModel{
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

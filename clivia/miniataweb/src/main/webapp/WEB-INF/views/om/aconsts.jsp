@@ -29,6 +29,14 @@
 				id:6,
 				name:"emailItem",	
 				hasDetail:false
+			},{
+				id:7,
+				name:"contactItem",	
+				hasDetail:false
+			},{
+				id:8,
+				name:"addressItem",	
+				hasDetail:false				
 			}],
 			
 		registeredOrderItems:[{ 
@@ -86,6 +94,20 @@
 				spec:"",
 				itemType: "emailItem",
 				itemTypeId:6,
+			},{ 
+				text: "Contact", 
+				icon: "insert-s",
+			   	id:"contactitem",
+				spec:"",
+				itemType: "contactItem",
+				itemTypeId:7,
+			},{ 
+				text: "Address", 
+				icon: "insert-s",
+			   	id:"addressitem",
+				spec:"",
+				itemType: "addressItem",
+				itemTypeId:8,
 			},{ 
 				text: "Send&Receive",
 				icon: "insert-s",

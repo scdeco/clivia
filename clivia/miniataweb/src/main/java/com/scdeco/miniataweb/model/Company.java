@@ -1,15 +1,16 @@
 package com.scdeco.miniataweb.model;
 
 import java.util.List;
+import java.util.Map;
 
 public class Company {
+	
 	CompanyInfo info;
 	List<CompanyContact> contactItems;
 	List<CompanyAddress> addressItems;
 	List<CompanyJournal> journalItems;
-	List<Integer> contactDeletedItems;
-	List<Integer> addressDeletedItems;
-	List<Integer> journalDeletedItems;
+	List<Map<String,String>> deleteds;
+	
 	
 	public CompanyInfo getInfo() {
 		return info;
@@ -35,24 +36,11 @@ public class Company {
 	public void setJournalItems(List<CompanyJournal> journalItems) {
 		this.journalItems = journalItems;
 	}
-	public List<Integer> getContactDeletedItems() {
-		return contactDeletedItems;
+	public List<Map<String, String>> getDeleteds() {
+		return deleteds;
 	}
-	public void setContactDeletedItems(List<Integer> contactDeletedItems) {
-		this.contactDeletedItems = contactDeletedItems;
+	public void setDeleteds(List<Map<String, String>> deleteds) {
+		this.deleteds = deleteds;
 	}
-	public List<Integer> getAddressDeletedItems() {
-		return addressDeletedItems;
-	}
-	public void setAddressDeletedItems(List<Integer> addressDeletedItems) {
-		this.addressDeletedItems = addressDeletedItems;
-	}
-	public List<Integer> getJournalDeletedItems() {
-		return journalDeletedItems;
-	}
-	public void setJournalDeletedItems(List<Integer> journalDeletedItems) {
-		this.journalDeletedItems = journalDeletedItems;
-	}
-	
 
 }

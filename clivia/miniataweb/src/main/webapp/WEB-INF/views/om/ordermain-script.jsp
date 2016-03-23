@@ -1,4 +1,76 @@
 <script>
+orderApp.directive("orderInfo",["$http","cliviaDDS","util",function($http,cliviaDDS,util){
+	var directive={
+			restrict:'EA',
+			replace:false,
+			scope:{
+				cName:'@orderInfo',
+				},
+			templateUrl:'orderinfo',
+			
+			link:function(scope){
+				
+			},
+			
+			controller: ["$scope","SO","cliviaDDS",function($scope,SO,cliviaDDS) {
+
+				$scope.SO=SO;
+				if($scope.cName)
+					$scope.$parent[$scope.cName]=$scope;
+				
+				$scope.requireTimeOptions={
+						format: "hh:mm tt",
+						parseFormats:["HH:mm:ss"],
+						min: new Date(2000, 0, 1, 8, 0, 0), 
+						max: new Date(2000, 0, 1, 17, 0, 0)
+				}
+				
+				$scope.requireDateOptions={
+						format: "yyyy-MM-dd",
+					    parseFormats: ["yyyy-MM-dd"]
+				}
+
+				$scope.orderDateOptions={
+						format: "yyyy-MM-dd",
+					    parseFormats: ["yyyy-MM-dd"]
+				}
+				
+				$scope.orderTimeOptions={
+						format: "hh:mm tt",
+						parseFormats:["HH:mm:ss"],
+				}
+				
+				$scope.buyerOptions={
+						name:"buyerComboBox",
+						dataSource:SO.company.buyerDataSource,
+				}
+				
+				$scope.repOptions={
+						name:"repComboBox",
+						dataTextField:"fullName",
+						dataValueField:"id",
+						minLength:1,
+						filter:"isRep,eq,true",
+						url:"../datasource/employeeInfoDao/read",
+						dict:cliviaDDS.getDict("employeeInput"),
+					}
+
+				$scope.csrOptions={
+						name:"csrComboBox",
+						dataTextField:"fullName",
+						dataValueField:"id",
+						minLength:1,
+						filter:"isCsr,eq,true",
+						url:"../datasource/employeeInfoDao/read",
+						dict:cliviaDDS.getDict("employeeInput"),
+					}
+			}]
+		};
+	return directive;
+				
+}]);//end of orderInfo directive
+
+
 orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function($scope,$state, $filter, SO) {
 	$scope.SO=SO;
 	
@@ -133,6 +205,8 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	}
 	
 	$scope.saveOrder=function(){
+		if($scope.orderInfo.infoForm.$dirty)
+			SO.dataSet.info.isDirty=true;
 		
 		SO.save()
 			.then(function(data){
@@ -149,6 +223,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 			    			currentId=button.orderItemId;
 			    	}		
 		    		SO.setCurrentOrderItem(currentId);
+		    		$scope.orderInfo.infoForm.$setPristine();
 			    	
 			    }else{
 		    		alert("Can not find order:"+$scope.searchOrderNumber+".");

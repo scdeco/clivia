@@ -7,7 +7,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class OrderEmbDesignColourway {
+public class OrderEmbDesignColourway extends CliviaSuperModel{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private int id;

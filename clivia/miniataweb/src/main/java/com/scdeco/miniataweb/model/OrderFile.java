@@ -14,7 +14,7 @@ import com.scdeco.miniataweb.util.CliviaLocalDateTimeJsonDeserializer;
 import com.scdeco.miniataweb.util.CliviaLocalDateTimeJsonSerializer;
 
 @Entity
-public class OrderFile {
+public class OrderFile extends CliviaSuperModel{
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

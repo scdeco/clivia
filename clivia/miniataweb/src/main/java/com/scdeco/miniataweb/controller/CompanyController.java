@@ -28,25 +28,31 @@ public class CompanyController {
 	}
 
 	@RequestMapping(value="get-company",method=RequestMethod.GET)
-	public @ResponseBody  Company getCompany(@RequestParam("id") Integer id){
-		return companyDao.getCompanyById(id);
+	public @ResponseBody  Company getCompany(@RequestParam("id") Integer id) 
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
+		
+		return companyDao.getById(id);
 	}
 
 	@RequestMapping(value="save-company",method=RequestMethod.POST)
-	public @ResponseBody  Company saveCompany(@RequestBody Company company){
+	public @ResponseBody  Company saveCompany(@RequestBody Company company)
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
+		
 		companyDao.save(company);
 		return company;
 	}
 	
 	@RequestMapping(value="delete-company",method=RequestMethod.GET)
-	public @ResponseBody  String deleteCompany(@RequestParam("id") Integer id){
+	public @ResponseBody  String deleteCompany(@RequestParam("id") Integer id) 
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
+		
 		String result="";
 		
 		int companyId=id;
 		if(companyId>0){
-			result=companyDao.delete(companyId);
+			companyDao.delete(companyId);
 		}else{
-			result="Not a saved company.";
+			result="Can not find company in system.";
 		}
 		return result;
 	}

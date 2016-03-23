@@ -9,7 +9,7 @@ import javax.persistence.Id;
 import org.hibernate.annotations.Formula;
 
 @Entity
-public class OrderContact {
+public class OrderContact extends CliviaSuperModel{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
@@ -44,6 +44,9 @@ public class OrderContact {
 	@Column(name="Position",length=20)
 	private String position;
 
+	@Column(name="IsBuyer")
+	private Boolean isBuyer;
+	
 	@Column(name="Remark",length=200)
 	private String  remark;
 
@@ -135,6 +138,14 @@ public class OrderContact {
 		this.position = position;
 	}
 
+	public Boolean getIsBuyer() {
+		return isBuyer;
+	}
+
+	public void setIsBuyer(Boolean isBuyer) {
+		this.isBuyer = isBuyer;
+	}
+
 	public String getRemark() {
 		return remark;
 	}
@@ -142,6 +153,7 @@ public class OrderContact {
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
+
 
 
 }

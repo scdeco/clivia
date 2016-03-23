@@ -669,6 +669,8 @@ clivia.factory("GridWrapper",function(){
 				this.hasDateColumnEditor=false;
 				this.doubleClickEvent=null;
 				this.currentRowUid="";
+				this.recordLineNo=true;
+				this.hasDirtyFlag=true;
 			}
 			
 			GridWrapper.prototype.setConfig=function(config){
@@ -745,6 +747,12 @@ clivia.factory("GridWrapper",function(){
 								break;
 							}
 						}
+					});
+				}
+				
+				if(this.hasDirtyFlag){
+					this.grid.bind('save',function(e){
+						e.model.isDirty=true;	
 					});
 				}
 				
@@ -870,11 +878,16 @@ clivia.factory("GridWrapper",function(){
 
 			//lineNo starts from 1
 			GridWrapper.prototype.setLineNo=function (){
+				if(!this.recordLineNo) return;
 				var ds=this.grid.dataSource;
 				var dataItems=ds.view();
 				var skip = !!ds.skip()?ds.skip():0;
-				for(var i=0;i<dataItems.length;i++){ 
-					dataItems[i].lineNo=i+skip+1;
+				for(var i=0,lineNo;i<dataItems.length;i++){
+					lineNo=i+skip+1;
+					if(dataItems[i].lineNo!==lineNo){
+						dataItems[i].lineNo=lineNo;
+						dataItems[i].isDirty=true;
+					}
 				}
 			}
 			
@@ -1588,6 +1601,269 @@ clivia.factory("ImageGridWrapper",["GridWrapper","cliviaDDS","DataDict",function
 	
 }]); /* end of ImageGridWrapper */
 
+clivia.factory("ContactGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapper,cliviaDDS){
+	
+	var thisGW;
 
+	var getColumns=function(){
+		return [{
+		        name:"lineNumber",
+		        title: "#",
+		        attributes:{class:"gridLineNumber"},
+		        headerAttributes:{class:"gridLineNumberHeader"},
+		        width: 25,
+			}, {
+		         name: "title",
+		         field: "title",
+		         title: "Title",
+		         editor:thisGW.titleColumnEditor,
+		         width: 60
+		     }, {
+		         name: "firstName",
+		         field: "firstName",
+		         title: "First Name",
+		         width: 80,
+		     }, {
+		         name: "lastName",
+		         field: "lastName",
+		         title: "Last Name",
+		         width: 80,
+		     }, {
+		         name: "position",
+		         field: "position",
+		         title: "Position",
+		         editor:thisGW.positionColumnEditor,
+		         width: 80,
+		     }, {
+		         name: "phone",
+		         field: "phone",
+		         title: "Phone",
+		         width: 120,
+		     }, {
+		         name: "email",
+		         field: "email",
+		         title: "Email",
+		         width:150,
+		     }, {
+		         name: "isBuyer",
+		         field: "isBuyer",
+		         title: "Is Buyer",
+		         template: '<input type="checkbox" #= isBuyer ? checked="checked" : "" # disabled="disabled" />',
+		         width: 65,
+		     }, {
+		         name: "isActive",
+		         field: "isActive",
+		         title: "Active",
+		         template: '<input type="checkbox" #= isActive ? checked="checked" : "" # disabled="disabled" />',
+		         width: 65,
+		     }, {
+		    	 name:"remark",
+		         field: "remark",
+		         title: "Remark",
+		}];
+	}
+	
+	var gw=function(gridName){
+		
+		GridWrapper.call(this,gridName);
+		thisGW=this;
+	}
+	
+	gw.prototype=new GridWrapper();	//implement inheritance
+	
+	gw.prototype.setColumns=function(){
+	 	this.gridColumns=getColumns();
+	}
+	
+	gw.prototype.titleColumnEditor=function(container, options) {
+		var items=['Mr.','Mrs.','Ms.','Miss'];
+		thisGW.kendoComboBoxEditor(container, options,items);
+	}
+	
+	gw.prototype.positionColumnEditor=function(container, options) {
+		var items=['Owner','Buyer','Accountant'];
+		thisGW.kendoComboBoxEditor(container, options,items);
+	}
+	
+	return gw;
+}]); //end of ContactGridWrapper
 
+clivia.factory("AddressGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapper,cliviaDDS){
+
+	var thisGW;
+	
+	var dictProvince=cliviaDDS.getDict('province');
+	var dictCity=cliviaDDS.getDict('city');
+
+	var getColumns=function(){
+
+		return [{
+		        name:"lineNumber",
+		        title: "#",
+		        attributes:{class:"gridLineNumber"},
+		        headerAttributes:{class:"gridLineNumberHeader"},
+		        width: 25,
+			}, {
+		         name: "address",
+		         field: "address",
+		         title: "Adddress",
+		         width: 200
+		     }, {
+		         name: "country",
+		         field: "country",
+		         title: "Country",
+		         editor:thisGW.countryColumnEditor,
+		         width: 80,
+		     }, {
+		         name: "province",
+		         field: "province",
+		         title: "Province",
+		         editor: thisGW.provinceColumnEditor,
+		         width: 75,
+		     }, {
+		         name: "city",
+		         field: "city",
+		         title: "City",
+		         editor: thisGW.cityColumnEditor,
+		         width: 85,
+		     }, {
+		         name: "postalCode",
+		         field: "postalCode",
+		         title: "Postal Code",
+		         width: 80,
+
+		     }, {
+		         name: "billing",
+		         field: "billing",
+		         title: "Billing",
+		         template: '<input type="checkbox" #= billing ? checked="checked" : "" # disabled="disabled" />',
+		         width: 50,
+		     }, {
+		         name: "shipping",
+		         field: "shipping",
+		         title: "Shipping",
+		         template:'<input type="checkbox" #= shipping ? checked="checked" : "" # disabled="disabled" />',
+		         width:65,
+		     }, {
+		    	 name:"remark",
+		         field: "remark",
+		         title: "Remark",
+		}];
+	}
+	
+	var gw=function(gridName){
+		GridWrapper.call(this,gridName);
+		thisGW=this;
+	}
+	
+	gw.prototype=new GridWrapper();	//implement inheritance
+
+	gw.prototype.setColumns=function(){
+	 	this.gridColumns=getColumns();
+	}
+	
+	gw.prototype.countryColumnEditor=function(container, options) {
+		var items=['Canada','USA'];
+		thisGW.kendoComboBoxEditor(container, options,items);
+	}
+	
+	gw.prototype.provinceColumnEditor=function(container, options) {
+		var items=dictProvince.items;
+		thisGW.kendoComboBoxEditor(container, options,items);
+	}
+	
+	gw.prototype.cityColumnEditor=function(container, options) {
+		var items= dictCity.items;
+		thisGW.kendoComboBoxEditor(container, options,items);
+	}
+
+	return gw;
+}]); //end of AddressGridWrapper
+
+clivia.factory("JournalGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapper,cliviaDDS){
+
+	var thisGW;
+	
+	var getColumns=function(){
+
+		return [{
+		        name:"lineNumber",
+		        title: "#",
+		        attributes:{class:"gridLineNumber"},
+		        headerAttributes:{class:"gridLineNumberHeader"},
+		        width: 25,
+			}, {
+		         name: "event",
+		         field: "event",
+		         title: "Event",
+		         editor: thisGW.actionColumnEditor,
+		         width: 90
+		     }, {
+		         name: "date",
+		         field: "date",
+		         title: "Date",
+		         format:"{0:yyyy-MM-dd}",
+		         width: 100,
+		         editor: thisGW.dateColumnEditor,
+		     }, {
+		         name: "postedBy",
+		         field: "postedBy",
+		         title: "Posted By",
+		         editor: thisGW.personColumnEditor,
+		         width: 75,
+		     }, {
+		         name: "content",
+		         field: "content",
+		         title: "Content",
+		}];
+	}
+	
+	var gw=function(gridName){
+		
+		GridWrapper.call(this,gridName);
+	 	this.hasDateColumnEditor=true;
+		thisGW=this;
+	}
+	
+	gw.prototype=new GridWrapper();	//implement inheritance
+
+	gw.prototype.setColumns=function(){
+	 	this.gridColumns=getColumns();
+	}	
+
+	gw.prototype.actionColumnEditor=function(container, options) {
+		var items=['Call','Letter','Visit','Email'];
+		thisGW.kendoComboBoxEditor(container, options,items);
+	}
+	
+	gw.prototype.personColumnEditor=function(container, options) {
+		var items=[];
+		thisGW.kendoComboBoxEditor(container, options,items);
+	}
+	
+	return gw;
+}]); //end of JournalGridWrapper
+
+//service
+clivia.factory("cliviaGridWrapperFactory",["ContactGridWrapper","AddressGridWrapper","JournalGridWrapper",
+              function(ContactGridWrapper,AddressGridWrapper,JournalGridWrapper){
+	return {
+		getGridWrapper:function(wrapperName,gridName){
+			var gw=null;			
+			switch(wrapperName){
+			case "ContactGridWrapper":
+				gw=new ContactGridWrapper(gridName);
+				break;
+			case "AddressGridWrapper":
+				gw=new AddressGridWrapper(gridName);
+				break;
+			case "JournalGridWrapper":
+				gw=new JournalGridWrapper(gridName);
+				break;
+			}
+			gw.setColumns();
+			return gw;
+		}
+	}
+}]);
 </script>

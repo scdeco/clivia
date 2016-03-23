@@ -11,10 +11,7 @@ orderApp.config(function($stateProvider, $urlRouterProvider,consts) {
 					templateUrl : 'ordermain',
 					controller : 'orderMainCtrl'
 				},
-				'orderinfo@main' : {
-					templateUrl : 'orderinfo',
-					controller : 'orderInfoCtrl'
-				},
+
 				'orderitem@main' : {
 					templateUrl : 'orderitem',
 					controller : 'orderItemCtrl'

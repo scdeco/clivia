@@ -15,7 +15,6 @@ import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.transform.AliasToEntityMapResultTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,7 +71,6 @@ public abstract class GenericDao<T> {
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
 	public void saveOrUpdate(T entity) {
 		getSession().saveOrUpdate(entity);
-		
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)

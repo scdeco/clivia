@@ -47,8 +47,13 @@ orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
             	  	 item=items.splice(e.oldIndex,1)[0];
             	 
            		 items.splice(e.newIndex,0,item);
-           		 for(var i=0;i<items.length;i++)
-           			 items[i].lineNo=i+1;
+           		 for(var i=0,lineNo;i<items.length;i++){
+           			 lineNo=i+1;
+           			 if(items[i].lineNo!==lineNo){
+               			 items[i].lineNo=lineNo;
+               			 items[i].isDirty=true;
+           			 }
+           		 }
            		 
            		 var buttons=SO.instance.itemButtons,
             		 button=buttons.splice(e.oldIndex,1)[0];
@@ -81,6 +86,7 @@ orderApp.controller("orderItemCtrl", ["$scope","SO",function($scope,SO) {
  					var item=SO.getCurrentOrderItem();
  					if($scope.currentItemButton.text!==item.title){
  						item.title=$scope.currentItemButton.text;
+ 						item.isDirty=true;
  					}
  				}
  			},

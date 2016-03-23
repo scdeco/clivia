@@ -7,16 +7,19 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class CompanyAddress  extends CliviaSuperModel{
+public class OrderAddress extends CliviaSuperModel{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
-	@Column(name="CompanyId")
-	private int companyId=0;
-
+	@Column(name="OrderId")
+	private int orderId;
+	
+	@Column(name="OrderItemId")
+	private int orderItemId;
+	
 	@Column(name="LineNo")
-	private Integer lineNo;
+	private int lineNo;	
 	
 	@Column(name="Address",length=100)
 	private String address;
@@ -33,9 +36,6 @@ public class CompanyAddress  extends CliviaSuperModel{
 	@Column(name="PostalCode",length=10)
 	private String postalCode;
 	
-	@Column(name="status")
-	private Integer status;	
-
 	@Column(name="Billing")
 	private Boolean billing;
 	
@@ -53,19 +53,27 @@ public class CompanyAddress  extends CliviaSuperModel{
 		this.id = id;
 	}
 
-	public int getCompanyId() {
-		return companyId;
+	public int getOrderId() {
+		return orderId;
 	}
 
-	public void setCompanyId(int companyId) {
-		this.companyId = companyId;
+	public void setOrderId(int orderId) {
+		this.orderId = orderId;
 	}
 
-	public Integer getLineNo() {
+	public int getOrderItemId() {
+		return orderItemId;
+	}
+
+	public void setOrderItemId(int orderItemId) {
+		this.orderItemId = orderItemId;
+	}
+
+	public int getLineNo() {
 		return lineNo;
 	}
 
-	public void setLineNo(Integer lineNo) {
+	public void setLineNo(int lineNo) {
 		this.lineNo = lineNo;
 	}
 
@@ -109,14 +117,6 @@ public class CompanyAddress  extends CliviaSuperModel{
 		this.postalCode = postalCode;
 	}
 
-	public Integer getStatus() {
-		return status;
-	}
-
-	public void setStatus(Integer status) {
-		this.status = status;
-	}
-
 	public Boolean getBilling() {
 		return billing;
 	}
@@ -140,6 +140,6 @@ public class CompanyAddress  extends CliviaSuperModel{
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-
-
+	
+	
 }

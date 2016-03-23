@@ -1,5 +1,7 @@
 package com.scdeco.miniataweb.util;
 
+import com.scdeco.miniataweb.dao.GenericDao;
+
 
 public class CliviaUtils {
 	public static int parseInt(String numStr){
@@ -19,5 +21,13 @@ public class CliviaUtils {
 		return (length>=str.length()) ? str:str.substring(str.length()-length);
 	}
 	
+    @SuppressWarnings("rawtypes")
+    public static GenericDao getDao(String daoName){
+    	
+    	if(!daoName.toLowerCase().endsWith("dao"))
+    		daoName+="Dao";
+    	return ((GenericDao)CliviaApplicationContext.getBean(daoName));
+    }
+    
 
 }

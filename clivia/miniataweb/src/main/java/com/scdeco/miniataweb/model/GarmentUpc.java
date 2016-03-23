@@ -8,7 +8,7 @@ import javax.persistence.Id;
 
 
 @Entity
-public class GarmentUpc {
+public class GarmentUpc extends CliviaSuperModel{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -70,11 +70,7 @@
 						<input kendo-numerictextbox="pq" name="pq" 
 							ng-model="dataSet.info.pq" k-options="quantityOptions"/>
 					</li>
-					<li>
-						<label for="season">Seasons:</label>
-						<input type="text" name="season" class="k-textbox" style="width:100%;"   
-							ng-model="dataSet.info.season" />
-					</li>
+
 					<li>
 						<label for="keyword">Keywords:</label>
 						<input type="text" id="keyword" name="keyword" class="k-textbox" style="width:100%;"   ng-model="dataSet.info.keyword" /> 
@@ -105,7 +101,9 @@
 	 	</div> 	<!--end of second pane-->
 
 	</div>  <!--end of mainSplitter -->
- 		
+<pre>
+dataSet:{{dataSet|json}}
+</pre> 		
  		
  		
  		

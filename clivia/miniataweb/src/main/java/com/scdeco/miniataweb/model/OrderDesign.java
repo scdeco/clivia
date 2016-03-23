@@ -7,7 +7,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class OrderEmail extends CliviaSuperModel{
+public class OrderDesign extends CliviaSuperModel{
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -19,14 +19,14 @@ public class OrderEmail extends CliviaSuperModel{
 	@Column(name="OrderItemId")
 	private int orderItemId;
 	
+	@Column(name="OrderDesignId")
+	private int orderDesignId;
+	
 	@Column(name="LineNo")
 	private int lineNo;
 	
 	@Column(name="Remark", length=255)
 	String remark;
-	
-	@Column(name="EmailId")
-	private int emailId;
 
 	public int getId() {
 		return id;
@@ -52,6 +52,14 @@ public class OrderEmail extends CliviaSuperModel{
 		this.orderItemId = orderItemId;
 	}
 
+	public int getOrderDesignId() {
+		return orderDesignId;
+	}
+
+	public void setOrderDesignId(int orderDesignId) {
+		this.orderDesignId = orderDesignId;
+	}
+
 	public int getLineNo() {
 		return lineNo;
 	}
@@ -67,12 +75,5 @@ public class OrderEmail extends CliviaSuperModel{
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-
-	public int getEmailId() {
-		return emailId;
-	}
-
-	public void setEmailId(int emailId) {
-		this.emailId = emailId;
-	}
+	
 }
