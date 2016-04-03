@@ -8,7 +8,7 @@ import javax.persistence.Id;
 
 
 @Entity
-public class GridColumn{
+public class GridColumn extends CliviaSuperModel{
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,41 +18,41 @@ public class GridColumn{
 	@Column(name="GridId")
 	private int gridId;
 	
-	@Column(name="OrderBy",length=4)
-	private String orderBy;
+	@Column(name="LineNo")
+	private Integer lineNo;
 	
-	@Column(name="ColumnName",length=255)
-	private String columnName;
+	@Column(name="Name",length=255)
+	private String name;
 	
 	@Column(name="Title",length=255)
 	private String title;
 	
-	@Column(name="width")
+	@Column(name="Width")
 	private int width;
 	
-	@Column(name="ColumnVisible")
-	private boolean columnVisible;
+	@Column(name="Visible")
+	private Boolean visible;
 	
-	@Column(name="ColumnEditable")
-	private boolean columnEditable;
+	@Column(name="ColEditable")
+	private Boolean colEditable;	//editable is used by kendo model.editable, so editable can not be used here
 	
-	@Column(name="ColumnChooseable")
-	private boolean columnChooseable;
+	@Column(name="Chooseable")
+	private Boolean chooseable;
 	
-	@Column(name="ColumnSortable")
-	private boolean columnSortable;
+	@Column(name="Sortable")
+	private Boolean sortable;
 	
-	@Column(name="ColumnFilterable")
-	private boolean columnFilterable;
+	@Column(name="Filterable")
+	private Boolean filterable;
 	
-	@Column(name="ColumnLocked")
-	private boolean columnLocked;
+	@Column(name="Locked")
+	private Boolean locked;
 	
-	@Column(name="Columnlockable")
-	private boolean columnLockable;
+	@Column(name="Lockable")
+	private Boolean lockable;
 	
-	@Column(name="ColumnDataType",length=15)
-	private String columnDataType;
+	@Column(name="DataType",length=15)
+	private String dataType;
 	
 	@Column(name="TextAlignFixed",length=15)
 	private String textAlignFixed;
@@ -66,15 +66,11 @@ public class GridColumn{
 	@Column(name="EditMask",length=50)
 	private String editMask;
 	
-	@Column(name="ColumnEditor",length=50)
-	private String columnEditor;
+	@Column(name="Editor",length=50)
+	private String editor;
 	
 	@Column(name="EditorDescriptor",length=50)
 	private String editorDescriptor;
-	
-	
-	public GridColumn(){
-	}
 
 	public int getId() {
 		return id;
@@ -92,20 +88,20 @@ public class GridColumn{
 		this.gridId = gridId;
 	}
 
-	public String getOrderBy() {
-		return orderBy;
+	public Integer getLineNo() {
+		return lineNo;
 	}
 
-	public void setOrderBy(String orderBy) {
-		this.orderBy = orderBy;
+	public void setLineNo(Integer lineNo) {
+		this.lineNo = lineNo;
 	}
 
-	public String getColumnName() {
-		return columnName;
+	public String getName() {
+		return name;
 	}
 
-	public void setColumnName(String columnName) {
-		this.columnName = columnName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getTitle() {
@@ -124,60 +120,68 @@ public class GridColumn{
 		this.width = width;
 	}
 
-	public boolean isColumnVisible() {
-		return columnVisible;
+	public Boolean getVisible() {
+		return visible;
 	}
 
-	public void setColumnVisible(boolean columnVisible) {
-		this.columnVisible = columnVisible;
+	public void setVisible(Boolean visible) {
+		this.visible = visible;
 	}
 
-	public boolean isColumnEditable() {
-		return columnEditable;
+	public Boolean getColEditable() {
+		return colEditable;
 	}
 
-	public void setColumnEditable(boolean columnEditable) {
-		this.columnEditable = columnEditable;
+	public void setColEditable(Boolean colEditable) {
+		this.colEditable = colEditable;
 	}
 
-	public boolean isColumnChooseable() {
-		return columnChooseable;
+	public Boolean getChooseable() {
+		return chooseable;
 	}
 
-	public void setColumnChooseable(boolean columnChooseable) {
-		this.columnChooseable = columnChooseable;
+	public void setChooseable(Boolean chooseable) {
+		this.chooseable = chooseable;
 	}
 
-	public boolean isColumnFilterable() {
-		return columnFilterable;
+	public Boolean getSortable() {
+		return sortable;
 	}
 
-	public void setColumnFilterable(boolean columnFilterable) {
-		this.columnFilterable = columnFilterable;
+	public void setSortable(Boolean sortable) {
+		this.sortable = sortable;
 	}
 
-	public boolean isColumnLocked() {
-		return columnLocked;
+	public Boolean getFilterable() {
+		return filterable;
 	}
 
-	public void setColumnLocked(boolean columnLocked) {
-		this.columnLocked = columnLocked;
+	public void setFilterable(Boolean filterable) {
+		this.filterable = filterable;
 	}
 
-	public boolean isColumnLockable() {
-		return columnLockable;
+	public Boolean getLocked() {
+		return locked;
 	}
 
-	public void setColumnLockable(boolean columnLockable) {
-		this.columnLockable = columnLockable;
+	public void setLocked(Boolean locked) {
+		this.locked = locked;
 	}
 
-	public String getColumnDataType() {
-		return columnDataType;
+	public Boolean getLockable() {
+		return lockable;
 	}
 
-	public void setColumnDataType(String columnDataType) {
-		this.columnDataType = columnDataType;
+	public void setLockable(Boolean lockable) {
+		this.lockable = lockable;
+	}
+
+	public String getDataType() {
+		return dataType;
+	}
+
+	public void setDataType(String dataType) {
+		this.dataType = dataType;
 	}
 
 	public String getTextAlignFixed() {
@@ -212,44 +216,20 @@ public class GridColumn{
 		this.editMask = editMask;
 	}
 
-	public String getColumnEditor() {
-		return columnEditor;
+	public String getEditor() {
+		return editor;
 	}
 
-	public void setColumnEditor(String columnEditor) {
-		this.columnEditor = columnEditor;
+	public void setEditor(String editor) {
+		this.editor = editor;
 	}
-	
+
 	public String getEditorDescriptor() {
 		return editorDescriptor;
 	}
 
 	public void setEditorDescriptor(String editorDescriptor) {
 		this.editorDescriptor = editorDescriptor;
-	}
-
-	public boolean isColumnSortable() {
-		return columnSortable;
-	}
-
-	public void setColumnSortable(boolean columnSortable) {
-		this.columnSortable = columnSortable;
-	}
-
-	
-	@Override
-	public String toString() {
-		return "GridColumn [id=" + id + ", gridId=" + gridId + ", orderBy="
-				+ orderBy + ", columnName=" + columnName + ", title=" + title
-				+ ", width=" + width + ", columnVisible=" + columnVisible
-				+ ", columnEditable=" + columnEditable + ", columnChooseable="
-				+ columnChooseable + ", columnSortable=" + columnSortable
-				+ ", columnFilterable=" + columnFilterable + ", columnLocked="
-				+ columnLocked + ", columnLockable=" + columnLockable
-				+ ", columnDataType=" + columnDataType + ", textAlignFixed="
-				+ textAlignFixed + ", textAlign=" + textAlign
-				+ ", displayFormat=" + displayFormat + ", editMask=" + editMask
-				+ ", columnEditor=" + columnEditor + ", editorDescriptor=" + editorDescriptor + "]";
 	}
 
 

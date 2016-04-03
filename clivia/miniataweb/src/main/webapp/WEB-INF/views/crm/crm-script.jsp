@@ -529,7 +529,7 @@ crmApp.controller("crmCtrl",["$scope","CompanyGridWrapper",function($scope,Compa
 			};
 	/*
 	 * 	If Splitter is initialized in an invisible Kendo UI Window, Javascript size calculations 
-	 *  will not work and the Splitter cannot adjust its layut properly.
+	 *  will not work and the Splitter cannot adjust its layout properly.
 	 *	Please use kendo.resize() or the Splitter's resize() method in the Window's activate event.
 	 */
  	$scope.companyWindowOptions={

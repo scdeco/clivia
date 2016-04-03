@@ -1,9 +1,9 @@
-	 <div style="height:700px">     	
+	 <div style="height:800px;">     	
 	      	<div kendo-splitter="embInfoSplitter"  
 	      		 k-orientation="'vertical'" 
 				 k-panes="[{ collapsible: true, resizable: true, size: '120px'},
 	                	   { collapsible: true, resizable: true, size:'250px'},
-	                  	   { collapsible: true, resizable: true, size:'300px'}]"
+	                  	   { collapsible: true, resizable: true }]"
 	             style="height:100%;">
 	             
 		       <div id="emb-info-pane">
@@ -69,8 +69,8 @@
 			       				  class="k-textbox" 
 			       				  style="width:100%;resize: vertical;"></textarea>
 			       				  
-			    		<div kendo-sortable="embMatcher.embThreadGridSortable"	k-options="embMatcher.gwThread.getSortableOptions()">
-							<div  kendo-grid="embThreadGrid" k-options="embMatcher.getThreadGridOptions()" ></div>
+			    		<div kendo-sortable="embThreadGridSortable"	k-options="embMatcher.gwThread.getSortableOptions()">
+							<div  kendo-grid="embThreadGrid" k-options="threadGridOptions" ></div>
 						</div>
 		       </div>
 		       
@@ -81,7 +81,7 @@
 		       				  class="k-textbox" 
 		       				  style="width:100%;resize: vertical;"></textarea>
 		    		<div kendo-sortable="embStepGridSortable"	k-options="embMatcher.gwStep.getSortableOptions()">
-						<div  kendo-grid="embStepGrid"  k-options="embMatcher.getStepGridOptions()"></div>
+						<div  kendo-grid="embStepGrid"  k-options="stepGridOptions"></div>
 					</div>
 		       </div>
 		       

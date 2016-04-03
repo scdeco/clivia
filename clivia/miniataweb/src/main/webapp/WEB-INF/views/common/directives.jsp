@@ -20,6 +20,148 @@ directive('capitalize', function() {
 	   };
 }).
 
+
+directive('checklistModel', ['$parse', '$compile', function($parse, $compile) {
+	  // contains
+	  function contains(arr, item, comparator) {
+	    if (angular.isArray(arr)) {
+	      for (var i = arr.length; i--;) {
+	        if (comparator(arr[i], item)) {
+	          return true;
+	        }
+	      }
+	    }
+	    return false;
+	  }
+
+	  // add
+	  function add(arr, item, comparator) {
+	    arr = angular.isArray(arr) ? arr : [];
+	      if(!contains(arr, item, comparator)) {
+	          arr.push(item);
+	      }
+	    return arr;
+	  }  
+
+	  // remove
+	  function remove(arr, item, comparator) {
+	    if (angular.isArray(arr)) {
+	      for (var i = arr.length; i--;) {
+	        if (comparator(arr[i], item)) {
+	          arr.splice(i, 1);
+	          break;
+	        }
+	      }
+	    }
+	    return arr;
+	  }
+
+	  // http://stackoverflow.com/a/19228302/1458162
+	  function postLinkFn(scope, elem, attrs) {
+	     // exclude recursion, but still keep the model
+	    var checklistModel = attrs.checklistModel;
+	    attrs.$set("checklistModel", null);
+	    // compile with `ng-model` pointing to `checked`
+	    $compile(elem)(scope);
+	    attrs.$set("checklistModel", checklistModel);
+
+	    // getter / setter for original model
+	    var getter = $parse(checklistModel);
+	    var setter = getter.assign;
+	    var checklistChange = $parse(attrs.checklistChange);
+	    var checklistBeforeChange = $parse(attrs.checklistBeforeChange);
+
+	    // value added to list
+	    var value = attrs.checklistValue ? $parse(attrs.checklistValue)(scope.$parent) : attrs.value;
+
+
+	    var comparator = angular.equals;
+
+	    if (attrs.hasOwnProperty('checklistComparator')){
+	      if (attrs.checklistComparator[0] == '.') {
+	        var comparatorExpression = attrs.checklistComparator.substring(1);
+	        comparator = function (a, b) {
+	          return a[comparatorExpression] === b[comparatorExpression];
+	        };
+	        
+	      } else {
+	        comparator = $parse(attrs.checklistComparator)(scope.$parent);
+	      }
+	    }
+
+	    // watch UI checked change
+	    scope.$watch(attrs.ngModel, function(newValue, oldValue) {
+	      if (newValue === oldValue) { 
+	        return;
+	      } 
+
+	      if (checklistBeforeChange && (checklistBeforeChange(scope) === false)) {
+	        scope[attrs.ngModel] = contains(getter(scope.$parent), value, comparator);
+	        return;
+	      }
+
+	      setValueInChecklistModel(value, newValue);
+
+	      if (checklistChange) {
+	        checklistChange(scope);
+	      }
+	    });
+
+	    function setValueInChecklistModel(value, checked) {
+	      var current = getter(scope.$parent);
+	      if (angular.isFunction(setter)) {
+	        if (checked === true) {
+	          setter(scope.$parent, add(current, value, comparator));
+	        } else {
+	          setter(scope.$parent, remove(current, value, comparator));
+	        }
+	      }
+	      
+	    }
+
+	    // declare one function to be used for both $watch functions
+	    function setChecked(newArr, oldArr) {
+	      if (checklistBeforeChange && (checklistBeforeChange(scope) === false)) {
+	        setValueInChecklistModel(value, scope[attrs.ngModel]);
+	        return;
+	      }
+	      scope[attrs.ngModel] = contains(newArr, value, comparator);
+	    }
+
+	    // watch original model change
+	    // use the faster $watchCollection method if it's available
+	    if (angular.isFunction(scope.$parent.$watchCollection)) {
+	        scope.$parent.$watchCollection(checklistModel, setChecked);
+	    } else {
+	        scope.$parent.$watch(checklistModel, setChecked, true);
+	    }
+	  }
+
+	  return {
+	    restrict: 'A',
+	    priority: 1000,
+	    terminal: true,
+	    scope: true,
+	    compile: function(tElement, tAttrs) {
+	      if ((tElement[0].tagName !== 'INPUT' || tAttrs.type !== 'checkbox') && (tElement[0].tagName !== 'MD-CHECKBOX') && (!tAttrs.btnCheckbox)) {
+	        throw 'checklist-model should be applied to `input[type="checkbox"]` or `md-checkbox`.';
+	      }
+
+	      if (!tAttrs.checklistValue && !tAttrs.value) {
+	        throw 'You should provide `value` or `checklist-value`.';
+	      }
+
+	      // by default ngModel is 'checked', so we set it if not specified
+	      if (!tAttrs.ngModel) {
+	        // local scope var storing individual checkbox model
+	        tAttrs.$set("ngModel", "checked");
+	      }
+
+	      return postLinkFn;
+	    }
+	  };
+	}]).
+
 directive("mapCombobox",function(){
 	var template='<input kendo-combobox  k-options="comboBoxOptions" ></input>'; 
 	return {
@@ -901,6 +1043,7 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 				       	
 		 		       	save: function(e) {
 				       		console.log("bill grid event: save");
+				       		var model=e.model;
 				       		
 		 		       		if(typeof e.values.snpId!== 'undefined'){
 		 		       			var unit="";
@@ -908,33 +1051,43 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 		 		       				var snpItem=bgw.getSnpItem(e.values.snpId);
 		 		       				unit=(snpItem)?snpItem.unit:"";		 		       				
 		 		       			}
-		 		       			e.model.set("unit",unit);
+		 		       			model.set("unit",unit);
 		 		       		}
 		 		       		if(typeof e.values.orderQty!== 'undefined' || 
 		 		       		   typeof e.values.listPrice!== 'undefined'||
 		 		       		   typeof e.values.orderPrice!== 'undefined'||
 		 		       		   typeof e.values.discount!== 'undefined'){
+								
+		 		       			e.preventDefault();
+			 		       			
+		 		       			if(typeof e.values.orderQty!== 'undefined'){
+			 		       			model.set("orderQty",e.values.orderQty);
+		 		       			}
 		 		       			
 		 		       			if(typeof e.values.listPrice!== 'undefined'){
-		 		       				var orderPrice=calculateOrderPrice(e.values.listPrice,e.model.discount)
-		 		       				if(orderPrice>0)
-		 		       					e.model.set("orderPrice",orderPrice);
+		 		       				model.set("listPrice",e.values.listPrice);
+			 		       			calculateOrderPrice(model);
 		 		       			}
+		 		       			
 		 		       			if(typeof e.values.discount!== 'undefined'){
-		 		       				var orderPrice=calculateOrderPrice(e.model.listPrice,e.values.discount)
-		 		       				if(orderPrice>0){
-		 		       					e.model.set("orderPrice",orderPrice);
-		 		       				}
+		 		       				model.set("discount",e.values.discount);
+			 		       			calculateOrderPrice(model);
+			 		       			
 		 		       			}
+		 		       			
 		 		       			if(typeof e.values.orderPrice!== 'undefined'){
-		 		       				if(e.model.listPrice>0){
-		 		       					var discount=(1-e.values.orderPrice/e.model.listPrice);
-		 		       					e.model.set("discount",discount);
+		 		       				model.set("orderPrice",e.values.orderPrice);
+		 		       				if(model.listPrice>0){
+		 		       					var discount=(1-e.values.orderPrice/model.listPrice);
+		 		       					model.set("discount",discount);
 		 		       				}
 		 		       			}
+		 		       			model.set("orderAmt",(model.orderQty?model.orderQty:0)*(model.orderPrice?model.orderPrice:0));
+		 		       			
+		 		       			bgw.updateTemplateColumn(e,"orderAmt");
 		 		       			//value in model have not been set into dataitems in bgw.so wait for the update finish.
 		 		       			setTimeout(function(){
-		 		       					bgw.calculateTotal(true);
+		 		       					bgw.calculateTotal();
 		 		       					scope.$apply();
 		 		       				},1);
 
@@ -996,10 +1149,13 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 				
 			};
 			
-			var calculateOrderPrice=function(listPrice,discount){
-				var result=0;
-				if(listPrice>0 && discount>0 && discount<1)
+			//calculate and set orderPrice of model based on listPrice and discount 
+			var calculateOrderPrice=function(model){
+				var result=0,discount=model.discount,listPrice=model.listPrice;
+				if(listPrice>0 && discount>0 && discount<1){
 					result=listPrice*(1-discount);
+					model.set("orderPrice",result);
+				}
 				return result;
 			}
 			
@@ -1492,6 +1648,7 @@ directive('cliviaGrid',["cliviaGridWrapperFactory","cliviaDDS","util",function(c
 			scope:{
 				cName:'@cliviaGrid',
 				cGridWrapperName:'=',
+				cCallFrom:'=',
 				cEditable:'=',
 				cDataSource:'=',
 				cPageable:'=',
@@ -1503,7 +1660,7 @@ directive('cliviaGrid',["cliviaGridWrapperFactory","cliviaDDS","util",function(c
 			link:function(scope,element,attrs){	
 				scope.gridName=scope.cName+"Grid";
 
-				var gw=cliviaGridWrapperFactory.getGridWrapper(scope.cGridWrapperName,scope.gridName);	
+				var gw=cliviaGridWrapperFactory.getGridWrapper(scope.cGridWrapperName,scope.gridName,scope.cCallFrom);	
 				
 				scope.$on("kendoWidgetCreated", function(event, widget){
 
@@ -1632,7 +1789,173 @@ directive('cliviaGrid',["cliviaGridWrapperFactory","cliviaDDS","util",function(c
 	}
 	
 	return directive;
-}]);
+}]).
 
+
+directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
+	var directive={
+			restrict:'EA',
+			replace:false,	//must set to false, otherwise will cause error Error: $compile:multidir
+			scope:{
+				cName:'@queryGrid',
+				cGridNo:'=',
+				cGridData:'=',
+			},
+			
+			template:'<div kendo-grid="cName" k-options="query.gridOptions" k-rebind="query.rebind" ></div>',
+			link:function(scope,element,attrs){	
+				scope.gridName=scope.cName;
+				if(scope.cName)
+		        	scope.$parent[scope.cName+"Scope"]=scope;
+				
+				
+				scope.createGrid=function(gridNo){
+					if(gridNo){					
+						var url="../gd/get-grid?gridNo="+gridNo;
+
+						util.getRemote(url).then(
+							function(data){
+								if(data){
+									scope.dataSet=data;
+									scope.query.gridOptions=getGridOptions();
+									scope.query.rebind++;
+								}
+							}
+						);
+				    }else if(scope.cGridData){
+				    	scope.dataSet=scope.cGridData;
+						scope.query.gridOptions=getGridOptions();
+						scope.query.rebind++;	
+						scope.$apply();
+				    }
+				};
+				
+				
+				
+				var getDataSource=function(){
+					var info=scope.dataSet.info
+					var url=info.dataUrl?info.dataUrl : "../datasource/"+info.daoName+"/read";					
+					return {
+						transport: {
+						    read: {
+						        url:url, 		//'../datasource/orderInfoViewDao/read',
+						        type: 'post',
+						        dataType: 'json',
+						        contentType: 'application/json'
+						    },
+						    parameterMap: function(options, operation) {
+						            return JSON.stringify(options);
+						    }
+						},
+						error: function(e) {
+						    alert("Status:" + e.status + "; Error message: " + e.errorThrown);
+						},
+						pageSize: info.pageSize?info.pageSize:25,
+						serverPaging: true,
+						serverFiltering: true,
+						serverSorting: true,
+
+						sort: [{
+					         field: "orderNumber",
+					         dir: "asc"
+					     }], 
+						schema: {
+						    data: "data",
+						    total: "total",
+						    model: {id: "id"}
+						},
+					}
+				}; //end of getDataSource()
+				
+				var showLineNumber=function(grid){
+		   	   		 var pageSkip = (grid.dataSource.page() - 1) * grid.dataSource.pageSize();
+	   	   		 
+		   	   		 pageSkip=!pageSkip? 1:++pageSkip;
+	   	   		 
+	   	   		 	//index starts from 0
+		   	   		 grid.tbody.find('td.gridLineNumber').text(function(index){
+	   	   				return pageSkip+index;
+	   	   				});	
+				};
+				
+				var getColumns=function(){
+
+					var columns=[{
+				        name:"lineNumber",
+				        title: "#",
+				        attributes:{class:"gridLineNumber"},
+				        headerAttributes:{class:"gridLineNumberHeader"},
+				        width: 35,
+					}];
+
+					columnItems=scope.dataSet.columnItems;
+					
+					for(var i=0,col,column;i<columnItems.length;i++){
+						column=columnItems[i];						
+						col={
+							field:column.name,
+							title:column.title,
+						}
+						if(column.width>=0)
+							col.width=column.width;
+						
+						columns.push(col);
+					}
+					return columns;
+				}; //end of getColumns()
+				
+				var getGridOptions=function(){
+					var info=scope.dataSet.info;
+					var options={
+							
+						dataSource:getDataSource(),
+						columns:getColumns(),
+						
+						reorderable:info.columnMovable,
+						resizable:info.columnResizable,
+						filterable:info.filterable,
+						
+					    pageable: {
+					    	pageSizes:["all",40,35,30,25,20,15,10,5],
+					        refresh: true,
+					        buttonCount: 5
+					    },
+					    
+					    dataBound:function(e){
+					    	showLineNumber(this);
+					    }
+					};
+					
+					if(info.sortable)
+						options.sortable={ allowUnsort: true};
+
+					return options;
+				};	//end of getGridOptions()
+			
+			},	//end of queryGrid:link
+			
+		controller: ["$scope","cliviaDDS",
+			            function($scope,cliviaDDS){
+			
+			$scope.query={
+					rebind:0,
+					gridNo:"",
+			}
+			
+			$scope.dataSet={};
+				
+			$scope.$watch("cGridNo",function(newValue,oldValue){
+				if(newValue && newValue!==$scope.query.gridNo){
+					$scope.createGrid(newValue);					
+					$scope.query.gridNo=newValue;
+				}
+			});
+			
+			
+		}]
+	}
+	
+	return directive;
+}]);
 
 </script>

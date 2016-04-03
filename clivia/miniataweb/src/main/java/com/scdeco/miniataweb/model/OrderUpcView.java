@@ -18,7 +18,7 @@ import com.scdeco.miniataweb.util.CliviaLocalTimeJsonSerializer;
 public class OrderUpcView {
 	
 	@Id
-	@Column(name="rowId")
+	@Column(name="id")
 	private Integer rowId;
 	
 	@Column(name = "upcId")

@@ -241,7 +241,7 @@ factory("dictThread",["$http",function($http){		//service
 		     				{r:28,	g:176,	b:193},
 		     				{r:112,	g:56,	b:56}],
 		retrieve:function(){
-			var url="http:///192.6.2.108:8080/miniataweb/datasource/dictEmbroideryThreadDao/read"
+			var url="http:///192.6.2.108:8080/miniataweb/data/dictEmbroideryThreadDao/get"
 			$http.get(url).
 				success(function(data, status, headers, config) {
 			    	ts=[];
@@ -385,28 +385,39 @@ factory("dictThread",["$http",function($http){		//service
 }]).
 
 factory("Event",function(){
+
 	var event=function(){
 		this.listeners=[];
 	};
 	
+
 	event.prototype={
+		getListenerIdx:function(owner,handler){
+				var idx=-1;
+				if(owner && handler)
+					for(var i=0,listener;i<this.listeners.length;i++){
+						listener=this.listeners[i];
+						if(listener.owner===owner && listener.handler===handler){
+							idx=i;
+							break;
+						}
+					}
+				return idx;
+		},
+			
 		addListener:function(owner,handler){
-			if(owner && handler)
+			if(owner && handler && this.getListenerIdx(owner,handler)==-1)
 				this.listeners.push({
-					owner:owner,
-					handler:handler
-				});
+						owner:owner,
+						handler:handler
+					});
 		},
 		
 		removeListener:function(owner,handler){
-			if(owner && handler)
-				for(var i=0,listener;i<this.listeners.length;i++){
-					listener=this.listeners[i];
-					if(listener.owner===owner && listener.handler===handler){
-						this.listeners.splice(i,1);
-						break;
-					}
-				}
+			var idx=this.getListenerIdx(owner,handler);
+			if(idx>=0){
+				this.listeners.splice(idx,1);
+			}
 		},
 		
 		fireEvent:function(args){
@@ -444,7 +455,7 @@ factory("DstDesign",["$http","Event",function($http,Event){
 	
 	var DstDesign=function(id){
 		initDesign(this);
-		this.change=new Event();
+		this.designChanged=new Event();
 		if(!!id) this.getDst(id);
 		
 	}
@@ -458,7 +469,7 @@ factory("DstDesign",["$http","Event",function($http,Event){
 		
 		getDst:function(dstId){
 		
-			var url="/miniataweb/library/embdesign/getstitches?id="+dstId;
+			var url="/miniataweb/lib/embdesign/getstitches?id="+dstId;
 			var self=this;
 			initDesign(this);
 			
@@ -469,10 +480,10 @@ factory("DstDesign",["$http","Event",function($http,Event){
 						if(design.hasOwnProperty(property))
 							self[property]=design[property];
 					}
-					self.change.fireEvent([self]);
+					self.designChanged.fireEvent([self]);
 				}).
 				error(function(data, status, headers, config) {
-					self.change.fireEvent([self]);
+					self.designChanged.fireEvent([self]);
 				});								
 		},
 			
@@ -548,27 +559,7 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 			this.setEmbDesign(embDesign);
 	}
 	
-	var onDesignChanged=function(e){
-		var thisEmbCanvas=this;
-		var colorway=null;
-		if(thisEmbCanvas.embDesign && thisEmbCanvas.embDesign.stepCount>0){
 
-			thisEmbCanvas.canvas.width=Math.round(thisEmbCanvas.embDesign.pixelWidth*SCREEN_DESIGN_RATIO)+1;		//original size of image
-			thisEmbCanvas.canvas.height=Math.round(thisEmbCanvas.embDesign.pixelHeight*SCREEN_DESIGN_RATIO)+1;
-			
-			if( thisEmbCanvas.embDesign.stepCount===thisEmbCanvas.runningSteps.split(',').length)
-				colorway={};
-			else{
-				this.threadCodes="";
-			}
-		}else{
-			
-			thisEmbCanvas.canvas.width=0;		//original size of image
-			thisEmbCanvas.canvas.height=0;
-		}
-		
-		thisEmbCanvas.drawDesign(colorway);
-	}
 	
 	var randomId=0;
 	var createElementId=function(){
@@ -576,16 +567,40 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 	}
 	
 	EmbCanvas.prototype={
-		
+			//when design changed, reset dimension and colorModel of the canvas. 
+		 onDesignChanged:function(e){
+			 
+			 	this.colorModel=null;
+			 	
+				var colorway=null;
+				if(this.embDesign && this.embDesign.stepCount>0){
+
+					this.canvas.width=Math.round(this.embDesign.pixelWidth*SCREEN_DESIGN_RATIO)+1;		//original size of image
+					this.canvas.height=Math.round(this.embDesign.pixelHeight*SCREEN_DESIGN_RATIO)+1;
+					
+					if( this.embDesign.stepCount===this.runningSteps.split(',').length)
+						colorway={};
+					else{
+						this.threadCodes="";
+					}
+				}else{
+					
+					this.canvas.width=0;		//original size of image
+					this.canvas.height=0;
+				}
+				//do nor draw here. Leave the job to parent controller.
+				//this.drawDesign(colorway);
+			},
+			
 		setEmbDesign:function(embDesign){
 			if(this.embDesign)
-				this.embDesign.change.removeListener(this,onDesignChanged);
+				this.embDesign.designChanged.removeListener(this,onDesignChanged);
 			
 			if(embDesign){
 				if(embDesign!==this.embDesign){	//embDesign changed
 					this.embDesign=embDesign;
 				}
-				this.embDesign.change.addListener(this,onDesignChanged);
+				this.embDesign.designChanged.addListener(this,this.onDesignChanged);
 				
 			}else{
 				this.embDesign=null;
@@ -715,6 +730,12 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 		        headerAttributes:{class:"gridLineNumberHeader"},
 		        width: 20,
 			}, {			
+				name:"stitchCount",
+			    title: "St.",
+			    width: 45,
+			    attributes:{style:"text-align:right;"},
+			    template:"<span>#= threadStitchCount #</span>"
+			}, {			
 				name:"colour",
 			    title: " ",
 			    width: 30,
@@ -735,11 +756,8 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 				name:"stitchCount",
 			    title: "St.",
 			    width: 45,
-			    field:"stepStitchCount",
 			    attributes:{style:"text-align:right;"},
-			    editor:function(container, options) {
-			         $("<span>" + options.model.get(options.field)+ "</span>").appendTo(container);
-			     },
+			    template:"<span>#= stepStitchCount # </span>"
 			}, {			
 				name:"colour",
 			    title: " ",
@@ -752,11 +770,8 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			}, {			
 				name:"threadIndex",
 			    title: "#",
-			    field:"threadIndex",
 			    attributes:{style:"text-align:right;"},
-			    editor:function(container, options) {
-			         $("<span>" + options.model.get(options.field)+ "</span>").appendTo(container);
-			     },
+			    template:"<span>#= threadIndex #</span>",
 			    width: 30
 			}];
 	
@@ -774,7 +789,6 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 		//as dataSource of 'dstThreadGrid' and 'dstStepGrid' which are wrapped by gwThread and gwStep respectfully
 		this.threadList=new kendo.data.ObservableArray([]);
 		this.runningStepList=new kendo.data.ObservableArray([]);
-
 	}
 	
 	embMatcher.prototype={
@@ -784,6 +798,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 				for(var i=0;i<this.threadList;i++){
 					this.threadList[i].code="";
 					this.threadList[i].colour="";
+					this.threadList[i].threadStitchCount="";
 				}
 			},
 			
@@ -806,7 +821,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 						threadCount=stepCount<MAX_THREAD_COUNT?stepCount:MAX_THREAD_COUNT;
 					
 					for(var i=0;i<threadCount;i++)
-						this.threadList.push({code:"",colour:""});
+						this.threadList.push({code:"",colour:"",threadStitchCount:""});
 					
 					for(var i=0,stepStitchCount;i<stepCount;i++){
 						stepStitchCount=(stepList[i].lastStitch-stepList[i].firstStitch).toString();
@@ -878,38 +893,77 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 				return index;
 			},
 			
-			getThreadColor:function(threadIndex){
+			getThread:function(threadIndex){
 				var index=parseInt(threadIndex);
 				var thread=(index>0 && index<=this.threadList.length)?this.threadList[--index]:"";
+				return thread;
+			},
+			
+			getThreadColor:function(threadIndex){
+				var thread=this.getThread(threadIndex);
 				var	colour=thread?thread.colour:"";
 				return colour;
 			},
 
+			setThreadStitchCount:function(){
+				for(var i=0,thread,c,threadIndex;i<this.threadList.length;i++){
+					thread=this.threadList[i];
+					c=0;
+					threadIndex=i+1;
+					for(var j=0,step;j<this.runningStepList.length;j++){
+						step=this.runningStepList[j];
+						if(step.threadIndex==threadIndex && step.stepStitchCount){
+							c+=parseInt(step.stepStitchCount);
+						}
+					}
+					thread.threadStitchCount=c?c:"";
+				}
+			},
 			
 			setEmbCanvas:function(embCanvas){
 				this.embCanvas=embCanvas;
 				this.initColorwayList();
 			},
 			
-			//editing mode, called from events of gwStep.grid and gwThread.grid
-			drawDesign:function(){			
+			//editing mode, called from events of gwStep.grid 
+			drawDesign:function(gw){
+				var isStepGrid=gw.gridName==="embStepGrid";
+
 				var colorway={};
-				var cell=this.gwStep.getCurrentCell();
-				if (cell && cell.cellIndex>0){		//cellIndex>0
+				if(!gw){
+					this.embCanvas.drawDesign(colorway);
+					return;
+				}
+					
+				var cell=gw.getEditingCell();
+				if(!cell)
+					cell=gw.getCurrentCell();
+				
+				
+				if (cell){
 					var cellIndex=cell.cellIndex;
-					var row=this.gwStep.getCurrentRow();
-					var rowIndex=row.rowIndex;
+					
+					var row=gw.getRow(cell);						//cellIndex===3?this.gwStep.getEditingRow():this.gwStep.getCurrentRow();
+					if(!row)
+						return;
+					
+					var rowIndex=row.rowIndex+(isStepGrid?0:1);
 					
 					var steps="",alphaSteps="";
 					
 					stepList=this.runningStepList;
+					
 					for(var i=0,idx,a;i<stepList.length;i++){
 						idx=parseInt(stepList[i].threadIndex);
 						if(!idx)
 							idx=0;
-						switch(cellIndex){					//threadIndex
-							case 4:
-								if(i==rowIndex){
+						a=1;
+						
+						var isSelected=(isStepGrid?i:idx)===rowIndex;
+							
+						switch(cellIndex){					
+							case 1:						//stitches column
+								if(isSelected){
 									idx=(idx>0)?idx:16;
 									a="1";
 								}else{
@@ -917,7 +971,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 								}
 								break;
 							case 3:							//code column
-								if(i==rowIndex){
+								if(isSelected){
 									idx=16;
 									a="1";
 								}else{
@@ -925,15 +979,15 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 								}
 								break;
 							case 2:							//colour column
-								if(i==rowIndex){
+								if(isSelected){
 									idx=(idx>0)?idx:16;
 									a="1";
 								}else{
 									a="0";
 								}
 								break;
-							case 1:							//st. column
-								if(i==rowIndex){
+							case 0:							//stepIndex
+								if(isSelected){
 									idx=16;
 									a="1";
 								}else{
@@ -947,15 +1001,14 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 					}
 					colorway.runningSteps=steps.substring(1);
 					colorway.alphaSteps=alphaSteps.substring(1);
-					colorway.alpha=cellIndex==4?0.15:0.03;
-				}
+					colorway.alpha=cellIndex==1?0.15:0.03;
 				
-				this.embCanvas.drawDesign(colorway);
-				//this.dstStage.draw();
+					this.embCanvas.drawDesign(colorway);
+				}
 			}, //end of drawDesign()
 			
 			
-			getThreadGridOptions:function(){
+			getThreadGridOptions:function(scope){
 				var self=this;
 				return	{
 					columns:threadGridColumns,
@@ -965,6 +1018,15 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			        autoSync:true,
 					dataSource:self.threadList,
 					
+					change:function(e){
+						console.log("step change:");
+						self.drawDesign(self.gwThread);
+					},
+					
+					edit:function(e){
+						console.log("step  edit:");
+						self.drawDesign(self.gwThread);
+				    },					
 					save:function(e){
 	                	 console.log("thread save:");
 			       		if (typeof e.values=== 'undefined')
@@ -992,9 +1054,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 	  	        			self.gwThread.enterKeyDown=false;
 	  	        		}
 	  	        		
-		          		var template = kendo.template(this.columns[1].template),
-		                	cell = e.container.parent().children('td').eq(1);
-	                    cell.html(template(e.model));
+	  	        		self.gwThread.updateTemplateColumns(e);
 	                    
 	                    for(var i=0,steps=self.runningStepList;i<steps.length;i++){
 	                    	if(steps[i].threadIndex===index){
@@ -1004,12 +1064,13 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 	                    }
 	                    self.gwStep.grid.refresh();
 	                    self.parseThreads();
-						self.drawDesign({});
+						self.drawDesign(self.gwThread);
+						scope.$apply();
 					}
 				} 
 			},//end of thread grid option
 			
-			getStepGridOptions:function(){
+			getStepGridOptions:function(scope){
 				var self=this;
 				return {
 					columns:stepGridColumns,
@@ -1021,12 +1082,12 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 
 					change:function(e){
 						console.log("step change:");
-						self.drawDesign();
+						self.drawDesign(self.gwStep);
 					},
 					
 					edit:function(e){
 						console.log("step  edit:");
-						self.drawDesign();
+						self.drawDesign(self.gwStep);
 				    },
 				    
 					save:function(e){
@@ -1068,7 +1129,8 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 				  	        				thread=self.threadList[index];
 				  	        				thread.code=code;
 				  	        				thread.colour=colour;
-				  	        				self.gwThread.grid.refresh();
+				  	        				
+				  	        				//self.gwThread.grid.refresh();
 				  	        				self.parseThreads();
 				  	        			}
 			  	        			}
@@ -1076,21 +1138,24 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			  	        		
 			  	        		if(index>=0){
 			  	        			thread=self.threadList[index];
-				                	 console.log("step save4:");
 			  	        			e.model.set("code",thread.code);
 					          		e.model.set("threadIndex",(index+1).toString());
-				                	 console.log("step save5:");
 			  	        		}
 		  	        		}
-		                	 console.log("step save6:");
-		 		       			
-			          		var template = kendo.template(this.columns[2].template),
-			                	cell = e.container.parent().children('td').eq(2);
-		                    cell.html(template(e.model));
-		                    
+		  	        		
+		  	        		self.setThreadStitchCount();
+
+		  	        		//The grid will not update templte column automatically when change data value in save event	
+		                	self.gwStep.updateTemplateColumns(e);
+		                	 
 		                    self.parseRunningSteps();
+		                    
+		                    //let model accept code value that set by above code
 		  	        		e.preventDefault();
-							self.drawDesign();
+		  	        		
+							self.drawDesign(self.gwStep);
+							self.gwThread.grid.refresh();
+							scope.$apply();
 			          	}
 			       		
 					},	//end of save
@@ -1115,7 +1180,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 }]).
 
 directive("threadMatcher",["EmbMatcher",function(EmbMatcher){
-	var templateUrl="../common/dstmatcher";
+	var templateUrl="../dm/threadmatcher";
 	var directive={
 			restrict:'EA',
 			replace:false,
@@ -1127,6 +1192,10 @@ directive("threadMatcher",["EmbMatcher",function(EmbMatcher){
 			templateUrl:templateUrl,
 			
 			link:function(scope,element,attrs){
+
+			}, //end of link function
+			controller:function($scope){
+				var scope=$scope;
 				
 				scope.embMatcher=new EmbMatcher();
 				
@@ -1148,27 +1217,106 @@ directive("threadMatcher",["EmbMatcher",function(EmbMatcher){
 				if(scope.cEmbCanvas)
 					scope.embMatcher.setEmbCanvas(scope.cEmbCanvas);
 				
-
-			} //end of link function
+				scope.threadGridOptions=scope.embMatcher.getThreadGridOptions(scope);
+				scope.stepGridOptions=scope.embMatcher.getStepGridOptions(scope);
+			}
 
 		}
 	
 	return directive;
 }]).
 
-factory("EmbPaint",["DstDesign","EmbCanvas","EmbStage",
-		function(DstDesign,EmbCanvas,EmbStage){
+directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 	
+	var templateUrl="../dm/dstpaint";
+	var directive={
+			restrict:'EA',
+			replace:true,
+			scope:{
+				cName:'@dstPaint',
+			},
 	
-    var embPaint=function(config){
-    }
-    
-    embPaint.prototype={
+			templateUrl:templateUrl,
+			
+			link:function(scope,element,attrs){
+				
 
-    } //end of prototype	
-    
-    return embPaint;
+				
+				scope.print=function(){
+					
+					var html='<img src="' + scope.embCanvas.imageObj.toDataURL() + '">';
+					util.print(html,true);
+				}				
+				
+				scope.setDstDesign=function(dstDesign){
+				    scope.dstDesign.getDst(dstDesign);
+				}
+
+
+			}, //end of link function
+			
+			controller:["$scope","util","DstDesign","EmbCanvas","EmbStage",
+			            	function($scope,util,DstDesign,EmbCanvas,EmbStage){
+				//{code:"S0561",r:255,g:0,b:0},{code:"S1011",r:125,g:125,b:125},{code:"S1043",r:0,g:0,b:255}
+				//var runningStepList=new kendo.data.ObservableArray([{code:"S1043",codeIndex:1}]);
+				
+				var scope=$scope;
+
+				scope.embMatcher=new EmbMatcher();
+				
+				//expose this directive scope to parent directive
+				if(scope.cName) 
+					scope.$parent[scope.cName]=scope;
+
+				if(scope.cEmbCanvas)
+					scope.embMatcher.setEmbCanvas(scope.cEmbCanvas);					
+					
+			    $scope.dstDesign=new DstDesign();
+
+			    $scope.embStage=new EmbStage({container:'container',
+			        width: 1024,
+			        height: 800});
+				
+				$scope.embCanvas=new EmbCanvas($scope.dstDesign);
+
+				$scope.embImage=new Kinetic.Image({
+					x:0,
+					y:0,
+					draggable:true,
+					width:$scope.embCanvas.getOriginalWidth(),
+					height:$scope.embCanvas.getOriginalHeight(),
+					image:$scope.embCanvas.imageObj
+				});
+				
+				$scope.embStage.add($scope.embImage);
+				
+				$scope.onImageChanged=function(e){
+					$scope.embStage.draw();
+				}
+				
+				$scope.onDesignChanged=function(e){
+					//e is dstDesign
+					
+					if($scope.threadMatcher 
+							&&  $scope.threadMatcher.embCanvas 
+							&&  $scope.threadMatcher.embCanvas.embDesign===e){
+						
+						$scope.threadMatcher.initColorwayList();
+					}
+					$scope.embCanvas.drawDesign();
+				}
+				
+				$scope.dstDesign.designChanged.addListener($scope.embCanvas,$scope.onDesignChanged);
+				$scope.embCanvas.imageChanged.addListener($scope.embStage,$scope.onImageChanged);
+				
+				
+
+			}],
+	}
+	
+	return directive;
 }]);
+
 
 
 </script>

@@ -8,7 +8,7 @@ import javax.persistence.Id;
 
 
 @Entity
-public class GridInfo{
+public class GridInfo extends CliviaSuperModel{
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,127 +18,163 @@ public class GridInfo{
 	@Column(name = "GridNo",length=4,unique=true,nullable=false)
 	private String gridNo;
 	
-	@Column(name = "GridName",length=50,nullable=false)
-	private String gridName;
+	@Column(name = "Name",length=50)
+	private String name;
 	
-	@Column(name = "GridDaoName",length=50,nullable=false)
-	private String gridDaoName;
+	@Column(name = "DaoName",length=50)
+	private String daoName;
+
+	@Column(name = "dataUrl",length=50)
+	private String dataUrl;
 	
 	@Column(name = "Remark",length=255)
 	private String remark;
 	
-	@Column(name = "GridPageSize")
-	private int gridPageSize;
+	@Column(name = "PageSize")
+	private int pageSize=0;
 	
-	@Column(name = "GridSortable")
-	private boolean gridSortable;
+	@Column(name="IsQuery")
+	private Boolean IsQuery=true;
 	
-	@Column(name = "GridFilterable")
-	private boolean gridFilterable;
+	@Column(name = "Sortable")
+	private Boolean sortable=true;
 	
-	@Column(name = "GridEditable")
-	private boolean gridEditable;
+	@Column(name = "Filterable")
+	private Boolean filterable=true;
+
+	@Column(name = "Editable")
+	private Boolean editable=false;
 	
 	@Column(name="ColumnResizable")
-	private boolean columnResizable;
+	private Boolean columnResizable=true;
 	
 	@Column(name="ColumnMovable")
-	private boolean columnMovable;
+	private Boolean columnMovable=true;
 	
-	@Column(name = "GridSortDescriptor",length=255)
-	private String gridSortDescriptor;
+	@Column(name = "",length=255)
+	private String sortDescriptor;
 	
-	
-	public GridInfo(){
-	}
-	
+	@Column(name = "BaseFilter",length=255)
+	private String baseFilter;
+
 	public int getId() {
 		return id;
 	}
+
 	public void setId(int id) {
 		this.id = id;
 	}
-	
+
 	public String getGridNo() {
 		return gridNo;
 	}
+
 	public void setGridNo(String gridNo) {
 		this.gridNo = gridNo;
 	}
-	
-	public String getGridName() {
-		return gridName;
-	}
-	public void setGridName(String gridName) {
-		this.gridName = gridName;
-	}
-	public String getGridDaoName() {
-		return gridDaoName;
+
+	public String getName() {
+		return name;
 	}
 
-	public void setGridDaoName(String gridDaoName) {
-		this.gridDaoName = gridDaoName;
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getDaoName() {
+		return daoName;
+	}
+
+	public void setDaoName(String daoName) {
+		this.daoName = daoName;
+	}
+
+	public String getDataUrl() {
+		return dataUrl;
+	}
+
+	public void setDataUrl(String dataUrl) {
+		this.dataUrl = dataUrl;
 	}
 
 	public String getRemark() {
 		return remark;
 	}
+
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-	public int getGridPageSize() {
-		return gridPageSize;
+
+	public int getPageSize() {
+		return pageSize;
 	}
-	public void setGridPageSize(int gridPageSize) {
-		this.gridPageSize = gridPageSize;
+
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
 	}
-	public boolean isGridSortable() {
-		return gridSortable;
+
+	public Boolean getIsQuery() {
+		return IsQuery;
 	}
-	public void setGridSortable(boolean gridSortable) {
-		this.gridSortable = gridSortable;
+
+	public void setIsQuery(Boolean isQuery) {
+		IsQuery = isQuery;
 	}
-	public boolean isGridFilterable() {
-		return gridFilterable;
+
+	public Boolean getSortable() {
+		return sortable;
 	}
-	public void setGridFilterable(boolean gridFilterable) {
-		this.gridFilterable = gridFilterable;
+
+	public void setSortable(Boolean sortable) {
+		this.sortable = sortable;
 	}
-	public boolean isGridEditable() {
-		return gridEditable;
+
+	public Boolean getFilterable() {
+		return filterable;
 	}
-	public void setGridEditable(boolean gridEditable) {
-		this.gridEditable = gridEditable;
+
+	public void setFilterable(Boolean filterable) {
+		this.filterable = filterable;
 	}
-	
-	public boolean isColumnResizable() {
+
+	public Boolean getEditable() {
+		return editable;
+	}
+
+	public void setEditable(Boolean editable) {
+		this.editable = editable;
+	}
+
+	public Boolean getColumnResizable() {
 		return columnResizable;
 	}
-	public void setColumnResizable(boolean columnResizable) {
+
+	public void setColumnResizable(Boolean columnResizable) {
 		this.columnResizable = columnResizable;
 	}
-	
-	public boolean isColumnMovable() {
+
+	public Boolean getColumnMovable() {
 		return columnMovable;
 	}
-	public void setColumnMovable(boolean columnMovable) {
+
+	public void setColumnMovable(Boolean columnMovable) {
 		this.columnMovable = columnMovable;
 	}
-	
-	public String getGridSortDescriptor() {
-		return gridSortDescriptor;
+
+	public String getSortDescriptor() {
+		return sortDescriptor;
 	}
 
-	public void setGridSortDescriptor(String gridSortDescriptor) {
-		this.gridSortDescriptor = gridSortDescriptor;
+	public void setSortDescriptor(String sortDescriptor) {
+		this.sortDescriptor = sortDescriptor;
 	}
 
-	@Override
-	public String toString() {
-		return "GridInfo [id=" + id + ", gridNo=" + gridNo + ", gridName="
-				+ gridName + ", daoName=" + gridDaoName + ", remark=" + remark + ", pageSize="
-				+ gridPageSize + ", sortable=" + gridSortable + ", filterable="
-				+ gridFilterable + ", editable=" + gridEditable + ", sortDescriptor=" + gridSortDescriptor + "]";
+	public String getBaseFilter() {
+		return baseFilter;
+	}
+
+	public void setBaseFilter(String baseFilter) {
+		this.baseFilter = baseFilter;
 	}
 	
 }

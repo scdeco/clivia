@@ -1,5 +1,6 @@
 package com.scdeco.miniataweb.controller;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -30,7 +31,18 @@ public class DataController {
     	List result=dao.findList();
     	return result;
     }
-	
+
+    //get all fields of model from dao
+    @SuppressWarnings("rawtypes")
+	@RequestMapping(value="/{daoName}/getfieldlist",method = RequestMethod.GET)
+    public  @ResponseBody  Field[]  getFieldList(@PathVariable String daoName){
+ 
+        GenericDao dao=getDao(daoName);
+    	
+    	return dao.getFieldList();
+    }
+    
+    
 	//get unique record by value of id or key property202507
     @SuppressWarnings("rawtypes")
 	@RequestMapping(value="/{daoName}/getitem",method = RequestMethod.GET)

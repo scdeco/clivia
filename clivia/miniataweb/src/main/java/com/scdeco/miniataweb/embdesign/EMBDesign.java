@@ -68,16 +68,19 @@ public class EMBDesign
 	public EMBDesign(){
 		initializeEMBDesign();
 	}
+	
 	public EMBDesign(String dstFile){
 		initializeEMBDesign();
 		setDstFile(dstFile);
 	}
+	
 	private void initializeEMBDesign(){
 		this.stepList=new ArrayList<Step>();
 
 		this.ptTopLeft = new Point(0,0);
 		this.ptBottomRight=new Point(0,0);
 	}
+	
 	//generate in createStitchList()
 	private ArrayList<Step> stepList;
 	public ArrayList<Step> getStepList()	{

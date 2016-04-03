@@ -5,6 +5,10 @@ clivia=angular.module("clivia",["kendo.directives" ]);
 
 clivia.factory("util",["$http","$q",function($http,$q){
 	return {
+		
+		//find index of item in items by key value or by keys and values
+		//property=id,propertyValue=2  
+		//or propertyName=['garmentId','colour','size'] and  propertyVlaue=[12,"Red","XL"]
 		findIndex:function(items,propertyName,propertyValue){
 			var result=-1;
 			
@@ -90,7 +94,7 @@ clivia.factory("util",["$http","$q",function($http,$q){
 			        o[p] = null;
 		},
 		
-		print:function(html){
+		print:function(html,preview){
 			    var windowContent = '<!DOCTYPE html>';
 			    windowContent += '<html>'
 			    windowContent += '<head><title></title></head>';
@@ -105,8 +109,10 @@ clivia.factory("util",["$http","$q",function($http,$q){
  			    printWin.document.write(windowContent);
 			    printWin.document.close();
 			    printWin.focus();
-/*			    printWin.print();
-			    printWin.close(); */
+			    if(!preview){
+				    printWin.print();
+				    printWin.close(); 
+			    }
 			},
 		uploadImage:function(file,url){
 				var deferred = $q.defer();
@@ -494,6 +500,10 @@ clivia.factory("DataDictSet",["DataDict","util", function(DataDict,util){
 					dict.load();
 			}
 		},
+		
+		refresh:function(){
+			
+		}
 				
 	};
 	
@@ -503,8 +513,17 @@ clivia.factory("DataDictSet",["DataDict","util", function(DataDict,util){
 clivia.factory("cliviaDDS",["DataDictSet",function(DataDictSet){
 	var baseUrl="/miniataweb/";
 	var dicts=[{
+			name:"grid",
+			url:baseUrl+"data/gridInfo/sql",
+			mode:"eager",
+			data:{orderby:"gridNo"},
+		},{
+			name:"column",
+			url:baseUrl+"data/gridColumn/sql",
+			mode:"eager",
+			data:{orderby:"gridId,lineNo"},
+		},{
 			name:"snp",
-//			url:baseUrl+"dict/map?from=dictSNP&textField=name&valueField=id&orderBy=lineNo",
 			url:baseUrl+"data/dictSnp/sql",
 			mode:"eager",
 			data:{orderby:"lineNo"},
@@ -633,7 +652,7 @@ clivia.factory("cliviaDDS",["DataDictSet",function(DataDictSet){
 		var season=this.getCurrentSeason(brandId);
 		return season?season.id:2;
 	}
-
+	
 	return cliviaDDS
 }]);
 
@@ -829,9 +848,12 @@ clivia.factory("GridWrapper",function(){
 				return idx;
 			}
 
-			GridWrapper.prototype.getRow = function(index){
+			GridWrapper.prototype.getRow = function(arg){
 				if(!this.grid) return null;
-				return this.grid.tbody.children().eq(index);
+				if(Number.isInteger(arg))
+					return this.grid.tbody.children().eq(index);
+				else
+					return  arg.closest("tr");
 			}
 
 			//index starts from 0
@@ -941,7 +963,38 @@ clivia.factory("GridWrapper",function(){
         		return changed;
 			}
 			
+			GridWrapper.prototype.getColumnIndex=function(columnName){
+				var columns=this.gridColumns;
+				var index=-1;
+				for(var i=0;i<columns.length;i++){
+					if(columns[i].name===columnName){
+						index=i;
+						break;
+					}
+				}
+				return index;
+			}
+			//use in grid save event, e is parameter of save(e); columnIndex is the index of column intend to update
+			//The grid will not update templte column automatically when change data value in save event
+			//column can be column index or name, used in billGrid,setpGrid,threadGrid,garmentInput grid... 
+			GridWrapper.prototype.updateTemplateColumn=function(e,column){
+				if(!Number.isInteger(column))
+					column=this.getColumnIndex(column);
+                var template = kendo.template(this.gridColumns[column].template),
+            	cell = e.container.parent().children('td').eq(column);
+                cell.html(template(e.model));		                    
+			}
 
+			
+			GridWrapper.prototype.updateTemplateColumns=function(e){
+				for(var i=0;i<this.gridColumns.length;i++){
+					if(this.gridColumns[i].template)
+						this.updateTemplateColumn(e,i);
+				}
+			}
+			
+			
+			
 			GridWrapper.prototype.copyPreviousRow=function(){
 				var idx=this.getCurrentRowIndex();
 				if(idx>0){
@@ -1470,11 +1523,8 @@ clivia.factory("BillGridWrapper",["GridWrapper","cliviaDDS","DataDict",function(
 				    attributes:{style:"text-align:right;"}
 				}, {
 					name:"orderAmt",
-//				    field: "orderAmt",
 				    title: "Amount",
 				    template: '#=kendo.format("{0:c}", orderAmt)#',
-//				    editor: thisGGW.readOnlyColumnEditor,
-//				    format: "{0:c}",
 				    width: 80,
 				    attributes:{style:"text-align:right;"}
 				}, {
@@ -1844,26 +1894,107 @@ clivia.factory("JournalGridWrapper",["GridWrapper","cliviaDDS",function(GridWrap
 	return gw;
 }]); //end of JournalGridWrapper
 
+clivia.factory("ColumnGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapper,cliviaDDS){
+
+	var thisGW;
+	
+	var getColumns=function(){
+
+		return [{
+		        name:"lineNumber",
+		        title: "#",
+		        attributes:{class:"gridLineNumber"},
+		        headerAttributes:{class:"gridLineNumberHeader"},
+		        width: 25,
+			}, {
+		         name: "name",
+		         field: "name",
+		         title: "Name",
+		         width: 90
+		     }, {
+		         name: "title",
+		         field: "title",
+		         title: "Title",
+		         width: 100,
+		     }, {
+		         name: "width",
+		         field: "width",
+		         title: "Width",
+		         width: 75,
+		     }, {
+		         name: "remark",
+		         field: "remark",
+		         title: "Remark",
+		}];
+	}
+	
+	var gw=function(gridName){
+		
+		GridWrapper.call(this,gridName);
+		thisGW=this;
+	}
+	
+	gw.prototype=new GridWrapper();	//implement inheritance
+
+	gw.prototype.setColumns=function(){
+	 	this.gridColumns=getColumns();
+	}	
+
+	return gw;
+}]); //end of JournalGridWrapper
+
 //service
-clivia.factory("cliviaGridWrapperFactory",["ContactGridWrapper","AddressGridWrapper","JournalGridWrapper",
-              function(ContactGridWrapper,AddressGridWrapper,JournalGridWrapper){
+clivia.factory("cliviaGridWrapperFactory",["ContactGridWrapper","AddressGridWrapper","JournalGridWrapper","ColumnGridWrapper",
+              function(ContactGridWrapper,AddressGridWrapper,JournalGridWrapper,ColumnGridWrapper){
 	return {
-		getGridWrapper:function(wrapperName,gridName){
+		getGridWrapper:function(wrapperName,gridName,callFrom){
 			var gw=null;			
 			switch(wrapperName){
 			case "ContactGridWrapper":
 				gw=new ContactGridWrapper(gridName);
+				gw.setColumns();
+				if(callFrom==="order"){
+					gw.gridColumns.splice(8,1);//remove isActive column from grid
+				}
 				break;
 			case "AddressGridWrapper":
 				gw=new AddressGridWrapper(gridName);
+				gw.setColumns();
 				break;
 			case "JournalGridWrapper":
 				gw=new JournalGridWrapper(gridName);
+				gw.setColumns();
+				break;
+			case "ColumnGridWrapper":
+				gw=new ColumnGridWrapper(gridName);
+				gw.setColumns();
 				break;
 			}
-			gw.setColumns();
+			
+				
 			return gw;
 		}
+	}
+}]);
+
+clivia.factory("gridColumnFactory",["cliviaDDS","utils",function(cliviaDDS,util){
+	var dictGrid=cliviaDDS.getDict("grid");
+	var dictColumns=cliviaDDS.getDict("columns");
+	var factory={
+			getColumns:function(gridNo){
+				var columns=[],dictColumns=dictColumn.items,column,item;
+				var grid=dictGrid.getLocalItem("gridNo",gridNo);
+				var idx=util.findIndex(dictColumns,"gridId",grid.id);
+				while( dictColumns[idx]===grid.id){
+					item=dictColumns[idx++];					
+					coloum={
+						name:item.name,
+						field:item.name,
+						title:item.title,
+					}
+				}
+				
+			}
 	}
 }]);
 </script>

@@ -32,8 +32,8 @@ public class LibraryController {
 	
 	@RequestMapping(value = "{type}/upload", method = RequestMethod.POST)
 	public  @ResponseBody Map<String, Object> uploadFile( @RequestParam("file") MultipartFile file,
-											@PathVariable String type,
-											Principal principal){
+															@PathVariable String type,
+															Principal principal){
 
 		String username=principal.getName();
 		EmployeeInfo employeeInfo=employeeInfoDao.findByUsername(username);

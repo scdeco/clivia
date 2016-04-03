@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.scdeco.miniataweb.model.OrderClivia;
 import com.scdeco.miniataweb.model.OrderInfo;
 import com.scdeco.miniataweb.model.OrderItem;
-import com.scdeco.miniataweb.model.OrderUpc;
 import com.scdeco.miniataweb.util.CliviaUtils;
 
 @Repository ("orderDao")
@@ -25,9 +24,6 @@ public class OrderDao extends GenericMainItemDao<OrderClivia>{
 	private OrderItemDao orderItemDao;
 	
 	@Autowired
-	private OrderUpcDao orderUpcDao;
-
-	@Autowired
 	private CliviaAutoNumberDao cliviaAutoNumberDao;
 	
 	private static int MAX_TMP_ID=10000;
@@ -35,8 +31,8 @@ public class OrderDao extends GenericMainItemDao<OrderClivia>{
 	public OrderDao(){
 		super();
 
-		super.registeredItemListNames=new String[]{"billItems","lineItems","designItems","imageItems","fileItems","emailItems","contactItems","addressItems"};
-		super.registeredItemModelNames=new String[]{"orderBillItem","orderLineItem","orderDesign","orderImage","orderFile","orderEmail","orderContact","orderAddress"};
+		super.registeredItemListNames=new String[]{"billItems","lineItems","designItems","imageItems","fileItems","emailItems","contactItems","addressItems","upcItems"};
+		super.registeredItemModelNames=new String[]{"orderBillItem","orderLineItem","orderDesign","orderImage","orderFile","orderEmail","orderContact","orderAddress","orderUpc"};
 		super.daoPrefix="order";
 		
 		super.infoItemName="info";
@@ -56,7 +52,7 @@ public class OrderDao extends GenericMainItemDao<OrderClivia>{
 		
 		if(isNewOrder){
 			Integer orderNumber=cliviaAutoNumberDao.getNextNumber("OrderNumber");
-			orderInfo.setOrderNumber('S'+orderNumber.toString());
+			orderInfo.setOrderNumber(orderNumber.toString());
 			orderInfo.setOrderDate(LocalDate.now());
 			orderInfo.setOrderTime(LocalTime.now());
 		}else{
@@ -71,11 +67,6 @@ public class OrderDao extends GenericMainItemDao<OrderClivia>{
 		
 		super.saveSubItemList(order);
 
-		if(order.getUpcs()!=null){
-			for(OrderUpc upc:order.getUpcs()){
-				orderUpcDao.saveOrUpdate(upc);
-			}
-		}
 	}
 	
 	public OrderClivia getOrderByOrderNumber(String orderNumber) 
@@ -93,16 +84,23 @@ public class OrderDao extends GenericMainItemDao<OrderClivia>{
 	
 	public OrderClivia getOrderByOrderId(int id) 
 			throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException{
+		
+		//load registered info and lists of subitems
 		OrderClivia order=super.getById(id);
+		
+		//list of items is not in registeredItemListNames,need to process seperateately
 		order.setItems(orderItemDao.FindListByOrderId(id));
+
 		return order;
 	}
+	
 	//not test yet
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
 	public void deleteOrder(OrderClivia order) 
 					throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
 		
-		orderUpcDao.deleteAll(order.getUpcs());
+		orderItemDao.deleteAll(order.getItems());
+		
 		super.delete(order);
 	}
 	
@@ -111,16 +109,18 @@ public class OrderDao extends GenericMainItemDao<OrderClivia>{
 		
 		int orderId=order.getInfo().getId();
 		
-		super.setSuperId(order, "orderId", orderId, 0);
-
-		if(order.getUpcs()!=null){
-			for(OrderUpc orderUpc:order.getUpcs()){
-				orderUpc.setOrderId(orderId);
+		List<OrderItem> orderItems=order.getItems();
+		if(orderItems!=null){
+			for(OrderItem orderItem:orderItems){
+				orderItem.setOrderId(orderId);
 			}
 		}
 		
+		super.setSuperId(order, "orderId", orderId, 0);
+
 	}
 	
+	//save items to database and set its id to the corresponding subitems respectfully
 	@SuppressWarnings({ "rawtypes" })
 	private void saveAndSetOrderItemId(OrderClivia order,boolean isNewOrder) 
 				throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{

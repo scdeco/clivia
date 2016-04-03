@@ -1,5 +1,6 @@
 package com.scdeco.miniataweb.dao;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -320,6 +321,11 @@ public abstract class GenericDao<T> {
             criteria.add(c);  
         }  
         return criteria;  
+	}
+	
+	public Field[] getFieldList(){
+		Field[] fields=entityClass.getDeclaredFields();
+		return fields;
 	}
 
 }

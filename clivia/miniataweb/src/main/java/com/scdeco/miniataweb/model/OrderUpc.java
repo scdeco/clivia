@@ -7,7 +7,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class OrderUpc {
+public class OrderUpc extends CliviaSuperModel{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
@@ -30,8 +30,6 @@ public class OrderUpc {
 	@Column(name="RemainQty")
 	private Integer remainQty;
 
-	
-	
 	public int getId() {
 		return id;
 	}
@@ -87,5 +85,5 @@ public class OrderUpc {
 	public void setRemainQty(Integer remainQty) {
 		this.remainQty = remainQty;
 	}
-	
+
 }

@@ -28,6 +28,7 @@ orderApp.controller("billItemCtrl",["$scope","$state","$sce","SO",
 	    		id: "id" ,
 	    		fields:{
 	    			snpId: {type: "number"},
+ 					listPrice:{type: "number"},
  					orderQty:{type: "number"},
  					orderPrice:{type: "number", validation: {  min: 0} },
  					orderAmt:{type: "number"},

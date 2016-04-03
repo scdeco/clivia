@@ -6,18 +6,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
-@RequestMapping("/query/*")
-public class QueryController {
+@RequestMapping("/dm/*")
+public class DesignController {
+	
 	@RequestMapping(value="/",method=RequestMethod.GET)
-	public String getQueryMain() {
-		
-		return "query/query";
+	public String  dm(){
+		return "dm/dm";
 	}
 	
-	
-	@RequestMapping(value="{queryName}",method=RequestMethod.GET)
-	public String getQuery(@PathVariable String queryName) {
-		
-		return "query/"+queryName;
+	@RequestMapping(value="{p}",method=RequestMethod.GET)
+	public String  dstpaint(@PathVariable String p){
+		return "dm/"+p;
 	}
 }

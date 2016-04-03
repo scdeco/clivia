@@ -33,7 +33,7 @@ orderApp.controller("contactItemCtrl",["$scope","$http","$stateParams","SO" ,fun
 			    	orderId:SO.dataSet.info.id,
 			    	orderItemId:orderItem.id, 
 			    	isBuyer:true,
-			    	isActive:true
+			    	isActive:true,
 			    }
 		}
 

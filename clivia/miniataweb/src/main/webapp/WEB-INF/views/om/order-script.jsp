@@ -9,7 +9,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 					info:{},
 					items:[],
 					deleteds:[],
-					upcs:[]
+					upcItems:[]
 				},
 				
 			company:{
@@ -112,7 +112,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			dt.splice(0,dt.length);
 		}
 		dataSet.deleteds.splice(0,dataSet.deleteds.length);	
-		dataSet.upcs.splice(0,dataSet.upcs.length);
+		dataSet.upcItems.splice(0,dataSet.upcItems.length);
 	}
 
     _order.clear=function(){
@@ -191,6 +191,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			    		dataTable.push(dataItems[j]);
 			}
 			
+			if(data.upcItems)
+				dataSet.upcItems=data.upcItems;
 			
 		}
 	}
@@ -277,6 +279,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			if(!$scope.order.orderInfo.orderDate)
 				$scope.order.orderInfo.orderDate = $filter('date')(new Date(),'yyyy-MM-dd');	
 	    */
+	    _order.generateUpcItems();
 
 		var deferred = $q.defer();
 		
@@ -389,6 +392,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  				typeId:menuItem.itemTypeId,
  				snpId:menuItem.snpId,
  				spec:menuItem.spec,
+ 				isDirty:true,
      		};
      	
      	if(menuItem.itemTypeId===2){		//"lineItem"
@@ -523,7 +527,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			item=billItems[i];
 			if(item.itemTypeId){			//auto generated item
 				var strItemTypeId=String(item.itemTypeId);
-				if(!billItemsIdx[strItemTypeId])
+				if(typeof billItemsIdx[strItemTypeId]=='undefined')	//billItemsIdx[strItemTypeId] could be zero, so typeof must be used in condition
 					billItemsIdx[strItemTypeId]={};
 				var idx=billItemsIdx[strItemTypeId];
 				idx[String(item.billingKey)]=i;
@@ -543,20 +547,28 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				//if found, only quantity need to change and recalcuate the amount using the original price,
 				//price might has been chaneged by user
 				billItem=billItems[j];
-				billItem.orderQty=billableItem.orderQty;
-				//billItem.orderAmt=billableItem.orderQty*billItem.orderPrice;	
+				if(billItem.orderQty!==billableItem.orderQty){
+					billItem.orderQty=billableItem.orderQty;
+					billItem.isDirty=true;
+				}
+
+				billItem.orderAmt=billableItem.orderQty*billItem.orderPrice;	
 				billItem.checked=true;
 			}else{
-				//billableItem.orderAmt=billableItem.orderQty*billableItem.orderPrice;
+				billableItem.orderAmt=billableItem.orderQty*billableItem.orderPrice;
 				billItem=billableItem;
+				billItem.isDirty=true;
 				newAddBillItems.push(billItem);
 			}
 		}
 		
 		for(var i=billItems.length-1,item;i>=0;i--){
 			item=billItems[i];
-			if(item.type && !item.checked)
+			if(item.type && !item.checked){
+				if(item.id)
+					_order.registerDeletedItem("billItem",item.id);
 				billItems.splice(i,1);
+			}
 		}
 		
 		for(var i=0;i<newAddBillItems.length;i++)
@@ -688,11 +700,12 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  		util.print(html);
  	}
 	
-	_order.generateUpcs=function(){
+	_order.generateUpcItems=function(){
 		var dictUpc=_order.dds.upc;
 
-		var upcs=dataSet.upcs;
-		upcs.splice(0,dataSet.upcs.length);
+		var orderUpcs=dataSet.upcItems;
+		
+		var upcs=[];
 		
 		var orderItems=dataSet.items;
 		var orderId=_order.dataSet.info.id;
@@ -702,11 +715,11 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			orderItem=orderItems[i];
 			if(orderItem.typeId===2){ //"lineItem"
 				var brand=_order.getBrandFromSpec(orderItem.spec);
-				if(brand.hasInventory){
+				if(brand.hasInventory){  
 					var season=_order.getSeasonFromSpec(orderItem.spec);
 					var sizes=util.split(season.sizeFields);
 					var lineItems=dataSet.lineItems;
-					for(var j=0,lineItem;j<lineItems.length;j++){
+					for(var j=0,lineItem,idx;j<lineItems.length;j++){
 						lineItem=lineItems[j];
 						if(lineItem.orderItemId===orderItem.id && lineItem.garmentId && lineItem.colour){
 							
@@ -714,10 +727,20 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 								field="qty"+("00"+f).slice(-2);
 								qty=lineItem[field]?lineItem[field]:0;
 								if(qty){
-									//might need to create index here, if need to combine									
+									
+									//create index,combine qty of same upcId									
 									upcId=dictUpc.getUpcId(lineItem.garmentId,lineItem.colour,sizes[f]);
-									upc={upcId:upcId,orderQty:qty};
-									upcs.push(upc);
+									if(upcId){
+										idx=idxUpc[String(upcId)];
+										if(typeof idx!=='undefined'){ //idx starts from 0;
+											upc=upcs[idx];
+											upc.orderQty+=qty;
+										}else{
+											upc={upcId:upcId,orderQty:qty,isDirty:true};
+											idxUpc[String(upcId)]=upcs.push(upc)-1;
+										}
+									}
+									
 								}
 							}	//end of for:f	
 							
@@ -727,7 +750,32 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			}
 		}	//end of for:i
 		
+		for(var i=orderUpcs.length,originalUpc,generatedUpc;i>0;i--){
+			orderUpc=orderUpcs[i-1];
+			idx=idxUpc[String(orderUpc.upcId)];
+			if(typeof idx!=='undefined'){ //idx starts from 0;
+				generatedUpc=upcs[idx];
+				if(orderUpc.orderQty!==generatedUpc.orderQty){
+					orderUpc.orderQty=generatedUpc.orderQty;
+					orderUpc.isDirty=true;
+				}else{
+					generatedUpc.isDirty=false;
+				}
+			}else{
+				if(orderUpc.id){
+					_order.registerDeletedItem("upc",orderUpc.id);
+				}
+				orderUpcs.splice(i-1,1);
+			}
+		}
 		
+		for(var i=0,upc;i<upcs.length;i++){
+			upc=upcs[i];
+			if(upc.isDirty){
+				orderUpcs.push(upc);
+			}
+		}
+
 	}
 	
 	_order.getBrandFromSpec=function(orderItemSpec){

@@ -1,51 +1,61 @@
 package com.scdeco.miniataweb.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.scdeco.miniataweb.dao.GridColumnDao;
-import com.scdeco.miniataweb.dao.GridInfoDao;
-import com.scdeco.miniataweb.model.GridColumn;
-import com.scdeco.miniataweb.model.GridInfo;
+import com.scdeco.miniataweb.dao.GridDao;
+import com.scdeco.miniataweb.model.Grid;
 
 @Controller
-@RequestMapping("/cliviagrid/*")
+@RequestMapping("/gd/*")
 public class GridController {
 
 	@Autowired
-	GridInfoDao gridInfoDao;
-	
-	@Autowired
-	GridColumnDao gridColumnDao;
-	
-	@RequestMapping(value="grid",method=RequestMethod.GET)
-	public String get(Model model,
-			@RequestParam(value="gridNo",required=true) String gridNo,
-			@RequestParam(value="filter",required=false) String filter){
+	GridDao gridDao;
 
-		System.out.println("Grid#:"+gridNo+"   filter:"+filter);
-		
-		GridInfo gridInfo=gridInfoDao.findByGridNo(gridNo);
-		List<GridColumn> gridColumnList=gridColumnDao.findColumnListByGridId(gridInfo.getId()); 
-		
-		model.addAttribute("cliviaGridInfo",gridInfo);
-		model.addAttribute("cliviaGridColumnList",gridColumnList);
-		model.addAttribute("dataFilter",filter);
-		model.addAttribute("version","10008js");
-		
-		return 	"cliviagrid/cliviagrid";
+	@RequestMapping(value="/",method=RequestMethod.GET)
+	public String list(){
+		return "gd/gd";
 	}
 	
+	@RequestMapping(value="grid",method=RequestMethod.GET)
+	public String grid(){
+		return "gd/grid";
+	}
+
+	@RequestMapping(value="get-grid",method=RequestMethod.GET)
+	public @ResponseBody  Grid getgrid(@RequestParam("gridNo") String gridNo) 
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
+		
+		return gridDao.getByGridNo(gridNo);
+	}
+
+	@RequestMapping(value="save-grid",method=RequestMethod.POST)
+	public @ResponseBody  Grid savegrid(@RequestBody Grid grid)
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
+		
+		gridDao.save(grid);
+		return grid;
+	}
 	
-	@RequestMapping(value="define",method=RequestMethod.GET)
-	public String get(){
-		return "cliviagrid/define";
+	@RequestMapping(value="delete-grid",method=RequestMethod.GET)
+	public @ResponseBody  String deletegrid(@RequestParam("id") Integer id) 
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
+		
+		String result="";
+		
+		int gridId=id;
+		if(gridId>0){
+			gridDao.delete(gridId);
+		}else{
+			result="Can not find grid in system.";
+		}
+		return result;
 	}
 	
 	

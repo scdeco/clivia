@@ -1,48 +1,59 @@
 <!DOCTYPE html>
-<html ng-app="queryApp">
+<html ng-app="gdApp">
 <head>
 
-	<title>Query</title>
+	<title>GD</title>
 	<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
 
 	<shared:header/> 
 	<%@include file="../common/factories.jsp"%>
 	<%@include file="../common/directives.jsp"%>
-	<%@include file="query-script.jsp"%>
+	<%@include file="gd-script.jsp"%>
 	
 </head>
 
-<body  ng-controller="queryCtrl" spellcheck="false">
+<body  ng-controller="gdCtrl">
 
-<div kendo-splitter="querySplitter"
+<div kendo-splitter="gdSplitter"
 	
 		k-panes="[{ collapsible: false, resizable:false, size: '35px'},
                   { collapsible: false,size:'550px'},
                   { collapsible: true, resizable: true}]"
-        k-options="query.splitterOptions"
+        k-options="gdsplitterOptions"
 		style="height:900px;">
 		 
 	<div id="top-pane">
-		
 	</div>	<!-- top pane of outter splitter -->
 	
 	<div id="middle-pane">
-		<div kendo-toolbar id="queryToolbar" k-options="queryToolbarOptions"></div>
-		<div  query-grid="queryGrid"  c-grid-no="queryGridNo"></div>
+		<div kendo-toolbar id="gdToolbar" k-options="gdToolbarOptions"></div>
+		<div  kendo-grid="gdGridGrid"  k-options="gdGridGridOptions"></div>
 	</div> <!-- middle pane of outter splitter -->
 	
-	<div id="bottom-pane" style="height:300px;">
+	<div id="bottom-pane" style="height:200px;">
 	</div> <!-- bottom pane of outter splitter -->
 	
-</div>	<!-- end of querySplitter -->
+</div>	<!-- end of gdSplitter -->
 
+<div kendo-window="gridWindow"
+		k-width="1200"
+	 	k-height="670"
+	 	k-position="{top: 50, left: 100 }"	
+	 	k-resizable="true"
+		k-draggable="true"
+	 	k-title="'Grid'"
+	 	k-visible="false" 
+	 	k-actions="['Minimiz','Maximize','Close']"
+	 	k-pinned="true"
+	 	k-modal="false"
+	 	k-options="gridWindowOptions">
+
+	<div grid="gridCard"></div>
+</div>
 
 </body>
 <style>
-	.k-dirty {
-  		border-width:0;
-	}
-	
+
 	html,body{
 	    margin:0;
 	    padding:0;
@@ -114,6 +125,7 @@
     	right: 0;
     	width: auto;
     	height: auto;
+    	border-width: 0;
 	}
  
 	.k-tabstrip > .k-content {
@@ -184,4 +196,6 @@
 	
 
 </style>
+</html>
+
 </html>

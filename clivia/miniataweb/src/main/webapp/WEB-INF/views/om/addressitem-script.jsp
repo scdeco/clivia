@@ -29,12 +29,19 @@ orderApp.controller("addressItemCtrl",["$scope","$http","$stateParams","SO" ,fun
 	
 	//pass to addressView directive to create new addressitem		        
 	$scope.newItemFunction=function(dataItem){
-		    return {
+			var newItem= {
 			    	orderId:SO.dataSet.info.id,
-			    	orderItemId:orderItem.id, 
+			    	orderItemId:orderItem.id,
 			    	billing:false,
 			    	shipping:true
 			    }
+			if(SO.company && SO.company.info && SO.company.info.id===SO.dataSet.info.customerId){
+				
+				newItem.country=SO.company.info.country;
+				newItem.province=SO.company.info.province;
+				newItem.city=SO.company.info.city;
+			}
+			return newItem;
 		}
 
 

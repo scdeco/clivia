@@ -18,7 +18,7 @@ public class OrderClivia {
 	private List<OrderContact> contactItems;
 	private List<OrderAddress> addressItems;
 	
-	private List<OrderUpc> upcs;
+	private List<OrderUpc> upcItems;
 	
 	private List<Map<String,String>> deleteds;
 
@@ -102,12 +102,12 @@ public class OrderClivia {
 		this.addressItems = addressItems;
 	}
 
-	public List<OrderUpc> getUpcs() {
-		return upcs;
+	public List<OrderUpc> getUpcItems() {
+		return upcItems;
 	}
 
-	public void setUpcs(List<OrderUpc> upcs) {
-		this.upcs = upcs;
+	public void setUpcItems(List<OrderUpc> upcItems) {
+		this.upcItems = upcItems;
 	}
 
 	public List<Map<String, String>> getDeleteds() {
@@ -117,7 +117,6 @@ public class OrderClivia {
 	public void setDeleteds(List<Map<String, String>> deleteds) {
 		this.deleteds = deleteds;
 	}
-	
 
 	
 	

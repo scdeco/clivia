@@ -47,6 +47,9 @@ public class OrderContact extends CliviaSuperModel{
 	@Column(name="IsBuyer")
 	private Boolean isBuyer;
 	
+	@Column(name="companyContactId")
+	private int companyContactId=0;	
+	
 	@Column(name="Remark",length=200)
 	private String  remark;
 
@@ -146,6 +149,14 @@ public class OrderContact extends CliviaSuperModel{
 		this.isBuyer = isBuyer;
 	}
 
+	public int getCompanyContactId() {
+		return companyContactId;
+	}
+
+	public void setCompanyContactId(int companyContactId) {
+		this.companyContactId = companyContactId;
+	}
+
 	public String getRemark() {
 		return remark;
 	}
@@ -153,7 +164,5 @@ public class OrderContact extends CliviaSuperModel{
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-
-
 
 }

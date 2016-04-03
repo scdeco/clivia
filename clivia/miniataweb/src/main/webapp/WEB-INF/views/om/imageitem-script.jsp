@@ -61,6 +61,7 @@ orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,funct
 			    	orderId:SO.dataSet.info.id,
 			    	orderItemId:orderItem.id, 
 			    	imageId:dataItem.id,
+			    	isDirty:true,
 			    }
 		}
 

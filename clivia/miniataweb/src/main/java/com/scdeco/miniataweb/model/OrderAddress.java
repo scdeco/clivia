@@ -42,6 +42,9 @@ public class OrderAddress extends CliviaSuperModel{
 	@Column(name="Shipping")
 	private Boolean shipping;
 	
+	@Column(name="companyAddrId")
+	private int companyAddrId=0;
+	
 	@Column(name="Remark",length=200)
 	private String  remark;
 
@@ -133,6 +136,14 @@ public class OrderAddress extends CliviaSuperModel{
 		this.shipping = shipping;
 	}
 
+	public int getCompanyAddrId() {
+		return companyAddrId;
+	}
+
+	public void setCompanyAddrId(int companyAddrId) {
+		this.companyAddrId = companyAddrId;
+	}
+
 	public String getRemark() {
 		return remark;
 	}
@@ -140,6 +151,5 @@ public class OrderAddress extends CliviaSuperModel{
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-	
 	
 }
