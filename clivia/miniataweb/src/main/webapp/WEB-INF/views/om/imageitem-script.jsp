@@ -68,7 +68,7 @@ orderApp.controller("imageItemCtrl",["$scope","$http","$stateParams","SO" ,funct
 
 	
 	$scope.registerDeletedItemFunction=function(dataItem){
-		SO.registerDeletedItem("image",dataItem.id);
+		SO.registerDeletedItem("orderImage",dataItem.id);
 	}
 	
 	

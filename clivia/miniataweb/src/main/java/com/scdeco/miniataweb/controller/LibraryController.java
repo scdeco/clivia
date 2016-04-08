@@ -38,11 +38,8 @@ public class LibraryController {
 		String username=principal.getName();
 		EmployeeInfo employeeInfo=employeeInfoDao.findByUsername(username);
 		String uploadBy=employeeInfo.getFirstName();
-	    System.out.println("Uploading--------------"+file.getOriginalFilename());
 
 	    Map<String, Object> result=cliviaLibrary.saveFileToLib(type,file,uploadBy);
-	    
-	    System.out.println("Uploading complete-----"+result.get("status")+" message:"+result.get("message"));
 	    
 	    return result;
 	}
@@ -55,13 +52,19 @@ public class LibraryController {
 		return cliviaLibrary.findListByIds(type,ids);
 	}
 	
-	//get  real file 
+	//get  real file of image
 	@RequestMapping(value="{type}/getimage",method=RequestMethod.GET)
-	public @ResponseBody HttpEntity<byte[]> getFile(@PathVariable String type, @RequestParam("id") Integer id){
+	public @ResponseBody HttpEntity<byte[]> getImage(@PathVariable String type, 
+													 @RequestParam("id") Integer id, 
+													 @RequestParam(value="thumbnail",required=false) boolean thumbnail,
+													 @RequestParam(value="base64",required=false) boolean base64){
 		
-		byte[] result=cliviaLibrary.getBase64ByteArrayImage(type, id);
+		byte[] result=null;
+		result=cliviaLibrary.getByteArrayImage(type, id, thumbnail, base64);
+
 		if(result!=null){
-	        HttpHeaders headers = new HttpHeaders();
+
+			HttpHeaders headers = new HttpHeaders();
 	        headers.setContentType(MediaType.IMAGE_JPEG); //or what ever type it is
 	        headers.setContentLength(result.length);
 	        return new HttpEntity<byte[]>(result, headers);
@@ -78,6 +81,7 @@ public class LibraryController {
 		return result;
 		
 	}
+	
 	@RequestMapping(value="{type}/getstitches",method=RequestMethod.GET)
 	public @ResponseBody Map<String, Object> getEmbDesignStitches(@PathVariable String type, @RequestParam("id") Integer id){
 		

@@ -80,19 +80,25 @@ public class GenericMainItemDao<T> {
 		
 	protected void saveInfoItem(T mainEntity) 
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
-
-		GenericDao infoDao=CliviaUtils.getDao(infoDaoName);
 		
-		Field field= getItemField(infoItemName);
-		field.setAccessible(true);
-		CliviaSuperModel info=(CliviaSuperModel)field.get(mainEntity);
+		CliviaSuperModel info=getInfoItem(mainEntity);
 		
 		if(info.getIsDirty()){
+			GenericDao infoDao=CliviaUtils.getDao(infoDaoName);
 			infoDao.saveOrUpdate(info);
 			info.setIsDirty(false);
 		}
 		
 	}
+	
+	protected CliviaSuperModel getInfoItem(T mainEntity) 
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
+		Field field= getItemField(infoItemName);
+		field.setAccessible(true);
+		return (CliviaSuperModel)field.get(mainEntity);
+		
+	}
+	
 	
 	protected void saveSubItemList(T mainEntity) 
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
@@ -157,12 +163,8 @@ public class GenericMainItemDao<T> {
 	
 			for(Map<String,String> item:deletedItems){
 		        	int id=Integer.parseInt(item.get("id"));
-		        	
-					char[] c=item.get("entity").toCharArray();
-					c[0]=Character.toUpperCase(c[0]);
-					String daoName=daoPrefix+new String(c);
-		        	
-					GenericDao dao=CliviaUtils.getDao(daoName);
+
+		        	GenericDao dao=CliviaUtils.getDao(item.get("entity"));
 		        	dao.deleteById(id);
 		        	
 		     }				
@@ -173,16 +175,20 @@ public class GenericMainItemDao<T> {
 	//all dependencies of company and itself will be deleted
 	protected void delete(T mainEntity ) 
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		
+		GenericDao dao=null;
 		for(int i=0;i<registeredItemListNames.length;i++){
 
 			List itemList=getItemList(mainEntity,registeredItemListNames[i]);
 			
 			if(itemList!=null){
-				GenericDao dao=CliviaUtils.getDao(registeredItemModelNames[i]);
+				dao=CliviaUtils.getDao(registeredItemModelNames[i]);
 				dao.deleteAll(itemList);
 			}
 		}
+		
+		dao=CliviaUtils.getDao(infoDaoName);
+		dao.delete(getInfoItem(mainEntity));
+		
 
 	}
 

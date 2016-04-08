@@ -59,7 +59,7 @@ orderApp.controller("billItemCtrl",["$scope","$state","$sce","SO",
 		        
 	//pass to billGrid directive to register removed billitem		        
 	$scope.registerDeletedItemFunction=function(dataItem){
-		SO.registerDeletedItem("billItem",dataItem.id);
+		SO.registerDeletedItem("orderBillItem",dataItem.id);
 	}
 	
 	//generate auto bill items from lineItems...
@@ -69,7 +69,7 @@ orderApp.controller("billItemCtrl",["$scope","$state","$sce","SO",
 		var html;
 		//if itemTypeId===2, the item is from lineItem and its billingKey is a string of garmentId
 		if(billItem && billItem.itemTypeId===2){
-			html=SO.getStyleGridHtml(billItem.billingKey);
+			html=SO.getStyleGridHtml(parseInt(billItem.billingKey),true);
 		}
 		
 		if(!html)

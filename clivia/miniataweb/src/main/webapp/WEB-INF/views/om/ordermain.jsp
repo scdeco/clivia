@@ -49,5 +49,5 @@
 	dataSet:{{SO.dataSet|json}}
 <!-- 	instance:{{SO.instance|json}} -->
 <!-- 	dds:{{SO.dds|json}} -->
-
+	company:{{SO.company|json}}
 </pre> 

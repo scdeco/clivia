@@ -47,7 +47,7 @@ orderApp.controller("addressItemCtrl",["$scope","$http","$stateParams","SO" ,fun
 
 	
 	$scope.registerDeletedItemFunction=function(dataItem){
-		SO.registerDeletedItem("address",dataItem.id);
+		SO.registerDeletedItem("orderAddress",dataItem.id);
 	}
 	
 	

@@ -15,6 +15,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			company:{
 					info:{},
 					contacts:[],
+					addresses:[],
 					buyerDataSource:new kendo.data.DataSource({data:[]}),					
 				},
 				
@@ -168,6 +169,17 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				error(function(data, status, headers, config) {
 				});
 
+			url="../data/companyAddressDao/call/findListBySuperId?param=s:companyId;i:"+companyId;
+			_order.company.addresses=[];
+			$http.get(url).
+				success(function(data, status, headers, config) {
+					if(data){
+						_order.company.addresses=data;
+					}
+				}).
+				error(function(data, status, headers, config) {
+				});
+			
 		}		
     }
 	
@@ -340,7 +352,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  	
  	
  	_order.getCurrentOrderItem=function(){
- 		return _order.getOrderItem(instance.currentItemId)
+ 		return _order.getOrderItem(instance.currentItemId);
  	}
  	
  	
@@ -382,6 +394,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
         return button;
  	}
  	
+	
     _order.addOrderItem = function(menuItem) {
      	var orderItemId=_order.getTmpId();
      	var orderItem={
@@ -407,19 +420,20 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
        
     _order.removeOrderItem=function(orderItem){
     	
-    	var idx=orderItem.lineNo-1;
     	var items=_order.dataSet.items,
     		itemButtons=_order.instance.itemButtons;
+
+    	//remove the item button from _order.instance.itemButtons
+    	var idx=util.findIndex(itemButtons,"orderItemId",orderItem.id);
+    	itemButtons.splice(idx,1);
     	
     	//remove the orderItem from  _order.dataSet.items
+    	var idx=util.findIndex(items,"id",orderItem.id);
     	items.splice(idx,1);
     	
     	//set lineNo same as item index+1
-		for(var i=0;i<items.length;i++)
-   			 items[i].lineNo=i+1;
-    	
-    	//remove the item button from _order.instance.itemButtons
-    	itemButtons.splice(idx,1);
+    	_order.setOrderItemlineNo();
+
     	
     	//set new current orderItem. if no more item, set to blank.
     	if (idx===items.length)
@@ -428,17 +442,17 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
    		_order.setCurrentOrderItem(idx);
    		
    		//register to deleted items
-	   	_order.registerDeletedItem("item",orderItem.id,true);
+	   	_order.registerDeletedItem("orderItem",orderItem.id,true);
 	   	
     	//get dataTable from the dataSet, orderItem.typeId registeredItemType.name is the dataTable name
-		 var type=_order.getRegisteredItemType(dataItem.typeId);
+		 var type=_order.getRegisteredItemType(orderItem.typeId);
 	   	 var dis=_order.dataSet[type.name+"s"];  
 		 for(var i=dis.length-1;i>=0;i--){
 			 di=dis[i];
 			 if(di.orderItemId===orderItem.id){
 				 
 		   		 //register to deleted items 
-				_order.registerDeletedItem(orderItem.type,di.id);
+				_order.registerDeletedItem(type.model,di.id);
 		   		
 				 //remove from the dataTable
 			    dis.splice(i,1);
@@ -446,7 +460,21 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		 }
    		 
         };
-       
+    _order.setOrderItemLineNo=function(){
+    	var items=_order.dataSet.items;
+    	
+    	//set lineNo same as item index+1
+		for(var i=0,lineNo;i<items.length;i++){
+			lineNo=i+1;
+			if(items[i].lineNo!==lineNo){
+	  			 items[i].lineNo=lineNo;
+	  			 items[i].isDirty=true;
+			}
+			
+		}
+    	
+    }
+    
 	_order.registerDeletedItem=function(entity,id,hasDependent){
 		var flag=(!!hasDependent)?id>=consts.maxTmpId:!!id
 		if(flag){
@@ -575,14 +603,208 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			billItems.unshift(newAddBillItems[i]);
 		
 	}
+	
+ 	_order.getStyleGridHtml=function(garmentId){
 
- 	_order.getStyleGridHtml=function(garmentId,print){
-		if(!garmentId) return;
-		var garId=parseInt(garmentId);
-		var garment=_order.dds.garment.getGarmentById(garId);
-		if(!garment) return;
-		var season=_order.dds.season.getLocalItem("id",garment.seasonId)
+		var model=_order.createStyleGridModel(garmentId);
+		var data=model?model.data:null;
+		if(!data) return "";
 		
+		var imageId=model.garment.imageId;
+		var row=data[0];
+		var html="<div>";
+		if(imageId){
+			html+="<img style='float:left;' src=../lib/image/getimage?thumbnail=true&id="+imageId+">";
+		}
+
+		html+="<table style='float:left;text-align: right;'>";
+		html+="<tr><th class='tal'>"+row[0]+"</th>";
+		for(var i=1;i<row.length-1;i++){
+			html+="<th class='billDetailQty tar'>"+row[i]+"</th>";
+		}
+		html+="<th class='tar lineqty'>"+row[i]+"</th></tr>";
+		
+		for(var i=1;i<data.length;i++){
+			row=data[i];
+			for(var j=0;j<row.length;j++){
+				html+="<td class='tar'>"+(row[j]?row[j]:"")+"</td>";
+			}
+			html+="</tr>";
+		}
+		
+		html+="</table></div>";
+		
+		return html;
+	}	
+ 	
+ 	_order.getBillHeaderHtml=function(){
+ 		
+ 		
+ 	}
+
+ 	var createContactPrintModel=function(){
+ 		var contact={};
+ 		var companyContacts=_order.company.contacts;
+		var buyer=_order.dataSet.info.buyer;
+ 		var orderContacts=[];
+ 		//change contactItems from ObservableArray to Array
+ 		//ObservableArray dosen't have a concat method,
+ 		//orderContacts must prior to companyContacts
+ 		for(var i=0,c;i<_order.dataSet.contactItems.length;i++){
+ 			c=_order.dataSet.contactItems[i];
+ 			orderContacts.push({fullName:c.fullName?c.fullName:c.firstName+" "+c.lastName,phone:c.phone,email:c.email});
+ 		}
+		var contacts=orderContacts.concat(companyContacts);
+		
+		//when has a buyer name but can not find it in companyContacts 
+		//and there is no order contacts, just use the buyer's name without phone and email
+ 		if(contacts.length>0){
+ 			var foundIndex=-1;
+ 			if(buyer){
+	 	 		for(var i=0;i<contacts.length;i++){
+	 	 			if(contacts[i].fullName===buyer)
+	 	 				foundIndex=i;
+	 	 				break;
+	 	 		}
+	 	 		
+	 	 		if(foundIndex<0 && orderContacts.length>0){
+	 	 				foundIndex=0;
+	 	 		}
+	 	 		
+ 			}else{
+ 				foundIndex=0;
+ 			}
+ 			
+ 			if(foundIndex>=0){
+ 	 			contact.name=contacts[foundIndex].fullName;
+ 	 			contact.phone=contacts[foundIndex].phone;
+ 	 			contact.email=contacts[foundIndex].email;
+ 			}else{
+ 	 			contact.name=buyer;
+ 	 			contact.phone="";
+ 	 			contact.email="";
+ 			}
+ 		}
+		return contact;
+
+ 	}
+ 	
+ 	var createAddressPrintModel=function(isBilling){
+ 		var address;
+ 		var addresses=_order.dataSet.addressItems;
+ 		for(var i=0,c,f;i<addresses.length;i++){
+ 			c=addresses[i];
+ 			f=isBilling?c.billing:c.shipping;
+ 			if(f){
+ 				address=c;
+ 				break;
+ 			}
+ 		}
+ 		
+ 		if(!address){
+	 		addresses=_order.company.addresses;
+	 		for(var i=0,c,f;i<addresses.length;i++){
+	 			c=addresses[i];
+	 			f=isBilling?c.billing:c.shipping;
+	 			if(f){
+	 				address=c;
+	 				break;
+	 			}
+	 		}
+ 		}
+ 		
+ 		if(address){
+			address={
+				addr1:address.addr1,
+				addr2:address.addr2,
+				city:address.city,
+				province:address.province,
+				country:address.country,
+				postalCode:address.postalCode,
+				attn:address.attn,
+			};
+ 		}else{
+			address={
+					addr1:"",
+					addr2:"",
+					city:"",
+					province:"",
+					country:"",
+					postalCode:"",
+					attn:"",
+				};
+ 		}
+		return address;
+ 		
+ 	}
+ 	_order.createGarmentPrintModel=function(billItems,lineItemOnly){
+ 		var info=_order.dataSet.info;
+ 		var company=_order.company;
+ 		var  model={
+ 				info:{
+ 					orderNo:info.orderNumber,
+ 					orderName:info.orderName,
+ 					orderDate:info.orderDate,
+ 					poNo:info.customerPO,
+ 					rep:"",			//info.repName,
+ 					csr:"",
+ 					company:company.info.businessName,
+ 					terms:company.info.term,
+ 					shipDate:info.requireDate,
+ 					cancelDate:info.cancelDate, 			//info.cancelDate,
+ 					remark:info.remark,
+				},
+	 			items:[],
+ 			};
+ 		
+ 		model.info.contact=createContactPrintModel();
+		model.info.billTo=createAddressPrintModel(true);
+		model.info.shipTo=createAddressPrintModel(false);
+ 		
+		var totalQty=0,totalAmt=0;
+ 		for(var i=0,bi,h,p;i<billItems.length;i++){
+ 			bi=billItems[i];
+ 			
+ 			totalAmt+=bi.orderAmt?bi.orderAmt:0;
+ 			totalQty+=bi.orderQty?bi.orderQty:0;
+ 			
+ 			if(lineItemOnly?bi.itemTypeId===2:true){
+ 				mbi={
+ 					itemNo:bi.itemNumber?bi.itemNumber:"",
+ 					desc:bi.description?bi.description:"",
+ 					qty:bi.orderQty?kendo.toString(bi.orderQty,"##,#"):"",
+ 					price:bi.orderPrice?kendo.toString(bi.orderPrice, "0.00"):"",
+ 					amt:bi.orderAmt?kendo.toString(bi.orderAmt, "c"):"",
+ 				};
+ 				if(bi.itemTypeId===2){		//lineItem
+					var styleModel=_order.createStyleGridModel(parseInt(bi.billingKey),true);	//show main color only
+					if(styleModel){
+						mbi.imageId=styleModel.garment.imageId;
+						mbi.data=styleModel.data;
+					}
+				} 				
+ 				
+ 				model.items.push(mbi);
+ 				
+ 			}
+ 		}
+ 		
+ 		model.info.totalAmt=kendo.toString(totalAmt, "c");
+ 		model.info.totalQty=kendo.toString(totalQty,"##,#");
+ 		
+ 		return model;
+ 	}
+ 	
+ 	_order.createStyleGridModel=function(garmentId,showMainColourOnly){
+		
+		if(!garmentId) return null;
+		
+		var garment=_order.dds.garment.getGarmentById(garmentId); 
+		
+		if(!garment) return null;
+ 		
+ 		var data=[];
+		var season=_order.dds.season.getLocalItem("id",garment.seasonId)
 		
 		//use util.split to split the string with delimiter "," and trim the result
 		var sizes=util.split(garment.sizeRange);
@@ -591,9 +813,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		//sizefields in lineItem
 		var sizeFields=util.split(season.sizeFields);	
 		
-		var data=[];
 		var colourIndex={};
-
+		
 		for(var i=0,row;i<colours.length;i++){
 			//0 is colour,and sizes.length+1 is total qty of the colour, 1 to sizes.length is qty of size
 			row=new Array(sizes.length+2);		
@@ -606,7 +827,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		var lineItems=_order.dataSet.lineItems;
 		for(var i=0,r,lineItem,row;i<lineItems.length;i++){
 			lineItem=lineItems[i];
-			if(lineItem.garmentId===garId){
+			if(lineItem.garmentId===garmentId){
 				r=colourIndex[lineItem.colour];
 				if(r>=0){
 					row=data[r];
@@ -623,37 +844,31 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			}
 		}
 		
-		var html="<table class='billDetailLineItem'>";
-		html+="<tr><th class='tal'>Colour</th>";
-		for(var i=0;i<sizes.length;i++){
-			html+="<th class='billDetailQty tar'>"+sizes[i]+"</th>";
-		}
-		html+="<th class='tar lineqty'>Line Qty</th></tr>";
-		
-		for(var i=0,row;i<colours.length;i++){
-			row=data[i];
-			if(!print || row[row.length-1]){
-				html+="<tr><td class='tal'>"+colours[i]+"</td>";
-				for(var j=1;j<row.length;j++){
-					html+="<td class='tar'>"+(row[j]?row[j]:"")+"</td>";
-				}
-				html+="</tr>";
+		if(showMainColourOnly){
+			
+			for(var i=1,r,c;i<data.length;i++){
+				r=data[i];
+				c=r[0].split("/");
+				r[0]=c[0];
 			}
 		}
-		
-		html+="</table>";
-		
-		return html;
-		
-	}	
- 	
- 	_order.getBillHeaderHtml=function(){
- 		
- 		
- 	}
 
+		var header=new Array(sizes.length+2);
+		header[0]="Color";
+		for(var i=0;i<sizes.length;i++)
+			header[i+1]=sizes[i];
+		header[i+1]="Line Qty";
+		data.unshift(header);
+		
+		return {garment:garment,data:data};
+		
+	}	 	
  	
  	_order.printBill=function(billItems,lineItemOnly){
+ 		var data=_order.createGarmentPrintModel(billItems,lineItemOnly);
+ 		util.printUrl("../om/print-confirm",{data:JSON.stringify(data)},true);
+ 		return;
+ 		
 		var html="<table class='printBillItem'>";
 		
 		html+="<tr><th class='tal style'>Style</th><th class='tal desc'>Description</th><th class='tar qty'>Quantity</th><th class='tar price'>Unit Price</th><th class='tar amt'>Amount</th></tr>";
@@ -674,7 +889,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				if(bi.itemTypeId===2){		//lineItem
 					h=_order.getStyleGridHtml(parseInt(bi.billingKey),true);
 					if(h)
-			 			html+="<tr class='styletablerow'><td></td>"+
+			 			html+="<tr  class='styletablerow'><td></td>"+
 			 			"<td colspan='2'><div class='styletable'>"+h+"</div></td>"+
 			 			"<td></td>"+
 			 			"<td></td></tr>";

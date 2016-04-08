@@ -22,7 +22,7 @@
 				
 				
 		     	<div id="imageitem-second-pane">
-						<input type="text" ng-paste="handlePaste($event)" value="Paste a image here">
+						<input type="text" ng-paste="handlePaste($event)" value="Paste an image here">
 		     			<div stype="height:100%;width:100%;">
 							<img ng-src="data:image/JPEG;base64,{{previewOriginalImage}}" alt="preview image" style="width:100%;height:100%;">      		
 		     			</div>

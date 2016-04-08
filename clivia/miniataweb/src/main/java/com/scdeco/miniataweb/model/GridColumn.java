@@ -36,8 +36,8 @@ public class GridColumn extends CliviaSuperModel{
 	@Column(name="ColEditable")
 	private Boolean colEditable;	//editable is used by kendo model.editable, so editable can not be used here
 	
-	@Column(name="Chooseable")
-	private Boolean chooseable;
+	@Column(name="Choosable")
+	private Boolean choosable;
 	
 	@Column(name="Sortable")
 	private Boolean sortable;
@@ -136,12 +136,12 @@ public class GridColumn extends CliviaSuperModel{
 		this.colEditable = colEditable;
 	}
 
-	public Boolean getChooseable() {
-		return chooseable;
+	public Boolean getChoosable() {
+		return choosable;
 	}
 
-	public void setChooseable(Boolean chooseable) {
-		this.chooseable = chooseable;
+	public void setChoosable(Boolean choosable) {
+		this.choosable = choosable;
 	}
 
 	public Boolean getSortable() {
@@ -231,6 +231,5 @@ public class GridColumn extends CliviaSuperModel{
 	public void setEditorDescriptor(String editorDescriptor) {
 		this.editorDescriptor = editorDescriptor;
 	}
-
 
 }

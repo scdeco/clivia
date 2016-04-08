@@ -53,6 +53,12 @@ public class OrderInfo extends CliviaSuperModel{
 	
 	@JsonSerialize(using=CliviaLocalDateJsonSerializer.class)
 	@JsonDeserialize(using = CliviaLocalDateJsonDeserializer.class)
+	@Column(name="CancelDate")
+	private LocalDate cancelDate;
+	
+	
+	@JsonSerialize(using=CliviaLocalDateJsonSerializer.class)
+	@JsonDeserialize(using = CliviaLocalDateJsonDeserializer.class)
 	@Column(name="OrderDate")
 	private LocalDate orderDate;
 	
@@ -86,7 +92,6 @@ public class OrderInfo extends CliviaSuperModel{
 	
 	@Column(name="Remark",length=255)
 	private String remark;
-	
 
 	public int getId() {
 		return id;
@@ -158,6 +163,14 @@ public class OrderInfo extends CliviaSuperModel{
 
 	public void setRequireTime(LocalTime requireTime) {
 		this.requireTime = requireTime;
+	}
+
+	public LocalDate getCancelDate() {
+		return cancelDate;
+	}
+
+	public void setCancelDate(LocalDate cancelDate) {
+		this.cancelDate = cancelDate;
 	}
 
 	public LocalDate getOrderDate() {

@@ -36,7 +36,7 @@
 </div>	<!-- end of gdSplitter -->
 
 <div kendo-window="gridWindow"
-		k-width="1200"
+		k-width="1400"
 	 	k-height="670"
 	 	k-position="{top: 50, left: 100 }"	
 	 	k-resizable="true"

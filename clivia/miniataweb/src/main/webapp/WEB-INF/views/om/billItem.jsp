@@ -53,10 +53,6 @@
     color: white;
 }
 
-.billDetailLineItem {
-   text-align: right;  
- }
-
 .billDetailQty{
 	width:40px;
 }

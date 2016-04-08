@@ -241,7 +241,7 @@ factory("dictThread",["$http",function($http){		//service
 		     				{r:28,	g:176,	b:193},
 		     				{r:112,	g:56,	b:56}],
 		retrieve:function(){
-			var url="http:///192.6.2.108:8080/miniataweb/data/dictEmbroideryThreadDao/get"
+			var url="http:///192.6.2.108:8080/clivia/data/dictEmbroideryThreadDao/get"
 			$http.get(url).
 				success(function(data, status, headers, config) {
 			    	ts=[];
@@ -469,7 +469,7 @@ factory("DstDesign",["$http","Event",function($http,Event){
 		
 		getDst:function(dstId){
 		
-			var url="/miniataweb/lib/embdesign/getstitches?id="+dstId;
+			var url="/clivia/lib/embdesign/getstitches?id="+dstId;
 			var self=this;
 			initDesign(this);
 			

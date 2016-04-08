@@ -17,22 +17,18 @@ orderApp.directive("orderInfo",["$http","cliviaDDS","util",function($http,clivia
 				$scope.SO=SO;
 				if($scope.cName)
 					$scope.$parent[$scope.cName]=$scope;
+
+				$scope.dateOptions={
+						format: "yyyy-MM-dd",
+					    parseFormats: ["yyyy-MM-dd"]
+				}
+
 				
 				$scope.requireTimeOptions={
 						format: "hh:mm tt",
 						parseFormats:["HH:mm:ss"],
 						min: new Date(2000, 0, 1, 8, 0, 0), 
 						max: new Date(2000, 0, 1, 17, 0, 0)
-				}
-				
-				$scope.requireDateOptions={
-						format: "yyyy-MM-dd",
-					    parseFormats: ["yyyy-MM-dd"]
-				}
-
-				$scope.orderDateOptions={
-						format: "yyyy-MM-dd",
-					    parseFormats: ["yyyy-MM-dd"]
 				}
 				
 				$scope.orderTimeOptions={

@@ -3,6 +3,7 @@ package com.scdeco.miniataweb.controller;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -88,6 +89,14 @@ public class OrderController {
 		
 		orderDao.deleteOrder(order);
 		return order;
+	}
+
+	@RequestMapping(value="print-confirm",method=RequestMethod.POST)
+	public String printConfirm(@RequestBody Map<String,String> data,Model model){
+		
+		System.out.println(data);
+		model.addAttribute("data",data);
+		return "/om/printconfirm";
 	}
 	
 

@@ -81,6 +81,12 @@ public class OrderInfoView {
 	@Column(name = "requireTime", length = 8)
 	private LocalTime requireTime;
 
+	@JsonSerialize(using=CliviaLocalDateJsonSerializer.class)
+	@JsonDeserialize(using = CliviaLocalDateJsonDeserializer.class)
+	@Column(name="CancelDate")
+	private LocalDate cancelDate;
+	
+	
 	@Column(name = "businessName", length = 100)
 	private String businessName;
 
@@ -94,79 +100,168 @@ public class OrderInfoView {
 		return orderId;
 	}
 
+	public void setOrderId(int orderId) {
+		this.orderId = orderId;
+	}
+
 	public String getBuyer() {
 		return buyer;
+	}
+
+	public void setBuyer(String buyer) {
+		this.buyer = buyer;
 	}
 
 	public Integer getCreatorId() {
 		return creatorId;
 	}
 
+	public void setCreatorId(Integer creatorId) {
+		this.creatorId = creatorId;
+	}
+
 	public Integer getCustomerId() {
 		return customerId;
+	}
+
+	public void setCustomerId(Integer customerId) {
+		this.customerId = customerId;
 	}
 
 	public String getCustomerPo() {
 		return customerPo;
 	}
 
+	public void setCustomerPo(String customerPo) {
+		this.customerPo = customerPo;
+	}
+
 	public Integer getFinishBy() {
 		return finishBy;
+	}
+
+	public void setFinishBy(Integer finishBy) {
+		this.finishBy = finishBy;
 	}
 
 	public LocalDate getFinishDate() {
 		return finishDate;
 	}
 
+	public void setFinishDate(LocalDate finishDate) {
+		this.finishDate = finishDate;
+	}
+
 	public Integer getInvoiceBy() {
 		return invoiceBy;
+	}
+
+	public void setInvoiceBy(Integer invoiceBy) {
+		this.invoiceBy = invoiceBy;
 	}
 
 	public LocalDate getInvoiceDate() {
 		return invoiceDate;
 	}
 
+	public void setInvoiceDate(LocalDate invoiceDate) {
+		this.invoiceDate = invoiceDate;
+	}
+
 	public LocalDate getOrderDate() {
 		return orderDate;
+	}
+
+	public void setOrderDate(LocalDate orderDate) {
+		this.orderDate = orderDate;
 	}
 
 	public String getOrderName() {
 		return orderName;
 	}
 
+	public void setOrderName(String orderName) {
+		this.orderName = orderName;
+	}
+
 	public String getOrderNumber() {
 		return orderNumber;
+	}
+
+	public void setOrderNumber(String orderNumber) {
+		this.orderNumber = orderNumber;
 	}
 
 	public Integer getOrderStatus() {
 		return orderStatus;
 	}
 
+	public void setOrderStatus(Integer orderStatus) {
+		this.orderStatus = orderStatus;
+	}
+
 	public LocalTime getOrderTime() {
 		return orderTime;
+	}
+
+	public void setOrderTime(LocalTime orderTime) {
+		this.orderTime = orderTime;
 	}
 
 	public Integer getRepId() {
 		return repId;
 	}
 
+	public void setRepId(Integer repId) {
+		this.repId = repId;
+	}
+
 	public LocalDate getRequireDate() {
 		return requireDate;
+	}
+
+	public void setRequireDate(LocalDate requireDate) {
+		this.requireDate = requireDate;
 	}
 
 	public LocalTime getRequireTime() {
 		return requireTime;
 	}
 
+	public void setRequireTime(LocalTime requireTime) {
+		this.requireTime = requireTime;
+	}
+
+	public LocalDate getCancelDate() {
+		return cancelDate;
+	}
+
+	public void setCancelDate(LocalDate cancelDate) {
+		this.cancelDate = cancelDate;
+	}
+
 	public String getBusinessName() {
 		return businessName;
+	}
+
+	public void setBusinessName(String businessName) {
+		this.businessName = businessName;
 	}
 
 	public String getCreator() {
 		return creator;
 	}
 
+	public void setCreator(String creator) {
+		this.creator = creator;
+	}
+
 	public String getRep() {
 		return rep;
 	}
+
+	public void setRep(String rep) {
+		this.rep = rep;
+	}
+
 }

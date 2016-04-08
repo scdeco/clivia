@@ -56,7 +56,6 @@ public class CliviaLibrary {
 		return result;
 	}
 	
-
 	public Map<String, Object> saveFileToLib(String type, MultipartFile file, String uploadBy){
 
 		Map<String, Object> result=new HashMap<String, Object>();
@@ -128,12 +127,10 @@ public class CliviaLibrary {
 	public List findListByIds(String type,String ids){
 		return getLibrary(type).findListByIds(ids);
 	}
-
-	public byte[] getBase64ByteArrayImage(String type,Integer id){
+	
+	public byte[] getByteArrayImage(String type,Integer id, boolean thumbnail, boolean base64){
 		
-		byte[] result=getLibrary(type).getByteArrayImage(id);
-		if(result!=null)
-			result=Base64.getEncoder().encode(result);
+		byte[] result=getLibrary(type).getByteArrayImage(id, thumbnail, base64);
 		return result;
 	}
 
@@ -297,6 +294,7 @@ public class CliviaLibrary {
 			BufferedImage bf=null;
 			Object dataItem=dao.findById(id);
 			if(dataItem!=null){
+
 				String fileName=(String)getFieldValue(dataItem,"fileName");
 				String filePath=(String)getFieldValue(dataItem,"filePath");
 				
@@ -313,31 +311,39 @@ public class CliviaLibrary {
 								break;
 						}
 				}
+				
 			}
 			return bf;
 		}		
 			
 		
-		public byte[] getByteArrayImage(Integer id){
+		public byte[] getByteArrayImage(Integer id,boolean thumbnail,boolean base64){
 			
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			byte[] result=null;
-			try {
-				BufferedImage bufferedImage=this.getBufferedImage(id);
-				ImageIO.write(bufferedImage, "jpg", baos );
-				baos.flush();
-				result=baos.toByteArray();
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-			}finally{
+			if(thumbnail){
+				Object dataItem=dao.findById(id);
+				if(dataItem!=null){
+					result=(byte[]) getFieldValue(dataItem,"thumbnail");
+				}
+			}else{
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				try {
-					baos.close();
+					BufferedImage bufferedImage=this.getBufferedImage(id);
+					ImageIO.write(bufferedImage, "jpg", baos );
+					baos.flush();
+					result=baos.toByteArray();
 				} catch (IOException e) {
 					e.printStackTrace();
+				}finally{
+					try {
+						baos.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
+				
 			}
-			return result;
+			return base64 && result!=null?  Base64.getEncoder().encode(result):result ;
 		}		
 		
 		public List findListByIds(String strIds){

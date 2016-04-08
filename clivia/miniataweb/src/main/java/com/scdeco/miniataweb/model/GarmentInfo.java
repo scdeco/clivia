@@ -61,6 +61,9 @@ public class GarmentInfo extends CliviaSuperModel{
 	@Column(name="Used")
 	private Boolean used=false;
 	
+	@Column(name="ImageId")
+	private Integer imageId;
+	
 	@Column(name="Remark",length=500)
 	private String  remark;
 
@@ -198,6 +201,14 @@ public class GarmentInfo extends CliviaSuperModel{
 
 	public void setUsed(Boolean used) {
 		this.used = used;
+	}
+
+	public Integer getImageId() {
+		return imageId;
+	}
+
+	public void setImageId(Integer imageId) {
+		this.imageId = imageId;
 	}
 
 	public String getRemark() {

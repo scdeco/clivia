@@ -40,7 +40,7 @@ orderApp.controller("contactItemCtrl",["$scope","$http","$stateParams","SO" ,fun
 
 	
 	$scope.registerDeletedItemFunction=function(dataItem){
-		SO.registerDeletedItem("contact",dataItem.id);
+		SO.registerDeletedItem("orderContact",dataItem.id);
 	}
 	
 	

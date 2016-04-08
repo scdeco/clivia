@@ -64,7 +64,7 @@ orderApp.controller("lineItemCtrl",["$scope","$state","SO",
 		        
 	//pass to garmentGird directive to register removed lineitem		        
 	$scope.registerDeletedItemFunction=function(dataItem){
-		SO.registerDeletedItem("lineItem",dataItem.id);
+		SO.registerDeletedItem("orderLineItem",dataItem.id);
 	}
 				
 }]); 

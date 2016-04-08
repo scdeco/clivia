@@ -6,7 +6,7 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/webapp"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/java"/>
-        <property name="context-root" value="miniataweb"/>
         <property name="java-output-path" value="/miniataweb/target/classes"/>
+        <property name="context-root" value="clivia"/>
     </wb-module>
 </project-modules>

@@ -4,9 +4,9 @@
 
 <ul kendo-context-menu k-options="gridContextMenuOptions">
        
-  	<li id="menuAdd">Add</li>
-  	<li id="menuInsert">Insert</li>
-  	<li id="menuDelete">Delete</li>
+  	<li name="menuAdd" id="menuAdd">Add</li>
+  	<li name="menuInsert" id="menuInsert">Insert</li>
+  	<li name="menuDelete" id="menuDelete">Delete</li>
 
 </ul>
 			

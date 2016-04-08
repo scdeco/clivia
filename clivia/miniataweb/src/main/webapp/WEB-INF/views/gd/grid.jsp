@@ -4,7 +4,7 @@
 
 	<div kendo-splitter="mainSplitter"  
 			k-orientation="'horozontal'"
-			k-panes="[{ collapsible: true, resizable: true, size: '300px'},
+			k-panes="[{ collapsible: true, resizable: true, size: '220px'},
             	      { collapsible: true, resizable: true}]"
             k-options="mainSplitterOptions"
 			style="height:630px;">

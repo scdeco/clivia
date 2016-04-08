@@ -53,8 +53,10 @@ public class OrderDao extends GenericMainItemDao<OrderClivia>{
 		if(isNewOrder){
 			Integer orderNumber=cliviaAutoNumberDao.getNextNumber("OrderNumber");
 			orderInfo.setOrderNumber(orderNumber.toString());
-			orderInfo.setOrderDate(LocalDate.now());
-			orderInfo.setOrderTime(LocalTime.now());
+			if(orderInfo.getOrderDate()==null){
+				orderInfo.setOrderDate(LocalDate.now());
+				orderInfo.setOrderTime(LocalTime.now());
+			}
 		}else{
 			super.removeDeletedItems(order);
 		}
@@ -69,6 +71,7 @@ public class OrderDao extends GenericMainItemDao<OrderClivia>{
 
 	}
 	
+
 	public OrderClivia getOrderByOrderNumber(String orderNumber) 
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
 		

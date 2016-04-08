@@ -20,6 +20,36 @@ directive('capitalize', function() {
 	   };
 }).
 
+directive('changeOnBlur', function() {
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function(scope, elm, attrs, ngModelCtrl) {
+            if (attrs.type === 'radio' || attrs.type === 'checkbox') 
+                return;
+
+            var expressionToCall = attrs.changeOnBlur;
+
+            var oldValue = null;
+            elm.bind('focus',function() {
+                scope.$apply(function() {
+                    oldValue = elm.val();
+                    console.log(oldValue);
+                });
+            })
+            elm.bind('blur', function() {
+                scope.$apply(function() {
+                    var newValue = elm.val();
+                    console.log(newValue);
+                    if (newValue !== oldValue){
+                        scope.$eval(expressionToCall);
+                    }
+                        //alert('changed ' + oldValue);
+                });         
+            });
+        }
+    };
+}).
 
 directive('checklistModel', ['$parse', '$compile', function($parse, $compile) {
 	  // contains
@@ -1591,7 +1621,7 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 			var showImageDetail=function(dataItem){
 				var imageId=dataItem.imageId;
 				if(imageId){
-					var url="../lib/image/getimage?id="+imageId;
+					var url="../lib/image/getimage?base64=true&id="+imageId;
 					util.getRemote(url).then(
 						function(data, status, headers, config) {
 						    	scope.previewOriginalImage=data;
@@ -1732,17 +1762,17 @@ directive('cliviaGrid',["cliviaGridWrapperFactory","cliviaDDS","util",function(c
 				target:'#'+scope.gridName,
 				select:function(e){
 				
-					switch(e.item.id){
-						case "menuAdd":
+					switch(e.item.textContent){
+						case "Add":
 							scope.setting.editing=true;
 							if(!gw.isEditing)
 								gw.enableEditing(true);
 							addRow(false);
 							break;
-						case "menuInsert":
+						case "Insert":
 							addRow(true);
 							break;
-						case "menuDelete":
+						case "Delete":
 							deleteRow();
 							break;
 					}

@@ -108,6 +108,15 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 			    	
 			    	if(scope.productForm.$dirty)
 			    		scope.dataSet.info.isDirty=true;
+			    	
+			    	var imageItems=scope.dataSet.imageItems;
+			    	if(imageItems.length>0){
+			    		var imageId=imageItems[0].imageId;
+			    		if(scope.dataSet.info.imageId!==imageId){
+			    			scope.dataSet.info.imageId=imageId;
+			    			scope.dataSet.info.isDirty=true;
+			    		}
+			    	}
 			    		
 			    	if(!scope.dataSet.info.id){
 			    		scope.dataSet.info.brandId=scope.currentSetting.brandId;

@@ -66,6 +66,7 @@
 		       		Threads:
 			       		<textarea ng-model="embMatcher.embCanvas.threadCodes" 
 			       				  ng-trim="true"
+			       				  change-on-blur="console.log('changed:'+embMatcher.embCanvas.threadCodes)"
 			       				  class="k-textbox" 
 			       				  style="width:100%;resize: vertical;"></textarea>
 			       				  

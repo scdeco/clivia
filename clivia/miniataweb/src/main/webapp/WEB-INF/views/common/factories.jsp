@@ -94,6 +94,21 @@ clivia.factory("util",["$http","$q",function($http,$q){
 			        o[p] = null;
 		},
 		
+		printUrl:function(url,data,preview){
+	 		this.getRemote(url,data).then(
+	 				function(html){
+	 				    var printWin = window.open('','');
+	 	 			    printWin.document.open();
+	 	 			    printWin.document.write(html);
+	 				    printWin.document.close();
+	 				    printWin.focus();
+	 				    if(!preview){
+	 					    printWin.print();
+	 					    printWin.close(); 
+	 				    }
+	 				});
+		},
+		
 		print:function(html,preview){
 			    var windowContent = '<!DOCTYPE html>';
 			    windowContent += '<html>'
@@ -511,7 +526,7 @@ clivia.factory("DataDictSet",["DataDict","util", function(DataDict,util){
 }]);
 //data dictionary set
 clivia.factory("cliviaDDS",["DataDictSet",function(DataDictSet){
-	var baseUrl="/miniataweb/";
+	var baseUrl="../";
 	var dicts=[{
 			name:"grid",
 			url:baseUrl+"data/gridInfo/sql",
@@ -549,7 +564,7 @@ clivia.factory("cliviaDDS",["DataDictSet",function(DataDictSet){
  		},{
 			name:"garment",
 			url:baseUrl+"data/generic/sql",
-			data:{select:"id,brandId,seasonId,styleNo,styleName,colourway,sizeRange,rrp,wsp",from:"garmentInfo",orderby:"seasonId,styleNo"},
+			data:{select:"id,brandId,seasonId,styleNo,styleName,colourway,sizeRange,rrp,wsp,imageId",from:"garmentInfo",orderby:"seasonId,styleNo"},
 			mode:"eager"
 		},{
 			name:"upc",
@@ -1101,7 +1116,18 @@ clivia.factory("GridWrapper",function(){
 				    		});
 				}
 			};
-		     
+
+		    GridWrapper.prototype.kendoDropDownListEditor=function(container,options,items){
+				if(items){
+				    $('<input class="grid-editor" data-bind="value:' + options.field + '"/>')
+				    	.appendTo(container)
+				    	.kendoDropDownList({
+					        autoBind: true,
+					        dataSource: {data:items}
+				    		});
+				}
+			};
+			
 			return GridWrapper;
 			
 }); /* end of GridWrapper */	
@@ -1417,27 +1443,13 @@ clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",f
 	
 	
 	GarmentGridWrapper.prototype.colourColumnEditor=function(container, options) {
-		if(thisGGW.reorderRowEnabled) return;
-		$('<input class="grid-editor"  data-bind="value:' + options.field + '"/>')
-	    	.appendTo(container)
-	    	.kendoComboBox({
-		        autoBind: true,
-		        dataSource: {
-		            data: thisGGW.dict.colourway
-		        }
-	    })
-	}
+ 		var items=thisGGW.dict.colourway;
+ 		thisGGW.kendoDropDownListEditor(container,options,items);
+ 	}
 
 	GarmentGridWrapper.prototype.sizeColumnEditor=function(container, options) {
-		if(thisGGW.reorderRowEnabled) return;
-	    $('<input class="grid-editor"  data-bind="value:' + options.field + '"/>')
-	    	.appendTo(container)
-	    	.kendoComboBox({
-		        autoBind: true,
-		        dataSource: {
-		            data: thisGGW.dict.sizeRange
-	        }
-	    })
+		var items=thisGGW.dict.sizeRange;
+		thisGGW.kendoDropDownListEditor(container,options,items);
 	}				    
 
 	GarmentGridWrapper.prototype.sizeQtyEditor=function(container, options) {
@@ -1754,10 +1766,15 @@ clivia.factory("AddressGridWrapper",["GridWrapper","cliviaDDS",function(GridWrap
 		        headerAttributes:{class:"gridLineNumberHeader"},
 		        width: 25,
 			}, {
-		         name: "address",
-		         field: "address",
-		         title: "Adddress",
+		         name: "addr1",
+		         field: "addr1",
+		         title: "Addr. Line 1",
 		         width: 200
+			}, {
+		         name: "addr2",
+		         field: "addr2",
+		         title: "Addr. Line 2",
+		         width: 120
 		     }, {
 		         name: "country",
 		         field: "country",
@@ -1775,13 +1792,18 @@ clivia.factory("AddressGridWrapper",["GridWrapper","cliviaDDS",function(GridWrap
 		         field: "city",
 		         title: "City",
 		         editor: thisGW.cityColumnEditor,
-		         width: 85,
+		         width: 90,
 		     }, {
 		         name: "postalCode",
 		         field: "postalCode",
 		         title: "Postal Code",
 		         width: 80,
 
+		     }, {
+		         name: "attn",
+		         field: "attn",
+		         title: "Attn.",
+		         width: 60,
 		     }, {
 		         name: "billing",
 		         field: "billing",
@@ -1910,16 +1932,54 @@ clivia.factory("ColumnGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapp
 		         name: "name",
 		         field: "name",
 		         title: "Name",
-		         width: 90
+		         width: 120
 		     }, {
 		         name: "title",
 		         field: "title",
 		         title: "Title",
-		         width: 100,
+		         width: 120,
 		     }, {
 		         name: "width",
 		         field: "width",
 		         title: "Width",
+		         width: 60,
+		         attributes:{style:"text-align:right;"},
+		     }, {
+		         name: "textAlignFixed",
+		         field: "textAlignFixed",
+		         title: "Header Align.",
+		         editor:thisGW.textAlignmentEditor,
+		         width: 90,
+		     }, {
+		         name: "textAlign",
+		         field: "textAlign",
+		         title: "Text Align.",
+		         editor:thisGW.textAlignmentEditor,
+		         width: 80,
+		     }, {
+		         name: "displayFormat",
+		         field: "displayFormat",
+		         title: "Format",
+		         width: 75,
+		     }, {
+		         name: "sortable",
+		         field: "sortable",
+		         title: "Sortable",
+		         width: 75,
+		     }, {
+		         name: "choosable",
+		         field: "choosable",
+		         title: "Choosable",
+		         width: 75,
+		     }, {
+		         name: "filterable",
+		         field: "filterable",
+		         title: "Filterable",
+		         width: 75,		     
+		     }, {
+		         name: "lockable",
+		         field: "lockable",
+		         title: "Lockable",
 		         width: 75,
 		     }, {
 		         name: "remark",
@@ -1939,7 +1999,11 @@ clivia.factory("ColumnGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapp
 	gw.prototype.setColumns=function(){
 	 	this.gridColumns=getColumns();
 	}	
-
+	
+	gw.prototype.textAlignmentEditor=function(container, options) {
+ 		var items=["left","center","right",""];
+ 		thisGW.kendoDropDownListEditor(container,options,items);
+ 	}
 	return gw;
 }]); //end of JournalGridWrapper
 

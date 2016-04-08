@@ -18,8 +18,14 @@ public class CompanyAddress  extends CliviaSuperModel{
 	@Column(name="LineNo")
 	private Integer lineNo;
 	
-	@Column(name="Address",length=100)
-	private String address;
+	@Column(name="Addr1",length=100)
+	private String addr1;
+	
+	@Column(name="Addr2",length=100)
+	private String addr2;
+
+	@Column(name="Attn",length=100)
+	private String attn;
 	
 	@Column(name="City",length=30)
 	private String city;
@@ -69,12 +75,28 @@ public class CompanyAddress  extends CliviaSuperModel{
 		this.lineNo = lineNo;
 	}
 
-	public String getAddress() {
-		return address;
+	public String getAddr1() {
+		return addr1;
 	}
 
-	public void setAddress(String address) {
-		this.address = address;
+	public void setAddr1(String addr1) {
+		this.addr1 = addr1;
+	}
+
+	public String getAddr2() {
+		return addr2;
+	}
+
+	public void setAddr2(String addr2) {
+		this.addr2 = addr2;
+	}
+
+	public String getAttn() {
+		return attn;
+	}
+
+	public void setAttn(String attn) {
+		this.attn = attn;
 	}
 
 	public String getCity() {

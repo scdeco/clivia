@@ -7,35 +7,43 @@
 		
 		registeredItemTypes:[{
 				id:1,
-				name:"billItem",	
+				name:"billItem",
+				model:"orderBillItem",
 				hasDetail:false
 			},{
 				id:2,
 				name:"lineItem",
+				model:"orderLineItem",
 				hasDetail:false
 			},{
 				id:3,
 				name:"designItem",	
+				model:"orderDesign",
 				hasDetail:false
 			},{
 				id:4,
-				name:"imageItem",	
+				name:"imageItem",
+				model:"orderImage",
 				hasDetail:false
 			},{
 				id:5,
 				name:"fileItem",
+				model:"orderFile",
 				hasDetail:false
 			},{
 				id:6,
-				name:"emailItem",	
+				name:"emailItem",
+				model:"orderEmail",
 				hasDetail:false
 			},{
 				id:7,
-				name:"contactItem",	
+				name:"contactItem",
+				model:"orderContact",
 				hasDetail:false
 			},{
 				id:8,
-				name:"addressItem",	
+				name:"addressItem",
+				model:"orderAddress",
 				hasDetail:false				
 			}],
 			
