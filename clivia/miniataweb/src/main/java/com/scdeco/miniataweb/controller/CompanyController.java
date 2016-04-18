@@ -28,10 +28,11 @@ public class CompanyController {
 	}
 
 	@RequestMapping(value="get-company",method=RequestMethod.GET)
-	public @ResponseBody  Company getCompany(@RequestParam("id") Integer id) 
+	public @ResponseBody  Company getCompany(@RequestParam("id") Integer id,
+											 @RequestParam(value="list",required=false) String[] list) 
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
 		
-		return companyDao.getById(id);
+		return companyDao.getById(id,list);
 	}
 
 	@RequestMapping(value="save-company",method=RequestMethod.POST)

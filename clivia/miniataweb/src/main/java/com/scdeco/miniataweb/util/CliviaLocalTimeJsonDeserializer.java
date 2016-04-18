@@ -25,7 +25,10 @@ public class CliviaLocalTimeJsonDeserializer extends JsonDeserializer<LocalTime>
     	ObjectCodec oc = jp.getCodec();
         TextNode node = (TextNode) oc.readTree(jp);
         String str = node.textValue();
- 
+        
+        if(CliviaUtils.isBlank(str))	
+        	return null;
+        
         return LocalTime.parse(str, str.contains("M")?formatter1:formatter2);
     }
 }

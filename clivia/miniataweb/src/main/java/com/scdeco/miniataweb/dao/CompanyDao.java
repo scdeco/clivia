@@ -18,7 +18,8 @@ public class CompanyDao extends GenericMainItemDao<Company>{
 		super.infoDaoName="companyInfo";
 
 		super.mainIdFieldName="companyId";
-		
 	}
+	
+	
 	
 }

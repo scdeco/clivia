@@ -123,5 +123,6 @@
 				spec:"",
 				itemType: "shippingItem"
 			}],
+			
 	});
 </script>

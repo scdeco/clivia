@@ -50,9 +50,15 @@
 							ng-model="dataSet.info.pageSize" k-options="pageSizeOptions" />
 					</li>
 					<li> 
+						<label for="showLineNo">
+		        				<input type="checkbox" name="editable"   
+									ng-model="dataSet.info.showLineNo"/>Show Line#
+						</label>
+					</li>					
+					<li> 
 						<label for="editable">
 		        				<input type="checkbox" name="editable"   
-									ng-model="dataSet.info.editable"/>editable
+									ng-model="dataSet.info.editable"/>Editable
 						</label>
 					</li>					
 					<li> 

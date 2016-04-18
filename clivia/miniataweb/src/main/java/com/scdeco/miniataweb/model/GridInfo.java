@@ -35,6 +35,9 @@ public class GridInfo extends CliviaSuperModel{
 	
 	@Column(name="IsQuery")
 	private Boolean IsQuery=true;
+
+	@Column(name = "ShowLineNo")
+	private Boolean showLineNo=true;
 	
 	@Column(name = "Sortable")
 	private Boolean sortable=true;
@@ -119,6 +122,14 @@ public class GridInfo extends CliviaSuperModel{
 
 	public void setIsQuery(Boolean isQuery) {
 		IsQuery = isQuery;
+	}
+
+	public Boolean getShowLineNo() {
+		return showLineNo;
+	}
+
+	public void setShowLineNo(Boolean showLineNo) {
+		this.showLineNo = showLineNo;
 	}
 
 	public Boolean getSortable() {

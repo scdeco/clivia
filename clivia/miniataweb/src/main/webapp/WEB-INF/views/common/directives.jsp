@@ -42,7 +42,7 @@ directive('changeOnBlur', function() {
                     var newValue = elm.val();
                     console.log(newValue);
                     if (newValue !== oldValue){
-                        scope.$eval(expressionToCall);
+                        scope.$eval(expressionToCall+"('"+oldValue+"','"+newValue+"')");
                     }
                         //alert('changed ' + oldValue);
                 });         
@@ -193,7 +193,7 @@ directive('checklistModel', ['$parse', '$compile', function($parse, $compile) {
 	}]).
 
 directive("mapCombobox",function(){
-	var template='<input kendo-combobox  k-options="comboBoxOptions" ></input>'; 
+	var template='<input kendo-combobox="comboBox"  k-options="comboBoxOptions" ></input>'; 
 	return {
 		restrict:"EA",
 		replace:true,
@@ -205,6 +205,7 @@ directive("mapCombobox",function(){
 		    		filters: [{ field: "isCsr", operator: "eq", value: true}]
 		  		}, */
 			cOptions:'=',		//{name: dataTextField:, dataValueField:, url: ,filter:,dict:}
+		  	
 		},
 		template:template,
 		
@@ -229,9 +230,25 @@ directive("mapCombobox",function(){
 					.then(function(gotItem){
 						if(gotItem){
 							scope.dataSource.add(gotItem);
+ 							scope.valueChanged(value);
 							//scope.kendoComboBox.text(gotItem[scope.cOptions.dataTextField]);
 						}
 					});
+			}
+			
+			scope.getText=function(){
+				return scope.text;
+			}
+			
+			scope.valueChanged=function(newValue){
+				if(scope.cOptions.onValueChanged){
+					scope.value=newValue;
+					
+					var di=scope.dataSource.get(newValue);
+					scope.text=di?di[scope.cOptions.dataTextField]:null;
+					
+		    		scope.cOptions.onValueChanged(scope); 
+				}
 			}
 			
 			scope.$watch(
@@ -239,13 +256,18 @@ directive("mapCombobox",function(){
 						return controller.$modelValue
 						},
 					function(newValue,oldValue){
-						if (newValue!==oldValue && !!newValue)
-	 						var di=scope.dataSource.get(newValue);
-	 						if(!di){
-	 							addItem(newValue);
-		 					}
+						if (newValue!=oldValue && (newValue || oldValue)){
+							if(!!newValue){
+		 						var di=scope.dataSource.get(newValue);
+		 						if(!di){
+		 							addItem(newValue);
+			 					}else{
+		 							scope.valueChanged(newValue);
+		 						}
+	 						}
 						}
-	 				);
+						
+					});
 			
 		},
 		
@@ -324,7 +346,8 @@ directive("mapCombobox",function(){
 	                //height: 400,		
 	                cascade:function(e){
 	                	var i=0;
-	                }
+	                },
+
 				}
 		}]
 		
@@ -356,7 +379,7 @@ directive("textCombobox",function(){
 							return controller.$modelValue
 						},
 					function(newValue,oldValue){
-							if (newValue!==oldValue){
+							if (newValue!==oldValue && (newValue || oldValue)){
 								if(!!newValue){
 									var i=0;
 								}else{
@@ -832,7 +855,8 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 					        resizable: true,
 						//events:		 
 					       	dataBinding: function(e) {
-					       		console.log("event binding:"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
+					       		//console.log("event binding:"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
+					       		console.log("event binding:");
 					       	},
 					       	
 					       	dataBound:function(e){
@@ -1829,10 +1853,12 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 			scope:{
 				cName:'@queryGrid',
 				cGridNo:'=',
-				cGridData:'=',
+				cGridData:'=',	//{info: , columnItems, deleteds:}
+				cOptions:'=',
+				
 			},
 			
-			template:'<div kendo-grid="cName" k-options="query.gridOptions" k-rebind="query.rebind" ></div>',
+			template:'<div kendo-grid="queryGrid" k-options="query.gridOptions" k-rebind="query.rebind" ></div>',
 			link:function(scope,element,attrs){	
 				scope.gridName=scope.cName;
 				if(scope.cName)
@@ -1852,7 +1878,7 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 								}
 							}
 						);
-				    }else if(scope.cGridData){
+				    }else if(scope.cGridData){	//used in grid define: gd-script.jsp to preview grid
 				    	scope.dataSet=scope.cGridData;
 						scope.query.gridOptions=getGridOptions();
 						scope.query.rebind++;	
@@ -1910,13 +1936,13 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 				
 				var getColumns=function(){
 
-					var columns=[{
+					var columns=scope.dataSet.info.showLineNo?[{
 				        name:"lineNumber",
 				        title: "#",
 				        attributes:{class:"gridLineNumber"},
 				        headerAttributes:{class:"gridLineNumberHeader"},
 				        width: 35,
-					}];
+					}]:[];
 
 					columnItems=scope.dataSet.columnItems;
 					
@@ -1928,6 +1954,29 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 						}
 						if(column.width>=0)
 							col.width=column.width;
+						
+						if(column.displayFormat)
+							col.format=column.displayFormat;
+						
+						if(column.filterable===false)
+							col.filterable=false;
+						
+						if(column.filterable){
+							col.filterable=column.filterable===true?true:JSON.parse(column.filterable);
+						}
+						
+						if(column.hidden)
+							col.hidden=true;
+						
+						if(column.locked)
+							col.locked=true;
+						
+						if(column.textAlign)
+							col.attributes={style:"text-align:"+column.textAlign+";"};
+
+						if(column.textAlignFixed)
+							col.headerAttributes={style:"text-align:"+column.textAlign+";"};
+						
 						
 						columns.push(col);
 					}
@@ -1981,6 +2030,20 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 				}
 			});
 			
+			var onDoubleClick=function(e){
+				$scope.cOptions.doubleClickEvent.call($scope.queryGrid,e);
+			}
+			
+			if($scope.cOptions && $scope.cOptions.doubleClickEvent)
+				$scope.$on("kendoWidgetCreated", function(event, widget){
+					if (widget ===$scope.queryGrid){
+						var self=widget;					
+						widget.bind("dataBound",function(e){
+							console.log("double click 1");
+							this.tbody.find("tr").dblclick(onDoubleClick);
+						});
+					}
+				});
 			
 		}]
 	}

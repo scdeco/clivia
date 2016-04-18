@@ -67,22 +67,22 @@ public class OrderInfo extends CliviaSuperModel{
 	@Column(name="OrderTime")
 	private LocalTime orderTime;
 
-	@Column(name="CreateBy")
-	private Integer createBy;
-
 	@JsonSerialize(using=CliviaLocalDateJsonSerializer.class)
 	@JsonDeserialize(using = CliviaLocalDateJsonDeserializer.class)
 	@Column(name="FinishDate")
 	private LocalDate finishDate;
 	
-	@Column(name="FinishBy")
-	private Integer finishBy;
-	
-	
 	@JsonSerialize(using=CliviaLocalDateJsonSerializer.class)
 	@JsonDeserialize(using = CliviaLocalDateJsonDeserializer.class)
 	@Column(name="InvoiceDate")
 	private LocalDate invoiceDate;
+	
+	
+	@Column(name="CreateBy")
+	private Integer createBy;
+
+	@Column(name="FinishBy")
+	private Integer finishBy;
 	
 	@Column(name="InvoiceBy")
 	private Integer invoiceBy;
@@ -90,8 +90,14 @@ public class OrderInfo extends CliviaSuperModel{
 	@Column(name="RepId")
 	private Integer repId;
 	
-	@Column(name="Remark",length=255)
+	@Column(name="Term",length=50)
+	private String term;
+	
+	@Column(name="Remark",length=1000)
 	private String remark;
+
+	@Column(name="Note",length=2000)
+	private String note;
 
 	public int getId() {
 		return id;
@@ -237,6 +243,14 @@ public class OrderInfo extends CliviaSuperModel{
 		this.repId = repId;
 	}
 
+	public String getTerm() {
+		return term;
+	}
+
+	public void setTerm(String term) {
+		this.term = term;
+	}
+
 	public String getRemark() {
 		return remark;
 	}
@@ -244,6 +258,13 @@ public class OrderInfo extends CliviaSuperModel{
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-	
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
 
 }

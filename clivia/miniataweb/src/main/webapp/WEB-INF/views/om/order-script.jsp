@@ -1,7 +1,7 @@
 <script>
 	'user strict';
 	var orderApp = angular.module("orderApp",
-			[ "ui.router", "kendo.directives","clivia" ]);
+			[ "ui.router", "kendo.directives","clivia","crmApp"]);
  //SO
 orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",function($http, $q, $state,consts,cliviaDDS,util){
 	var _order={
@@ -18,7 +18,9 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 					addresses:[],
 					buyerDataSource:new kendo.data.DataSource({data:[]}),					
 				},
-				
+			
+			repName:"",
+			csrName:"",
 			setting:{
 				user:{
 					id:1000,
@@ -99,6 +101,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
     }
     
     _order.clearInstance=function(){
+    	instance.isDirty=false;
     	instance.tmpId=0;
     	instance.currentItemId=0;
     	instance.itemButtons.splice(0,instance.itemButtons.length);
@@ -117,69 +120,60 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 	}
 
     _order.clear=function(){
+    	_order.repName="";
+    	_order.csrName="";
     	_order.clearDataSet();
     	_order.clearDicts();
     	_order.clearInstance();
     }
     
-	
+	_order.getEmployee=function(id){
+		
+	}
     _order.getCompany=function(){
     	var companyId=_order.dataSet.info.customerId;
 		if(!!companyId && _order.company.info.companyId!==companyId){
-			var url="../data/companyInfoDao/getitem?name=id&value="+companyId;
-			$http.get(url).
-				success(function(data, status, headers, config) {
-					if(data){
-						_order.company.info=data;
-						if(data.repId && !_order.dataSet.info.id && !_order.dataSet.info.repId){
-							_order.dataSet.info.repId=data.repId;
-						}
-					}
-				}).
-				error(function(data, status, headers, config) {
-				});
 			
-			url="../data/companyContactDao/call/findListBySuperId?param=s:companyId;i:"+companyId;
-
-			_order.company.contacts=[];
+			var url="../crm/get-company?id="+companyId+"&list=contactItems,addressItems";
 			$http.get(url).
 				success(function(data, status, headers, config) {
 					if(data){
-						_order.company.contacts=data;
+						_order.company.info=data.info;
+						var cinfo=_order.company.info;
+						var oinfo=_order.dataSet.info;
+						
+						if(cinfo.repId && !oinfo.id && !oinfo.repId){
+							oinfo.repId=cinfo.repId;
+						}
+						
+						if(!oinfo.term)
+							oinfo.term=cinfo.term;
+						
+						_order.company.contacts=data.contactItems;
 						var buyers=[];
-						for(var i=0;i<data.length;i++){
-							buyers.push(data[i].fullName)
+						for(var i=0;i<data.contactItems.length;i++){
+							buyers.push(data.contactItems[i].fullName)
 						}
 						
 						//PROBABEALY A KENDO'S BUG HERE
 						//AFTER SET DATA TO DATASOURCE, THE VALUE OF THE COMBOBOX WAS SET TO "" (EMPTY STRING),
 						//IF THE COMBOBOX IS CLICKED ONCE(SHOW UP THE DOPDOWN LSIT), THERE IS NO SUCH PROBLEM,
 						//SO WE KEEP THE VALUE OF BUYER AND SET IT BACK AFTER CHANGING DATA OF DATASOURCE  
-						var temp=_order.dataSet.info.buyer;
+						var temp=oinfo.buyer;
 						_order.company.buyerDataSource.data(buyers);
-						if(_order.dataSet.info.buyer!==temp)
-							_order.dataSet.info.buyer=temp;
+						if(oinfo.buyer!==temp)
+							oinfo.buyer=temp;
 						
 						//auto set the first contact as buyer if there's only one contact 
  						//if(data.length>0 && !_order.dataSet.info.id){
 						//	_order.dataSet.info.buyer=data[0].fullName;
 						//}
+						
+						_order.company.addresses=data.addressItems;
 					}
 				}).
 				error(function(data, status, headers, config) {
 				});
-
-			url="../data/companyAddressDao/call/findListBySuperId?param=s:companyId;i:"+companyId;
-			_order.company.addresses=[];
-			$http.get(url).
-				success(function(data, status, headers, config) {
-					if(data){
-						_order.company.addresses=data;
-					}
-				}).
-				error(function(data, status, headers, config) {
-				});
-			
 		}		
     }
 	
@@ -207,6 +201,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				dataSet.upcItems=data.upcItems;
 			
 		}
+		
 	}
 	
 	
@@ -214,28 +209,50 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		return !dataSet.info.id;
 	}
 
+	_order.isDirty=function(){
+		if(dataSet.info.isDirty)
+			return true;
+		
+		if(dataSet.deleteds.length>0)
+			return true;
+		
+		for(var i=0;i<setting.registeredItemTypes.length;i++){
+			var dis=dataSet[setting.registeredItemTypes[i].name+"s"];
+			
+			if(dis){
+		    	for(var j=0;j<dis.length;j++){
+		    		if(dis[i].isDirty)
+		    			return true;
+		    	}
+				
+			}
+		}
+		
+		return false;
+	}
 	
 	_order.repeat=function(){
-		
-		var customerId=dataSet.info.customerId,
-			buyer=dataSet.info.buyer,
-			orderName=dataSet.info.orderName;
-			repId=dataSet.info.repId;
-		
-		util.clearProperties(dataSet.info);	
-		
-		dataSet.info.customerId=customerId,
-		dataSet.info.buyer=buyer;
-		dataSet.info.orderName=orderName;
-		dataSet.info.repId=repId;
+		var info=dataSet.info;
+		info.id=null;
+		info.orderNumber="--";
+		info.customerPO=null;
+		info.finishDate=null;
+		info.invoiceDate=null;
+		info.isDirty=true;
+		info.createBy=null;
+		info.finishBy=null;
+		info.invoiceBy=null;
 		
 		var mapOrderItemId={};
 		
-		for(var i=0,orderItem,orderItemId;i<dataSet.items.length;i++){
-			orderItem=dataSet.items[i];
+		var items=dataSet.items;
+		
+		for(var i=0,orderItem,orderItemId;i<items.length;i++){
+			orderItem=items[i];
 			orderItemId=String(orderItem.id);
 			orderItem.id= _order.getTmpId();
 			orderItem.orderId=null;
+			orderItem.isDirty=true;
 			mapOrderItemId[orderItemId]=orderItem.id;
 		}
 		
@@ -248,18 +265,19 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		var itemTypes=_order.setting.registeredItemTypes;
 		for(var i=0;i<itemTypes.length;i++){
 			var dt=itemTypes[i].name+"s";
-			var dataItems=dataSet[dt];
-			if(dataItems){
-		    	for(var i=0,di;i<dataItems.length;i++){
-		    		di=dataItems[i];
+			var dis=dataSet[dt];
+			if(dis){
+		    	for(var j=0,di;j<dis.length;j++){
+		    		di=dis[j];
 		    		di.id=null;
 		    		di.orderId=null;
 		    		di.orderItemId=mapOrderItemId[String(di.orderItemId)];
+		    		di.isDirty=true;
 		    	}
 			}
 		}
-
-		_order.deleteds=[];		
+		
+		dataSet.upcItems=[];
 
 	}
 	
@@ -483,6 +501,22 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		}
 	}
 	
+	_order.setDiscount=function(billOrderItem,discount){
+		if(!billOrderItem) return;
+		if(billOrderItem.typeId!==1) return;	//not a billItem	
+		
+		var billItems=dataSet.billItems;
+		
+		for(var i=0,item;i<billItems.length;i++){
+			item=billItems[i];
+			if(item.orderItemId===billOrderItem.id){
+				item.discount=discount;
+				item.orderPrice=(discount>0 && discount<1)?item.listPrice*(1-discount):item.listPrice;
+				item.Amt=item.orderQty*item.orderPrice;
+			}
+		}
+	}
+	
 	_order.generateBillableItems=function(billOrderItem){
 		if(!billOrderItem) return;
 		if(billOrderItem.typeId!==1) return;	//not a billItem	
@@ -494,7 +528,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		var dictGarment=_order.dds.garment;
 		
 		var useWsp=true;
-		var discount=0.20;
+		var discount=billOrderItem.spec;
 		
 		for(var i=0,orderItem;i<orderItems.length;i++){
 			orderItem=orderItems[i];
@@ -520,6 +554,9 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 								var garment=dictGarment.getGarmentById(lineItem.garmentId);
 								if(garment){
 									var listPrice=useWsp?garment.wsp:garment.rrp;
+									var orderPrice=(discount>0 && discount<1)?listPrice*(1-discount):listPrice;
+										if(orderPrice)
+											orderPrice.toFixed(2);
 									billableItem={
 											orderId:orderId,
 											orderItemId:billOrderItem.id,											
@@ -532,7 +569,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 											orderQty:lineItem.quantity,
 											listPrice:listPrice,
 											discount:discount,
-											orderPrice:(discount>0 && discount<1)?listPrice*(1-discount):listPrice,
+											orderPrice:orderPrice,
 											orderAmt:0,
 											isDirty:true,
 										}
@@ -586,7 +623,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				billableItem.orderAmt=billableItem.orderQty*billableItem.orderPrice;
 				billItem=billableItem;
 				billItem.isDirty=true;
-				newAddBillItems.push(billItem);
+				newAddBillItems.unshift(billItem);
 			}
 		}
 		
@@ -643,16 +680,26 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  	}
 
  	var createContactPrintModel=function(){
- 		var contact={};
  		var companyContacts=_order.company.contacts;
 		var buyer=_order.dataSet.info.buyer;
+		
+		var contact={
+					name:buyer?buyer:"",
+					phone:"",
+					email:""
+			}
+		
  		var orderContacts=[];
  		//change contactItems from ObservableArray to Array
  		//ObservableArray dosen't have a concat method,
  		//orderContacts must prior to companyContacts
  		for(var i=0,c;i<_order.dataSet.contactItems.length;i++){
  			c=_order.dataSet.contactItems[i];
- 			orderContacts.push({fullName:c.fullName?c.fullName:c.firstName+" "+c.lastName,phone:c.phone,email:c.email});
+ 			orderContacts.push({
+ 					 fullName:c.fullName?c.fullName:((c.firstName?c.firstName+" ":"")+(c.lastName?c.lastName:"")),
+ 				     phone:c.phone?c.phone:"",
+ 				     email:c.email?c.email:""
+ 				   });
  		}
 		var contacts=orderContacts.concat(companyContacts);
 		
@@ -661,8 +708,10 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  		if(contacts.length>0){
  			var foundIndex=-1;
  			if(buyer){
-	 	 		for(var i=0;i<contacts.length;i++){
-	 	 			if(contacts[i].fullName===buyer)
+ 				buyer=buyer.trim().toUpperCase();
+	 	 		for(var i=0,f;i<contacts.length;i++){
+	 	 			f=contacts[i].fullName.trim().toUpperCase();
+	 	 			if(f===buyer)
 	 	 				foundIndex=i;
 	 	 				break;
 	 	 		}
@@ -676,13 +725,12 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  			}
  			
  			if(foundIndex>=0){
- 	 			contact.name=contacts[foundIndex].fullName;
- 	 			contact.phone=contacts[foundIndex].phone;
- 	 			contact.email=contacts[foundIndex].email;
- 			}else{
- 	 			contact.name=buyer;
- 	 			contact.phone="";
- 	 			contact.email="";
+ 				var c=contacts[foundIndex];
+ 				contact={
+ 	 					 name:c.fullName?c.fullName:((c.firstName?c.firstName+" ":"")+(c.lastName?c.lastName:"")),
+	 				     phone:c.phone?c.phone:"",
+	 				     email:c.email?c.email:""
+	 				   }
  			}
  		}
 		return contact;
@@ -746,10 +794,10 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  					orderName:info.orderName,
  					orderDate:info.orderDate,
  					poNo:info.customerPO,
- 					rep:"",			//info.repName,
- 					csr:"",
+ 					rep:_order.repName,
+ 					csr:_order.csrName,
  					company:company.info.businessName,
- 					terms:company.info.term,
+ 					terms:info.term,
  					shipDate:info.requireDate,
  					cancelDate:info.cancelDate, 			//info.cancelDate,
  					remark:info.remark,
@@ -760,10 +808,15 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  		model.info.contact=createContactPrintModel();
 		model.info.billTo=createAddressPrintModel(true);
 		model.info.shipTo=createAddressPrintModel(false);
+		
+		model.showDiscount=false;
  		
 		var totalQty=0,totalAmt=0;
  		for(var i=0,bi,h,p;i<billItems.length;i++){
  			bi=billItems[i];
+
+ 			if(bi.discount>0)
+ 					model.showDiscount=true;
  			
  			totalAmt+=bi.orderAmt?bi.orderAmt:0;
  			totalQty+=bi.orderQty?bi.orderQty:0;
@@ -773,16 +826,21 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  					itemNo:bi.itemNumber?bi.itemNumber:"",
  					desc:bi.description?bi.description:"",
  					qty:bi.orderQty?kendo.toString(bi.orderQty,"##,#"):"",
+ 					listPrice:bi.listPrice?kendo.toString(bi.listPrice, "0.00"):"",	
+ 					discount:bi.discount?kendo.toString(bi.discount,"p0"):"",
  					price:bi.orderPrice?kendo.toString(bi.orderPrice, "0.00"):"",
  					amt:bi.orderAmt?kendo.toString(bi.orderAmt, "c"):"",
  				};
  				if(bi.itemTypeId===2){		//lineItem
 					var styleModel=_order.createStyleGridModel(parseInt(bi.billingKey),true);	//show main color only
 					if(styleModel){
-						mbi.imageId=styleModel.garment.imageId;
+						/* mbi.imageId=styleModel.garment.imageId; */
 						mbi.data=styleModel.data;
 					}
 				} 				
+ 				
+ 				if(bi.discount>0)
+ 					model.showDiscount=true;
  				
  				model.items.push(mbi);
  				
@@ -822,7 +880,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			colourIndex[colours[i]]=i;
 			data.push(row);
 		}
-		var idxColourQty=sizes.length+1;
+		var idxLineQty=sizes.length+1;
 		
 		var lineItems=_order.dataSet.lineItems;
 		for(var i=0,r,lineItem,row;i<lineItems.length;i++){
@@ -837,7 +895,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 						if(qty){
 							k=sizes.indexOf(sizeFields[j])+1;	//first is colour column
 							row[k]=row[k]?row[k]+qty:qty;
-							row[idxColourQty]=row[idxColourQty]?row[idxColourQty]+qty:qty;
+							row[idxLineQty]=row[idxLineQty]?row[idxLineQty]+qty:qty;
 						}
 					}
 				}
@@ -852,9 +910,15 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				r[0]=c[0];
 			}
 		}
+		
+		for(var i=data.length-1,row;i>=0;i--){
+			row=data[i];
+			if(!row[idxLineQty])
+				data.splice(i,1);
+		}
 
 		var header=new Array(sizes.length+2);
-		header[0]="Color";
+		header[0]="";			   // "Main Color";
 		for(var i=0;i<sizes.length;i++)
 			header[i+1]=sizes[i];
 		header[i+1]="Line Qty";
@@ -978,7 +1042,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				}
 			}else{
 				if(orderUpc.id){
-					_order.registerDeletedItem("upc",orderUpc.id);
+					_order.registerDeletedItem("orderUpc",orderUpc.id);
 				}
 				orderUpcs.splice(i-1,1);
 			}

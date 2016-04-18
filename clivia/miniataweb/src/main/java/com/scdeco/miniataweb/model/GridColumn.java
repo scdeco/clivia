@@ -30,8 +30,8 @@ public class GridColumn extends CliviaSuperModel{
 	@Column(name="Width")
 	private int width;
 	
-	@Column(name="Visible")
-	private Boolean visible;
+	@Column(name="Hidden")
+	private Boolean hidden;
 	
 	@Column(name="ColEditable")
 	private Boolean colEditable;	//editable is used by kendo model.editable, so editable can not be used here
@@ -42,8 +42,8 @@ public class GridColumn extends CliviaSuperModel{
 	@Column(name="Sortable")
 	private Boolean sortable;
 	
-	@Column(name="Filterable")
-	private Boolean filterable;
+	@Column(name="Filterable",length=50)
+	private String filterable;
 	
 	@Column(name="Locked")
 	private Boolean locked;
@@ -120,12 +120,12 @@ public class GridColumn extends CliviaSuperModel{
 		this.width = width;
 	}
 
-	public Boolean getVisible() {
-		return visible;
+	public Boolean getHidden() {
+		return hidden;
 	}
 
-	public void setVisible(Boolean visible) {
-		this.visible = visible;
+	public void setHidden(Boolean hidden) {
+		this.hidden = hidden;
 	}
 
 	public Boolean getColEditable() {
@@ -152,11 +152,11 @@ public class GridColumn extends CliviaSuperModel{
 		this.sortable = sortable;
 	}
 
-	public Boolean getFilterable() {
+	public String getFilterable() {
 		return filterable;
 	}
 
-	public void setFilterable(Boolean filterable) {
+	public void setFilterable(String filterable) {
 		this.filterable = filterable;
 	}
 

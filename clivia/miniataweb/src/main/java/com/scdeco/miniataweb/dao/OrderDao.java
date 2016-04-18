@@ -96,6 +96,25 @@ public class OrderDao extends GenericMainItemDao<OrderClivia>{
 
 		return order;
 	}
+
+	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
+	public void deleteOrder(String orderNumber) 
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException {
+		
+		OrderInfo orderInfo=orderInfoDao.findByOrderNumber(orderNumber);
+		if(orderInfo!=null)
+			deleteOrder(orderInfo.getId());
+	}
+	
+	
+	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
+	public void deleteOrder(int id) 
+					throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
+		OrderClivia order=getOrderByOrderId(id);
+		if(order.getInfo()!=null)
+			deleteOrder(order);
+	}
+	
 	
 	//not test yet
 	@Transactional(propagation = Propagation.REQUIRED, readOnly=false)
@@ -106,6 +125,7 @@ public class OrderDao extends GenericMainItemDao<OrderClivia>{
 		
 		super.delete(order);
 	}
+	
 	
 	private void setMainId(OrderClivia order) 
 					throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{

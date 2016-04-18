@@ -8,7 +8,7 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 	var searchTemplate='Select:<map-combobox  style="width:300px;"  c-options="search.options" ng-model="search.companyId"> </map-combobox>'+
 	'<span ng-click="getCompany()" class="k-icon k-i-search"></span>';
 
-	var baseUrl="";	
+	var baseUrl="../crm/";	
 
 	var directive={
 			restrict:'EA',
@@ -16,7 +16,7 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 			scope:{
 				cName:'@company',
 				},
-			templateUrl:'company',
+			templateUrl:baseUrl+'company',
 			
 			link:function(scope){
 
@@ -66,7 +66,7 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 			    	if(!validCompany()) return;
 					var url=baseUrl+"save-company";
 					
-					if(scope.companyForm.$dirty)
+					if(scope.companyForm.$dirty||scope.instructionsForm.$dirty)
 						scope.dataSet.info.isDirty=true;
 
 					
@@ -99,6 +99,7 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 					}
 					
 					scope.companyForm.$setPristine();
+					scope.instructionsForm.$setPristine();
 				}
 				
 			 	var validCompany=function(){
@@ -218,7 +219,7 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 				}
 				
 				$scope.termOptions={
-						dataSource:["Prepaid","Net 15 Days","Net 30 Days","Net 45 Days","Net 60 Days","2%/10/N30","2%/10/N45","2%/10/N60"],
+						dataSource:util.getTerms()
 				}
 				
 				$scope.mainSplitterOptions={
@@ -283,15 +284,15 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 				}
 				
 				$scope.registerDeletedContactItemFunction=function(dataItem){
-					registerDeletedItem("contact",dataItem.id);
+					registerDeletedItem("companyContact",dataItem.id);
 				}				
 
 				$scope.registerDeletedAddressItemFunction=function(dataItem){
-					registerDeletedItem("address",dataItem.id);
+					registerDeletedItem("companyAddress",dataItem.id);
 				}				
 
 				$scope.registerDeletedJournalItemFunction=function(dataItem){
-					registerDeletedItem("journal",dataItem.id);
+					registerDeletedItem("companyJournal",dataItem.id);
 				}				
 			}]};
 	

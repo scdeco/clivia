@@ -8,8 +8,14 @@
 				style="height: 800px; width: 100%;">    
 				
 		<div style="margin:6px;"><!-- top pane-->
-		
-			<label style="margin-left:40px;">Total:&nbsp;{{getTotalAmount()}}</label>
+			<label style="margin-left:40px;">Discount:&nbsp;
+				<input kendo-numerictextbox name="discount" style="width:60px;"
+					change-on-blur="setDiscount" 
+					ng-model="orderItem.spec" 
+					k-options="discountOptions"/> Off
+			</label>
+			
+			<label style="margin-left:40px;">Total Amount:&nbsp;{{getTotalAmount()}}</label>
 				
 	    </div> <!-- end of top pane-->
     

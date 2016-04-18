@@ -19,7 +19,8 @@ public class CliviaLocalDateJsonDeserializer extends JsonDeserializer<LocalDate>
     	ObjectCodec oc = jp.getCodec();
         TextNode node = (TextNode) oc.readTree(jp);
         String str = node.textValue();
-
+        if(CliviaUtils.isBlank(str))	
+        	return null;
         return LocalDate.parse(str);
     }
 }

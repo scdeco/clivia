@@ -20,6 +20,9 @@ public class CliviaLocalDateTimeJsonDeserializer  extends JsonDeserializer<Local
         TextNode node = (TextNode) oc.readTree(jp);
         String str = node.textValue();
         
+        if(CliviaUtils.isBlank(str))	
+        	return null;
+        
         return LocalDateTime.parse(str);
     }
 }

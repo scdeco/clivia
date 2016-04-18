@@ -24,7 +24,7 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS",function($scope,cliviaDDS)
 	
 	var url='../datasource/garmentWithInfoDao/read';
 	
-	$scope.queryGridNo="802";
+	$scope.queryGridNo="801";
 }]);
 
 

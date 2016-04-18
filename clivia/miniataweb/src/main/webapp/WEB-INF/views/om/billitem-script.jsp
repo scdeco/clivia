@@ -6,7 +6,10 @@ orderApp.controller("billItemCtrl",["$scope","$state","$sce","SO",
 	
 	$scope.SO=SO;
 
-	var orderItem=SO.getCurrentOrderItem(); 
+	$scope.orderItem=SO.getCurrentOrderItem();
+	
+	if($scope.orderItem.spec==="")
+		$scope.orderItem.spec=SO.company.info.discount;
 	
     $scope.billItemSplitterOptions={
         	resize:function(e){
@@ -39,19 +42,28 @@ orderApp.controller("billItemCtrl",["$scope","$state","$sce","SO",
    	    filter: {
 	        field: "orderItemId",
 	        operator: "eq",
-	        value: orderItem.id,
+	        value: $scope.orderItem.id,
 	    },    
 	    
 	    serverFiltering:false,
 	    pageSize: 0,			//paging in pager
 
     }); //end of dataSource,
+    
+    
+	$scope.discountOptions={
+			min: 0,
+         	max: 1,
+            step: 0.01,
+            format: "{0:p0}",
+            decimals:2
+	}    
 	
 	//pass to moneyGird directive to create new lineitem		        
 	$scope.newItemFunction=function(){
 		    return {
 			    	orderId:SO.dataSet.info.orderId,
-			    	orderItemId:orderItem.id, 
+			    	orderItemId:$scope.orderItem.id, 
 			    	snpId:0,
 			    	orderAmt:0,
 			    }
@@ -63,7 +75,7 @@ orderApp.controller("billItemCtrl",["$scope","$state","$sce","SO",
 	}
 	
 	//generate auto bill items from lineItems...
-	SO.generateBillableItems(orderItem);
+	SO.generateBillableItems($scope.orderItem);
 	
 	$scope.getBillDetailFunction=function(billItem){
 		var html;
@@ -84,5 +96,15 @@ orderApp.controller("billItemCtrl",["$scope","$state","$sce","SO",
 		return totalAmt?kendo.toString(totalAmt,"c"):"";
 	}
 	
+	$scope.setDiscount=function(oldValue,newValue){
+		oldValue=parseFloat(oldValue);
+		newValue=parseFloat(newValue);
+		if(oldValue===newValue) 
+			return;
+		
+		$scope.orderItem.isDirty=true;
+		$scope.billGrid.gridWrapper.setDiscount(newValue);
+		$scope.billGrid.grid.refresh();
+	}
 }]);
 </script>

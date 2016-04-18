@@ -141,14 +141,16 @@
     					c-register-deleted-item-function="registerDeletedAddressItemFunction">
     				</div>
               </div>
-          
-              <div style="padding: 1em">	<!-- notes -->
-              	<h3>Regular:</h3>
-           	 	<textarea  class="k-textbox" style="width:100%;height:100px;" ng-model="dataSet.info.regularInstructions"></textarea>		<!-- not use for now kendo-editor="regularEditor" -->
-              	<h3>Pricing:</h3>
-            	<textarea  class="k-textbox" style="width:100%;height:100px;" ng-model="dataSet.info.pricingInstructions"></textarea>		<!--not use for now kendo-editor="pricingEditor" -->
-              </div>
-              
+	          <div style="padding: 1em">	<!-- notes -->
+				  <form name="instructionsForm" ng-submit="" novalidate class="simple-form">          
+	              
+	              	<h3>Regular:</h3>
+	           	 	<textarea  class="k-textbox" style="width:100%;height:100px;" ng-model="dataSet.info.regularInstructions"></textarea>		<!-- not use for now kendo-editor="regularEditor" -->
+	              	<h3>Pricing:</h3>
+	            	<textarea  class="k-textbox" style="width:100%;height:100px;" ng-model="dataSet.info.pricingInstructions"></textarea>		<!--not use for now kendo-editor="pricingEditor" -->
+      			</form>
+	          </div>
+	          
               <div style="padding: 1em">
               		<div clivia-grid="journalGrid" 
               			c-grid-wrapper-name="'JournalGridWrapper'"

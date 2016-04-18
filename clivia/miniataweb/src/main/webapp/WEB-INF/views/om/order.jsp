@@ -9,12 +9,11 @@
 
 	<%@include file="../common/factories.jsp"%>
 	<%@include file="../common/directives.jsp"%>
-	
+	<%@include file="../crm/crm-script.jsp"%>
 	<%@include file="order-script.jsp"%>
 	<%@include file="aconsts.jsp"%>
 	<%@include file="aconfig.jsp"%>
  	<%@include file="ordermain-script.jsp"%>
-	<%-- <%@include file="orderinfo-script.jsp"%> --%>
 	<%@include file="orderitem-script.jsp"%>
 
  	<%@include file="billitem-script.jsp"%> 
@@ -200,6 +199,24 @@
             clear: both;
             visibility: hidden;
         }	
+	.k-tabstrip{
+	   	position: absolute;
+     	top: 0;
+    	bottom: 0;
+    	left: 0;
+    	right: 0;
+    	width: auto;
+    	height: auto;
+    	border-width: 0;
+	}
+ 
+	.k-tabstrip > .k-content {
+    	position: absolute;
+    	top: 31px;
+    	bottom: 0;
+    	left: 0;
+    	right: 0;
+	}	        
 
 </style>
 

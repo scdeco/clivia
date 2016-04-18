@@ -49,6 +49,10 @@ orderApp.directive("orderInfo",["$http","cliviaDDS","util",function($http,clivia
 						filter:"isRep,eq,true",
 						url:"../datasource/employeeInfoDao/read",
 						dict:cliviaDDS.getDict("employeeInput"),
+						onValueChanged:function(e){
+							console.log("Rep Changed:"+e.text);
+							SO.repName=e.text;
+						}
 					}
 
 				$scope.csrOptions={
@@ -59,7 +63,16 @@ orderApp.directive("orderInfo",["$http","cliviaDDS","util",function($http,clivia
 						filter:"isCsr,eq,true",
 						url:"../datasource/employeeInfoDao/read",
 						dict:cliviaDDS.getDict("employeeInput"),
+						onValueChanged:function(e){
+							SO.csrName=e.text;
+							console.log("Csr Changed:"+e.text);
+						}
 					}
+
+				$scope.termsOptions={
+						dataSource:util.getTerms()
+				}
+				
 			}]
 		};
 	return directive;
@@ -104,6 +117,13 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	                template:searchTemplate,		                
 	            }, {
 	                type: "button",
+	                text: "List",
+	                id:"btnList",
+	                click: function(e) {
+	                	$scope.openQueryWindow();
+	                }	                
+	            }, {
+	                type: "button",
 	                text: "Print",
 	                id:"btnPrint",
 	                click: function(e) {
@@ -113,10 +133,10 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	                type: "separator",
  	            }, {
 	                type: "button",
-	                text: "Upc",
-	                id:"btnUpc",
+	                text: "Customer",
+	                id:"btnCustomer",
 	                click: function(e) {
-		                	$scope.generateUpcs();
+		                	$scope.openCompany(SO.dataSet.info.customerId);
 		                }
  	                
 	       }]
@@ -129,6 +149,24 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 		url:'../datasource/companyInfoDao/read',
 	}
 
+ 	$scope.companyWindowOptions={
+			activate:function(){
+				$scope.companyCard.mainSplitter.resize();
+			},
+	}
+	
+	$scope.queryGridOptions={
+			doubleClickEvent:function(e){
+					if(e.currentTarget){
+						var di=this.dataItem(e.currentTarget);
+						if(di){
+							$scope.searchOrderNumber=di.orderNumber;
+							$scope.getOrder();
+						}
+					}
+				}
+	}
+	
 	$scope.generateUpcs=function(){
 		SO.generateUpcs();
 		$scope.$apply();
@@ -142,8 +180,11 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	};	
 	
 	$scope.newOrder=function(){
-		SO.clear();
-		SO.setCurrentOrderItem(0);		//$state.go('main.blankitem');
+		if(!$scope.orderIsDirty() || $scope.confirmDiscardChanges()){
+			SO.clear();
+			SO.setCurrentOrderItem(0);		//$state.go('main.blankitem');
+
+		}
 	};	
 	
 	
@@ -163,15 +204,28 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 		}
 		
 	}
+	
+	$scope.confirmDiscardChanges=function(){
+		var discard=confirm("Changes to this order have not been saved. Do you want to DISCARD the changes?");
+		if(discard)
+			$scope.orderInfo.infoForm.$setPristine();
+		return discard;
+	}
+	
+	
 
 	$scope.repeatOrder=function(){
-		SO.repeat();
-		$scope.$apply();
+		if(SO.isNew()) return;
+		
+		if(!$scope.orderIsDirty() || $scope.confirmDiscardChanges()){
+			SO.repeat();
+			$scope.$apply();
+		}
 	}
 
 	$scope.getOrder=function(){
 		
-		if(!!$scope.searchOrderNumber){
+		if(!!$scope.searchOrderNumber && (!$scope.orderIsDirty() || $scope.confirmDiscardChanges())){
 			SO.clear();
 			SO.retrieve($scope.searchOrderNumber)
 				.then(function(data){
@@ -185,6 +239,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 			    		
 			    		var orderItemId=items.length>0?items[0].id:0;
 				    	SO.setCurrentOrderItem(orderItemId);
+				    	
 				    }else{
 				    	alert("Can not find order:"+$scope.searchOrderNumber+".");
 				    }
@@ -200,33 +255,40 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 		}
 	}
 	
-	$scope.saveOrder=function(){
-		if($scope.orderInfo.infoForm.$dirty)
+	$scope.orderIsDirty=function(){
+		if($scope.orderInfo && $scope.orderInfo.infoForm.$dirty)
 			SO.dataSet.info.isDirty=true;
 		
-		SO.save()
-			.then(function(data){
-			    if(data){
-			    	//adjust new orderitem button orderItemId value
-			    	
-			    	var items=SO.dataSet.items;
-			    	var currentId=0;
-			    	for(var i=0,item,button;i<items.length;i++){
-			    		item=items[i];
-			    		button=SO.instance.itemButtons[item.lineNo-1];
-			    		button.orderItemId=item.id;
-			    		if(button.selected)
-			    			currentId=button.orderItemId;
-			    	}		
-		    		SO.setCurrentOrderItem(currentId);
-		    		$scope.orderInfo.infoForm.$setPristine();
-			    	
-			    }else{
-		    		alert("Can not find order:"+$scope.searchOrderNumber+".");
-			    }
-			},function(data){
-				alert( "failure message: " + JSON.stringify({data: data}));
-			});
+		return SO.isDirty();
+		
+	}
+	
+	$scope.saveOrder=function(){
+		if($scope.orderIsDirty()){
+			SO.save()
+				.then(function(data){
+				    if(data){
+				    	//adjust new orderitem button orderItemId value
+				    	
+				    	var items=SO.dataSet.items;
+				    	var currentId=0;
+				    	for(var i=0,item,button;i<items.length;i++){
+				    		item=items[i];
+				    		button=SO.instance.itemButtons[item.lineNo-1];
+				    		button.orderItemId=item.id;
+				    		if(button.selected)
+				    			currentId=button.orderItemId;
+				    	}		
+			    		SO.setCurrentOrderItem(currentId);
+			    		$scope.orderInfo.infoForm.$setPristine();
+				    	
+				    }else{
+			    		alert("Can not find order:"+$scope.searchOrderNumber+".");
+				    }
+				},function(data){
+					alert( "failure message: " + JSON.stringify({data: data}));
+				});
+		}
 	}
 	
 	$scope.deleteOrder=function(){
@@ -243,6 +305,20 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 				alert( "failure message: " + JSON.stringify({data: data}));
 			});
 		}
+	}
+	
+	$scope.openCompany=function(companyId){
+ 		if(!!companyId){
+			$scope.companyCard.load(companyId);
+		}else{
+			$scope.companyCard.clear();
+		}
+ 		$scope.$apply();
+		$scope.companyWindow.open();
+	}
+	
+	$scope.openQueryWindow=function(){
+		$scope.queryWindow.open();
 	}
 	
 	$scope.newOrder();

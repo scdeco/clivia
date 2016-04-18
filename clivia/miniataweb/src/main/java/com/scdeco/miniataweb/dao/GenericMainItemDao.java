@@ -31,17 +31,24 @@ public class GenericMainItemDao<T> {
 	       Type[] pt = ((ParameterizedType) type).getActualTypeArguments();  
 	       mainEntityClass = (Class) pt[0]; 
 	}
-	
-	public T getById(int id) 
+
+	public T getById(int id,String[] itemListNames) 
 			throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException{
 		
 		T newInstance=null;
 		
 		newInstance=mainEntityClass.newInstance();
 		loadInfoItemById(newInstance,id);
-		loadSubItemListById(newInstance,id);
+		loadSubItemListById(newInstance,id,itemListNames);
 		
 		return newInstance;
+	}
+	
+	
+	public T getById(int id) 
+			throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException{
+		
+		return this.getById(id,this.registeredItemListNames);
 	}
 	
 	protected void loadInfoItemById(T mainEntity,int id) 
@@ -53,10 +60,13 @@ public class GenericMainItemDao<T> {
 		field.set(mainEntity, infoDao.findById(id));
 	}
 	
-	protected void loadSubItemListById(T mainEntity,int mainId) 
+	protected void loadSubItemListById(T mainEntity,int mainId,String[] itemListNames) 
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
 		
-			for(int i=0;i<registeredItemListNames.length;i++){
+			if(itemListNames==null)
+				itemListNames=registeredItemListNames;
+			
+			for(int i=0;i<itemListNames.length;i++){
 				Field itemListField = mainEntityClass.getDeclaredField(registeredItemListNames[i]);
 				itemListField.setAccessible(true);
 				

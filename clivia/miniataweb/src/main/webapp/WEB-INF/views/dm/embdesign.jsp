@@ -384,52 +384,7 @@ factory("dictThread",["$http",function($http){		//service
 	return  dictThread;
 }]).
 
-factory("Event",function(){
 
-	var event=function(){
-		this.listeners=[];
-	};
-	
-
-	event.prototype={
-		getListenerIdx:function(owner,handler){
-				var idx=-1;
-				if(owner && handler)
-					for(var i=0,listener;i<this.listeners.length;i++){
-						listener=this.listeners[i];
-						if(listener.owner===owner && listener.handler===handler){
-							idx=i;
-							break;
-						}
-					}
-				return idx;
-		},
-			
-		addListener:function(owner,handler){
-			if(owner && handler && this.getListenerIdx(owner,handler)==-1)
-				this.listeners.push({
-						owner:owner,
-						handler:handler
-					});
-		},
-		
-		removeListener:function(owner,handler){
-			var idx=this.getListenerIdx(owner,handler);
-			if(idx>=0){
-				this.listeners.splice(idx,1);
-			}
-		},
-		
-		fireEvent:function(args){
-			for(var i=0,listener;i<this.listeners.length;i++){
-				listener=this.listeners[i];
-				listener.handler.apply(listener.owner,args);
-			}
-		}
-	}
-	
-	return event;
-}).
 
 factory("DstDesign",["$http","Event",function($http,Event){
 

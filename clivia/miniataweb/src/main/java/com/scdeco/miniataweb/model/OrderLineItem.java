@@ -86,6 +86,24 @@ public class OrderLineItem extends CliviaSuperModel{
 
 	@Column(name="Qty14")
 	private Integer qty14;
+
+	@Column(name="Qty15")
+	private Integer qty15;
+	
+	@Column(name="Qty16")
+	private Integer qty16;
+	
+	@Column(name="Qty17")
+	private Integer qty17;
+	
+	@Column(name="Qty18")
+	private Integer qty18;
+	
+	@Column(name="Qty19")
+	private Integer qty19;
+	
+	@Column(name="Qty20")
+	private Integer qty20;
 	
 	@Column(name="Quantity")
 	private Integer quantity;
@@ -301,6 +319,54 @@ public class OrderLineItem extends CliviaSuperModel{
 		this.qty14 = qty14;
 	}
 
+	public Integer getQty15() {
+		return qty15;
+	}
+
+	public void setQty15(Integer qty15) {
+		this.qty15 = qty15;
+	}
+
+	public Integer getQty16() {
+		return qty16;
+	}
+
+	public void setQty16(Integer qty16) {
+		this.qty16 = qty16;
+	}
+
+	public Integer getQty17() {
+		return qty17;
+	}
+
+	public void setQty17(Integer qty17) {
+		this.qty17 = qty17;
+	}
+
+	public Integer getQty18() {
+		return qty18;
+	}
+
+	public void setQty18(Integer qty18) {
+		this.qty18 = qty18;
+	}
+
+	public Integer getQty19() {
+		return qty19;
+	}
+
+	public void setQty19(Integer qty19) {
+		this.qty19 = qty19;
+	}
+
+	public Integer getQty20() {
+		return qty20;
+	}
+
+	public void setQty20(Integer qty20) {
+		this.qty20 = qty20;
+	}
+
 	public Integer getQuantity() {
 		return quantity;
 	}
@@ -316,5 +382,6 @@ public class OrderLineItem extends CliviaSuperModel{
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
+
 	
 }

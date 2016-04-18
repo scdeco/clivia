@@ -36,10 +36,10 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 			    	scope.clearDataSet();
 			    }
 			    
-	        	scope.setDicts=function(brandId,seasonId){
-	        		if(!(brandId && seasonId)) return;
+	        	scope.setDicts=function(seasonId){
+	        		if(!seasonId) return;
 	        		
- 	 				var item=scope.dictSeason.getLocalItem(seasonId);
+ 	 				var item=scope.dictSeason.getLocalItem("id",seasonId);
  	 				
 					if(item && item.categories){
      	 				var tempCategory=scope.dataSet.info.category;
@@ -214,6 +214,7 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 				    			item={
 					    				colour:colour,
 					    				size:size,
+					    				isDirty:true
 					    			};
 				    			newItems.push(item);
 				    		}
@@ -228,6 +229,7 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 					    			item={
 						    				colour:colour,
 						    				size:size,
+						    				isDirty:true
 						    			};
 					    			newItems.push(item);
 				    			}
@@ -392,8 +394,8 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 					}
 				
           	 	$scope.$watch('dataSet.info.seasonId',function(newValue,oldValue){
-     	 			if(newValue){
-     	 				$scope.setDicts($scope.dataSet.info.brandId,newValue);
+     	 			if(newValue!==oldValue && newValue){
+     	 				$scope.setDicts(newValue);
      	 			}
          	 			
      	 		});			

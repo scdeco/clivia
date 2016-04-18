@@ -83,12 +83,13 @@ public class OrderController {
 		return order;
 	}
 	
-	@RequestMapping(value="delete-order",method=RequestMethod.POST)
-	public @ResponseBody  OrderClivia deleteOrder(@RequestBody OrderClivia order) 
-				throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
+	@RequestMapping(value="delete-order",method=RequestMethod.GET)
+	public @ResponseBody String deleteOrder(@RequestParam("id") int id) 
+				throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
 		
-		orderDao.deleteOrder(order);
-		return order;
+		orderDao.deleteOrder(id);
+		
+		return "";
 	}
 
 	@RequestMapping(value="print-confirm",method=RequestMethod.POST)

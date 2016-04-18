@@ -146,10 +146,60 @@ clivia.factory("util",["$http","$q",function($http,$q){
 	               .error(function(){
 	               	});
 	            return deferred.promise;
-			}
+			},
+		getTerms:function(){
+			return ["Prepaid","Net Before Jan.15","Net Before Feb.15","Net 15 Days","Net 30 Days","Net 45 Days","Net 60 Days","2%/10/N30","2%/10/N45","2%/10/N60",""];
+		}
 		
 	}	
 }]).
+
+factory("Event",function(){
+
+	var event=function(){
+		this.listeners=[];
+	};
+	
+
+	event.prototype={
+		getListenerIdx:function(owner,handler){
+				var idx=-1;
+				if(owner && handler)
+					for(var i=0,listener;i<this.listeners.length;i++){
+						listener=this.listeners[i];
+						if(listener.owner===owner && listener.handler===handler){
+							idx=i;
+							break;
+						}
+					}
+				return idx;
+		},
+			
+		addListener:function(owner,handler){
+			if(owner && handler && this.getListenerIdx(owner,handler)==-1)
+				this.listeners.push({
+						owner:owner,
+						handler:handler
+					});
+		},
+		
+		removeListener:function(owner,handler){
+			var idx=this.getListenerIdx(owner,handler);
+			if(idx>=0){
+				this.listeners.splice(idx,1);
+			}
+		},
+		
+		fireEvent:function(args){
+			for(var i=0,listener;i<this.listeners.length;i++){
+				listener=this.listeners[i];
+				listener.handler.apply(listener.owner,args);
+			}
+		}
+	}
+	
+	return event;
+}).
 
 factory("DataDict",["$q","util",function($q,util){
 	
@@ -866,7 +916,7 @@ clivia.factory("GridWrapper",function(){
 			GridWrapper.prototype.getRow = function(arg){
 				if(!this.grid) return null;
 				if(Number.isInteger(arg))
-					return this.grid.tbody.children().eq(index);
+					return this.grid.tbody.children().eq(arg);
 				else
 					return  arg.closest("tr");
 			}
@@ -1163,7 +1213,7 @@ clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",f
 					name:"styleNo",
 				    field: "styleNo",
 				    title: "Style",
-				    width: 60
+				    width: 70
 				}, {
 					name:"description",
 				    field: "description",
@@ -1188,7 +1238,7 @@ clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",f
 				for(var i=0;i<sizeRangeFields.length;i++){
 					var field="qty"+("00"+i).slice(-2);
 					gridColumns.splice(j++,0,{
-						name:field,
+						name:sizeRangeFields[i],
 						field:field,
 						title:sizeRangeTitles[i],
 					    editor:sizeQtyEditor,
@@ -1456,7 +1506,7 @@ clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",f
 		if(thisGGW.reorderRowEnabled) return;
 		var column=thisGGW.getGridColumn(options.field);
 		if(column)
-			if(thisGGW.brand.hasInventory && thisGGW.dict.sizeRange.indexOf(column.title)<0)
+			if(thisGGW.brand.hasInventory && thisGGW.dict.sizeRange.indexOf(column.name)<0)
 		        $("<span>-</span>").appendTo(container);
 			else
 				thisGGW.numberColumnEditor(container,options);
@@ -1602,6 +1652,21 @@ clivia.factory("BillGridWrapper",["GridWrapper","cliviaDDS","DataDict",function(
 		return total;
 	}
  
+	BillGridWrapper.prototype.setDiscount=function(discount){
+		if(!this.grid) return;
+		var dataItems=this.grid.dataItems();
+
+		for(var i=0,di,p;i<dataItems.length;i++){
+			di=dataItems[i];
+			di.discount=discount;
+			p=(discount>0 && discount<1)?di.listPrice*(1-discount):di.listPrice;
+			di.orderPrice=p.toFixed(2);
+			di.isDirty=true;
+		}
+		
+		this.calculateTotal(true);
+	}
+	
 	 BillGridWrapper.prototype.getSnpItem=function(snpId){
 		 return thisGGW.dictSnp.getLocalItem("id",snpId);
 	 }
@@ -2049,15 +2114,17 @@ clivia.factory("gridColumnFactory",["cliviaDDS","utils",function(cliviaDDS,util)
 				var columns=[],dictColumns=dictColumn.items,column,item;
 				var grid=dictGrid.getLocalItem("gridNo",gridNo);
 				var idx=util.findIndex(dictColumns,"gridId",grid.id);
+				var column;
 				while( dictColumns[idx]===grid.id){
 					item=dictColumns[idx++];					
-					coloum={
+					column={
 						name:item.name,
 						field:item.name,
 						title:item.title,
 					}
+					columns.push(column);
 				}
-				
+				return columns;
 			}
 	}
 }]);
