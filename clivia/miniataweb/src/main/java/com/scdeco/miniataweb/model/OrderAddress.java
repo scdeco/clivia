@@ -21,6 +21,9 @@ public class OrderAddress extends CliviaSuperModel{
 	@Column(name="LineNo")
 	private int lineNo;	
 	
+	@Column(name="Receiver",length=100)
+	private String receiver;
+	
 	@Column(name="Addr1",length=100)
 	private String addr1;
 	
@@ -84,6 +87,14 @@ public class OrderAddress extends CliviaSuperModel{
 
 	public void setLineNo(int lineNo) {
 		this.lineNo = lineNo;
+	}
+
+	public String getReceiver() {
+		return receiver;
+	}
+
+	public void setReceiver(String receiver) {
+		this.receiver = receiver;
 	}
 
 	public String getAddr1() {

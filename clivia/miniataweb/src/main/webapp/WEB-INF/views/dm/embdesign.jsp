@@ -240,7 +240,7 @@ factory("dictThread",["$http",function($http){		//service
 		     				{r:255,	g:126,	b:204},
 		     				{r:28,	g:176,	b:193},
 		     				{r:112,	g:56,	b:56}],
-		retrieve:function(){
+		loadThreads:function(){
 			var url="http:///192.6.2.108:8080/clivia/data/dictEmbroideryThreadDao/get"
 			$http.get(url).
 				success(function(data, status, headers, config) {
@@ -306,12 +306,22 @@ factory("dictThread",["$http",function($http){		//service
 	        return sCode;			
 		},
 
+		//normalize each code and remove repeated threads
 		normalizeThreadCodes:function(threadCodes,stepCount){
+			var result="";
 			var limit=stepCount<15?stepCount:15;
-			var codeList=threadCodes.split(',',limit);
-			for(var i=0;i<codeList.length;i++)
-				codeList[i]=normalizeThreadCode(codeList[i]);
-			return codeList.join();
+			threadCodes=threadCodes.trim();
+			if(threadCodes){
+				var codeList=threadCodes.split(/[+\-,]/,limit);
+				for(var i=0,code;i<codeList.length;i++){
+					code=this.normalizeThreadCode(codeList[i]);
+					if(code && result.indexOf(code)<0)
+						result+=","+code;
+				}
+				if(result)
+					result=result.substring(1);
+			}
+			return result;
 		},
 		
 		normalizeRunningStep:function(runningStep){
@@ -327,11 +337,17 @@ factory("dictThread",["$http",function($http){		//service
 		},
 		
 		normalizeRunningSteps:function(runningSteps,stepCount){
-			var stepList=runningSteps.split("-",stepCount);
-			for(var i=0;i<stepList.length;i++)
-				stepList[i]=normalizeRunningSteps(stepList[i]);
-			return stepList.join("-");
+			var result="";
+			runningSteps=runningSteps.trim();
+			if(runningSteps){
+				var stepList=runningSteps.split(/[+\-,]/,stepCount);
+				for(var i=0;i<stepList.length;i++)
+					stepList[i]=this.normalizeRunningStep(stepList[i]);
+				result=stepList.join("-");
+			}
+			return result;
 		},
+		
 		
 		getDefaultColorModel:function(){
 			
@@ -379,7 +395,7 @@ factory("dictThread",["$http",function($http){		//service
 			
 	};
 	
-	dictThread.retrieve();
+	dictThread.loadThreads();
 	
 	return  dictThread;
 }]).
@@ -584,6 +600,15 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 			this.runningSteps=runningSteps;
 		},
 		
+		normalizeThreadCodes:function(){
+			this.threadCodes=dictThread.normalizeThreadCodes(this.threadCodes);
+		},
+		
+		normalizeRunningSteps:function(){
+			if(this.embDesign)
+				this.runningSteps=dictThread.normalizeRunningSteps(this.runningSteps,this.embDesign.stepCount);
+		},
+		
 		isNewColorModel:function(colorModel){
 			if(!this.colorModel)
 				return true;
@@ -601,7 +626,7 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 		//if typeof colorway==="undefined", use delautColorModel
 		//if colorway==={}, use thredCodes or runningSteps of this embCanvas
 		drawDesign:function(colorway){
-			if(!(this.embDesign && this.embDesign.isValid)){
+			if(!(this.embDesign && this.embDesign.isValid())){
 				this.imageChanged.fireEvent([this]);
 				return;
 			} 
@@ -750,7 +775,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			
 			//clear contents(code,colour) of dataSource of threadGrid
 			clearThreadList:function(){			
-				for(var i=0;i<this.threadList;i++){
+				for(var i=0;i<this.threadList.length;i++){
 					this.threadList[i].code="";
 					this.threadList[i].colour="";
 					this.threadList[i].threadStitchCount="";
@@ -765,7 +790,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 				}
 			},
 			
-			//stepList(stepGrid) and runningStepList(stepGrid)
+			//threadList(threadGrid) and runningStepList(stepGrid)
 			initColorwayList:function(){	
 				this.threadList.splice(0,this.threadList.length)
 				this.runningStepList.splice(0,this.runningStepList.length)
@@ -786,8 +811,6 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			},
 			
 			
-			
-			
 			//from this.threadList to this.embCanvas.threadCodes
 			parseThreads:function(){	
 				var threads=[],thread;
@@ -799,16 +822,6 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 				}
 				if(threads!==this.embCanvas.threadCodes){
 					this.embCanvas.threadCodes=threads.join();
-				}
-			},
-			
-			//from this.embCanvas.threadCodes to this.threadList
-			populateThreads:function(){  
-				var threadCodes=this.embCanvas.threadCodes;
-				if(threadCodes){
-					
-				}else{
-					this.clearThreads();
 				}
 			},
 			
@@ -825,14 +838,45 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 					this.embCanvas.runningSteps=steps.join('-');
 				}
 			},
+
+			//from this.embCanvas.threadCodes to this.threadList
+			//threadCodes must be normalized before calling this method
+			populateThreads:function(){  
+				var codes=this.embCanvas.threadCodes;
+				
+				this.clearThreadList();
+				if(codes){
+					var codeList=codes.split(",");
+					
+					if(codeList.length<=this.threadList.length){
+						for(var i=0,code,c,t;i<codeList.length;i++){
+							code=codeList[i];
+							c=dictThread.getThreadColorHex(code);
+							t=this.threadList[i];
+							t.colour=c;
+							t.code=code;
+						}
+					}
+				}
+			},
 			
 			//from this.embCanvas.runningSteps to this.runningStepList
+			//runningSteps must be normalized before calling this method
 			populateRunningSteps:function(){	
 				var runningSteps=this.embCanvas.runningSteps;
+				this.clearRunningStepList();
 				if(runningSteps){
-					
-				}else{
-					this.clearRunningSteps();
+					idxList=runningSteps.split('-');
+					if(idxList.length<=this.runningStepList.length){
+						for(var i=0,t;i<idxList.length;i++){
+							t=this.getThread(idxList[i]);
+							if(t){
+								step=this.runningStepList[i];
+								step.code=t.code;
+								step.threadIndex=idxList[i];
+							}
+						}
+					}
 				}
 			},
 			
@@ -849,10 +893,11 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			},
 			
 			getThread:function(threadIndex){
-				var index=parseInt(threadIndex);
+				var index=isNaN(threadIndex)?0:parseInt(threadIndex);
 				var thread=(index>0 && index<=this.threadList.length)?this.threadList[--index]:"";
 				return thread;
 			},
+			
 			
 			getThreadColor:function(threadIndex){
 				var thread=this.getThread(threadIndex);
@@ -873,6 +918,13 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 					}
 					thread.threadStitchCount=c?c:"";
 				}
+			},
+			
+			
+			
+			normalizeColorway:function(){
+				
+				
 			},
 			
 			setEmbCanvas:function(embCanvas){
@@ -983,11 +1035,12 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 						self.drawDesign(self.gwThread);
 				    },					
 					save:function(e){
-	                	 console.log("thread save:");
-			       		if (typeof e.values=== 'undefined')
+
+						if (typeof e.values=== 'undefined')
 				       			return;
 			       		if (typeof e.values.code=== 'undefined')
 			       			return;
+			       		
 			       		var code=dictThread.normalizeThreadCode(e.values.code);
 			       		if(code===e.model.code)
 			       			return;
@@ -1027,6 +1080,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			
 			getStepGridOptions:function(scope){
 				var self=this;
+				var saving=false; //prevent recusive calling saving event function;
 				return {
 					columns:stepGridColumns,
 			        editable: true,
@@ -1036,20 +1090,19 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 					dataSource:self.runningStepList,
 
 					change:function(e){
-						console.log("step change:");
 						self.drawDesign(self.gwStep);
 					},
 					
 					edit:function(e){
-						console.log("step  edit:");
 						self.drawDesign(self.gwStep);
 				    },
 				    
 					save:function(e){
-	                	 console.log("step save1:");
-
+						if(saving) return;
+						saving=true;
+						
 			       		if(typeof e.values.code!== 'undefined'){
-		                	 console.log("step save2:");
+
 			       			var code=e.values.code;
 		  	        		if(code.trim()==="."){
 		  	        			self.gwStep.copyPreviousRow();
@@ -1112,6 +1165,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 							self.gwThread.grid.refresh();
 							scope.$apply();
 			          	}
+						saving=false;
 			       		
 					},	//end of save
 					
@@ -1134,7 +1188,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 	return embMatcher;
 }]).
 
-directive("threadMatcher",["EmbMatcher",function(EmbMatcher){
+directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThread){
 	var templateUrl="../dm/threadmatcher";
 	var directive={
 			restrict:'EA',
@@ -1147,6 +1201,24 @@ directive("threadMatcher",["EmbMatcher",function(EmbMatcher){
 			templateUrl:templateUrl,
 			
 			link:function(scope,element,attrs){
+				scope.populateThreads=function(){
+					var emb=scope.embMatcher;
+					emb.embCanvas.normalizeThreadCodes();
+					emb.populateThreads();
+					emb.populateRunningSteps();
+					emb.setThreadStitchCount();
+                    emb.gwThread.grid.refresh();
+                    emb.gwStep.grid.refresh();
+				}
+				
+				scope.populateSteps=function(){
+					var emb=scope.embMatcher;
+					emb.embCanvas.normalizeRunningSteps();
+					emb.populateRunningSteps();
+					emb.setThreadStitchCount();
+                    emb.gwThread.grid.refresh();
+                    emb.gwStep.grid.refresh();
+				}
 
 			}, //end of link function
 			controller:function($scope){
@@ -1174,6 +1246,8 @@ directive("threadMatcher",["EmbMatcher",function(EmbMatcher){
 				
 				scope.threadGridOptions=scope.embMatcher.getThreadGridOptions(scope);
 				scope.stepGridOptions=scope.embMatcher.getStepGridOptions(scope);
+				
+				
 			}
 
 		}
@@ -1195,7 +1269,6 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 			
 			link:function(scope,element,attrs){
 				
-
 				
 				scope.print=function(){
 					

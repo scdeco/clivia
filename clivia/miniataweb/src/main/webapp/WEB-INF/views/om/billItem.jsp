@@ -15,7 +15,7 @@
 					k-options="discountOptions"/> Off
 			</label>
 			
-			<label style="margin-left:40px;">Total Amount:&nbsp;{{getTotalAmount()}}</label>
+			<label style="margin-left:40px;"><b>Total Amount:&nbsp;{{getTotalAmount()}}</b></label>
 				
 	    </div> <!-- end of top pane-->
     

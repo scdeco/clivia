@@ -221,7 +221,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			
 			if(dis){
 		    	for(var j=0;j<dis.length;j++){
-		    		if(dis[i].isDirty)
+		    		if(dis[j].isDirty)
 		    			return true;
 		    	}
 				
@@ -450,7 +450,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
     	items.splice(idx,1);
     	
     	//set lineNo same as item index+1
-    	_order.setOrderItemlineNo();
+    	_order.setOrderItemLineNo();
 
     	
     	//set new current orderItem. if no more item, set to blank.
@@ -519,7 +519,12 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 	
 	_order.generateBillableItems=function(billOrderItem){
 		if(!billOrderItem) return;
-		if(billOrderItem.typeId!==1) return;	//not a billItem	
+		if(billOrderItem.typeId!==1) return;	//not a billItem
+		if(!_order.company ||!_order.company.info) return;
+		
+		var useWSP=_order.company.info.useWsp;
+		var useUSD=_order.company.info.country!=="Canada";
+		var listPriceField=useWSP?(useUSD?"wsp":"wspCad"):(usedUSD?"rrp":"rrpCad");
 		
 		var	billableItems=[];
 		var billableIdx={};
@@ -527,7 +532,6 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		var orderId=_order.dataSet.info.id;
 		var dictGarment=_order.dds.garment;
 		
-		var useWsp=true;
 		var discount=billOrderItem.spec;
 		
 		for(var i=0,orderItem;i<orderItems.length;i++){
@@ -553,7 +557,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 							}else{
 								var garment=dictGarment.getGarmentById(lineItem.garmentId);
 								if(garment){
-									var listPrice=useWsp?garment.wsp:garment.rrp;
+									var listPrice=garment[listPriceField];
 									var orderPrice=(discount>0 && discount<1)?listPrice*(1-discount):listPrice;
 										if(orderPrice)
 											orderPrice.toFixed(2);
@@ -629,9 +633,9 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		
 		for(var i=billItems.length-1,item;i>=0;i--){
 			item=billItems[i];
-			if(item.type && !item.checked){
+			if(item.itemTypeId && !item.checked){
 				if(item.id)
-					_order.registerDeletedItem("billItem",item.id);
+					_order.registerDeletedItem("orderBillItem",item.id);
 				billItems.splice(i,1);
 			}
 		}
@@ -763,6 +767,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  		
  		if(address){
 			address={
+				receiver:address.receiver,
 				addr1:address.addr1,
 				addr2:address.addr2,
 				city:address.city,
@@ -773,6 +778,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			};
  		}else{
 			address={
+					receiver:"",
 					addr1:"",
 					addr2:"",
 					city:"",
@@ -782,10 +788,18 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 					attn:"",
 				};
  		}
+ 		if(!address.reciever){
+ 			if(isBilling)	
+ 	 			address.receiver=_order.company.info.businessName;
+ 			else if(address.billing && address.shipping)
+ 	 			address.receiver=_order.company.info.businessName;
+ 		}
+ 		
 		return address;
  		
  	}
- 	_order.createGarmentPrintModel=function(billItems,lineItemOnly){
+ 	
+ 	_order.createGarmentPrintModel=function(billItems,lineItemOnly,mainColorOnly){
  		var info=_order.dataSet.info;
  		var company=_order.company;
  		var  model={
@@ -818,8 +832,6 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  			if(bi.discount>0)
  					model.showDiscount=true;
  			
- 			totalAmt+=bi.orderAmt?bi.orderAmt:0;
- 			totalQty+=bi.orderQty?bi.orderQty:0;
  			
  			if(lineItemOnly?bi.itemTypeId===2:true){
  				mbi={
@@ -827,22 +839,22 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  					desc:bi.description?bi.description:"",
  					qty:bi.orderQty?kendo.toString(bi.orderQty,"##,#"):"",
  					listPrice:bi.listPrice?kendo.toString(bi.listPrice, "0.00"):"",	
- 					discount:bi.discount?kendo.toString(bi.discount,"p0"):"",
+ 					discount:bi.discount?kendo.toString(bi.discount,"p2"):"",
  					price:bi.orderPrice?kendo.toString(bi.orderPrice, "0.00"):"",
  					amt:bi.orderAmt?kendo.toString(bi.orderAmt, "c"):"",
  				};
  				if(bi.itemTypeId===2){		//lineItem
-					var styleModel=_order.createStyleGridModel(parseInt(bi.billingKey),true);	//show main color only
+					var styleModel=_order.createStyleGridModel(parseInt(bi.billingKey),mainColorOnly);	//show main color only
 					if(styleModel){
 						/* mbi.imageId=styleModel.garment.imageId; */
 						mbi.data=styleModel.data;
 					}
 				} 				
  				
- 				if(bi.discount>0)
- 					model.showDiscount=true;
- 				
  				model.items.push(mbi);
+
+ 				totalAmt+=bi.orderAmt?bi.orderAmt:0;
+ 	 			totalQty+=bi.orderQty?bi.orderQty:0;
  				
  			}
  		}
@@ -850,10 +862,11 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  		model.info.totalAmt=kendo.toString(totalAmt, "c");
  		model.info.totalQty=kendo.toString(totalQty,"##,#");
  		
+ 	//test data 	_order.printModel=model; 
  		return model;
  	}
  	
- 	_order.createStyleGridModel=function(garmentId,showMainColourOnly){
+ 	_order.createStyleGridModel=function(garmentId,mainColourOnly){
 		
 		if(!garmentId) return null;
 		
@@ -902,7 +915,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			}
 		}
 		
-		if(showMainColourOnly){
+		if(mainColourOnly){
 			
 			for(var i=1,r,c;i<data.length;i++){
 				r=data[i];
@@ -928,55 +941,10 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		
 	}	 	
  	
- 	_order.printBill=function(billItems,lineItemOnly){
- 		var data=_order.createGarmentPrintModel(billItems,lineItemOnly);
- 		util.printUrl("../om/print-confirm",{data:JSON.stringify(data)},true);
+ 	_order.printBill=function(billItems,lineItemOnly,mainColourOnly){
+ 		var data=_order.createGarmentPrintModel(billItems,lineItemOnly,mainColourOnly);
+ 		util.printUrl("../om/print-confirm-dd",{data:JSON.stringify(data)},false);
  		return;
- 		
-		var html="<table class='printBillItem'>";
-		
-		html+="<tr><th class='tal style'>Style</th><th class='tal desc'>Description</th><th class='tar qty'>Quantity</th><th class='tar price'>Unit Price</th><th class='tar amt'>Amount</th></tr>";
- 		
-		var totalQty=0,totalAmt=0;
- 		for(var i=0,bi,h,p;i<billItems.length;i++){
- 			bi=billItems[i];
- 			
- 			totalAmt+=bi.orderAmt?bi.orderAmt:0;
- 			totalQty+=bi.orderQty?bi.orderQty:0;
- 			
- 			if(lineItemOnly?bi.itemTypeId===2:true){
-	 			html+="<tr class='lineitemrow'><td class='tal'>"+(bi.itemNumber?bi.itemNumber:"")+"</td>"+
-			 			"<td class='tal'>"+(bi.description?bi.description:"")+"</td>"+
-	 		 			"<td class='tar'>"+(bi.orderQty?kendo.toString(bi.orderQty,"##,#"):"")+"</td>"+
-			 			"<td class='tar'>"+(bi.orderPrice?kendo.toString(bi.orderPrice, "0.00"):"")+"</td>"+
-			 			"<td class='tar'>"+(bi.orderAmt?kendo.toString(bi.orderAmt, "c"):"")+"</td>"; 
-				if(bi.itemTypeId===2){		//lineItem
-					h=_order.getStyleGridHtml(parseInt(bi.billingKey),true);
-					if(h)
-			 			html+="<tr  class='styletablerow'><td></td>"+
-			 			"<td colspan='2'><div class='styletable'>"+h+"</div></td>"+
-			 			"<td></td>"+
-			 			"<td></td></tr>";
-				}
- 			}
- 		}
- 		
- 		html+="<tr class='totalrow'><td colspan='2'>Total:</td><td>"+kendo.toString(totalQty,"##,#")+
- 			"</td><td colspan='2'>"+kendo.toString(totalAmt,"c")+ "</td></tr></table>";
- 		
- 		html+="<style> table{border-collapse: collapse;border-width:0; } "+
- 			" table.printBillItem{width:100%;}"+
- 			" th {border-bottom: 1px solid black;}"+
- 	//		" tr.lineitemrow {background-color:#c0c0c0 !important;}" +
- 			" tr.lineitemrow > td {padding-top:10px;} "+
- 			" tr.styletablerow > td {padding-bottom:15px;} "+
- 	//		" table.printBillItem>tbody>tr:last-child>td {border-bottom: 1px solid black;}"+
- 			"tr.totalrow td{font-size:10pt; font-weight: bold;text-align:right;border-bottom: 1px solid black;border-top: 1px solid black; padding:10px 2px;}"+
- 			" div.styletable{padding-left:50px; float:left;} "+ 
- 			" div.styletable td {padding:2px 6px; font-size:8pt;} "+
- 			" .tal{text-align:left;} .tac{text-align: center;} .tar{text-align: right;} </style>";		//th.desc{width:300pt;} td.billDetailQty{width:25px;}
- 		
- 		util.print(html);
  	}
 	
 	_order.generateUpcItems=function(){

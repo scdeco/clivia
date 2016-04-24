@@ -32,7 +32,7 @@
 
 					<li>
 						<label for="country">Country:</label>
-						<kendo-combobox id="country" name="country"  style="width:100%;"   
+						<kendo-dropdownlist id="country" name="country"  style="width:100%;"   
 							ng-model="dataSet.info.country" 
 							ng-trim="true" 
 							k-options="countryOptions"/>

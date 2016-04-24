@@ -3,11 +3,11 @@
 				k-orientation="'vertical'"
 				k-panes="[{ collapsible: false, resizable:false,size:'40px'},
 						   { collapsible: false, resizable:true,size:'600px', min:'100px'},
-                    	  { collapsible: true}]"
+                    	  { collapsible: true,collapsed:true}]"
                 k-Options="lineItemSplitterOptions"
 				style="height: 800px; width: 100%;">    
 				
-		<div style="margin:6px;"><!-- top pane-->
+		<div ><!-- top pane-->
 			
 			<b>
 			<span ng-show="brand.hasInventory">
@@ -44,7 +44,7 @@
  		
  		
 		<div>   <!--  bottom pane -->	
-			<div id="lineitemdetail" ui-view></div>
+			<h1>	right oane</h1>
 		</div>  <!-- end of bottom pane -->	
     </div>
 	

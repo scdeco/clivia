@@ -103,8 +103,11 @@ clivia.factory("util",["$http","$q",function($http,$q){
 	 				    printWin.document.close();
 	 				    printWin.focus();
 	 				    if(!preview){
-	 					    printWin.print();
-	 					    printWin.close(); 
+	 				    	//if do not settimeout, the content will be blank, print before they are rendered
+	 				    	setTimeout(function(){		
+		 					    printWin.print();
+		 					    printWin.close(); 
+	 				    	},50);
 	 				    }
 	 				});
 		},
@@ -148,7 +151,7 @@ clivia.factory("util",["$http","$q",function($http,$q){
 	            return deferred.promise;
 			},
 		getTerms:function(){
-			return ["Prepaid","Net Before Jan.15","Net Before Feb.15","Net 15 Days","Net 30 Days","Net 45 Days","Net 60 Days","2%/10/N30","2%/10/N45","2%/10/N60",""];
+			return ["Prepaid","Net Before Jan.10","Net Before Feb.10","Net 15 Days","Net 30 Days","Net 45 Days","Net 60 Days","2%/10/N30","2%/10/N45","2%/10/N60",""];
 		}
 		
 	}	
@@ -614,7 +617,7 @@ clivia.factory("cliviaDDS",["DataDictSet",function(DataDictSet){
  		},{
 			name:"garment",
 			url:baseUrl+"data/generic/sql",
-			data:{select:"id,brandId,seasonId,styleNo,styleName,colourway,sizeRange,rrp,wsp,imageId",from:"garmentInfo",orderby:"seasonId,styleNo"},
+			data:{select:"id,brandId,seasonId,styleNo,styleName,colourway,sizeRange,rrp,wsp,rrpCad,wspCad,imageId",from:"garmentInfo",orderby:"seasonId,styleNo"},
 			mode:"eager"
 		},{
 			name:"upc",
@@ -1565,14 +1568,14 @@ clivia.factory("BillGridWrapper",["GridWrapper","cliviaDDS","DataDict",function(
 					name:"listPrice",
 				    field: "listPrice",
 				    title: "List Price",
-				    format: "{0:c}",
+				    format: "{0:n2}",
 				    width: 80,
 				    attributes:{style:"text-align:right;"}
 				}, {
 					name:"discount",
 					field:"discount",
 					title:"% Off",
-					format: "{0:p0}",					
+					format: "{0:p2}",					
 				    editor: thisGGW.percentageColumnEditor,
 				    width: 60,
 				    attributes:{style:"text-align:right;"}
@@ -1580,7 +1583,7 @@ clivia.factory("BillGridWrapper",["GridWrapper","cliviaDDS","DataDict",function(
 					name:"orderPrice",
 				    field: "orderPrice",
 				    title: "Price",
-				    format: "{0:c}",
+				    format: "{0:n2}",
 				    width: 80,
 				    attributes:{style:"text-align:right;"}
 				}, {
@@ -1830,6 +1833,11 @@ clivia.factory("AddressGridWrapper",["GridWrapper","cliviaDDS",function(GridWrap
 		        attributes:{class:"gridLineNumber"},
 		        headerAttributes:{class:"gridLineNumberHeader"},
 		        width: 25,
+			}, {
+		         name: "receiver",
+		         field: "receiver",
+		         title: "Receiver",
+		         width: 200
 			}, {
 		         name: "addr1",
 		         field: "addr1",

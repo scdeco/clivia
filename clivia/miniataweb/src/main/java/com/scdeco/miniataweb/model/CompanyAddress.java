@@ -17,6 +17,9 @@ public class CompanyAddress  extends CliviaSuperModel{
 
 	@Column(name="LineNo")
 	private Integer lineNo;
+
+	@Column(name="Receiver",length=100)
+	private String receiver;
 	
 	@Column(name="Addr1",length=100)
 	private String addr1;
@@ -73,6 +76,14 @@ public class CompanyAddress  extends CliviaSuperModel{
 
 	public void setLineNo(Integer lineNo) {
 		this.lineNo = lineNo;
+	}
+
+	public String getReceiver() {
+		return receiver;
+	}
+
+	public void setReceiver(String receiver) {
+		this.receiver = receiver;
 	}
 
 	public String getAddr1() {
@@ -162,6 +173,7 @@ public class CompanyAddress  extends CliviaSuperModel{
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
+
 
 
 }

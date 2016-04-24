@@ -83,15 +83,17 @@ orderApp.directive("orderInfo",["$http","cliviaDDS","util",function($http,clivia
 orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function($scope,$state, $filter, SO) {
 	$scope.SO=SO;
 	
-	var searchTemplate='<span class="k-textbox k-space-right" style="width: 140px;" >'+
-						'<input type="text" name="searchOrderNumber" class="k-textbox" placeholder="Search Order#" ng-model="searchOrderNumber" />'+
-						'<span ng-click="getOrder()" class="k-icon k-i-search"></span></span>' ;
+	var imgUrl="../resources/images/";
+	
+	var searchTemplate='<kendo-combobox name="searchOrderNumber" k-placeholder="\'Search Order#\'" ng-model="searchOrderNumber"  k-options="searchOrderNumberOptions" style="width: 140px;" />';
+						
 						
     $scope.orderToolbarOptions = {
 	        items: [{
 	                type: "button",
 	                text: "New",
 	                id:"btnNew",
+	                imageUrl:imgUrl+"i-new.ico",
 	                click: function(e) {
 	                	$scope.newOrder();
 	                }
@@ -99,6 +101,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	                type: "button",
 	                text: "Repeat",
 	                id:"btnRepeat",
+	                imageUrl:imgUrl+"i-repeat.ico",
 	                click: function(e) {
 	                	$scope.repeatOrder();
 	                }
@@ -108,6 +111,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	                type: "button",
 	                text: "save",
 	                id: "btnSave",
+	                imageUrl:imgUrl+"i-save.ico",
 	                click: function(e){
 	                	$scope.saveOrder();
 	                }
@@ -117,30 +121,61 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	                template:searchTemplate,		                
 	            }, {
 	                type: "button",
-	                text: "List",
-	                id:"btnList",
+	                text: "Go",
+	                imageUrl:imgUrl+"i-go.ico",
+	                id:"btnGo",
+	                click: function(e) {
+	                	$scope.getOrder();
+	                }	                
+	            }, {
+	                type: "button",
+	                text: "Find",
+	                imageUrl:imgUrl+"i-find.ico",
+	                id:"btnFind",
 	                click: function(e) {
 	                	$scope.openQueryWindow();
 	                }	                
 	            }, {
-	                type: "button",
-	                text: "Print",
-	                id:"btnPrint",
-	                click: function(e) {
-	                	$scope.printOrder();
-	                }	                
-	            }, {
+	                type: "separator",
+                },{
+                    type: "splitButton",
+                    text: "Print",
+                    id:"btnPrint",
+ 	                imageUrl:imgUrl+"i-print.ico",
+                    menuButtons: [{ 
+		       				 text: "Garment Confirmation", 
+		    				 id:"garmentConfirmation",
+		    				 
+	                    },{
+		       				 text: "Deco Confirmation", 
+		    				 icon: "insert-n",
+		    				 id:"decoConfirmation",
+	                    }],
+	                    
+              		click:function(e) {
+              			$scope.printOrder(e.id);
+              		}
+  	            }, {
 	                type: "separator",
  	            }, {
 	                type: "button",
 	                text: "Customer",
 	                id:"btnCustomer",
+	                imageUrl:imgUrl+"i-customer.ico",
 	                click: function(e) {
 		                	$scope.openCompany(SO.dataSet.info.customerId);
 		                }
  	                
 	       }]
 	    };	
+    $scope.searchOrderNumberOptions={
+    	dataSource:{data:["398003","398004","398005"]},	
+    	//Fired when the value of the widget is changed by the user
+    	change:function(e){
+    		$scope.getOrder();
+    	}
+    }
+    
 	$scope.companyOptions={
 		name:"companyComboBox",
 		dataTextField:"businessName",
@@ -162,7 +197,10 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 						if(di){
 							$scope.searchOrderNumber=di.orderNumber;
 							$scope.getOrder();
+							if(e.target && e.target.cellIndex===0)
+								$scope.queryWindow.close();
 						}
+						
 					}
 				}
 	}
@@ -188,19 +226,22 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	};	
 	
 	
-	$scope.printOrder=function(){
-		var orderItem=SO.getCurrentOrderItem();
-		if(orderItem.typeId===1){	//billItem
-			var dataSource=new kendo.data.DataSource({
-						     	data:SO.dataSet.billItems, 
-						   	    filter: {field: "orderItemId", operator: "eq",value: orderItem.id },    
-							    sort:{field:"lineNo"},
-						    }); //end of dataSource,
-						    
-			dataSource.fetch(function() {
-				  var billItems = dataSource.view();
-				  SO.printBill(billItems,false)		//print billItems that from lineitem(typeid===2) only
-				});
+	$scope.printOrder=function(id){
+		if(id==="garmentConfirmation"){
+			
+			var orderItem=SO.getCurrentOrderItem();
+			if(orderItem && orderItem.typeId===1){	//billItem
+				var dataSource=new kendo.data.DataSource({
+							     	data:SO.dataSet.billItems, 
+							   	    filter: {field: "orderItemId", operator: "eq",value: orderItem.id },    
+								    sort:{field:"lineNo"},
+							    }); //end of dataSource,
+							    
+				dataSource.fetch(function() {
+					  var billItems = dataSource.view();
+					  SO.printBill(billItems,true,true);		//if true,print billItems that from lineitem(typeid===2) only
+					});
+			}
 		}
 		
 	}

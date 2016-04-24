@@ -37,7 +37,7 @@
 					<li>
 						<label for="sizeRange">Size Range:</label>
 						<input kendo-combobox="sizeRange" name="sizeRange" style="width:100%;" 
-							ng-model="dataSet.info.sizeRange" k-options="sizeRangeOptions" capitalize/>
+							ng-model="dataSet.info.sizeRange" k-options="sizeRangeOptions" capitalize />
 					</li>
 					<li>
 						<label for="category">Category:</label>
@@ -47,13 +47,18 @@
 					
 					<li>
 						<label for="wholeSalePrice">WSP:</label>
-						<input kendo-numerictextbox="wholeSalePrice" name="wholeSalePrice" 
-							ng-model="dataSet.info.wsp" k-options="priceOptions"/>
+						<input kendo-numerictextbox="wholeSalePrice" name="wholeSalePrice"  style="width:90px"
+							ng-model="dataSet.info.wsp" k-options="priceOptions"/>US$&nbsp;
+						<input kendo-numerictextbox="wholeSalePriceCAD" name="wholeSalePriceCAD" style="width:90px"
+							ng-model="dataSet.info.wspCad" k-options="priceOptions"/>CA$
+						
 					</li>
 					<li>
 						<label for="retailPrice">RRP:</label>
-						<input kendo-numerictextbox="recommandedRetailPrice" name="recommandedRetailPrice" 
-							ng-model="dataSet.info.rrp" k-options="priceOptions"/>
+						<input kendo-numerictextbox="recommandedRetailPrice" name="recommandedRetailPrice" style="width:90px"
+							ng-model="dataSet.info.rrp" k-options="priceOptions"/>US$&nbsp;
+						<input kendo-numerictextbox="recommandedRetailPriceCAD" name="recommandedRetailPriceCAD" style="width:90px"
+							ng-model="dataSet.info.rrpCad" k-options="priceOptions"/>CA$
 					</li>
 					<li>
 						<label for="qoh">QOH:</label>

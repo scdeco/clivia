@@ -448,14 +448,7 @@ crmApp.controller("crmCtrl",["$scope","CompanyGridWrapper",function($scope,Compa
 			       		}			        	
 
  			        }
-			    }, {
-			        type: "separator",
-			    }, {	
-			        type: "button",
-			        text: "Print",
-			        id: "btnPrint",
-			        click: function(e){
-			            }
+
 			    }, {
 			        type: "separator",
 			    }, {
@@ -465,6 +458,15 @@ crmApp.controller("crmCtrl",["$scope","CompanyGridWrapper",function($scope,Compa
 			        click: function(e){
 			        	$scope.cgw.grid.saveAsExcel();
 			            }
+			    }, {
+			        type: "separator",
+			    }, {
+			        type: "button",
+			        text: "Clear Filter",
+			        id: "btnClearFilter",
+			        click: function(e){
+			        	$scope.clearFilter();
+			        }
 	}]};
 	
 	$scope.cgw=new CompanyGridWrapper("crmCompanyGrid");
@@ -548,6 +550,10 @@ crmApp.controller("crmCtrl",["$scope","CompanyGridWrapper",function($scope,Compa
  		$scope.$apply();
 		$scope.companyWindow.open();
 	}
+	
+ 	$scope.clearFilter=function () {
+ 	    $("form.k-filter-menu button[type='reset']").trigger("click");
+ 	}
 }]);
 
 </script>

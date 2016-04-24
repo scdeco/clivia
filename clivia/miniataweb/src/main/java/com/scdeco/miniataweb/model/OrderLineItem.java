@@ -104,6 +104,9 @@ public class OrderLineItem extends CliviaSuperModel{
 	
 	@Column(name="Qty20")
 	private Integer qty20;
+
+	@Column(name="Qty21")
+	private Integer qty21;
 	
 	@Column(name="Quantity")
 	private Integer quantity;
@@ -367,6 +370,14 @@ public class OrderLineItem extends CliviaSuperModel{
 		this.qty20 = qty20;
 	}
 
+	public Integer getQty21() {
+		return qty21;
+	}
+
+	public void setQty21(Integer qty21) {
+		this.qty21 = qty21;
+	}
+
 	public Integer getQuantity() {
 		return quantity;
 	}
@@ -382,6 +393,5 @@ public class OrderLineItem extends CliviaSuperModel{
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-
 	
 }

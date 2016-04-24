@@ -760,15 +760,29 @@ imApp.factory("InventoryGridWrapper",["GridWrapper",function(GridWrapper){
 				format: "{0:##,#}",
 			}, {
 				name:"rrp",
-				title:"RRP",
+				title:"RRP-US$",
 				field:"rrp",
 				width:70,
 				format: "{0:c}",
 				attributes:{class:"numberColumn"}
 			}, {
 				name:"wsp",
-				title:"WSP",
+				title:"WSP-US$",
 				field:"wsp",
+				width:70,
+				format: "{0:c}",
+				attributes:{class:"numberColumn"}
+			}, {
+				name:"rrpCad",
+				title:"RRP-CA$",
+				field:"rrpCad",
+				width:70,
+				format: "{0:c}",
+				attributes:{class:"numberColumn"}
+			}, {
+				name:"wspCad",
+				title:"WSP-CA$",
+				field:"wspCad",
 				width:70,
 				format: "{0:c}",
 				attributes:{class:"numberColumn"}

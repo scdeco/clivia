@@ -1206,9 +1206,10 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 			//calculate and set orderPrice of model based on listPrice and discount 
 			var calculateOrderPrice=function(model){
 				var result=0,discount=model.discount,listPrice=model.listPrice;
-				if(listPrice>0 && discount>0 && discount<1){
+				if(listPrice>0 && discount>=0 && discount<1){
 					result=listPrice*(1-discount);
-					model.set("orderPrice",result);
+					result=result?result.toFixed(2):result;
+					model.orderPrice=result;
 				}
 				return result;
 			}

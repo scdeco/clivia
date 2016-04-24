@@ -28,7 +28,9 @@
 	
 	<div id="middle-pane">
 		<div kendo-toolbar id="inventoryToolbar" k-options="inventoryToolbarOptions"></div>
-		<div  kendo-grid="inventoryGarmentGrid"  k-options="inventory.garmentGridOptions"></div>
+ 		<div  kendo-grid="inventoryGarmentGrid"  k-options="inventory.garmentGridOptions"></div> 
+
+		
 	</div> <!-- middle pane of outter splitter -->
 	
 	<div id="bottom-pane" style="height:300px;">

@@ -52,11 +52,18 @@ public class GarmentInfo extends CliviaSuperModel{
 	@Column(name="PQ")			//purchase quantity
 	private Integer pq=0;
 
-	@Column(name="WSP")			//whole sale price
+	@Column(name="WSP")			//whole sale price in US$
 	private Double wsp=0.0d;
-	
-	@Column(name="RRP")			//recommended retail price
+
+	@Column(name="RRP")			//recommended retail price in US$
 	private Double rrp=0.0d;
+
+	@Column(name="WSPCAD")			//whole sale price in CA$
+	private Double wspCad=0.0d;
+	
+	@Column(name="RRPCAD")			//recommended retail price in CA$
+	private Double rrpCad=0.0d;
+	
 	
 	@Column(name="Used")
 	private Boolean used=false;
@@ -187,12 +194,28 @@ public class GarmentInfo extends CliviaSuperModel{
 		this.wsp = wsp;
 	}
 
+	public Double getWspCad() {
+		return wspCad;
+	}
+
+	public void setWspCad(Double wspCad) {
+		this.wspCad = wspCad;
+	}
+
 	public Double getRrp() {
 		return rrp;
 	}
 
 	public void setRrp(Double rrp) {
 		this.rrp = rrp;
+	}
+
+	public Double getRrpCad() {
+		return rrpCad;
+	}
+
+	public void setRrpCad(Double rrpCad) {
+		this.rrpCad = rrpCad;
 	}
 
 	public Boolean getUsed() {
@@ -218,4 +241,5 @@ public class GarmentInfo extends CliviaSuperModel{
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
+
 }

@@ -66,7 +66,7 @@
 		       		Threads:
 			       		<textarea ng-model="embMatcher.embCanvas.threadCodes" 
 			       				  ng-trim="true"
-			       				  change-on-blur="console.log('changed:'+embMatcher.embCanvas.threadCodes)"
+			       				  change-on-blur="populateThreads()"
 			       				  class="k-textbox" 
 			       				  style="width:100%;resize: vertical;"></textarea>
 			       				  
@@ -80,6 +80,7 @@
 		       		<textarea ng-model="embMatcher.embCanvas.runningSteps" 
 		       				  ng-trim="true"
 		       				  class="k-textbox" 
+		       				  change-on-blur="populateSteps()"
 		       				  style="width:100%;resize: vertical;"></textarea>
 		    		<div kendo-sortable="embStepGridSortable"	k-options="embMatcher.gwStep.getSortableOptions()">
 						<div  kendo-grid="embStepGrid"  k-options="stepGridOptions"></div>

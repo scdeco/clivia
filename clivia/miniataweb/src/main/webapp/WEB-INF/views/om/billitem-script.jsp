@@ -92,8 +92,10 @@ orderApp.controller("billItemCtrl",["$scope","$state","$sce","SO",
 
 	$scope.getTotalAmount=function(){
 		if(!$scope.billGrid) return "";
-		var totalAmt=$scope.billGrid.getTotal();
-		return totalAmt?kendo.toString(totalAmt,"c"):"";
+		var totalAmt=$scope.billGrid.getTotal(),
+			c=SO.company.info.country==="Canada"?"CA":"US",
+			result=c+(totalAmt?kendo.toString(totalAmt,"c"):"");
+		return result;
 	}
 	
 	$scope.setDiscount=function(oldValue,newValue){
