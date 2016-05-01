@@ -85,7 +85,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	
 	var imgUrl="../resources/images/";
 	
-	var searchTemplate='<kendo-combobox name="searchOrderNumber" k-placeholder="\'Search Order#\'" ng-model="searchOrderNumber"  k-options="searchOrderNumberOptions" style="width: 140px;" />';
+	var searchTemplate='<kendo-combobox name="searchOrderNumber" k-placeholder="\'Search Order#\'" ng-model="searchOrderNumber" ng-disabled="getOrderDisabled" k-options="searchOrderNumberOptions" style="width: 140px;" />';
 						
 						
     $scope.orderToolbarOptions = {
@@ -119,14 +119,14 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	                type: "separator",
 	            }, {	
 	                template:searchTemplate,		                
-	            }, {
+/* 	            }, {
 	                type: "button",
 	                text: "Go",
 	                imageUrl:imgUrl+"i-go.ico",
 	                id:"btnGo",
 	                click: function(e) {
 	                	$scope.getOrder();
-	                }	                
+	                }	                 */
 	            }, {
 	                type: "button",
 	                text: "Find",
@@ -169,7 +169,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	       }]
 	    };	
     $scope.searchOrderNumberOptions={
-    	dataSource:{data:["398003","398004","398005"]},	
+    	dataSource:{data:[]},	//recent orders
     	//Fired when the value of the widget is changed by the user
     	change:function(e){
     		$scope.getOrder();
@@ -265,8 +265,12 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	}
 
 	$scope.getOrder=function(){
-		
 		if(!!$scope.searchOrderNumber && (!$scope.orderIsDirty() || $scope.confirmDiscardChanges())){
+			if($scope.getOrderDisabled)
+				return;
+			
+			$scope.getOrderDisabled=true;
+
 			SO.clear();
 			SO.retrieve($scope.searchOrderNumber)
 				.then(function(data){
@@ -285,9 +289,11 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 				    	alert("Can not find order:"+$scope.searchOrderNumber+".");
 				    }
 				    $scope.searchOrderNumber="";
+					$scope.getOrderDisabled=false;;
 				},function(data){
 					alert( "failure message: " + JSON.stringify({data: data}));
 					$scope.searchOrderNumber="";
+					$scope.getOrderDisabled=false;;
 				});
 		}
 		else{

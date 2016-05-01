@@ -20,7 +20,7 @@
 			
 <div kendo-window="garmentInputWindow" 
 		k-width="850"
-	 	k-height="310"
+	 	k-height="410"
 	 	k-position="{top: 50, left: 100 }"	
 	 	k-resizable="true"
 		k-draggable="true"

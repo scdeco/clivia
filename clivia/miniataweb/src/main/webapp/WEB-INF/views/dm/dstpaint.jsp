@@ -1,8 +1,8 @@
 
     <div class="k-header wide" style="height:800px;">
     
- 
-    	
+
+
       	<div 	kendo-splitter="DstSplitter"  
       			k-orientation="'horizontal'" 
 				k-panes="[{ collapsible: false},
@@ -12,7 +12,8 @@
       	
   		<!-- 		ng-model="dstPaint.backgroundColor"  -->
       		<div id="dst-first-pane">
-   				<div id="container" ng-style="{'background-color':dstPaint.backgroundColor}">
+   				<div id="container" ng-style="{'background-color':dstPaint.backgroundColor}" 
+   					 				ng-click="onClick()">
 				</div>
 			</div>	<!-- first-pane-->
 			
@@ -23,7 +24,6 @@
 			
 	</div>
 
-		
 
 	
 

@@ -546,7 +546,11 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 					f12: {type:"number"}
 				}}};
 
-			var gridColumns=[{title:"Colour",template:"<label>#: colour #</label>"}];
+			var gridColumns=[{
+				title:"Colour",
+				template:"<label>#: colour #</label>",
+				attributes: {style:"text-align: left;"}
+				}];
 			var gridData=new kendo.data.ObservableArray([]);
 
 			var readOnlyColumnEditor=function(container, options) {
@@ -936,7 +940,7 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 								addRow(false);
 								break;
 							case "menuAddWindow":
-								scope.garmentInputWindow.open();
+								scope.garmentInputWindow.center().open();
 								break;
 							case "menuInsert":
 								addRow(true);
@@ -1891,37 +1895,42 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 				
 				var getDataSource=function(){
 					var info=scope.dataSet.info
-					var url=info.dataUrl?info.dataUrl : "../datasource/"+info.daoName+"/read";					
-					return {
-						transport: {
-						    read: {
-						        url:url, 		//'../datasource/orderInfoViewDao/read',
-						        type: 'post',
-						        dataType: 'json',
-						        contentType: 'application/json'
-						    },
-						    parameterMap: function(options, operation) {
-						            return JSON.stringify(options);
-						    }
-						},
-						error: function(e) {
-						    alert("Status:" + e.status + "; Error message: " + e.errorThrown);
-						},
-						pageSize: info.pageSize?info.pageSize:25,
-						serverPaging: true,
-						serverFiltering: true,
-						serverSorting: true,
+					if(info.daoName){
+						var url=info.dataUrl?info.dataUrl : "../datasource/"+info.daoName+"/read";					
+						return {
+							transport: {
+							    read: {
+							        url:url, 		//'../datasource/orderInfoViewDao/read',
+							        type: 'post',
+							        dataType: 'json',
+							        contentType: 'application/json'
+							    },
+							    parameterMap: function(options, operation) {
+							            return JSON.stringify(options);
+							    }
+							},
+							error: function(e) {
+							    alert("Status:" + e.status + "; Error message: " + e.errorThrown);
+							},
+							pageSize: info.pageSize?info.pageSize:25,
+							serverPaging: true,
+							serverFiltering: true,
+							serverSorting: true,
 
-						sort: [{
-					         field: "orderNumber",
-					         dir: "asc"
-					     }], 
-						schema: {
-						    data: "data",
-						    total: "total",
-						    model: {id: "id"}
-						},
+	/* 						sort: [{
+						         field: "orderNumber",
+						         dir: "asc"
+						     }], 
+	 */						schema: {
+							    data: "data",
+							    total: "total",
+							    model: {id: "id"}
+							},
+						}
+					}else{
+						
 					}
+					
 				}; //end of getDataSource()
 				
 				var showLineNumber=function(grid){

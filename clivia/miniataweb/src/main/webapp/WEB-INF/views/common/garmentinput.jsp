@@ -8,12 +8,14 @@
 			
 	<h4>{{garment.styleNo}}:&nbsp;{{garment.styleName}}</h4>
 	
-	<div  kendo-grid="styleGrid" id="styleGrid"  k-options="gridOptions"  k-rebind="gridRebind" k-height=200></div> 		
+	<div  kendo-grid="styleGrid" id="styleGrid"  k-options="gridOptions"  k-rebind="gridRebind" k-height=300></div> 		
 	
 	<div> 
-	  	<input type="button" value="OK" ng-click="ok()">
-		<input type="button" value="Add" ng-click="add()">
-	  	<input type="button" value="Clear" ng-click="clear()" style="margin-left:100px;">
-	  	<input type="button" value="Cancel" ng-click="cancel()">	
+
+	  	<input type="button" value="Clear" ng-click="clear()" style="margin-left:10px;">
+	  	<input type="button" value="Cancel" ng-click="cancel()" >	
+	  	
+	  	<input type="button" value="OK" ng-click="ok()" style="margin-left:180px;">
+		<input type="button" value="Add" ng-click="add()">	  	
 	</div>
-</div>';
+</div> 

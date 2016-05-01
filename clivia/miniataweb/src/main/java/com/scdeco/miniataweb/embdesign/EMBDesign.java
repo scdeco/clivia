@@ -268,7 +268,7 @@ public class EMBDesign
 			Color color=colorway.getThreadColor(0);
 			int i=0;
 			do{
-				r[i]=(byte)color.getRed();
+				r[i]=(byte)color.getRed(); 
 				g[i]=(byte)color.getGreen();
 				b[i]=(byte)color.getBlue();
 				if(++i<size)

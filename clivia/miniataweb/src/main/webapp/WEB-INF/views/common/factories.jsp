@@ -76,10 +76,12 @@ clivia.factory("util",["$http","$q",function($http,$q){
 			return deferred.promise;
 		},
 		
-		split:function(originalStr){
+		split:function(originalStr,seperator){
+			if(!seperator)
+				seperator=",";
 			var strs=[];
 			if(originalStr){
-				strs=originalStr.split(',');
+				strs=originalStr.split(seperator);
 				for(var i=0;i<strs.length;i++){
 					if(strs)
 						strs[i]=strs[i].trim();
@@ -119,7 +121,7 @@ clivia.factory("util",["$http","$q",function($http,$q){
 			    windowContent += '<body>'
 			    windowContent += html;
 			    windowContent += '</body>';
-			    windowContent+='<style>	html {font-family: Arial, Helvetica, sans-serif; font-size: 8.5pt;}';
+			    windowContent+='<style>	html {font-family: Arial, Helvetica, sans-serif; font-size: 9pt;}';
 			    windowContent+='</style>';
 			    windowContent += '</html>';
 			    var printWin = window.open('','');

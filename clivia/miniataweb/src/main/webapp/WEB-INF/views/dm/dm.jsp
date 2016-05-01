@@ -11,9 +11,11 @@
 </head>
 <body ng-app="embDesignApp" spellcheck="false">
 	<div ng-controller="dmCtrl">
-	   <div kendo-toolbar id="dstToolbar" k-options="dstToolbarOptions"></div>
-	
+	   	<div kendo-toolbar id="dstToolbar" k-options="dstToolbarOptions"></div>	
 		<div dst-paint="myDstPaint"></div>
+<pre>
+printModel={{myDstPaint.printModel|json}}
+</pre>		
 	</div>
 </body>
 <script>

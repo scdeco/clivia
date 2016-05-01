@@ -309,7 +309,12 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			if(!$scope.order.orderInfo.orderDate)
 				$scope.order.orderInfo.orderDate = $filter('date')(new Date(),'yyyy-MM-dd');	
 	    */
-	    _order.generateUpcItems();
+	    var error=_order.generateUpcItems();
+	    
+	    if(error){
+	    	alert(error);
+	    	return;
+	    }
 
 		var deferred = $q.defer();
 		
@@ -542,8 +547,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 					if(!billableIdx[strTypeId])
 						billableIdx[strTypeId]={};
 					var idx=billableIdx[strTypeId];
-					var lineItems=dataSet.lineItems;
 					
+					var lineItems=dataSet.lineItems;
 					for(var j=0,f,sid,lineItem,billableItem;j<lineItems.length;j++){
 							
 						lineItem=lineItems[j];
@@ -958,19 +963,37 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		var orderId=_order.dataSet.info.id;
 		var idxUpc={};
 		
+		var billItems=dataSet.billItems;
+		var idxBill;
 		for(var i=0,orderItem;i<orderItems.length;i++){
 			orderItem=orderItems[i];
 			if(orderItem.typeId===2){ //"lineItem"
+				idxBill={};
+				for(var j=0,billItem;j<billItems.length;j++){
+					billItem=billItems[j];
+					if(billItem.itemTypeId===orderItem.typeId && billItem.billingKey){
+						idxBill[billItem.billingKey]=j;
+					}
+				}
+				
 				var brand=_order.getBrandFromSpec(orderItem.spec);
 				if(brand.hasInventory){  
 					var season=_order.getSeasonFromSpec(orderItem.spec);
 					var sizes=util.split(season.sizeFields);
+					var sizesLength=sizes.length;
 					var lineItems=dataSet.lineItems;
-					for(var j=0,lineItem,idx;j<lineItems.length;j++){
+					for(var j=0,lineItem,idx,billItem;j<lineItems.length;j++){
 						lineItem=lineItems[j];
 						if(lineItem.orderItemId===orderItem.id && lineItem.garmentId && lineItem.colour){
 							
-							for(var f=0,field,qty,upc,upcId;f<14;f++){
+							idx=idxBill[lineItem.garmentId];
+							
+							if(!(idx>=0))
+								return "Error: item has not been billed("+lineItem.styleNo+"-"+lineItem.garmentId+")";
+							
+							billItem=billItems[idx];
+							
+							for(var f=0,field,qty,upc,upcId;f<sizesLength;f++){
 								field="qty"+("00"+f).slice(-2);
 								qty=lineItem[field]?lineItem[field]:0;
 								if(qty){
@@ -982,12 +1005,24 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 										if(typeof idx!=='undefined'){ //idx starts from 0;
 											upc=upcs[idx];
 											upc.orderQty+=qty;
+											
 										}else{
-											upc={upcId:upcId,orderQty:qty,isDirty:true};
+											upc={
+													upcId:upcId,
+													orderQty:qty,
+													orderPrice:billItem.orderPrice,
+													listPrice:billItem.listPrice,
+													discount:billItem.discount,
+													isDirty:true
+												};
 											idxUpc[String(upcId)]=upcs.push(upc)-1;
+											
 										}
+										
+										
+									}else{
+										return "Error: can not find item("+lineItem.styleNo+"-"+lineItem.garmentId+" colour-"+lineItem.colour+" size-"+sizes[f]+")";
 									}
-									
 								}
 							}	//end of for:f	
 							
@@ -1002,12 +1037,21 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			idx=idxUpc[String(orderUpc.upcId)];
 			if(typeof idx!=='undefined'){ //idx starts from 0;
 				generatedUpc=upcs[idx];
-				if(orderUpc.orderQty!==generatedUpc.orderQty){
+				if(	!(orderUpc.orderQty===generatedUpc.orderQty)||
+					!(orderUpc.orderPrice===generatedUpc.orderPrice)||
+					!(orderUpc.listPrice===generatedUpc.listPrice)||
+					!(orderUpc.discount===generatedUpc.discount)){
+					
 					orderUpc.orderQty=generatedUpc.orderQty;
+					orderUpc.orderPrice=generatedUpc.orderPrice;
+					orderUpc.listPrice=generatedUpc.listPrice;
+					orderUpc.discount=generatedUpc.discount;
+					
 					orderUpc.isDirty=true;
-				}else{
-					generatedUpc.isDirty=false;
 				}
+				
+				generatedUpc.isDirty=false;
+				
 			}else{
 				if(orderUpc.id){
 					_order.registerDeletedItem("orderUpc",orderUpc.id);
@@ -1022,7 +1066,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				orderUpcs.push(upc);
 			}
 		}
-
+		
+		return "";
 	}
 	
 	_order.getBrandFromSpec=function(orderItemSpec){

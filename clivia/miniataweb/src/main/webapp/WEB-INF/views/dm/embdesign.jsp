@@ -46,8 +46,6 @@ factory("Selector",function(){
         _initAnchor: function(config) {
             Kinetic.Rect.call(this, config);
             },
-        myFunc : function(){
-        }
     };
 	Kinetic.Util.extend(Anchor, Kinetic.Rect);	
 	
@@ -124,8 +122,8 @@ factory("Selector",function(){
 				this.show();
 
 				this.adjust(ap,w,h);
-			}
-			else{
+			}else{
+				
 				this.hide();
 			}
 			this.drawLayer();
@@ -135,10 +133,12 @@ factory("Selector",function(){
 			var layer=this.getLayer();
 			
 			//apply filters, otherwise image will not be resized
-			var filters=this.selected.filters();
-			if(filters!==undefined && filters.length>0){
-				this.selected.cache();
-				this.selected.filters(filters);
+			if(this.selected!=null){
+				var filters=this.selected.filters();
+				if(filters!=null && filters.length>0){
+					this.selected.cache();
+					this.selected.filters(filters);
+				}
 			}
 			
 			if(layer) layer.draw();
@@ -647,49 +647,12 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 				this.imageChanged.fireEvent([this]);
 			}
 		},
+
 	}
 	
 	return EmbCanvas; 
 }]).
 
-factory("EmbStage",["Selector",function(Selector){
-	
-	var EmbStage=function(config){	//{container: 'container', width: 1024, height: 800}
-
-		this.stage=new Kinetic.Stage(config);
-		this.backGroundLayer=new Kinetic.Layer();
-		this.stage.add(this.backGroundLayer);
-		this.selector=new Selector();
-		this.currentLayer=this.backGroundLayer;
-	}
-	
-	EmbStage.prototype={
-			createLayer:function(addToStage){
-				var newLayer=new Kinetic.Layer();
-				if(addToStage)
-					this.stage.add(newLayer);
-				this.currentLayer=newLayer;
-				return newLayer;
-			},
-			addLayer:function(layer){
-				this.stage.add(layer);
-			},
-			add:function(object){
-				var self=this;
-				object.on("mousedown",function(){
-						self.selector.setSelected(object);
-				});
-				this.currentLayer.add(object);
-				this.currentLayer.draw();
-			},
-			draw:function(){
-				this.currentLayer.draw();
-			}
-	}
-	
-	return EmbStage;
-	
-}]).
 
 factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread){
 	
@@ -1219,7 +1182,7 @@ directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThr
                     emb.gwThread.grid.refresh();
                     emb.gwStep.grid.refresh();
 				}
-
+				
 			}, //end of link function
 			controller:function($scope){
 				var scope=$scope;
@@ -1255,6 +1218,71 @@ directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThr
 	return directive;
 }]).
 
+factory("EmbStage",["Selector",function(Selector){
+	
+	var EmbStage=function(config){	//{container: 'container', width: 1024, height: 800}
+
+		this.stage=new Kinetic.Stage(config);
+		this.backGroundLayer=new Kinetic.Layer();
+		this.stage.add(this.backGroundLayer);
+		this.selector=new Selector();
+		this.currentLayer=this.backGroundLayer;
+		this.clickedOnObject=false;
+	}
+	
+	EmbStage.prototype={
+			createLayer:function(addToStage){
+				var newLayer=new Kinetic.Layer();
+				if(addToStage)
+					this.stage.add(newLayer);
+				this.currentLayer=newLayer;
+				return newLayer;
+			},
+			addLayer:function(layer){
+				this.stage.add(layer);
+			},
+			add:function(object){
+				var self=this;
+				object.on("mousedown",function(){
+					self.clickedOnObject=true;		//flag to indicates clicked on an object
+					self.selector.setSelected(object);
+				});
+				this.currentLayer.add(object);
+				this.currentLayer.draw();
+			},
+			
+			//remove current selected object from stage
+			remove:function(){
+				var object=this.selector.selected;
+				if(object){
+					this.select();
+					object.remove();
+					//this.currentLayer.draw();
+				}
+			},
+			
+			select:function(object){
+				this.selector.setSelected(object);
+			},
+			
+			onClick:function(){
+				if(!this.clickedOnObject){
+					this.selector.setSelected();
+				}else{
+					this.clickedOnObject=false;
+				}
+			},
+			
+			draw:function(){
+				this.currentLayer.draw();
+			}
+	}
+	
+	return EmbStage;
+	
+}]).
+
+
 directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 	
 	var templateUrl="../dm/dstpaint";
@@ -1270,9 +1298,295 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 			link:function(scope,element,attrs){
 				
 				
-				scope.print=function(){
+				scope.getPrintModel=function(embMatcher,showThreads,purgeRepeatCode){
+					var model={};
+					if(!embMatcher) return model;
+					var embCanvas=embMatcher.embCanvas;
+					if(!embCanvas) return model;
 					
-					var html='<img src="' + scope.embCanvas.imageObj.toDataURL() + '">';
+					
+					var dst=embCanvas.embDesign;
+					if(dst && dst.isValid()){
+						//embCanvas.drawDesign();
+						
+						var list=[],line;
+						var threadList=embMatcher.threadList;
+						var stepList=embMatcher.runningStepList;
+						var idxThreads={};
+						var emptyLine={
+								col0:"",
+								col1:"",
+								col2:"",
+								col3:"",
+								col4:"",
+						}
+						
+						if(showThreads){
+							for(var i=0,t;i<threadList.length;i++){
+								t=threadList[i];
+								if(t.code){
+									line={
+										col0:String(i+1),
+										col1:String(t.threadStitchCount),
+										col2:t.colour,
+										col3:t.code,
+										col4:"",
+									}
+									list.push(line);
+								}else{
+									break;
+								}
+							}
+							list.push(emptyLine);
+						}
+						
+						for(var i=0,idx,step,code,t;i<stepList.length;i++){
+							step=stepList[i];
+							idx=parseInt(step.threadIndex);
+							t=(idx>0 && idx<threadList.length)?threadList[idx-1]:null;
+							if(t && t.code){
+								code=t.code;
+								if(purgeRepeatCode){
+									if(idxThreads[String(idx)]){
+										code="";
+									}else{
+										idxThreads[String(idx)]=true;
+									}
+								}
+								
+								line={
+										col0:String(i+1),
+										col1:String(t.threadStitchCount),
+										col2:t.colour,
+										col3:code,
+										col4:step.threadIndex,
+								}
+								
+								list.push(line);
+							}else{
+								list.push(emptyLine);
+							}
+						}
+						
+						var topLine="",space=10;
+						topLine+=dst.designNumber?(dst.designNumber+"&nbsp;&nbsp;"):"";
+						topLine+="H:"+dst.height+"&nbsp;".repeat(space);
+						topLine+="W:"+dst.width+"&nbsp;".repeat(space);
+						topLine+="st:"+dst.stitchCount+"&nbsp;".repeat(space);
+						topLine+="Step:"+dst.stepCount+"&nbsp;".repeat(space);
+						
+						var bottomLine="K:\Wilcom\2005934 Ontario Inc Mark's Promotional";
+						
+						model={
+								topLine:topLine,
+								bottomLine:bottomLine,
+								width:dst.width,
+								height:dst.height,
+								list:list,
+								image:embCanvas.imageObj.toDataURL(),								
+						}
+						
+					}
+					
+					return model;
+				}			
+				
+				scope.getDesignHtml=function (printModel,paperType,isLandscape){	
+					
+					var Paper = {
+						papers :[{type:"letter",width:191, height:255}],
+						getPaper :function (paperType){
+							var paper;
+							var papers = this.papers;
+							for (var i = 0; i < papers.length; i++){
+								if(papers[i].type == paperType){
+									paper = papers[i];
+									break;
+								}
+							}
+							return paper;
+						},
+						getDefault:function (){
+							return paper[0];	
+						}
+					}
+				
+					var paper = Paper.getPaper(paperType);
+					if(!paper)
+						Paper.getPaper(getDefault);
+						
+					//var layout ="portrait";
+					if(isLandscape){
+						var temp = paper.width;
+						paper.width = paper.height;
+						paper.height = temp;
+					}
+						
+					//before change to pixel, all variable are in mm.
+					var margin = 0; //mm
+					var mmToPixel =3.81;	// 3.64;
+					var r_table_w = 50;//mm
+					var r_table_h = 240.5;//mm
+					var font_family = "Times New Roman";
+					var info_font_size = 80;//top info and bot info font size
+					var list_font_size = 100;// list font size
+					var paper_width = (paper.width - (margin*2));
+					var paper_height = (paper.height - (margin*2));
+					var table_width= paper.width;
+					var table_height = 5;//mm
+					
+					//change mm to pixel
+					function changeToPixel(mm){
+						var pixel = mm * mmToPixel;
+						return pixel;
+					}
+					
+					// all variable are in pixel now
+					var paper_w_pixel = changeToPixel(paper_width);
+					var paper_h_pixel = changeToPixel(paper_height);
+					var r_table_w_pixel = changeToPixel(r_table_w);
+					var r_table_h_pixel = changeToPixel(r_table_h);
+					var margin_pixel = changeToPixel(margin);
+					var image_w_pixel = changeToPixel(printModel.width);
+					var image_h_pixel = changeToPixel(printModel.height);
+					var table_height_pixel = changeToPixel(table_height);
+					
+					
+					//---------------------------------right hand list part---------------------------------------
+					var error_pixel = 9;
+					var error_pixel2 = 6;//fix the height of the right table 
+					var error_pixel3 = 1; // fix the width of the right table
+					var error_pixel4 = 34;//fix 2nd right table margin top
+					var borderHeight = paper_h_pixel - table_height_pixel * 2 - error_pixel;//calculate image border height
+					
+				
+					var threadLists = printModel.list;
+					var colorDiv = 10;
+					var col1Width = 25;
+					var col2Width = 20;
+					var col3Width = 20;
+					var col4Width = 25;
+					var col5Width = 20;
+					
+					var rightList="";
+				
+					//test part start here
+					var row_height = 20;
+					//calculate how many row needed
+					var row_count = Math.floor(borderHeight/row_height)-2;
+					//calculate how many col needed
+					var needed_row = threadLists.length;
+					var col_count = Math.ceil(needed_row/row_count);
+					//calculate width for img div part
+					var borderWidth = paper_w_pixel - r_table_w_pixel*col_count - error_pixel;
+					//calculate width for righthand list part
+					var divWidth = paper_w_pixel - borderWidth + error_pixel3;
+					//if there enough space to display the list?
+					if(divWidth > (paper_w_pixel*0.54)){
+							alert("sorry, we cant display it!!!!");
+							return;
+					}
+					
+					rightList = "<div style='height:"+ borderHeight + "px; border: 1px solid black; width:" + divWidth +"px;"
+								  +"margin-top:" + -(paper_h_pixel - table_height_pixel - error_pixel2) + "px;text-align:center; border-left-style:none;"
+								  +"margin-left:" + (borderWidth)  +"px; font-family:" + font_family + "; font-size:" + list_font_size +"%;'>" 
+								  +"<table style='border-collapse: collapse;width:" + divWidth + "px;'>";
+					var tdDot = "";
+					var tdEmpty="";
+					for(var i=0;i<5;i++){
+						tdDot+="<td style = 'border-bottom-style:dotted;border-bottom-width: 1px;'></td>";
+						tdEmpty+="<td></td>";
+					}
+
+					for(var i = 0,t,dotRow; i < row_count; i++){
+						rightList += "<tr>"
+						dotRow="";
+						for(var j = 0; j < col_count; j++){
+							var count = j * row_count + i;
+							if(count < needed_row){
+								t = threadLists[count];
+								
+								rightList += "<td style='width:" + col1Width + "px;text-align:right;'>" + t.col0 + ".</td>"
+									  +"<td style='width:" + col2Width + "px;text-align:right;'>"+ t.col1  +"</td>"
+									  +"<td style='width: "+ col3Width  +"px;'><center><div style ='border:1px solid black; width:" + colorDiv + "px; height:" + colorDiv +"px; background-color:" + t.col2+ "'></div></center></td>"
+									  +"<td style ='text-align:right;width:" + col4Width+ "px;'>"+ t.col3 +"</td>"
+									  +"<td style ='width:" + col5Width  + "px;text-align:right'>" + t.col4+ "</td>";
+								
+								dotRow+=tdDot;
+							}else{
+								dotRow+=tdEmpty;
+							}
+						}
+						rightList += "</tr>";
+						if ((i+1)%4 == 0){
+							rightList += "<tr>"+dotRow+"</tr>";
+						}
+					}
+					rightList += "</table></div>"
+					
+					//image initial part
+					var imgHtml="";
+					var newImageH = 0;
+					var newImageW = 0;
+					var widthRatio = 0;
+					var heightRatio = 0;
+					var ratio = 0;
+					
+				
+					//--------------------------------calculate ratio part---------------------
+					widthRatio =  borderWidth/image_w_pixel;
+					heightRatio =  borderHeight/image_h_pixel;
+					ratio = widthRatio > heightRatio? heightRatio:widthRatio;		
+					
+					//---------------------image part----------------------------
+					//set image div border
+					imgHtml += "<div  style='width:" + borderWidth + "px;height:" + borderHeight + "px; border: 1px solid black; line-height:" + borderHeight + "px;'>"
+					
+					//use ratio to control image display 
+					if (ratio > 1){
+						ratio = 1;
+						output(image_w_pixel,image_h_pixel,ratio,borderHeight);
+					
+					}
+					
+					else{
+					 output(image_w_pixel,image_h_pixel,ratio,borderHeight);
+					}
+					
+					//output image function
+					function output(imgWidth,imgHeight,ratio,borderHeight){
+						
+						newImageW = imgWidth * ratio;
+						newImageH = imgHeight * ratio;
+						imgHtml += "<img src='" + printModel.image +"' alt='pattern'" 
+								 + "style='display:block; width:" + newImageW + "px;height:" 
+								 + newImageH + "px;" + "margin-left:auto;margin-right:auto;margin-top:"
+								 + (borderHeight*0.5 - newImageH/2)+"px;'>";	
+					}
+					imgHtml += "</div>";
+					
+					//---------------------------header table part--------------------------
+					ratio = ratio.toFixed(2);
+					var topInfo = "<div style='height:" + table_height_pixel + "px; width:" + paper_w_pixel +"px ;border: 1px solid black;line-height:" + table_height_pixel +"px; text-align:right; border-bottom-style:none;font-family:" + font_family + "; font-size:" + info_font_size +"%;'>";
+					topInfo += "Z:" + ratio + '&nbsp'.repeat(5) + printModel.topLine +"</div>";
+					
+					//--------------------------------bottom table part---------------------------
+					var bottomInfo = "<div style='height:" + table_height_pixel + "px; width:" + paper_w_pixel +"px ;border: 1px solid black;line-height:" + table_height_pixel +"px; text-align:left; border-top-style:none;font-family:" + font_family + "; font-size:" + info_font_size +"%;'>" 
+					bottomInfo +='&nbsp'.repeat(6) + printModel.bottomLine + "</div>";
+					
+					
+					
+					//-----------------------------display------------------------------------
+					var display = topInfo + imgHtml + bottomInfo + rightList;
+					return display;
+				}	
+				
+
+				scope.print=function(){
+					var printModel=scope.getPrintModel(scope.threadMatcher,false,true);
+				
+					var html=scope.getDesignHtml(printModel,"letter");
+					
 					util.print(html,true);
 				}				
 				
@@ -1280,6 +1594,10 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 				    scope.dstDesign.getDst(dstDesign);
 				}
 
+				scope.onClick=function(){
+					scope.embStage.onClick();
+				}
+				
 
 			}, //end of link function
 			
@@ -1290,14 +1608,11 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 				
 				var scope=$scope;
 
-				scope.embMatcher=new EmbMatcher();
 				
 				//expose this directive scope to parent directive
 				if(scope.cName) 
 					scope.$parent[scope.cName]=scope;
 
-				if(scope.cEmbCanvas)
-					scope.embMatcher.setEmbCanvas(scope.cEmbCanvas);					
 					
 			    $scope.dstDesign=new DstDesign();
 
@@ -1324,7 +1639,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 				
 				$scope.onDesignChanged=function(e){
 					//e is dstDesign
-					
+					$scope.embStage.select();
 					if($scope.threadMatcher 
 							&&  $scope.threadMatcher.embCanvas 
 							&&  $scope.threadMatcher.embCanvas.embDesign===e){
