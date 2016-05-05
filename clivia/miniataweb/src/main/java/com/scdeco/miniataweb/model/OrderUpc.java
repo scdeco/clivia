@@ -1,7 +1,5 @@
 package com.scdeco.miniataweb.model;
 
-import java.math.BigDecimal;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -20,6 +18,9 @@ public class OrderUpc extends CliviaSuperModel{
 	@Column(name="upcId")
 	private int upcId;
 	
+	@Column(name="BillingKey", length=20)
+	private String billingKey;
+	
 	@Column(name="OrderQty")
 	private Integer orderQty;
 	
@@ -31,16 +32,6 @@ public class OrderUpc extends CliviaSuperModel{
 
 	@Column(name="RemainQty")
 	private Integer remainQty;
-	
-	@Column(name="ListPrice")
-	private BigDecimal listPrice;
-
-	//percentage off
-	@Column(name="Discount")
-	private BigDecimal discount;
-
-	@Column(name="OrderPrice")
-	private BigDecimal orderPrice;
 
 	public int getId() {
 		return id;
@@ -64,6 +55,14 @@ public class OrderUpc extends CliviaSuperModel{
 
 	public void setUpcId(int upcId) {
 		this.upcId = upcId;
+	}
+
+	public String getBillingKey() {
+		return billingKey;
+	}
+
+	public void setBillingKey(String billingKey) {
+		this.billingKey = billingKey;
 	}
 
 	public Integer getOrderQty() {
@@ -98,28 +97,4 @@ public class OrderUpc extends CliviaSuperModel{
 		this.remainQty = remainQty;
 	}
 
-	public BigDecimal getListPrice() {
-		return listPrice;
-	}
-
-	public void setListPrice(BigDecimal listPrice) {
-		this.listPrice = listPrice;
-	}
-
-	public BigDecimal getDiscount() {
-		return discount;
-	}
-
-	public void setDiscount(BigDecimal discount) {
-		this.discount = discount;
-	}
-
-	public BigDecimal getOrderPrice() {
-		return orderPrice;
-	}
-
-	public void setOrderPrice(BigDecimal orderPrice) {
-		this.orderPrice = orderPrice;
-	}
-	
 }

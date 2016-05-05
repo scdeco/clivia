@@ -3,9 +3,11 @@
 	<div kendo-toolbar id="ordertoolbar" k-options="orderToolbarOptions"></div>
 </form>		
 
+<span kendo-notification="saveResult" k-options="saveResultOptions"></span>
+
 <H3 style="margin-left:10px;">	
 	<div ng-hide="SO.isNew()" >
-		Order#:<span style="font-weight: bold;">{{SO.dataSet.info.orderNumber}}</span>&nbsp;&nbsp;&nbsp; Customer: <span style="font-weight: bold;">{{SO.company.info.businessName}}</span>
+		#<span style="font-weight: bold;">{{SO.dataSet.info.orderNumber}}</span>&nbsp;&nbsp;&nbsp;&nbsp; <span style="font-weight: bold;">{{SO.company.info.businessName}}</span>
 	</div>
 	
 	<div ng-show="SO.isNew()">
@@ -31,7 +33,7 @@
  <pre>
 <!--  printModel={{SO.printModel}} -->
  
-<!-- 	dataSet:{{SO.dataSet|json}} -->
+ 	dataSet:{{SO.dataSet|json}} 
 <!-- 	instance:{{SO.instance|json}} -->
 <!-- 	dds:{{SO.dds|json}} -->
 <!-- 	company:{{SO.company|json}} -->

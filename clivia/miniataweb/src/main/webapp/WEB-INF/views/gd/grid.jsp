@@ -101,8 +101,8 @@
 				   					c-editable="true" 
 				   					c-data-source="columnGridDataSource" 
 				   					c-pageable="false" 
-				   					c-new-item-function="newItemFunction"
-				   					c-register-deleted-item-function="registerDeletedItemFunction">
+				   					c-new-item-function="createNewItem"
+				   					c-register-deleted-item-function="registerDeletedItem">
 				    	</div> 
 				</div>			
 	 	</div> 	<!--end of second pane-->
@@ -133,8 +133,8 @@
 		 	k-pinned="true"
 		 	k-modal="true">
 
-		<button ng-click="Ok()" style="margin-left: 45px; margin-right: 10px; width:50px;">Ok</button>
-		<button ng-click="Cancel()" style="margin-right: 10px; width:50px;">Cancel</button>
+		<button ng-click="selectFieldsOk()" style="margin-left: 45px; margin-right: 10px; width:50px;">Ok</button>
+		<button ng-click="selectFieldsCancel()" style="margin-right: 10px; width:50px;">Cancel</button>
 
 		<ul style="list-style-type: none;">
 			<li>

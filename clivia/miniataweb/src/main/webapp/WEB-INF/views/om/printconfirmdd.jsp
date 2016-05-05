@@ -306,7 +306,7 @@ info@scdeco.com&nbsp;&nbsp;&nbsp;www.ScDeco.com<br>
 <tr>
 <th width="110px">P.O.#</th>
 <th width="70px">Date</th>
-<th width="70px" style="white-space: nowrap;">&nbsp;Our Order#&nbsp;</th>
+<th width="70px" style="white-space: nowrap;">&nbsp;Order#&nbsp;</th>
 <tr>
 <td style="width:10em; word-wrap: break-word;"id="poNo"></td>
 <td width="70px" style="white-space: nowrap;" id="orderDate"></td>

@@ -2020,6 +2020,12 @@ clivia.factory("ColumnGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapp
 		         width: 60,
 		         attributes:{style:"text-align:right;"},
 		     }, {
+		         name: "dataType",
+		         field: "dataType",
+		         title: "Data Type",
+		         editor:thisGW.dataTypeEditor,
+		         width: 90,
+		     }, {
 		         name: "textAlignFixed",
 		         field: "textAlignFixed",
 		         title: "Header Align.",
@@ -2037,24 +2043,39 @@ clivia.factory("ColumnGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapp
 		         title: "Format",
 		         width: 75,
 		     }, {
-		         name: "sortable",
-		         field: "sortable",
-		         title: "Sortable",
-		         width: 75,
-		     }, {
-		         name: "choosable",
-		         field: "choosable",
-		         title: "Choosable",
-		         width: 75,
-		     }, {
 		         name: "filterable",
 		         field: "filterable",
 		         title: "Filterable",
 		         width: 75,		     
 		     }, {
+		         name: "sortable",
+		         field: "sortable",
+		         title: "Sortable",
+		         template:'<input type="checkbox" #= sortable ? checked="checked" : "" # disabled="disabled" />',
+		         width: 75,
+		     }, {
+		         name: "choosable",
+		         field: "choosable",
+		         title: "Choosable",
+		         template:'<input type="checkbox" #= choosable ? checked="checked" : "" # disabled="disabled" />',
+		         width: 75,
+		     }, {
 		         name: "lockable",
 		         field: "lockable",
 		         title: "Lockable",
+		         template:'<input type="checkbox" #= lockable ? checked="checked" : "" # disabled="disabled" />',
+		         width: 75,
+		     }, {
+		         name: "locked",
+		         field: "locked",
+		         title: "Locked",
+		         template:'<input type="checkbox" #= locked ? checked="checked" : "" # disabled="disabled" />',
+		         width: 75,
+		     }, {
+		         name: "hidden",
+		         field: "hidden",
+		         title: "Hidden",
+		         template:'<input type="checkbox" #= hidden ? checked="checked" : "" # disabled="disabled" />',
 		         width: 75,
 		     }, {
 		         name: "remark",
@@ -2077,6 +2098,11 @@ clivia.factory("ColumnGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapp
 	
 	gw.prototype.textAlignmentEditor=function(container, options) {
  		var items=["left","center","right",""];
+ 		thisGW.kendoDropDownListEditor(container,options,items);
+ 	}
+
+	gw.prototype.dataTypeEditor=function(container, options) {
+ 		var items=["string","number","date",""];
  		thisGW.kendoDropDownListEditor(container,options,items);
  	}
 	return gw;

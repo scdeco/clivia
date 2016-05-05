@@ -1391,10 +1391,10 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					return model;
 				}			
 				
-				scope.getDesignHtml=function (printModel,paperType,isLandscape){	
+				scope.getDesignHtml= function (printModel,paperType,isLandscape,isShowSt){	
 					
 					var Paper = {
-						papers :[{type:"letter",width:191, height:255}],
+						papers :[{type:"letter",width:191, height:255},{type:"ledger", width:260, height:416}],//191 255 272 432
 						getPaper :function (paperType){
 							var paper;
 							var papers = this.papers;
@@ -1421,11 +1421,11 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 						paper.width = paper.height;
 						paper.height = temp;
 					}
-						
+					
 					//before change to pixel, all variable are in mm.
 					var margin = 0; //mm
-					var mmToPixel =3.81;	// 3.64;
-					var r_table_w = 50;//mm
+					var mmToPixel = 3.64;
+					var r_table_w = 40;//mm
 					var r_table_h = 240.5;//mm
 					var font_family = "Times New Roman";
 					var info_font_size = 80;//top info and bot info font size
@@ -1478,26 +1478,40 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					var needed_row = threadLists.length;
 					var col_count = Math.ceil(needed_row/row_count);
 					//calculate width for img div part
+				
 					var borderWidth = paper_w_pixel - r_table_w_pixel*col_count - error_pixel;
+					borderWidth = paper_w_pixel - r_table_w_pixel*col_count - error_pixel;
 					//calculate width for righthand list part
 					var divWidth = paper_w_pixel - borderWidth + error_pixel3;
 					//if there enough space to display the list?
 					if(divWidth > (paper_w_pixel*0.54)){
-							alert("sorry, we cant display it!!!!");
+							alert("Sorry, we can not display it!");
 							return;
 					}
 					
 					rightList = "<div style='height:"+ borderHeight + "px; border: 1px solid black; width:" + divWidth +"px;"
-								  +"margin-top:" + -(paper_h_pixel - table_height_pixel - error_pixel2) + "px;text-align:center; border-left-style:none;"
-								  +"margin-left:" + (borderWidth)  +"px; font-family:" + font_family + "; font-size:" + list_font_size +"%;'>" 
-								  +"<table style='border-collapse: collapse;width:" + divWidth + "px;'>";
+							  +"margin-top:" + -(paper_h_pixel - table_height_pixel - error_pixel2) + "px;text-align:center; border-left-style:none;"
+							  +"margin-left:" + (borderWidth)  +"px; font-family:" + font_family + "; font-size:" + list_font_size +"%;'>"
+							  +"<table style='border-collapse: collapse; width:" + divWidth + "px;'>";
+					
 					var tdDot = "";
 					var tdEmpty="";
-					for(var i=0;i<5;i++){
-						tdDot+="<td style = 'border-bottom-style:dotted;border-bottom-width: 1px;'></td>";
-						tdEmpty+="<td></td>";
+					
+					if(isShowSt){
+						var tdNeed = 5;
+						display = "true";
 					}
-
+					else{
+						var tdNeed = 4;
+						display = "none";
+					}
+					
+					for(var i=0;i<tdNeed;i++){
+							tdDot += "<td style = 'border-bottom-style:dotted;border-bottom-width: 1px;'></td>";
+							tdEmpty +="<td></td>";
+					}
+					
+						
 					for(var i = 0,t,dotRow; i < row_count; i++){
 						rightList += "<tr>"
 						dotRow="";
@@ -1506,21 +1520,32 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 							if(count < needed_row){
 								t = threadLists[count];
 								
-								rightList += "<td style='width:" + col1Width + "px;text-align:right;'>" + t.col0 + ".</td>"
-									  +"<td style='width:" + col2Width + "px;text-align:right;'>"+ t.col1  +"</td>"
-									  +"<td style='width: "+ col3Width  +"px;'><center><div style ='border:1px solid black; width:" + colorDiv + "px; height:" + colorDiv +"px; background-color:" + t.col2+ "'></div></center></td>"
-									  +"<td style ='text-align:right;width:" + col4Width+ "px;'>"+ t.col3 +"</td>"
-									  +"<td style ='width:" + col5Width  + "px;text-align:right'>" + t.col4+ "</td>";
+								rightList += "<td style='width:" + col1Width + "px;text-align:right;'>" + t.col0 + ".</td>";
+								rightList += "<td style='width:" + col2Width + "px;text-align:right; display:"+ display + "'>"+ t.col1  +"</td>";
+								rightList += "<td style='width: "+ col3Width  +"px;'><center><div style ='border:1px solid black; width:" + colorDiv + "px; height:" 
+												  + colorDiv +"px; 	background-color:" + t.col2+ "'></div></center></td>"
+												  +"<td style ='text-align:right;width:" + col4Width+ "px;'>"+ t.col3 +"</td>";
 								
+								if(count < row_count && col_count !=1){		  
+									rightList += "<td style ='width:" + col5Width  + "px;text-align:right;border-right-style:solid; border-right-width: 1px;'>" + t.col4+ "</td>";
+								}
+								else{
+									rightList += "<td style ='width:" + col5Width  + "px;text-align:right;'>" + t.col4+ "</td>";
+								}
+				
 								dotRow+=tdDot;
+							
 							}else{
 								dotRow+=tdEmpty;
 							}
 						}
+						
 						rightList += "</tr>";
+						
 						if ((i+1)%4 == 0){
 							rightList += "<tr>"+dotRow+"</tr>";
 						}
+						
 					}
 					rightList += "</table></div>"
 					
@@ -1578,14 +1603,16 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					
 					//-----------------------------display------------------------------------
 					var display = topInfo + imgHtml + bottomInfo + rightList;
+					
 					return display;
+					
 				}	
 				
 
 				scope.print=function(){
 					var printModel=scope.getPrintModel(scope.threadMatcher,false,true);
 				
-					var html=scope.getDesignHtml(printModel,"letter");
+					var html=scope.getDesignHtml(printModel,"ledger");
 					
 					util.print(html,true);
 				}				

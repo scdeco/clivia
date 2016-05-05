@@ -134,10 +134,47 @@ gdApp.directive("grid",["$http","cliviaDDS","util",function($http,cliviaDDS,util
 			 			}
 			 	}
 			 	
+			 	scope.selectFieldsOk=function(){
+			 		var selectedFields=this.selectedFields;
+			 		var columnItems=this.dataSet.columnItems;
+			 		
+			 		for(var i=columnItems.length-1,f,c;i>=0;i--){
+			 			c=columnItems[i];
+			 			if(c){
+							f=selectedFields.indexOf(c.name);
+							if(f<0){
+								if(c.id){
+									scope.registerDeletedItem(c)
+								}
+								columnItems.splice(i,1);
+							}
+			 			}
+			 		}
+			 		
+			 		for(var i=0,f,newItem;i<selectedFields.length;i++){
+			 			f=selectedFields[i];
+			 			if(util.findIndex(columnItems,"name",f)<0){
+			 				newItem=scope.createNewItem();
+			 				newItem.name=f;
+			 				columnItems.push(newItem);
+			 			}
+			 		}
+			 		
+			 		scope.selectFieldWindow.close();
+			 	}
+			 	scope.selectFieldsCancel=function(){
+			 		scope.selectFieldWindow.close();
+			 	}
+			 	
 			 	scope.preview=function(){
 			 		scope.queryGridScope.createGrid();
 					scope.previewWindow.open();
 			 	}
+			 	
+				scope.registerDeletedItem=function(dataItem){
+					var deletedItem={entity:"gridColumn",id:dataItem.id};
+					scope.dataSet.deleteds.push(deletedItem);
+				}
 			 	
 			 	scope.clear();
 			},
@@ -205,7 +242,13 @@ gdApp.directive("grid",["$http","cliviaDDS","util",function($http,cliviaDDS,util
 					    schema: {
 					    	model: { id: "id", 
 					    		fields:{
-					    			width:{type:"number"}
+					    			width:{type:"number"},
+							    	sortable:{type:"boolean"},
+							    	choosable:{type:"boolean"},
+							    	lockable:{type:"boolean"},
+							    	locked:{type:"boolean"},
+							    	hidden:{type:"boolean"},
+
 					    		}}
 					    },	//end of schema
 					    
@@ -232,14 +275,21 @@ gdApp.directive("grid",["$http","cliviaDDS","util",function($http,cliviaDDS,util
 				    		format:"#"
 				    }
 				
-				$scope.newItemFunction=function(){
-				    return {};
+				$scope.createNewItem=function(){
+				    return {
+				    	width:80,
+				    	sortable:true,
+				    	choosable:true,
+				    	lockable:false,
+				    	locked:false,
+				    	hidden:false,
+				    	};
 				}
 
-				$scope.registerDeletedItemFunction=function(dataItem){
+/* 				$scope.registerDeletedItemFunction=function(dataItem){
 					var item= {entity:"column",dataItem:id};
 					$scope.dataSet.deleteds.push(item);
-				}				
+				}				 */
 			}]};
 	
 	return directive;

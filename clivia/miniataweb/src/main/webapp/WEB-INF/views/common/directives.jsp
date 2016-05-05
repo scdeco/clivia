@@ -1756,24 +1756,24 @@ directive('cliviaGrid',["cliviaGridWrapperFactory","cliviaDDS","util",function(c
 						
 				        //events:		 
 				       	dataBinding: function(e) {
-				       		console.log("contact grid event: binding--"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
+				       		console.log("grid event: binding--"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
 				       	},
 				       	
 				       	dataBound:function(e){
-				       		console.log("contact grid event: dataBound");
+				       		console.log("grid event: dataBound");
 				       	},
 				       	
 		 		       	save: function(e) {
-				       		console.log("contact grid event: save");
+				       		console.log("grid event: save");
 				         },
 				       	
 				         //row or cloumn changed
 				       	change:function(e){
-				       		console.log("contact grid event: change");
+				       		console.log("grid event: change");
 				       	}, 
 				       	
 				        edit:function(e){
-				        	console.log("contact grid event: edit");
+				        	console.log("grid event: edit");
 				        	
 /* 				        	//without code below,when navigate with keybord like tab key, the editing cell will not be selected 
 						    var editingCell=gw.getEditingCell();
@@ -1865,6 +1865,7 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 			
 			template:'<div kendo-grid="queryGrid" k-options="query.gridOptions" k-rebind="query.rebind" ></div>',
 			link:function(scope,element,attrs){	
+				
 				scope.gridName=scope.cName;
 				if(scope.cName)
 		        	scope.$parent[scope.cName+"Scope"]=scope;
@@ -1894,9 +1895,19 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 				
 				
 				var getDataSource=function(){
-					var info=scope.dataSet.info
+					var info=scope.dataSet.info;
 					if(info.daoName){
-						var url=info.dataUrl?info.dataUrl : "../datasource/"+info.daoName+"/read";					
+						var url=info.dataUrl?info.dataUrl : "../datasource/"+info.daoName+"/read";
+						var fields={};
+						var columnItems=scope.dataSet.columnItems;
+						
+						for(var i=0,column;i<columnItems.length;i++){
+							column=columnItems[i];
+							if(column.dataType){
+								fields[column.name]={type:column.dataType};
+							}
+						}
+						
 						return {
 							transport: {
 							    read: {
@@ -1924,7 +1935,7 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 	 */						schema: {
 							    data: "data",
 							    total: "total",
-							    model: {id: "id"}
+							    model: {fields:fields},
 							},
 						}
 					}else{
@@ -2029,6 +2040,7 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 			$scope.query={
 					rebind:0,
 					gridNo:"",
+					filterable:{mode:"row"},
 			}
 			
 			$scope.dataSet={};

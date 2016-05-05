@@ -39,42 +39,40 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 	var sql="select upcId,garmentId,category,styleNo,styleName,colour,size,upcNo,sum(orderQty) as 'sumOrderQty'"+
 			"from orderupcview group by upcId order by category,styleNo,colour,upcNo";
 			
-	var url="../data/generic/sql?map=true&cmd="+sql;
+	var url="../data/generic/sql?map=true&cmd=";
 	
 	
-	$scope.load=function(){
+	$scope.load=function(cond){
+		if (!!cond)
+			sql.replace("order by"," where "+cond+" order by");
+		
+		url+=sql;
 		
 		util.getRemote(url).then(
 				function(data){
-					populateData(data);
+					var sheets=createSheets(data);
+					createSpreadsheet(sheets);
 				});
 		
 	}
 	
+	var columnCount=12;
 	
 	
-	var populateData=function(data){
+	var createSheets=function(data){
+		var sheets=[],sheet;
+
 		var season=dds.season.getCurrentSeason(2);	//dd brand
 		var categories=util.split(season.categories,";");
 		
-		var columnCount=12;
-		
-		var columns=[{width:220},{width:90}];
-		for(var i=columns.length;i<columnCount;i++){
-			columns.push({});
-		}
+		var styleRowHeight=30,qtyRowHeight=25,sizeColWidth=50;
+		var styleFontSize=16,detailFontSize=14;
 		
 		var summaryColumns=[{width:100},{width:90},{width:300},{width:80}];
 		for(var i=summaryColumns.length;i<columnCount;i++){
 			summaryColumns.push({width:0});
 		}
 		
-
-		var styleRowHeight=30,qtyRowHeight=25;
-		var styleFontSize=16,detailFontSize=14;
-		
-		var sheets=[],sheet;
-
 		var summaryRows=[],summaryMergedCells=[];
 		var summaryCategoryRow,summaryRowNo=1;
 
@@ -119,6 +117,20 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 			r=util.findIndex(data,"category",categories[c]);
 			if(r>=0){
 
+				garment=dds.garment.getGarmentById(data[r].garmentId);
+				sizes=garment.sizeRange.split(",");
+				categoryColumnCount=sizes.length+2;
+				
+				var columns=[{width:220},{width:90}];
+				for(var i=columns.length;i<categoryColumnCount;i++){
+					columns.push({width:sizeColWidth});
+				}
+				for(var i=columns.length;i<columnCount;i++){
+					columns.push({width:0});
+				}
+				
+				var lastColumnLetter="ABCDEFGHIJKLMNOPQ".charAt(categoryColumnCount-1);
+				
 				rows=[];
 				rowNo=1;
 				categoryTotal=0;
@@ -135,13 +147,14 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 				while (r<data.length && category===data[r].category){
 					
 					garment=dds.garment.getGarmentById(data[r].garmentId);
-					mergedCells.push("A"+rowNo+":"+"H"+rowNo);
+					mergedCells.push("A"+rowNo+":"+lastColumnLetter+rowNo);
 				
 					styleRow={
 						height:styleRowHeight,
 						cells:[{
 							value:garment.styleNo+"   "+garment.styleName,
 							fontSize: styleFontSize,
+							background: "rgb(167,214,255)"
 						}]
 					}
 					for(var i=1;i<columnCount;i++){
@@ -152,7 +165,7 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 					sizes=garment.sizeRange.split(",");
 				
 					sizeIdx={};
-					cells=[{value:""},{value:"Line Total",fontSize:detailFontSize,textAlign:"right"}];
+					cells=[{value:""},{value:"Sum:",fontSize:detailFontSize,textAlign:"right"}];
 					for(var i=0;i<sizes.length;i++){
 						sizeIdx[sizes[i].trim()]=i;
 						cells.push({value:sizes[i],fontSize:detailFontSize,textAlign:"right"});
@@ -196,8 +209,8 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 						styleTotal+=lineTotal;
 					}	//end of garmentId while
 					
-					styleRow.cells[columnCount-1]={value:styleTotal,fontSize:styleFontSize};
-					mergedCells.push("A"+rowNo+":"+"L"+rowNo);
+					headerRow.cells[1].value+=styleTotal;
+					mergedCells.push("A"+rowNo+":"+lastColumnLetter+rowNo);
 					addRow(emptyRow);
 					
 					categoryTotal+=styleTotal;
@@ -244,12 +257,15 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 			columns:summaryColumns
 		});
 		
-		
-		
+		return sheets;
+	}
+	
+	
+	var createSpreadsheet=function(sheets){
 		$scope.spreadsheetOptions={
 		        toolbar:false,
 		        sheets:sheets,
-		        columns:columns.length,
+		        columns:columnCount,
 		        rows:100,
 		        excel: {
 		            fileName: "Order.xlsx"
@@ -257,10 +273,6 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 		    }
 		
 	}
-	
-	
-	
-	
 	
 }]);
 

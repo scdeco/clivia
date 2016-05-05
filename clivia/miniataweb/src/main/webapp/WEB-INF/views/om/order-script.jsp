@@ -1009,10 +1009,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 										}else{
 											upc={
 													upcId:upcId,
+													billingKey:String(lineItem.garmentId),
 													orderQty:qty,
-													orderPrice:billItem.orderPrice,
-													listPrice:billItem.listPrice,
-													discount:billItem.discount,
 													isDirty:true
 												};
 											idxUpc[String(upcId)]=upcs.push(upc)-1;
@@ -1037,16 +1035,9 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			idx=idxUpc[String(orderUpc.upcId)];
 			if(typeof idx!=='undefined'){ //idx starts from 0;
 				generatedUpc=upcs[idx];
-				if(	!(orderUpc.orderQty===generatedUpc.orderQty)||
-					!(orderUpc.orderPrice===generatedUpc.orderPrice)||
-					!(orderUpc.listPrice===generatedUpc.listPrice)||
-					!(orderUpc.discount===generatedUpc.discount)){
+				if(!(orderUpc.orderQty===generatedUpc.orderQty)){
 					
 					orderUpc.orderQty=generatedUpc.orderQty;
-					orderUpc.orderPrice=generatedUpc.orderPrice;
-					orderUpc.listPrice=generatedUpc.listPrice;
-					orderUpc.discount=generatedUpc.discount;
-					
 					orderUpc.isDirty=true;
 				}
 				

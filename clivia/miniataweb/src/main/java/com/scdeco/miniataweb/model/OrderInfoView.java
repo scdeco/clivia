@@ -32,6 +32,9 @@ public class OrderInfoView {
 	
 	@Column(name = "businessName", length = 100)
 	private String businessName;
+
+	@Column(name="Country",length=20)
+	private String country;	
 	
 	@Column(name = "buyer", length = 50)
 	private String buyer;
@@ -143,6 +146,14 @@ public class OrderInfoView {
 
 	public void setBusinessName(String businessName) {
 		this.businessName = businessName;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
 	}
 
 	public String getBuyer() {
@@ -295,6 +306,6 @@ public class OrderInfoView {
 
 	public void setNote(String note) {
 		this.note = note;
-	}	
+	}
 	
 }

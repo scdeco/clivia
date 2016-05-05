@@ -1,5 +1,6 @@
 package com.scdeco.miniataweb.service;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -106,6 +107,7 @@ public class CliviaLibrary {
 				thumbnail = lib.createThumbnail(libFile);
 				if(thumbnail!=null){
 					ByteArrayOutputStream baos=new ByteArrayOutputStream();
+					
 					ImageIO.write(thumbnail, "jpg", baos );
 					baos.flush();
 					lib.setFieldValue(dataItem, "thumbnail", baos.toByteArray());
@@ -273,19 +275,26 @@ public class CliviaLibrary {
 		public BufferedImage createThumbnail(File file) throws IOException{
 			
 			BufferedImage thumbnail=null; 
-			BufferedImage bf=null;
+			BufferedImage bi=null;
 			
 			switch(type){
 				case "image":
-					bf = ImageIO.read(file);
+					bi = ImageIO.read(file);
+					
+					BufferedImage newBi=new BufferedImage(bi.getWidth(),
+			                bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+					newBi.createGraphics().drawImage(bi, 0, 0, Color.WHITE, null);
+					bi=newBi;
 					break;
+					
 				case "embdesign":
 					EMBDesign embDesign=new EMBDesign(file.getPath());
-					bf=embDesign.getEMBDesignImage();
+					bi=embDesign.getEMBDesignImage();
 					break;
 			}
-			if(bf!=null)
-				thumbnail =  Scalr.resize(bf,thumbnailSize );
+
+			if(bi!=null)
+				thumbnail =  Scalr.resize(bi,thumbnailSize );
 			
 			return thumbnail;
 		}
@@ -328,8 +337,12 @@ public class CliviaLibrary {
 			}else{
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				try {
-					BufferedImage bufferedImage=this.getBufferedImage(id);
-					ImageIO.write(bufferedImage, "jpg", baos );
+					BufferedImage bi=this.getBufferedImage(id);
+					BufferedImage newBi=new BufferedImage(bi.getWidth(),
+			                bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+					newBi.createGraphics().drawImage(bi, 0, 0, Color.WHITE, null);
+					
+					ImageIO.write(newBi, "jpg", baos );
 					baos.flush();
 					result=baos.toByteArray();
 				} catch (IOException e) {

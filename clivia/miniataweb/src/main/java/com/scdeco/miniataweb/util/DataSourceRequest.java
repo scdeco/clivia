@@ -4,8 +4,10 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -116,31 +118,38 @@ public class DataSourceRequest {
         String field = filter.getField();
         Object value = filter.getValue();
         boolean ignoreCase = filter.isIgnoreCase();
-        
-        try {
-            Class<?> type = new PropertyDescriptor(field, clazz).getPropertyType();
-            if (type == double.class || type == Double.class) {
-                value = Double.parseDouble(value.toString());
-            } else if (type == float.class || type == Float.class) {
-                value = Float.parseFloat(value.toString());
-            } else if (type == long.class || type == Long.class) {
-                value = Long.parseLong(value.toString());
-            } else if (type == int.class || type == Integer.class) {
-                value = Integer.parseInt(value.toString());
-            } else if (type == short.class || type == Short.class) {
-                value = Short.parseShort(value.toString());
-            } else if (type == boolean.class || type == Boolean.class) {
-                value = Boolean.parseBoolean(value.toString());
-            } else if (type == Date.class){
-                SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" );
-                String input = value.toString();
-                value = df.parse(input);
-            }
-        }catch (IntrospectionException e) {
-        }catch(NumberFormatException nfe) {
-        }catch (ParseException e) {
+        if(value!=null){		//this if line is added by jacob
+	        try {
+	            Class<?> type = new PropertyDescriptor(field, clazz).getPropertyType();
+	            if (type == double.class || type == Double.class) {
+	                value = Double.parseDouble(value.toString());
+	            } else if (type == float.class || type == Float.class) {
+	                value = Float.parseFloat(value.toString());
+	            } else if (type == BigDecimal.class) {
+	                value =new BigDecimal(value.toString());
+	            } else if (type == long.class || type == Long.class) {
+	                value = Long.parseLong(value.toString());
+	            } else if (type == int.class || type == Integer.class) {
+	                value = Integer.parseInt(value.toString());
+	            } else if (type == short.class || type == Short.class) {
+	                value = Short.parseShort(value.toString());
+	            } else if (type == boolean.class || type == Boolean.class) {
+	                value = Boolean.parseBoolean(value.toString());
+	            } else if (type == Date.class){
+	                SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" );
+	                String input = value.toString();
+	                value = df.parse(input);
+	            } else if (type==LocalDate.class){
+	            	String input=value.toString();
+	            	if(input.length()>10)
+	            		input=input.substring(0, 10);
+	            	value=LocalDate.parse(input);
+	            }
+	        }catch (IntrospectionException e) {
+	        }catch(NumberFormatException nfe) {
+	        }catch (ParseException e) {
+	        }
         }
-        
         switch(operator) {
             case "eq":
                 if (value instanceof String) {
@@ -180,6 +189,20 @@ public class DataSourceRequest {
             case "doesnotcontain":
                 junction.add(Restrictions.not(Restrictions.ilike(field, value.toString(), MatchMode.ANYWHERE)));
                 break;
+                
+              //isnull isnotnull isempty isnotempty are added by Jacob
+            case "isnull":
+                junction.add(Restrictions.isNull(field));		
+            	break;
+            case "isnotnull":
+                junction.add(Restrictions.isNotNull(field));
+            	break;
+            case "isempty":
+                junction.add(Restrictions.isEmpty(field));
+            	break;
+            case "isnotempty":
+                junction.add(Restrictions.isNotEmpty(field));
+            	break;
         }
 
     }

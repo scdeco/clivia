@@ -33,7 +33,7 @@
 
 <body ng-controller="queryCtrl" spellcheck="false">
 	<div kendo-toolbar id="queryToolbar" k-options="queryToolbarOptions"></div>
-    <div kendo-spreadsheet="spreadsheet" k-options="spreadsheetOptions" style="width:100%;height:800px;"></div>
+    <div kendo-spreadsheet="spreadsheet" k-options="spreadsheetOptions" k-rebind="spreadsheetOptions" style="width:100%;height:800px;"></div>
 </body>
 </html>
 

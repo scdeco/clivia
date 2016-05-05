@@ -168,6 +168,21 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
  	                
 	       }]
 	    };	
+    $scope.saveResultOptions={
+/*             templates: [{
+                type: "ngTemplate",
+                template: '<p style="width: 16em; heigth:5em; padding:1em;white-space:nowrap">Order# {{SO.dataSet.info.orderNumber}} save successful. </p>''
+             }]*/
+             position: {
+                 pinned: true,
+                 top: 50,
+                 left: 200,
+                 bottom: null,
+                 right: null,
+             }             
+             
+        };
+    
     $scope.searchOrderNumberOptions={
     	dataSource:{data:[]},	//recent orders
     	//Fired when the value of the widget is changed by the user
@@ -328,7 +343,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 				    	}		
 			    		SO.setCurrentOrderItem(currentId);
 			    		$scope.orderInfo.infoForm.$setPristine();
-				    	
+			    		$scope.saveResult.show('<p style="width: 16em; height:2em; padding:1em;white-space:nowrap">Order#:'+SO.dataSet.info.orderNumber+ ' saved successfully. </p>',"info");
 				    }else{
 			    		alert("Can not find order:"+$scope.searchOrderNumber+".");
 				    }
