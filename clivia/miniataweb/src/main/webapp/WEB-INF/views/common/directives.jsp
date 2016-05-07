@@ -2014,6 +2014,10 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 						reorderable:info.columnMovable,
 						resizable:info.columnResizable,
 						filterable:info.filterable,
+						groupable: info.groupable,
+						
+						selectable: "multiple cell",
+					    allowCopy: true,
 						
 					    pageable: {
 					    	pageSizes:["all",40,35,30,25,20,15,10,5],

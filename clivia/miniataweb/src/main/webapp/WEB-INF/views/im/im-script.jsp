@@ -354,6 +354,7 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 								type: "button",
 								text: "Generate UPC#",
 								id: "btnGenUpc",
+								enable:false,
 								click: function(e){
 									$scope.generateUpcNumber($scope.dataSet.upcItems);
 								}

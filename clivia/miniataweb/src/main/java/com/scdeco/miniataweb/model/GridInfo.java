@@ -47,6 +47,9 @@ public class GridInfo extends CliviaSuperModel{
 
 	@Column(name = "Editable")
 	private Boolean editable=false;
+
+	@Column(name = "Groupable")
+	private Boolean groupable=false;
 	
 	@Column(name="ColumnResizable")
 	private Boolean columnResizable=true;
@@ -156,6 +159,14 @@ public class GridInfo extends CliviaSuperModel{
 		this.editable = editable;
 	}
 
+	public Boolean getGroupable() {
+		return groupable;
+	}
+
+	public void setGroupable(Boolean groupable) {
+		this.groupable = groupable;
+	}
+
 	public Boolean getColumnResizable() {
 		return columnResizable;
 	}
@@ -187,5 +198,6 @@ public class GridInfo extends CliviaSuperModel{
 	public void setBaseFilter(String baseFilter) {
 		this.baseFilter = baseFilter;
 	}
+
 	
 }

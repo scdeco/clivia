@@ -66,9 +66,9 @@
 </div>
 
 <div kendo-window="summaryWindow" 
-			k-width="300"
-		 	k-height="550"
-		 	k-position="{top: 50, left: 100 }"	
+			k-width="1200"
+		 	k-height="900"
+		 	k-position="{top: 40, left: 100 }"
 		 	k-resizable="true"
 			k-draggable="true"
 		 	k-title="'Summary'"
@@ -80,6 +80,24 @@
 		 <div upc-summary="upcSummary"></div>
 		 
 </div>
+
+<div kendo-window="analysisWindow" 
+			k-width="900"
+		 	k-height="600"
+		 	k-position="{top: 40, left: 100 }"
+		 	k-resizable="true"
+			k-draggable="true"
+		 	k-title="'Sales Anylysis'"
+		 	k-pinned="true"
+		 	k-visible="false"
+		 	k-modal="false"
+		 	k-actions="['Minimize', 'Maximize','Close']">
+		 	
+		 <div sales-analysis="garAnalysis"></div>
+		 
+</div>
+
+
 
 </body>
 <style>

@@ -37,7 +37,7 @@
 
 <div kendo-window="gridWindow"
 		k-width="1400"
-	 	k-height="670"
+	 	k-height="770"
 	 	k-position="{top: 50, left: 100 }"	
 	 	k-resizable="true"
 		k-draggable="true"

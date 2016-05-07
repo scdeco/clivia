@@ -31,6 +31,9 @@ public class OrderUpcView {
 	@Column(name="OrderId")
 	private int orderId;	
 	
+	@Column(name="Country",length=20)
+	private String country;
+	
 	@Column(name = "canceledQty")
 	private Integer canceledQty;
 
@@ -49,6 +52,15 @@ public class OrderUpcView {
 
 	@Column(name="OrderPrice")
 	private BigDecimal orderPrice;
+
+	@Column(name="OrderAmt")
+	private BigDecimal orderAmt;
+	
+	@Column(name="commissionRate")
+	private BigDecimal commissionRate;
+	
+	@Column(name="OrderCommission")
+	private BigDecimal orderCommission;
 	
 	@Column(name = "styleNo", length = 20)
 	private String styleNo;
@@ -195,6 +207,14 @@ public class OrderUpcView {
 		this.orderId = orderId;
 	}
 
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
 	public Integer getCanceledQty() {
 		return canceledQty;
 	}
@@ -241,6 +261,30 @@ public class OrderUpcView {
 
 	public void setOrderPrice(BigDecimal orderPrice) {
 		this.orderPrice = orderPrice;
+	}
+
+	public BigDecimal getOrderAmt() {
+		return orderAmt;
+	}
+
+	public void setOrderAmt(BigDecimal orderAmt) {
+		this.orderAmt = orderAmt;
+	}
+
+	public BigDecimal getCommissionRate() {
+		return commissionRate;
+	}
+
+	public void setCommissionRate(BigDecimal commissionRate) {
+		this.commissionRate = commissionRate;
+	}
+
+	public BigDecimal getOrderCommission() {
+		return orderCommission;
+	}
+
+	public void setOrderCommission(BigDecimal orderCommission) {
+		this.orderCommission = orderCommission;
 	}
 
 	public String getStyleNo() {
@@ -506,6 +550,5 @@ public class OrderUpcView {
 	public void setRep(String rep) {
 		this.rep = rep;
 	}
-
-
+	
 }

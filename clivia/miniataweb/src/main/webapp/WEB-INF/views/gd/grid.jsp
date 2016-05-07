@@ -7,7 +7,7 @@
 			k-panes="[{ collapsible: true, resizable: true, size: '220px'},
             	      { collapsible: true, resizable: true}]"
             k-options="mainSplitterOptions"
-			style="height:630px;">
+			style="height:700px;">
 			
 		<div>		<!-- first pane -->
 			<form name="gridForm" ng-submit="" novalidate class="simple-form">
@@ -73,6 +73,13 @@
 									ng-model="dataSet.info.filterable"/>Filterable
 						</label>
 					</li>					
+					<li> 
+						<label for="groupable">
+		        				<input type="checkbox" name="groupable"   
+									ng-model="dataSet.info.groupable"/>Groupable
+						</label>
+					</li>					
+					
 					<li> 
 						<label for="columnMovable">
 		        				<input type="checkbox" name="columnMovable"   

@@ -40,6 +40,14 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 		        	$scope.getSummary();
 		        	
 		        	}
+		    }, {
+		        type: "button",
+		        text: "Commission",
+		        id: "btnCommission",
+		        click: function(e){
+		        	$scope.getCommission();
+		        	
+		        	}
 		}]};
 	
  	scope.chooseColumn=function(){
@@ -66,7 +74,7 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 			}
 		}
 		$scope.$apply();
-		scope.chooseColumnWindow.open();
+		scope.chooseColumnWindow.center().open();
  	}
  	
  	scope.chooseColumnOk=function(){
@@ -104,10 +112,19 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
  		var options=$scope.queryGridScope.queryGrid.getOptions();
  		var filter=options.dataSource.filter;
  		var cond=scope.getSqlCondition(filter);
- 		scope.summaryWindow.open();
+ 		scope.summaryWindow.center().open();
  		scope.upcSummaryScope.load(cond);
  	}
 
+ 	scope.getCommission=function(){
+ 		var options=$scope.queryGridScope.queryGrid.getOptions();
+ 		var filter=options.dataSource.filter;
+ 		var cond=scope.getSqlCondition(filter); 		
+ 		scope.analysisWindow.center().open();
+ 		scope.garAnalysisScope.load(cond);
+ 	}
+ 	
+ 	
  	scope.getSqlExpression=function(filter){
  	 		var columnItems=$scope.queryGridScope.dataSet.columnItems;
  	 		var field=util.find(columnItems,"name",filter.field);
@@ -206,6 +223,150 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 }]);
 
 
+queryApp.directive("salesAnalysis",function(cliviaDDS,util){
+
+	var directive={
+			restrict:'EA',
+			replace:false,	
+			scope:{
+				cName:'@salesAnalysis',
+			},
+			
+			template:'<div kendo-toolbar id="analysisToolbar" k-options="analysisToolbarOptions"></div>'+
+		    		 '<div kendo-grid="analysisGrid" k-options="analysisGridOptions" k-rebind="analysisGridOptions" style="width:100%;height:800px;"></div>',
+		    
+		    link:function(scope,element,attrs){
+		    	if(scope.cName)
+		        	scope.$parent[scope.cName+"Scope"]=scope;
+		    	
+		    	scope.load=function(cond){
+			    	var sql=" select rep,businessName, avg(discount) as avgDiscount,avg(commissionRate) as avgCommissionRate,sum(orderQty) as sumOrderQty,sum(orderAmt) as sumOrderAmt,sum(orderCommission) as sumOrderCommission"+
+	    					" from orderupcview"+
+	    					" group by repid,customerId"+
+	    					" order by rep,businessName";
+			    	
+		    		if (!!cond)
+		    			sql=sql.replace("group by"," where "+cond+" group by");
+	    					
+			    	var url="../data/generic/sql?map=true&cmd=";
+
+		    		util.getRemote(url+sql).then(
+		    				function(data){
+		    			 		var options=scope.analysisGrid.getOptions();
+		    			 		var dataSource=options.dataSource;
+		    			 		dataSource.data=data;
+		    			 		scope.analysisGrid.setOptions({dataSource:dataSource});
+		    				});
+		    		
+		    	}		    	
+		    },
+		    
+		    controller:["$scope","cliviaDDS","util",function($scope,cliviaDDS,util){
+		    	
+		    	$scope.analysisGridOptions={
+	    			dataSource:{
+	    				data:[],
+                        schema:{
+                            model: {
+                                fields: {
+                                	rep:{type:"string"},
+                                    businessName: { type: "string" },
+                                    avgDiscount: { type: "number" },
+                                    avgCommissionRate:{type:"number"},
+                                    sumOrderQty:{type:"number"},
+                                    sumOrderAmt:{type:"number"},
+                                    sumOrderCommission:{type:"number"},
+                                }
+                            }
+                        },
+                        group: {
+                                 field: "rep" ,  aggregates: [
+                                    { field: "avgDiscount", aggregate: "average"},
+                                    { field: "avgCommissionRate", aggregate: "average" },
+                                    { field: "sumOrderQty", aggregate: "sum" },
+                                    { field: "sumOrderAmt", aggregate: "sum" },
+                                    { field: "sumOrderCommission", aggregate: "sum" },
+                                 ]   
+                               },
+                        aggregate:[{ field: "avgDiscount", aggregate: "average"},
+                                   { field: "avgCommissionRate", aggregate: "average" },
+                                   { field: "sumOrderQty", aggregate: "sum" },
+                                   { field: "sumOrderAmt", aggregate: "sum" },
+        	                       { field: "sumOrderCommission", aggregate: "sum" },
+                            ]   
+		   			},
+		    			
+                    sortable: true,
+                    scrollable: false,
+                    pageable: false,
+
+					selectable: "multiple cell",
+				    allowCopy: true,                    
+                    
+                    columns: [{ 
+	                    	field: "businessName", 
+	                    	title: "Customer",  
+	                    	footerTemplate: "Total:",
+	                    	width:250,
+                    	},{ 
+                    		field: "avgDiscount", 
+                    		title: "Avg.Discount",
+                    		aggregates: ["average"],
+                    		groupFooterTemplate:"<div style='text-align: right'>#= kendo.toString(average,'p2') #</div>",
+                    		footerTemplate:"<div style='text-align: right'>#= kendo.toString(average,'p2') #</div>",
+                    		format:"{0:p2}",
+                    		headerAttributes:{style:"text-align:right;"},
+                    		attributes:{style:"text-align:right;"},
+   	                    	width:110,
+                    	},{
+                    		field: "sumOrderQty", 
+                    		title: "Sum.Quantity",
+                    		aggregates: ["sum"],
+                    		groupFooterTemplate:"<div style='text-align: right'>#= sum #</div>",
+                    		footerTemplate:"<div style='text-align: right'>#= sum #</div>",
+                    		headerAttributes:{style:"text-align:right;"},
+                    		attributes:{style:"text-align:right;"},
+     	                    width:110,
+                    	},{
+                    		field: "sumOrderAmt", 
+                    		title: "Sum.Amount",
+                    		aggregates: ["sum"],
+                    		groupFooterTemplate:"<div style='text-align: right'>#= kendo.toString(sum,'c') #</div>",
+                    		footerTemplate:"<div style='text-align: right'>#= kendo.toString(sum,'c') #</div>",
+                    		format:"{0:c}",
+                    		headerAttributes:{style:"text-align:right;"},
+                    		attributes:{style:"text-align:right;"},
+     	                    width:110,
+                    	},{ 
+                    		field: "avgCommissionRate", 
+                    		title: "Avg.Commission Rate",
+                    		aggregates: ["average"],
+                    		groupFooterTemplate:"<div style='text-align: right'>#= kendo.toString(average,'p2') #</div>",
+                    		footerTemplate:"<div style='text-align: right'>#= kendo.toString(average,'p2') #</div>",
+                    		format:"{0:p2}",
+                    		headerAttributes:{style:"text-align:right;"},
+                    		attributes:{style:"text-align:right;"},
+   	                    	width:110,
+                    	},{
+                    		field: "sumOrderCommission", 
+                    		title: "Sum.Commission",
+                    		aggregates: ["sum"],
+                    		groupFooterTemplate:"<div style='text-align: right'>#= kendo.toString(sum,'c') #</div>",
+                    		footerTemplate:"<div style='text-align: right'>#= kendo.toString(sum,'c') #</div>",
+                    		format:"{0:c}",
+                    		headerAttributes:{style:"text-align:right;"},
+                    		attributes:{style:"text-align:right;"},
+     	                    width:110,
+                    	},{
+                    		title:"",
+                    	}]		    			
+		    	}
+		    	
+		    }]	//end of controller
+	}
+	return directive;
+	
+});
 
 queryApp.directive("upcSummary",function(cliviaDDS,util){
 	
