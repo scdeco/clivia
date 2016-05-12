@@ -53,7 +53,7 @@
 
 		<ul style="list-style-type: none;">
 			<li>
-				<input type="checkbox" >Toggle check of all
+				<input type="checkbox" ng-model="allColumnsChecked" ng-change='chooseAllColumns(allColumnsChecked)'>Check/Uncheck all
 			</li>
 			<li>
 				<hr/>
@@ -87,13 +87,13 @@
 		 	k-position="{top: 40, left: 100 }"
 		 	k-resizable="true"
 			k-draggable="true"
-		 	k-title="'Sales Anylysis'"
+		 	k-title="'Sales Report'"
 		 	k-pinned="true"
 		 	k-visible="false"
 		 	k-modal="false"
 		 	k-actions="['Minimize', 'Maximize','Close']">
 		 	
-		 <div sales-analysis="garAnalysis"></div>
+		 <div sales-analysis="garAnalysis" ></div>
 		 
 </div>
 

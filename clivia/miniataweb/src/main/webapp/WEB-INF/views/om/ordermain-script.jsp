@@ -147,6 +147,10 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 		    				 id:"garmentConfirmation",
 		    				 
 	                    },{
+		       				 text: "Garment Confirmation Without Discount Columns", 
+		    				 id:"garmentConfirmationWithoutDsicount",
+		    				 
+	                    },{
 		       				 text: "Deco Confirmation", 
 		    				 icon: "insert-n",
 		    				 id:"decoConfirmation",
@@ -242,7 +246,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	
 	
 	$scope.printOrder=function(id){
-		if(id==="garmentConfirmation"){
+		if(id==="garmentConfirmation"||id==="garmentConfirmationWithoutDsicount"){
 			
 			var orderItem=SO.getCurrentOrderItem();
 			if(orderItem && orderItem.typeId===1){	//billItem
@@ -254,9 +258,11 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 							    
 				dataSource.fetch(function() {
 					  var billItems = dataSource.view();
-					  SO.printBill(billItems,true,true);		//if true,print billItems that from lineitem(typeid===2) only
+					  SO.printBill(billItems,true,true,id==="garmentConfirmationWithoutDsicount");		//if true,print billItems that from lineitem(typeid===2) only
 					});
 			}
+			
+			
 		}
 		
 	}

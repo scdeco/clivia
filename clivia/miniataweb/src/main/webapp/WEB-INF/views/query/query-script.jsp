@@ -50,7 +50,14 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 		        	}
 		}]};
 	
- 	scope.chooseColumn=function(){
+	scope.chooseAllColumns=function(chooseAll){
+		scope.choosedColumns.splice(0,scope.choosedColumns.length);
+		if(chooseAll){
+			for(var i=0;i<scope.columns.length;i++)
+				scope.choosedColumns.push(scope.columns[i]);
+		}
+	}
+ 	scope.chooseColumn=function(all){
 		scope.columns=[];
 		scope.choosedColumns=[];
 		
@@ -232,15 +239,17 @@ queryApp.directive("salesAnalysis",function(cliviaDDS,util){
 				cName:'@salesAnalysis',
 			},
 			
-			template:'<div kendo-toolbar id="analysisToolbar" k-options="analysisToolbarOptions"></div>'+
-		    		 '<div kendo-grid="analysisGrid" k-options="analysisGridOptions" k-rebind="analysisGridOptions" style="width:100%;height:800px;"></div>',
-		    
+			templateUrl:"salesanalysis",
+			
 		    link:function(scope,element,attrs){
 		    	if(scope.cName)
 		        	scope.$parent[scope.cName+"Scope"]=scope;
 		    	
 		    	scope.load=function(cond){
-			    	var sql=" select rep,businessName, avg(discount) as avgDiscount,avg(commissionRate) as avgCommissionRate,sum(orderQty) as sumOrderQty,sum(orderAmt) as sumOrderAmt,sum(orderCommission) as sumOrderCommission"+
+			    	var sql=" select rep,businessName, avg(discount) as avgDiscount,"+
+			    				"avg(commissionRate) as avgCommissionRate,sum(orderQty) as sumOrderQty,sum(orderAmt) as sumOrderAmt,sum(orderCommission) as sumOrderCommission,"+
+			    				"avg(getSMCommissionRate(discount)) as avgSMRate,"+
+			    				"sum(getSMCommissionRate(discount)*orderAmt) as sumOrderSMCommission"+
 	    					" from orderupcview"+
 	    					" group by repid,customerId"+
 	    					" order by rep,businessName";
@@ -258,11 +267,37 @@ queryApp.directive("salesAnalysis",function(cliviaDDS,util){
 		    			 		scope.analysisGrid.setOptions({dataSource:dataSource});
 		    				});
 		    		
-		    	}		    	
+		    	}		
+		    	
+		    	scope.resizeGrid=function(grid,gridHeight){
+				    var gridElement =grid.element;
+				    if(gridElement){
+				        var dataArea = gridElement.find(".k-grid-content"),
+//				        gridHeight = gridElement.innerHeight()-37,
+				        	otherElements = gridElement.children().not(".k-grid-content"),
+				        	otherElementsHeight = 0;
+
+				    	otherElements.each(function(){
+					        otherElementsHeight += $(this).outerHeight();
+						    });
+				    	gridElement.innerHeight(gridHeight);
+				   		dataArea.height(gridHeight - otherElementsHeight);
+					}
+		    	}
 		    },
 		    
 		    controller:["$scope","cliviaDDS","util",function($scope,cliviaDDS,util){
-		    	
+				$scope.mainSplitterOptions={
+						resize:function(e){
+							var panes=e.sender.element.children(".k-pane");
+							var gridHeight=$(panes[1]).innerHeight()-37;
+							
+	 	 			      	window.setTimeout(function () {
+					            $scope.resizeGrid(upcGridHeight);
+					      	},1); 
+						}
+				}
+				
 		    	$scope.analysisGridOptions={
 	    			dataSource:{
 	    				data:[],
@@ -286,6 +321,8 @@ queryApp.directive("salesAnalysis",function(cliviaDDS,util){
                                     { field: "sumOrderQty", aggregate: "sum" },
                                     { field: "sumOrderAmt", aggregate: "sum" },
                                     { field: "sumOrderCommission", aggregate: "sum" },
+                                    { field: "avgSMRate", aggregate: "average" },
+                                    { field: "sumOrderSMCommission", aggregate: "sum" },
                                  ]   
                                },
                         aggregate:[{ field: "avgDiscount", aggregate: "average"},
@@ -293,20 +330,24 @@ queryApp.directive("salesAnalysis",function(cliviaDDS,util){
                                    { field: "sumOrderQty", aggregate: "sum" },
                                    { field: "sumOrderAmt", aggregate: "sum" },
         	                       { field: "sumOrderCommission", aggregate: "sum" },
+                                   { field: "avgSMRate", aggregate: "average" },
+                                   { field: "sumOrderSMCommission", aggregate: "sum" },
                             ]   
 		   			},
 		    			
                     sortable: true,
-                    scrollable: false,
+                    scrollable: true,
                     pageable: false,
 
 					selectable: "multiple cell",
 				    allowCopy: true,                    
                     
+				    height:500,
+				    
                     columns: [{ 
 	                    	field: "businessName", 
 	                    	title: "Customer",  
-	                    	footerTemplate: "Total:",
+	                    	footerTemplate: "<div style='text-align: right'>Total:</div>",
 	                    	width:250,
                     	},{ 
                     		field: "avgDiscount", 
@@ -357,10 +398,63 @@ queryApp.directive("salesAnalysis",function(cliviaDDS,util){
                     		headerAttributes:{style:"text-align:right;"},
                     		attributes:{style:"text-align:right;"},
      	                    width:110,
+                    	},{ 
+                    		field: "avgSMRate", 
+                    		title: "Avg.SM's Rate",
+                    		aggregates: ["average"],
+                    		groupFooterTemplate:"<div style='text-align: right'>#= kendo.toString(average,'p2') #</div>",
+                    		footerTemplate:"<div style='text-align: right'>#= kendo.toString(average,'p2') #</div>",
+                    		format:"{0:p2}",
+                    		headerAttributes:{style:"text-align:right;"},
+                    		attributes:{style:"text-align:right;"},
+   	                    	width:110,
+                    	},{
+                    		field: "sumOrderSMCommission", 
+                    		title: "SM's Commission",
+                    		aggregates: ["sum"],
+                    		groupFooterTemplate:"<div style='text-align: right'>#= kendo.toString(sum,'c') #</div>",
+                    		footerTemplate:"<div style='text-align: right'>#= kendo.toString(sum,'c') #</div>",
+                    		format:"{0:c}",
+                    		headerAttributes:{style:"text-align:right;"},
+                    		attributes:{style:"text-align:right;"},
+     	                    width:110,
                     	},{
                     		title:"",
-                    	}]		    			
+                    	}],
+                    	
+                    	//Align Footer Cells in exported excel
+                    	excelExport: function(e) {
+                            var rows = e.workbook.sheets[0].rows;
+
+                            for (var ri = 0; ri < rows.length; ri++) {
+                              var row = rows[ri];
+
+                              if (row.type == "group-footer" || row.type == "footer") {
+                                for (var ci = 0; ci < row.cells.length; ci++) {
+                                  var cell = row.cells[ci];
+                                  if (cell.value) {
+                                    // Use jQuery.fn.text to remove the HTML and get only the text
+                                    cell.value = $(cell.value).text();
+                                    // Set the alignment
+                                    cell.hAlign = "right";
+                                  }
+                                }
+                              }
+                            }
+                    	}
 		    	}
+				
+		    	$scope.analysisToolbarOptions={items: [{
+		    				    	        type: "button",
+		    				    	        text: "Export To Excel",
+		    				    	        id: "btnExcel",
+		    				    	        click: function(e){
+		    				    	        	$scope.analysisGrid.saveAsExcel();
+		    				    	            }
+		    				    	    }, {
+		    				    	        type: "separator",
+
+		    				    		}]};	//end of $scope.queryToolbarOptions
 		    	
 		    }]	//end of controller
 	}

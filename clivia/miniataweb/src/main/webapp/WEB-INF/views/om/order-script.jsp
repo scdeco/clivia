@@ -747,9 +747,9 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  	}
  	
  	var createAddressPrintModel=function(isBilling){
- 		var address;
+ 		var address,c;
  		var addresses=_order.dataSet.addressItems;
- 		for(var i=0,c,f;i<addresses.length;i++){
+ 		for(var i=0,f;i<addresses.length;i++){
  			c=addresses[i];
  			f=isBilling?c.billing:c.shipping;
  			if(f){
@@ -760,7 +760,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  		
  		if(!address){
 	 		addresses=_order.company.addresses;
-	 		for(var i=0,c,f;i<addresses.length;i++){
+	 		for(var i=0,f;i<addresses.length;i++){
 	 			c=addresses[i];
 	 			f=isBilling?c.billing:c.shipping;
 	 			if(f){
@@ -793,10 +793,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 					attn:"",
 				};
  		}
- 		if(!address.reciever){
- 			if(isBilling)	
- 	 			address.receiver=_order.company.info.businessName;
- 			else if(address.billing && address.shipping)
+ 		if(!address.receiver){
+ 			if(isBilling||(c.billing && c.shipping))	
  	 			address.receiver=_order.company.info.businessName;
  		}
  		
@@ -804,7 +802,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  		
  	}
  	
- 	_order.createGarmentPrintModel=function(billItems,lineItemOnly,mainColorOnly){
+ 	_order.createGarmentPrintModel=function(billItems,lineItemOnly,mainColorOnly,hideDiscount){
  		var info=_order.dataSet.info;
  		var company=_order.company;
  		var  model={
@@ -820,6 +818,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  					shipDate:info.requireDate,
  					cancelDate:info.cancelDate, 			//info.cancelDate,
  					remark:info.remark,
+ 					hideDiscount:hideDiscount,
 				},
 	 			items:[],
  			};
@@ -946,8 +945,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		
 	}	 	
  	
- 	_order.printBill=function(billItems,lineItemOnly,mainColourOnly){
- 		var data=_order.createGarmentPrintModel(billItems,lineItemOnly,mainColourOnly);
+ 	_order.printBill=function(billItems,lineItemOnly,mainColourOnly,hideDiscount){
+ 		var data=_order.createGarmentPrintModel(billItems,lineItemOnly,mainColourOnly,hideDiscount);
  		util.printUrl("../om/print-confirm-dd",{data:JSON.stringify(data)},false);
  		return;
  	}

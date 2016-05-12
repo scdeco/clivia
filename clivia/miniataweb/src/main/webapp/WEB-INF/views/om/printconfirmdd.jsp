@@ -181,6 +181,7 @@ window.onload = function() {
 
 	
         var info = printModel.info;
+        var hideDiscount=info.hideDiscount;
         //Order table
         document.getElementById("orderDate").innerHTML = "&nbsp;&nbsp;" + info.orderDate + "&nbsp;&nbsp;";
         document.getElementById("orderNo").innerHTML = "&nbsp;&nbsp;" + info.orderNo + "&nbsp;&nbsp;";
@@ -214,9 +215,9 @@ window.onload = function() {
 						+"<th width='60px' style='border-bottom:1pt solid black;'>Style</th>"
 						+"<th width='300px' style='border-bottom:1pt solid black;'>Description</th>"
 						+"<th align='right' style='border-bottom:1pt solid black;'>Quantity</th>"
-						+"<th align='right' style='border-bottom:1pt solid black;'>Price</th>"
-						+"<th align='right' style='border-bottom:1pt solid black;'>% Off</th>"
-						+"<th align='right' style='border-bottom:1pt solid black;'>Net</th>"
+						+(hideDiscount?"":("<th align='right' style='border-bottom:1pt solid black;'>Price</th>"
+						+"<th align='right' style='border-bottom:1pt solid black;'>% Off</th>"))
+						+"<th align='right' style='border-bottom:1pt solid black;'>"+(hideDiscount?"Price":"Net")+"</th>"
 						+"<th align='right' style='border-bottom:1pt solid black;'>Amount</th>"
 						+"</tr>"
 						
@@ -227,8 +228,7 @@ window.onload = function() {
 			wholeTable += "<tr class='mainrow'><td class='left'>" + item.itemNo 
 						+ "</td><td class='left'>" + item.desc 
 						+ "</td><td class='right bold'>" + item.qty 
-						+ "</td><td class='right'>" + item.listPrice 
-						+ "</td><td class='right'>" + item.discount
+						+ (hideDiscount?"":("</td><td class='right'>" + item.listPrice + "</td><td class='right'>" + item.discount))
 						+ "</td><td class='right bold'>" + item.price 
 						+ "</td><td class='right bold'>" + item.amt 
 						+ "</td></tr>" 
@@ -296,6 +296,7 @@ window.onload = function() {
 <b>SITICHES CREATION INC.</b><br>
 3889 Keith Street, Unit D<br>
 Burnaby, BC, V5J 5K4  Canada<br>
+Toll Free: 1-800-639-8034<br>
 Tel: (604)873-8901   Fax:(604)873-8902<br>
 info@scdeco.com&nbsp;&nbsp;&nbsp;www.ScDeco.com<br>
 </p>
