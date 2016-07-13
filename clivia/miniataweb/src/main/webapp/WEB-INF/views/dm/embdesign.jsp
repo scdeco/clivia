@@ -475,11 +475,11 @@ factory("DstDesign",["$http","Event",function($http,Event){
 		
 				if (currStitch.f === 1){
 					if(prevStitchIsJump){
-						ctx.moveTo(Math.round(currStitch.x*scale)+0.5,Math.round(currStitch.y*scale)+0.5);
+						ctx.moveTo(currStitch.x*scale,currStitch.y*scale);
 						prevStitchIsJump=false;
 					}else{
-						ctx.lineTo(Math.round(currStitch.x*scale)+0.5,Math.round(currStitch.y*scale)+0.5);
-					}
+						ctx.lineTo(currStitch.x*scale,currStitch.y*scale);
+										}
 				}else{
 					prevStitchIsJump=true;
 				}
@@ -508,7 +508,7 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 		
 		this.canvas=document.createElement('canvas');
 		this.canvas.id=createElementId();
-		//this.canvas.style.visibility='hidden';
+		this.canvas.style.visibility='visible';		//show or hide design's canvas--visible|hidden
 		document.body.appendChild(this.canvas);
 		this.imageObj=document.getElementById(this.canvas.id);
 		
@@ -529,8 +529,6 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 		if(embDesign)
 			this.setEmbDesign(embDesign);
 	}
-	
-
 	
 	var randomId=0;
 	var createElementId=function(){
@@ -553,6 +551,7 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 						colorway={};
 					else{
 						this.threadCodes="";
+						this.runningSteps="";
 					}
 				}else{
 					
@@ -793,9 +792,13 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 				var steps=[],step;
 				for(var i=0;i<this.runningStepList.length;i++){
 					step=this.runningStepList[i];
-					if(!step.code)
-						break;
-					steps.push(step.threadIndex);
+					if(parseInt(step.stepStitchCount)===0){
+						steps.push("0");
+					}else{
+						if(!step.code)
+							break;
+						steps.push(step.threadIndex);
+					}
 				}
 				if(steps!==this.embCanvas.runningSteps){
 					this.embCanvas.runningSteps=steps.join('-');
@@ -897,13 +900,13 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			
 			//editing mode, called from events of gwStep.grid 
 			drawDesign:function(gw){
-				var isStepGrid=gw.gridName==="embStepGrid";
 
 				var colorway={};
 				if(!gw){
 					this.embCanvas.drawDesign(colorway);
 					return;
 				}
+				var isStepGrid=gw.gridName==="embStepGrid";
 					
 				var cell=gw.getEditingCell();
 				if(!cell)
@@ -1152,7 +1155,9 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 }]).
 
 directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThread){
+	
 	var templateUrl="../dm/threadmatcher";
+	
 	var directive={
 			restrict:'EA',
 			replace:false,
@@ -1164,6 +1169,7 @@ directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThr
 			templateUrl:templateUrl,
 			
 			link:function(scope,element,attrs){
+				
 				scope.populateThreads=function(){
 					var emb=scope.embMatcher;
 					emb.embCanvas.normalizeThreadCodes();
@@ -1184,6 +1190,7 @@ directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThr
 				}
 				
 			}, //end of link function
+			
 			controller:function($scope){
 				var scope=$scope;
 				
@@ -1275,7 +1282,7 @@ factory("EmbStage",["Selector",function(Selector){
 			
 			draw:function(){
 				this.currentLayer.draw();
-			}
+			},
 	}
 	
 	return EmbStage;
@@ -1286,6 +1293,7 @@ factory("EmbStage",["Selector",function(Selector){
 directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 	
 	var templateUrl="../dm/dstpaint";
+	
 	var directive={
 			restrict:'EA',
 			replace:true,
@@ -1343,7 +1351,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 						for(var i=0,idx,step,code,t;i<stepList.length;i++){
 							step=stepList[i];
 							idx=parseInt(step.threadIndex);
-							t=(idx>0 && idx<threadList.length)?threadList[idx-1]:null;
+							t=(idx>0 && idx<=threadList.length)?threadList[idx-1]:null;
 							if(t && t.code){
 								code=t.code;
 								if(purgeRepeatCode){
@@ -1372,8 +1380,8 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 						topLine+=dst.designNumber?(dst.designNumber+"&nbsp;&nbsp;"):"";
 						topLine+="H:"+dst.height+"&nbsp;".repeat(space);
 						topLine+="W:"+dst.width+"&nbsp;".repeat(space);
-						topLine+="st:"+dst.stitchCount+"&nbsp;".repeat(space);
-						topLine+="Step:"+dst.stepCount+"&nbsp;".repeat(space);
+						topLine+="St:"+dst.stitchCount+"&nbsp;".repeat(space);
+						topLine+="Steps:"+dst.stepCount+"&nbsp;".repeat(space);
 						
 						var bottomLine="K:\Wilcom\2005934 Ontario Inc Mark's Promotional";
 						
@@ -1383,7 +1391,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 								width:dst.width,
 								height:dst.height,
 								list:list,
-								image:embCanvas.imageObj.toDataURL(),								
+								image:embCanvas.imageObj.toDataURL(),
 						}
 						
 					}
@@ -1391,7 +1399,11 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					return model;
 				}			
 				
-				scope.getDesignHtml= function (printModel,paperType,isLandscape,isShowSt){	
+				//paperType:letter-8.5"x11";ledger:11"x17"				
+				scope.getDesignHtml= function (printModel,paperType,isLandscape,bgColor,showStitchCount){	
+					
+					if(!bgColor)
+						bgColor="#FFFFFF";
 					
 					var Paper = {
 						papers :[{type:"letter",width:191, height:255},{type:"ledger", width:260, height:416}],//191 255 272 432
@@ -1404,16 +1416,15 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 									break;
 								}
 							}
-							return paper;
+							
+							return paper?paper:papers[0];
 						},
 						getDefault:function (){
-							return paper[0];	
+							return papers[0];	
 						}
 					}
 				
 					var paper = Paper.getPaper(paperType);
-					if(!paper)
-						Paper.getPaper(getDefault);
 						
 					//var layout ="portrait";
 					if(isLandscape){
@@ -1423,17 +1434,20 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					}
 					
 					//before change to pixel, all variable are in mm.
-					var margin = 0; //mm
-					var mmToPixel = 3.64;
-					var r_table_w = 40;//mm
-					var r_table_h = 240.5;//mm
-					var font_family = "Times New Roman";
-					var info_font_size = 80;//top info and bot info font size
-					var list_font_size = 100;// list font size
+					var margin = 0; 
+					var r_table_w = 40;
+					var r_table_h = 240.5;
 					var paper_width = (paper.width - (margin*2));
 					var paper_height = (paper.height - (margin*2));
 					var table_width= paper.width;
-					var table_height = 5;//mm
+					var table_height = 5;
+					
+					var mmToPixel = 3.64;		//pixel per mm
+
+					var font_family = "Times New Roman";
+					var info_font_size = 80;	//top info and bottom info font size
+					var list_font_size = 100;	//list font size
+					
 					
 					//change mm to pixel
 					function changeToPixel(mm){
@@ -1497,7 +1511,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					var tdDot = "";
 					var tdEmpty="";
 					
-					if(isShowSt){
+					if(showStitchCount){
 						var tdNeed = 5;
 						display = "true";
 					}
@@ -1550,13 +1564,15 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					rightList += "</table></div>"
 					
 					//image initial part
+						
+					var imageBorderWidth=0;	//10 added by jacob to add a border to image, background and border of the image have same color  
+					
 					var imgHtml="";
 					var newImageH = 0;
 					var newImageW = 0;
 					var widthRatio = 0;
 					var heightRatio = 0;
 					var ratio = 0;
-					
 				
 					//--------------------------------calculate ratio part---------------------
 					widthRatio =  borderWidth/image_w_pixel;
@@ -1568,26 +1584,18 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					imgHtml += "<div  style='width:" + borderWidth + "px;height:" + borderHeight + "px; border: 1px solid black; line-height:" + borderHeight + "px;'>"
 					
 					//use ratio to control image display 
-					if (ratio > 1){
+					if (ratio > 1)
 						ratio = 1;
-						output(image_w_pixel,image_h_pixel,ratio,borderHeight);
+
+					newImageW = image_w_pixel * ratio-imageBorderWidth*2;	//-imageBorderWidth*2:added by jacob
+					newImageH =image_h_pixel * ratio-imageBorderWidth*2;	//-imageBorderWidth*2:added by jacob
 					
-					}
-					
-					else{
-					 output(image_w_pixel,image_h_pixel,ratio,borderHeight);
-					}
-					
-					//output image function
-					function output(imgWidth,imgHeight,ratio,borderHeight){
-						
-						newImageW = imgWidth * ratio;
-						newImageH = imgHeight * ratio;
-						imgHtml += "<img src='" + printModel.image +"' alt='pattern'" 
-								 + "style='display:block; width:" + newImageW + "px;height:" 
-								 + newImageH + "px;" + "margin-left:auto;margin-right:auto;margin-top:"
-								 + (borderHeight*0.5 - newImageH/2)+"px;'>";	
-					}
+					imgHtml += "<img src='" + printModel.image +"' alt='pattern'" 
+							 + "style='display:block; width:" + newImageW + "px;height:" 
+							 + newImageH + "px;" + "margin-left:auto;margin-right:auto;margin-top:"
+							 + (borderHeight*0.5 - newImageH/2-imageBorderWidth)+"px;"
+							 + (bgColor?"border:"+imageBorderWidth+"px solid "+bgColor+";background-color:"+bgColor+";":"")+"'>";	
+
 					imgHtml += "</div>";
 					
 					//---------------------------header table part--------------------------
@@ -1595,13 +1603,11 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					var topInfo = "<div style='height:" + table_height_pixel + "px; width:" + paper_w_pixel +"px ;border: 1px solid black;line-height:" + table_height_pixel +"px; text-align:right; border-bottom-style:none;font-family:" + font_family + "; font-size:" + info_font_size +"%;'>";
 					topInfo += "Z:" + ratio + '&nbsp'.repeat(5) + printModel.topLine +"</div>";
 					
-					//--------------------------------bottom table part---------------------------
+					//---------------------------bottom table part---------------------------
 					var bottomInfo = "<div style='height:" + table_height_pixel + "px; width:" + paper_w_pixel +"px ;border: 1px solid black;line-height:" + table_height_pixel +"px; text-align:left; border-top-style:none;font-family:" + font_family + "; font-size:" + info_font_size +"%;'>" 
 					bottomInfo +='&nbsp'.repeat(6) + printModel.bottomLine + "</div>";
 					
-					
-					
-					//-----------------------------display------------------------------------
+					//---------------------------display------------------------------------
 					var display = topInfo + imgHtml + bottomInfo + rightList;
 					
 					return display;
@@ -1610,9 +1616,12 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 				
 
 				scope.print=function(){
+					//parameters:embMatcher,showThreads--list of threads,purgeRepeatCode
 					var printModel=scope.getPrintModel(scope.threadMatcher,false,true);
-				
-					var html=scope.getDesignHtml(printModel,"ledger");
+					
+					//parameters:printModel,paperType,isLandscape,bgColor,showStitchCount
+					//paperTypess :[{type:"letter",width:191, height:255},{type:"ledger", width:260, height:416}]
+					var html=scope.getDesignHtml(printModel,"letter",false,scope.threadMatcher.backgroundColor,false);
 					
 					util.print(html,true);
 				}				
@@ -1622,10 +1631,10 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 				}
 
 				scope.onClick=function(){
-					scope.embStage.onClick();
+					scope.embStage.onClick();		//selct/deselect an object
+					scope.threadMatcher.drawDesign();	//drag image of design with current colourway
 				}
 				
-
 			}, //end of link function
 			
 			controller:["$scope","util","DstDesign","EmbCanvas","EmbStage",
@@ -1643,9 +1652,9 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					
 			    $scope.dstDesign=new DstDesign();
 
-			    $scope.embStage=new EmbStage({container:'container',
-			        width: 1024,
-			        height: 800});
+			    $scope.embStage=new EmbStage({container:'stagecontainer',
+			        width: 2000,
+			        height:2000});
 				
 				$scope.embCanvas=new EmbCanvas($scope.dstDesign);
 
@@ -1661,26 +1670,30 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 				$scope.embStage.add($scope.embImage);
 				
 				$scope.onImageChanged=function(e){
+					
 					$scope.embStage.draw();
 				}
 				
 				$scope.onDesignChanged=function(e){
 					//e is dstDesign
-					$scope.embStage.select();
+					$scope.embStage.select();		//deselect all objects
+					
 					if($scope.threadMatcher 
 							&&  $scope.threadMatcher.embCanvas 
 							&&  $scope.threadMatcher.embCanvas.embDesign===e){
 						
 						$scope.threadMatcher.initColorwayList();
 					}
-					$scope.embCanvas.drawDesign();
+					$scope.embImage.setWidth($scope.embCanvas.getOriginalWidth());
+					$scope.embImage.setHeight($scope.embCanvas.getOriginalHeight());
+/*					$scope.embStage.setWidth($scope.embImage.width()+10);
+					$scope.embStage.setHeight($scope.embImage.Height()+10);
+*/					$scope.embCanvas.drawDesign();
 				}
 				
 				$scope.dstDesign.designChanged.addListener($scope.embCanvas,$scope.onDesignChanged);
 				$scope.embCanvas.imageChanged.addListener($scope.embStage,$scope.onImageChanged);
 				
-				
-
 			}],
 	}
 	

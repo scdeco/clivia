@@ -1968,16 +1968,22 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 					columnItems=scope.dataSet.columnItems;
 					
 					for(var i=0,col,column;i<columnItems.length;i++){
-						column=columnItems[i];						
-						col={
-							field:column.name,
-							title:column.title,
-						}
+						column=columnItems[i];		
+						col={field:column.name};
+					
+						if(!!column.title)
+							col.title=column.title;
+						
+						if(!!column.template)
+							col.template=column.template;
+
 						if(column.width>=0)
 							col.width=column.width;
 						
 						if(column.displayFormat)
 							col.format=column.displayFormat;
+						if(column.sortable===false)
+							col.sortable=false;
 						
 						if(column.filterable===false)
 							col.filterable=false;
@@ -2018,6 +2024,9 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 						
 						selectable: "multiple cell",
 					    allowCopy: true,
+					    excel: {
+			                allPages: true
+			            },
 						
 					    pageable: {
 					    	pageSizes:["all",40,35,30,25,20,15,10,5],

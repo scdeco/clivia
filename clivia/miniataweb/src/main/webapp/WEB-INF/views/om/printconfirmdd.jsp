@@ -1,105 +1,82 @@
 <!DOCTYPE html>
 
 <html>
-
+<title>Order confirm</title>
+<header>
 <style>
-
 body{
 	font-family: "Times New Roman";
-	font-weight:normal;
 }
-img {
-	position:absolute;
-//	height:90px;
+
+img{
+	position:relative;
 	width:180px;
-	top:30px;
+	top:25px;
+	font-size:70%;
 }
 #bold{font-weight:bold;}
-#w-1{font-weight:100;}
-#ship{position:absolute;left:350px;}
-#left{text-align:left;}
-#right{vertical-align:left;}
 
 .info {
 	position:absolute;
-	top: 8px;
+	margin-top:-40px;
 	left:220px;
-	font-size:60%;
+	font-size:70%;
 }
+
 .order{
-	position:absolute;
+	position:relative;
 	table-layout:fixed;
-	left:-110px;
-	top: -10px;
+	left:445px;
+	top:-80px;
+	font-size:70%;
 }
 table{
 	border-collapse:collapse;	
 }
-.toLeft{
-	position:absolute;
-	text-align:left;
-}
+
 h2{
-	position:absolute;
-	top: -20px;
-	left:500px;
+	position:relative;
+	top:-60px;
+	margin-left:485px;
 }
-.invoiceInfo{
-	position:absolute;
-	left:560px;
-	top:45px;
-	font-size:70%;
-}
-
 .billShip{
-	position:absolute;
-	width:700px;
-	top:70px;
+	position:relative;
+	top:-100px;
 	font-size:70%;
 }
+
+.billTable{
+	position:absolute; 
+	left:8px; 
+	top:131px;
+	font-size:70%;
+}
+.shipTable{
+	position:static;
+	margin-left:349px;
+	margin-top:-100px;
+	font-size:70%;
+}
+
 .contact{
-	position:absolute;
+	position:static;
 	width:700px;
-	top:235px;
+	margin-top:-5px;
 	font-size:70%;
 }
-
 .formTable{
-	position:absolute;
-	width:700px;
-	top:250px;
-	font-size:70%;
-}
-
-.listTable{
-	position:absolute;
-	width:700px;
-	top:295px;
-	font-size:70%;
-}
-.testInfo{
-	position:absolute;
-	bottom:-400px;
-	font-size:70%;
-}
-.totalTable{
-	position:absolute;
-	bottom:400px;
-/* 	font-size:70%; */
-	font-weight: bold;
-}
-
-tr.mainrow{
-/* 	font-weight: bold; */
-}
-
-td.bold{
-	font-weight: bold;
-	font-size:110%;
-}
-
-td{
 	text-align:center;
+	font-size:70%;
+}
+.content{
+	font-size:70%;
+}
+.listSpace{
+	font-size:70%;
+}
+.footer{
+	page-break-after:always;
+	page-break-inside: avoid;
 }
 .left{
 	text-align:left;
@@ -110,87 +87,142 @@ td{
 .center{
 	text-align:center;
 }
-.customer{
-	position:absolute;
-	top:16px;
-	left:60px;
-}
-.totalQty{
-	position:relative;
-	width:700px;
-	left:0px;
-	text-align:left;
-}
-
-.header{
-	position:absolute;
-	white-space: nowrap;
-}
-.left_bottom{
-	text-align:left;
-	vertical-align:bottom;
-}
 .image {
     background-repeat:no-repeat;
     background-size:auto 80px;
     background-position: 0px 10px; 
 }
+.endFooter{
+	position:static;
+	margin-top:150px;
+	font-size:70%;
+}
+.totalQty{
+	position:relative;
+	width:700px;
+	left:0px;
+	text-align:left; 
+	font-size:70%;
+}
 
 </style>
-
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 <script>
-"use strict";
-
-
-
-window.onload = function() {
-
-        var printModel = ${data.data};
-        
-        var printAddress=function(isBilling,address){
-        	var line=isBilling?"bill":"ship",lineNo=0;
-        	
-    		document.getElementById(line+lineNo++).innerHTML = "<br><br>" +(address.receiver?address.receiver:"");
-
-    		if(!!address.addr1)
-    			document.getElementById(line+lineNo++).innerHTML = address.addr1;
-    		
-    		if(!!address.addr2)
-    			document.getElementById(line+lineNo++).innerHTML = address.addr2;
-    			
-    		//city,po,pro	
-    		var t="";
-    		if (!!address.city)
-    			t += ",&nbsp;" + address.city;
-    		if(!!address.province)
-    			t += ",&nbsp;" + address.province;
-    		if(!!info.billTo.postalCode)
-    			t += ",&nbsp;" +address.postalCode;
-    			
-    		if(t)
-    			t = t.substring(7);
-    		
-            document.getElementById(line+lineNo++).innerHTML = t;
-    		
-    		if(!!address.country)
-    			document.getElementById(line+lineNo++).innerHTML = address.country;
-    			
-    		document.getElementById(line+lineNo++).innerHTML = (address.attn?"attn:"+ address.attn:"")  + "<br><br>";
-        }
-	   
 
 	
-        var info = printModel.info;
-        var hideDiscount=info.hideDiscount;
-        //Order table
-        document.getElementById("orderDate").innerHTML = "&nbsp;&nbsp;" + info.orderDate + "&nbsp;&nbsp;";
-        document.getElementById("orderNo").innerHTML = "&nbsp;&nbsp;" + info.orderNo + "&nbsp;&nbsp;";
-        document.getElementById("poNo").innerHTML = "&nbsp;&nbsp;"+(info.poNo?info.poNo:'')+"&nbsp;&nbsp;";
+window.onload = function() {
+	
+	var printModel = ${data.data};
+
+	var info = printModel.info;
+	var hideDiscount=info.hideDiscount;
+	var items = printModel.items;
+	var headerPart = "";
+	var currentPage = 0;
+	var totalPage = 0;
+	var breakPixel = 880.3;	//910.3;
+	var countPixel = 0;
+	var pagePixel = 890.3;		//924.3;
+	var endList = false;
+	var qtyDisplay = false;
+	var errorPixel = 20.813;
+	
+	logoAndTitle();
+	billAndShip();
+	contact();
+	infoTable();
+	orderList();
+	listDetail();
+	
+	
+	
+	function logoAndTitle(){
 		
-        printAddress(true,info.billTo);
-        printAddress(false,info.shipTo);
-			
-        //----------------customer& part-------------------
+		var logoAndTitle = ""
+				+ "<div class='firstPage' id='firstPage'>"
+				+ "<div class='headerPart' id='headerPart'>"
+				+ "<img src='../resources/images/DD LOGO.jpg' alt='logo'>"
+				+ "<div class='info' id='info'><p style='white-space: nowrap;'>"
+				+ "<b>STITCHES CREATION INC.</b><br>"
+				+ "3889 Keith Street, Unit D<br>"
+				+ "Burnaby, BC, V5J 5K4  Canada<br>"
+				+ "Toll Free: 1-800-639-8034<br>"
+				+ "Tel: (604)873-8901"
+				+ "Fax:(604)873-8902<br>"
+				+ "info@scdeco.com&nbsp;&nbsp;&nbsp;www.ScDeco.com<br>"
+				+ "</p>"
+				+ "</div>"
+				+"<h2 class='header'>Order Confirmation</h2>"
+		
+		logoAndTitle +="<table class='order' border='1' top = '0px' height='50px' width='250px' >"
+				+ "<tr>"
+				+ "<th width='110px'>P.O.#</th>"
+				+ "<th width='70px'>Date</th>"
+				+ "<th width='70px' style='white-space: nowrap;'>&nbsp;Order#&nbsp;</th>"
+				+ "<tr>"
+				+ "<td style='width:10em; word-wrap: break-word;text-align:center'>" +(info.poNo?info.poNo:"") + "</td>"
+				+ "<td width='70px' style='white-space: nowrap;text-align:center'>"  + (info.orderDate?info.orderDate:"") + "</td>"
+				+ "<td width='70px' style='white-space: nowrap;text-align:center'>"  + (info.orderNo?info.orderNo :"") + "</td>"
+				+ "</tr>"
+				+ "</table>"
+		headerPart += logoAndTitle;
+	}
+	
+	function billAndShip(){
+	
+		var billInfo="";
+		if (!!info.billTo.city)
+			billInfo += ",&nbsp;" + info.billTo.city;
+		if(!!info.billTo.province)
+			billInfo += ",&nbsp;" + info.billTo.province;
+		if(!!info.billTo.postalCode)
+			billInfo += ",&nbsp;" +info.billTo.postalCode;
+		if(billInfo)
+			billInfo = billInfo.substring(7);
+	
+		var shipInfo="";
+		if (!!info.shipTo.city)
+			shipInfo += ",&nbsp;" + info.shipTo.city;
+		if(!!info.shipTo.province)
+			shipInfo += ",&nbsp;" + info.shipTo.province;
+		if(!!info.shipTo.postalCode)
+			shipInfo += ",&nbsp;" +info.shipTo.postalCode;
+		if(shipInfo)
+			shipInfo = shipInfo.substring(7);
+	
+	
+		var billAndShip= "";
+		billAndShip += "<br>"
+					+ "<tr>"
+					+ "<br><br>"
+					+ "<table width='500px' class='billShip'>"
+					+ "<tr style='background-color:#C0C0C0'>"
+					+ "<th class='left'>Bill To:</th>"
+					+ "<th id='ship'>Ship To:</th>"
+					+ "</tr>"
+					+ "<table>"
+					+ "<table width='350px' align='center' class='billTable'>"
+					+ "<tr><td width='100px'></td><td>" + "<br><br>" + info.billTo.receiver + "</td></tr>"
+					+ "<tr><td width='100px'></td><td class='left'>" + (info.billTo.addr1?info.billTo.addr1:"") +"</td></tr>"
+					+ "<tr><td width='100px'></td><td class='left'>" + (info.billTo.addr2?info.billTo.addr2:"") + "</td></tr>"
+					+ "<tr><td width='100px'></td><td class='left'>" + billInfo + "</td></tr>"
+					+ "<tr><td width='100px'></td><td class='left'>" + (info.billTo.country?info.billTo.country:"") + "</td></tr>"
+					+ "<tr><td width='100px'></td><td class='left' id='billAttn'>" + (info.billTo.attn?info.billTo.attn:"") + "<br><br></td></tr>"
+					+ "</table>"
+					+ "<table width='350px' align='center' class='shipTable'>"
+					+ "<tr><td width='100px'></td><td class='left'><br><br>" + info.shipTo.receiver + "</td></tr>"
+					+ "<tr><td width='100px'></td><td class='left'>" + (info.shipTo.addr1?info.shipTo.addr1:"") +"</td></tr>"
+					+ "<tr><td width='100px'></td><td class='left'>" + (info.shipTo.addr2?info.shipTo.addr2:"") +"</td></tr>"
+					+ "<tr><td width='100px'></td><td class='left'>" + shipInfo + "</td></tr>"
+					+ "<tr><td width='100px'></td><td class='left'>" + (info.shipTo.country?info.shipTo.country:"") + "</td></tr>"
+					+ "<tr><td width='100px'></td><td class='left'>" + (info.shipTo.attn?info.shipTo.attn:"") + "<br><br></td></tr>"
+					+ "</table>"
+				
+		headerPart += billAndShip;
+	}
+	
+	function contact(){
+	
 		var contactInfo="";
 		if (!!info.contact.name)
 			contactInfo += ",&nbsp;" + info.contact.name;
@@ -201,45 +233,80 @@ window.onload = function() {
 		if(contactInfo)
 			contactInfo = contactInfo.substring(7);
 			
-		document.getElementById("contact").innerHTML = contactInfo;
-		document.getElementById("terms").innerHTML = info.terms;
-		document.getElementById("shipDate").innerHTML = info.shipDate;
-		document.getElementById("rep").innerHTML = info.rep;
-		document.getElementById("cancelDate").innerHTML = info.cancelDate;
+		var contact =  "<table width='700px' class='contact'>"
+					+ "<tr>"
+					+ "<th width='10px' align='left'>Contact:</th>"
+					+ "<td class='left'>" + contactInfo + "</td>"
+					+ "</tr>"
+					+ "</table>"
+	
+		headerPart += contact;
+	}
+	
+	function infoTable(){
+		var info = printModel.info;
+		var infoDisplay = "<table width='700px' border = '1' class='formTable'>"
+				+"<tr>"
+				+"<th width='175px'>Sales REP.</th>"
+				+"<th width='175px'>Terms</th>"
+				+"<th width='175px'>Ship Date</th>"
+				+"<th width='175px'>Cancel Date</th>"
+				+"</tr>"
+				
+				+"<tr>"
+				+"<td>" + (info.rep?info.rep:"") + "</td>"
+				+"<td>" +(info.terms?info.terms:"") + "</td>"
+				+"<td>" + (info.shipDate?info.shipDate:"") +"</td>"
+				+"<td>" + (info.cancelDate?info.cancelDate:"") + "</td>"
+				+"</tr>"
+				
+				+"</table>"
+				
+				+"<br></div>"
 		
-		//------------------------list part-------------------------
-		//list header part
-		var wholeTable ="";
-		wholeTable += "<table width='700px'  class='myTable'>"
-						+ "<tr id='left'>"
-						+"<th width='60px' style='border-bottom:1pt solid black;'>Style</th>"
-						+"<th width='300px' style='border-bottom:1pt solid black;'>Description</th>"
-						+"<th align='right' style='border-bottom:1pt solid black;'>Quantity</th>"
-						+(hideDiscount?"":("<th align='right' style='border-bottom:1pt solid black;'>Price</th>"
-						+"<th align='right' style='border-bottom:1pt solid black;'>% Off</th>"))
-						+"<th align='right' style='border-bottom:1pt solid black;'>"+(hideDiscount?"Price":"Net")+"</th>"
-						+"<th align='right' style='border-bottom:1pt solid black;'>Amount</th>"
-						+"</tr>"
-						
-		//out table part
-        var items = printModel.items;
-        for (var i = 0; i < items.length; i++) {
+		headerPart += infoDisplay;
+		display(headerPart);
+		countPixel +=  ($("#headerPart").height() + errorPixel);
+	}
+	
+	function orderList(){
+		var tableHeader ="";
+		tableHeader += "<div class='content' id='content'>"
+					+"<table width='700px'>"
+					+"<tr class='left'>"
+					+"<th width='60px' style='border-bottom:1pt solid black;'>Style</th>"
+					+"<th width='310px' style='border-bottom:1pt solid black;'>Description</th>"
+					+"<th align='right' style='border-bottom:1pt solid black;'>Quantity</th>"
+					+"<th align='right' style='border-bottom:1pt solid black;'>Price</th>"
+					+"<th align='right' style='border-bottom:1pt solid black;'>% Off</th>"
+					+"<th align='right' style='border-bottom:1pt solid black;'>Net</th>"
+					+"<th align='right' style='border-bottom:1pt solid black;'>Amount</th>"
+					+"</tr>"
+					+"</table>"
+		display(tableHeader);
+	}
+	
+	function listDetail(){
+		   var listLength = items.length - 1;
+		   var listTable = "";
+		  for (var i = 0; i < items.length; i++) {
             var item = items[i];
-			wholeTable += "<tr class='mainrow'><td class='left'>" + item.itemNo 
-						+ "</td><td class='left'>" + item.desc 
-						+ "</td><td class='right bold'>" + item.qty 
-						+ (hideDiscount?"":("</td><td class='right'>" + item.listPrice + "</td><td class='right'>" + item.discount))
-						+ "</td><td class='right bold'>" + item.price 
-						+ "</td><td class='right bold'>" + item.amt 
+			listTable += "<div id='listSpace" + i +"' class='listSpace'>"
+			listTable  += "<table width='700px' class='listTable'>";
+			listTable  += "<tr class='mainrow'><td class='left'>" + item.itemNo 
+						+ "</td><td width='370px' class='left'>" + item.desc 
+						+ "</td><td class='right' id='bold'>" + item.qty 
+						+ "</td><td class='right'>" + item.listPrice 
+						+ "</td><td class='right'>" + item.discount
+						+ "</td><td class='right' id='bold'>" + item.price 
+						+ "</td><td class='right' id='bold'>" + item.amt 
 						+ "</td></tr>" 
-
-            var subItemRows = item.data;
-			
+			var subItemRows = item.data;
 			if(subItemRows){
 				//image part			
 				var url = "http://192.6.2.108:8080/clivia/lib/image/getimage?thumbnail=true&id=";
 				var imageUrl =item.imageId? url+item.imageId:"";
-				wholeTable += "<tr><td width = '50px' class='image'style='background-image:url(&quot;" 
+				listTable += "<tr><td width = '60px' class='image'style='background-image:url(&quot;" 
 							+ imageUrl 
 							+"&quot;)'></td>" 
 							
@@ -261,120 +328,138 @@ window.onload = function() {
 									+ (subItemCols[k] ? subItemCols[k] : "") 
 									+ tClose;}
 	                }
-	                item_table += "</td></tr>";
+	                item_table += "</tr></td>";
 	            }
-				wholeTable += "<td colspan='2' id='itemTable'><table width ='400px' class='left'><tr height='5px'><td></td></tr>" + item_table + "</table><br><br><td colspan='4' id='quote'></td>";
+				listTable += "<td colspan='2' id='itemTable'><table width ='400px' class='left'><tr height='5px'></tr>" + item_table + "</table><br><br><td colspan='4' id='quote'></td></table>"
+							+"<div class ='modifySpace' id = 'modifySpace" + i +"'></div>"
+							+"</div>";
+				if(i == listLength){
+					listTable += "</div>";
+				}
+					
+				display(listTable);
+				listTable="";
+				var listSpace = "#listSpace" + i;
+				countPixel += $(listSpace).height();
+				console.log(countPixel);
+				
+				if (countPixel > breakPixel && i != listLength){
+					var thisList = "#listSpace" + i;
+					var thisListHeight = $(thisList).height();
+					countPixel = countPixel - thisListHeight;
+					var footerText = needPageBreak(i,listLength);
+					var modify = "#modifySpace" + (i-1);
+					var headerPixel = 20;
+					$(modify).html(footerText); 
+					countPixel = thisListHeight + headerPixel
+				}
+				else if (i == listLength){
+					endList = true;
+					display(totalQty() + needPageBreak(listLength,listLength));	
+					var qtyDivHeight = $('#totalQty').height();
+					countPixel += qtyDivHeight;
+				}
+				
 			}
-        }
+		}
 		
-		//total count part
 		
-		var qtyList="<table class='totalQty'>"
-					+"<hr>"
-					+"<tr>"
-					+"<th style='width:35px; vertical-align:text-top;'>"+(info.remark?"Remark:":"")+"</th>"
-					+"<td id='remark' colspan='2' class='left' style='word-spacing:none; width:100px'>" + (info.remark?info.remark:"") + "</td>"
-					+"<th style='width:10px; vertical-align: text-top;'>Total:</th>"
-					+"<td id='totalQty' colspan='2' style='text-align:left;vertical-align: text-top'>" + info.totalQty+ "</td>"
-					+"<td id='totalAmt' colspan='2' style='text-align:right;vertical-align: text-top'>" + info.totalAmt+ "</td>"
+	}
+	
+	function totalQty(){
+		qtyDisplay = true;
+		var qtyList="";
+		qtyList +="<table class='totalQty' id='totalQty'>"
+				+"<tr style='border-top-style:solid; border-width:1px;'>"
+				+"<th style='width:35px; vertical-align:text-top;'>Remark:</th>"
+				+"<td id='remark' colspan='2' class='left' style='word-spacing:none; width:100px'>" + (info.remark?info.remark:"") + "</td>"
+				+"<th style='width:10px; vertical-align: text-top;'>Total:</th>"
+				+"<td id='totalQty' colspan='2' style='text-align:left;vertical-align: text-top'>" + info.totalQty+ "</td>"
+				+"<td id='totalAmt' colspan='2' style='text-align:right;vertical-align: text-top'>" + info.totalAmt+ "</td>"
+				+"</tr>"
+				+"</table><br><br>";
+		return qtyList;
+	}
+	
+	function needPageBreak(itemNo,listLength){
+	
+		currentPage++;
+		var newPageEnd = "";
+		if(endList == true){
+			totalPage = currentPage;
+			var className = "endFooter";
+			var needMorePage = "</div>";
+		}
+		else{
+			totalPage = currentPage + 1;
+			var className = "footer";
+			var needMorePage = "</div></div>";
+		}
+
+		if(currentPage != 1 && qtyDisplay==false ){
+			countPixel = countPixel - (errorPixel + 10);
+		}
+		
+		else if (qtyDisplay==true){
+			countPixel = countPixel + (errorPixel + 10);
+		}
+	
+		var marginPixel = pagePixel - countPixel;
+		
+	
+		var footer = "<div class='" + className +"' >"//style='margin-top:" + marginPixel +"px'>"
+					/*+"<table width='700px'>"
+					+"<tr style='border-top-style: solid; border-width:1px;'>"
+					+"<td width = 400px></td>"
+					+"<td class='right'>" 
+					+ "Page " + currentPage + " of " + totalPage 
+					+("&nbsp;").repeat(4) + (info.poNo?info.poNo:"")
+					+"</td>"
 					+"</tr>"
-					+"</table><br><br>";
-		wholeTable += qtyList;
-	  
-		document.getElementById("wholeTable").innerHTML = wholeTable;
+					+"</table>"*/
+					+ needMorePage;
+					
+		var listHeader = "<div class='newPage' id='newPage'>"
+					+"<table width='700px'>"
+					+ "<tr class='left'>"
+					+"<th width='60px' style='border-bottom:1pt solid black;'>Style</th>"
+					+"<th width='310px' style='border-bottom:1pt solid black;'>Description</th>"
+					+"<th align='right' style='border-bottom:1pt solid black;'>Quantity</th>"
+					+"<th align='right' style='border-bottom:1pt solid black;'>Price</th>"
+					+"<th align='right' style='border-bottom:1pt solid black;'>% Off</th>"
+					+"<th align='right' style='border-bottom:1pt solid black;'>Net</th>"
+					+"<th align='right' style='border-bottom:1pt solid black;'>Amount</th>"
+					+"</tr>"
+					+"</table>"	
+					
+			return footer+(itemNo!= listLength? listHeader:"");
+		
+	}
 
-    } 
-    
+	//-----------------------display function----------------------------
+		function display(output){	
+			document.getElementById("everything").innerHTML += output;
+			
+		}
+		
+	
+
+//tmr job, use I to count all the id for the new page so that jquery can read the div height 
+//now it's covered by the previse div height
+
+
+}
 </script>
-
+</header>
 <body>
-<!--Order Confirmation start here-->
-<img src="..\resources\images\DD LOGO.jpg" alt="logo">
-<div class="info">
-<!-- <h4 class="compHeader">SITICHES CREATION INC.</h4> -->
-<p style="white-space: nowrap;" ;>
-<b>SITICHES CREATION INC.</b><br>
-3889 Keith Street, Unit D<br>
-Burnaby, BC, V5J 5K4  Canada<br>
-Toll Free: 1-800-639-8034<br>
-Tel: (604)873-8901   Fax:(604)873-8902<br>
-info@scdeco.com&nbsp;&nbsp;&nbsp;www.ScDeco.com<br>
-</p>
-</div>
-<h2 class="header">Order Confirmation</h2>
-<div class="invoiceInfo">
-<table class="order" border="1" top = "0px" height="50px" width="250px" >
-<tr>
-<th width="110px">P.O.#</th>
-<th width="70px">Date</th>
-<th width="70px" style="white-space: nowrap;">&nbsp;Order#&nbsp;</th>
-<tr>
-<td style="width:10em; word-wrap: break-word;"id="poNo"></td>
-<td width="70px" style="white-space: nowrap;" id="orderDate"></td>
-<td width="70px" style="white-space: nowrap;" id="orderNo"></td>
-</tr>
-</table>
-</div>
-
-<!--billTo ShipTo Table part-->
-<div class="billShip">
-<br>
-<tr>
-<br><br>
-<table width="700px">
-<tr bgcolor="#C0C0C0">
-<th class="left">Bill To:</th>
-<th id="ship">Ship To:</th>
-</tr>
-<table>
-<table width="350px" align="center" style="position:absolute; left:0px;">
-<tr><td width="100px"></td><td class="left" id="bill0"></td></tr>
-<tr><td width="100px"></td><td class="left" id="bill1"></td></tr>
-<tr><td width="100px"></td><td class="left" id="bill2"></td></tr>
-<tr><td width="100px"></td><td class="left" id="bill3"></td></tr>
-<tr><td width="100px"></td><td class="left" id="bill4"></td></tr>
-<tr><td width="100px"></td><td class="left" id="bill5"><br><br></td></tr>
-</table>
-<table width="350px" align="center" style="position:absolute; left:350px;">
-<tr><td width="100px"></td><td class="left" id="ship0"></td></tr>
-<tr><td width="100px"></td><td class="left" id="ship1"></td></tr>
-<tr><td width="100px"></td><td class="left" id="ship2"></td></tr>
-<tr><td width="100px"></td><td class="left" id="ship3"></td></tr>
-<tr><td width="100px"></td><td class="left" id="ship4"></td></tr>
-<tr><td width="100px"></td><td class="left" id="ship5"><br><br></td></tr>
-</table>
-</div>
 
 
-<!--contact part-->
-<div class="contact">
-<table width="700px">
-<tr>
-<th width="10px" align="left">Contact:</th>
-<td class="left" id="contact"></td>
-</tr>
-</table>
+<div class="everything" id="everything">
+
 </div>
 
-
-<div class='formTable'>
-<table width="700px" border = "1">
-<tr>
-<th width="175px">Sales REP.</th>
-<th width="175px">Terms</th>
-<th width="175px">Ship Date</th>
-<th width="175px">Cancel Date</th>
-</tr>
-<tr>
-<td id="rep"></td>
-<td id="terms"></td>
-<td id="shipDate"></td>
-<td id="cancelDate"></td>
-</tr>
-</table>
-</div>
-
-<div class="listTable" id="wholeTable">
-</div>
 </body>
+
+
+
 </html>

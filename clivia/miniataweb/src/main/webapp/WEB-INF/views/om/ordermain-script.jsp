@@ -98,6 +98,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	                	$scope.newOrder();
 	                }
 	            }, {
+	            	enable:false,
 	                type: "button",
 	                text: "Repeat",
 	                id:"btnRepeat",

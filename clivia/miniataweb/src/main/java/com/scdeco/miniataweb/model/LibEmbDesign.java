@@ -66,7 +66,7 @@ public class LibEmbDesign {
 	@Column(name="Height")
 	private BigDecimal height;
 	
-	@Column(name="StitcheCount")
+	@Column(name="StitchCount")
 	private Integer stitchCount;
 	
 	@Column(name="StepCount")

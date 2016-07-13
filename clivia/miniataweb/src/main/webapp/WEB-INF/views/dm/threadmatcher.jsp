@@ -40,7 +40,7 @@
 		      			
 		      			
 		      			<div kendo-color-palette
-		 	   				 ng-model="backgroundColor"
+		 	   				 ng-model="embMatcher.backgroundColor"
 		       				 k-orientation="'vertical'"
 		       				 k-columns="8"
 		       				 k-titleSize="{'width':12}"
@@ -48,7 +48,7 @@
 		      			</div>
 		      			
 		      			<div kendo-flat-color-picker
-		 	   				 ng-model="backgroundColor"
+		 	   				 ng-model="embMatcher.backgroundColor"
 		 	   				 k-preview="false">
 		      			</div>
 

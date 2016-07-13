@@ -18,7 +18,7 @@ public class OrderLineItem extends CliviaSuperModel{
 	@Column(name="OrderItemId")
 	private int orderItemId;
 	
-	@Column(name="LinenNo")
+	@Column(name="LineNo")
 	private int lineNo;
 	
 	@Column(name="BrandId")

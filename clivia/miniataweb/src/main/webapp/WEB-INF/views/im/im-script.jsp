@@ -10,7 +10,7 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 		'<input type="text" name="searchStyleNo" class="k-textbox" placeholder="Style#" ng-model="search.styleNo" capitalize ng-trim="true"/>'+
 		'<span ng-click="getProduct()" class="k-icon k-i-search"></span>' 
 	
-	var upcNextItemRefTemplate='Next Item Ref#:<input type="text" name="upcNextItemRef" class="k-textbox"  ng-model="upcNextItemRef" style="width: 140px;"/>';
+	var upcNextItemRefTemplate='Next Item Ref#:<input type="text" name="upcNextItemRef" class="k-textbox" ng-dblclick="setUpcNextItemRefInitialValue()"  ng-model="upcNextItemRef" style="width: 140px;"/>';
 	
 	var baseUrl="";
 	
@@ -255,25 +255,44 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 			    	}
 			    	
 			 	}
-			 	
-			 	scope.generateUpcNumber=function(items){
-			 		for(var i=0,upcItemRef,n;i<items.length;i++){
-			 			item=items[i]
-			 			if(item && item.upcNumber){
-			 				if(item.upcNumber.length===11){
-			 					item.upcNumber+=scope.ugw.eanCheckDigit(item.upcNumber);
+			 	scope.setUpcNextItemRefInitialValue=function(){
+			 		var url="../data/generic/sql?cmd=SELECT max(upcno) FROM garmentupc where left(upcno,6)="+scope.upcPrefix;
+			 		util.getRemote(url)
+			 			.then(function(lastRef){
+			 				if(lastRef && lastRef.length>0){
+			 					var n=parseInt(lastRef[0].substring(6,11))+1;
+			 					scope.upcNextItemRef=("0000"+n).slice(-5);
+			 					scope.producttoolbar.enable("#btnGenUpc",true);
 			 				}
-			 			}else{
-			 				n=parseInt(scope.upcNextItemRef);
-			 				upcItemRef=("0000"+n++).slice(-5);
-			 				scope.upcNextItemRef=("0000"+n).slice(-5);
-			 				
-			 				item.upcNumber=scope.upcPrefix+upcItemRef;
-		 					item.upcNumber+=scope.ugw.eanCheckDigit(item.upcNumber);
-			 			}
-			 			
+			 			})
+			 	}
+			 	
+			 	
+			 	
+			 	scope.generateUpcNo=function(items,colour){
+			 		for(var i=0,upcItemRef,n;i<items.length;i++){
+			 			item=items[i];
+			 			if(!colour||item.colour===colour)
+				 			scope.generateItemUpcNo(item);
 			 		}
-			 		scope.$apply();
+			 	}
+			 	
+			 	scope.generateItemUpcNo=function(item){
+		 			if(item && item.upcNo){
+		 				if(item.upcNo.length===11){
+		 					item.upcNo+=scope.ugw.eanCheckDigit(item.upcNo);
+		 					item.isDirty=true;
+		 				}
+		 			}else{
+		 				n=parseInt(scope.upcNextItemRef);
+		 				upcItemRef=("0000"+n++).slice(-5);
+		 				scope.upcNextItemRef=("0000"+n).slice(-5);
+		 				
+		 				item.upcNo=scope.upcPrefix+upcItemRef;
+	 					item.upcNo+=scope.ugw.eanCheckDigit(item.upcNo);
+	 					item.isDirty=true;
+		 			}
+			 		
 			 	}
 			 	
 				scope.getImages=function(dataItems){
@@ -356,7 +375,25 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 								id: "btnGenUpc",
 								enable:false,
 								click: function(e){
-									$scope.generateUpcNumber($scope.dataSet.upcItems);
+									var cell=$scope.ugw.getCurrentCell();
+									var item=$scope.ugw.getCurrentDataItem();
+									var generated=false;
+									if(item && cell){
+										if(cell.cellIndex==1){
+											$scope.generateItemUpcNo(item);
+											generated=true;
+										}		
+										
+										if(cell.cellIndex==2 && item.colour){
+											$scope.generateUpcNo($scope.dataSet.upcItems,item.colour);
+											generated=true;
+										}		
+									}
+									
+									if(!generated)
+										$scope.generateUpcNo($scope.dataSet.upcItems);
+									
+									$scope.$apply();
 								}
 							}],
 					 toggle: function(e) {
@@ -376,7 +413,10 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 		        	$scope.$parent[$scope.cName]=$scope;		//expose this scope to parent scope with cName
 				
 				$scope.upcPrefix="671309";
-				$scope.upcNextItemRef="02087";
+		        	
+				$scope.upcNextItemRef="";
+				
+				
 
 				$scope.dictSeason=cliviaDDS.getDict("season");
 
@@ -475,6 +515,8 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 					        selectable: "cell",
 					        navigatable: true,
 					        resizable: true,
+					        
+					        
 						};
 					    
 				$scope.mainSplitterOptions={

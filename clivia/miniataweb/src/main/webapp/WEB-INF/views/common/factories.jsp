@@ -2019,6 +2019,11 @@ clivia.factory("ColumnGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapp
 		         title: "Width",
 		         width: 60,
 		         attributes:{style:"text-align:right;"},
+			}, {
+		         name: "template",
+		         field: "template",
+		         title: "Template",
+		         width: 120
 		     }, {
 		         name: "dataType",
 		         field: "dataType",

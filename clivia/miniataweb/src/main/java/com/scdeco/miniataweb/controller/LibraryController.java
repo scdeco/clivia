@@ -1,6 +1,7 @@
 package com.scdeco.miniataweb.controller;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,17 +34,19 @@ public class LibraryController {
 	
 	@RequestMapping(value = "{type}/upload", method = RequestMethod.POST)
 	public  @ResponseBody Map<String, Object> uploadFile( @RequestParam("file") MultipartFile file,
-															@PathVariable String type,
-															Principal principal){
+														  @RequestParam(value="data",required=false) String data, 
+														  @PathVariable String type, Principal principal){
 
 		String username=principal.getName();
 		EmployeeInfo employeeInfo=employeeInfoDao.findByUsername(username);
 		String uploadBy=employeeInfo.getFirstName();
 
-	    Map<String, Object> result=cliviaLibrary.saveFileToLib(type,file,uploadBy);
+	    Map<String, Object> result=cliviaLibrary.saveFileToLib(type,file,uploadBy, data);
 	    
 	    return result;
 	}
+	
+	
 	
 	
 	//get a list of lib records

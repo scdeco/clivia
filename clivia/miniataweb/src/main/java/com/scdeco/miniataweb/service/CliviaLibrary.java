@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scdeco.miniataweb.dao.CliviaAutoNumberDao;
 import com.scdeco.miniataweb.dao.GenericDao;
 import com.scdeco.miniataweb.embdesign.EMBDesign;
@@ -57,9 +59,20 @@ public class CliviaLibrary {
 		return result;
 	}
 	
-	public Map<String, Object> saveFileToLib(String type, MultipartFile file, String uploadBy){
+	@SuppressWarnings("unchecked")
+	public Map<String, Object> saveFileToLib(String type, MultipartFile file, String uploadBy,String data){
 
 		Map<String, Object> result=new HashMap<String, Object>();
+		
+		HashMap<String,String> model=null;
+		if (data!=null){
+			try {
+				model= new ObjectMapper().readValue(data, HashMap.class);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		
 		Library lib=getLibrary(type);
 		
@@ -71,20 +84,21 @@ public class CliviaLibrary {
 		
 		String fileName=lib.getNewFileName()+"."+FilenameUtils.getExtension(file.getOriginalFilename());
 		String filePath=LocalDate.now().getYear()+
-				"\\"+CliviaUtils.right("00"+LocalDate.now().getMonthValue(),2)+
-				"\\"+CliviaUtils.right("00"+LocalDate.now().getDayOfMonth(),2);
+				File.separator+CliviaUtils.right("00"+LocalDate.now().getMonthValue(),2)+
+				File.separator+CliviaUtils.right("00"+LocalDate.now().getDayOfMonth(),2);
 
-		Object dataItem=lib.getNewDataItem();
+		Object dataItem=lib.getNewDataItem(model);
+		
 		
 		lib.setFieldValue(dataItem,"fileName",fileName);
 		lib.setFieldValue(dataItem,"filePath",filePath);
 		lib.setFieldValue(dataItem,"originalFileName",file.getOriginalFilename());
 		lib.setFieldValue(dataItem,"uploadBy",uploadBy);
 		lib.setFieldValue(dataItem,"uploadAt",LocalDateTime.now());
-		lib.setFieldValue(dataItem,"size",file.getSize());
+		lib.setFieldValue(dataItem,"size",(int)(file.getSize()));
 		
-		filePath=lib.getBaseDir()+"\\"+filePath;
-		File libFile=new File(filePath+"\\"+fileName);
+		filePath=lib.getBaseDir()+File.separator+filePath;
+		File libFile=new File(filePath+File.separator+fileName);
 		File libDirectory=new File(filePath);
 	
 		if (!libDirectory.exists())	libDirectory.mkdirs();					
@@ -104,7 +118,7 @@ public class CliviaLibrary {
 		if(lib.needThumbnail()){
 			BufferedImage thumbnail=null;
 			try {
-				thumbnail = lib.createThumbnail(libFile);
+				thumbnail = lib.createThumbnail(libFile,dataItem);
 				if(thumbnail!=null){
 					ByteArrayOutputStream baos=new ByteArrayOutputStream();
 					
@@ -143,10 +157,10 @@ public class CliviaLibrary {
 		LibEmbDesign di=(LibEmbDesign)lib.findById(id);
 		EMBDesignRawImageData imageData=new EMBDesignRawImageData();
 		if(di!=null){
-			String dstFile=lib.getBaseDir()+"\\"+di.getFilePath()+"\\"+di.getFileName();
+			String dstFile=lib.getBaseDir()+File.separator+di.getFilePath()+File.separator+di.getFileName();
 			EMBDesign embDesign=new EMBDesign(dstFile);
-			imageData.setWidth(embDesign.getDesignWidthInPixel());
-			imageData.setHeight(embDesign.getDesignHeightInPixel());
+			imageData.setWidth(embDesign.getDesignWidth());
+			imageData.setHeight(embDesign.getDesignHeight());
 			imageData.setStepCount(embDesign.getStepCount());
 			imageData.setStitcheCount(embDesign.getStitchCount());
 			imageData.setImageData(embDesign.getRawImageData());
@@ -169,7 +183,7 @@ public class CliviaLibrary {
 		LibEmbDesign di=(LibEmbDesign)lib.findById(id);
 		EMBDesignM embDesignM=null;
 		if(di!=null){
-			String dstFile=lib.getBaseDir()+"\\"+di.getFilePath()+"\\"+di.getFileName();
+			String dstFile=lib.getBaseDir()+File.separator+di.getFilePath()+File.separator+di.getFileName();
 			EMBDesign embDesign=new EMBDesign(dstFile);
 			embDesignM=embDesign.getEMBDesignM();
 			result.put("status","success");
@@ -255,8 +269,21 @@ public class CliviaLibrary {
 		}		
 		
 		
-		public Object getNewDataItem(){
-			return dao.create();
+		public Object getNewDataItem(HashMap<String,String> model){
+			Object dataItem=dao.create();
+			switch(type){
+				case "image":
+					break;
+				
+				case "embdesign":
+					this.setFieldValue(dataItem, "designNumber", model.get("designNumber"));
+					this.setFieldValue(dataItem, "description", model.get("description"));
+					this.setFieldValue(dataItem, "customerNumber", CliviaUtils.parseInt(model.get("customerNumber")));
+					this.setFieldValue(dataItem, "remark", model.get("remark"));
+					break;
+			}
+
+			return dataItem; 
 		}
 		
 		public String getBaseDir(){
@@ -272,7 +299,7 @@ public class CliviaLibrary {
 			dao.saveOrUpdate(dataItem);
 		}
 		
-		public BufferedImage createThumbnail(File file) throws IOException{
+		public BufferedImage createThumbnail(File file,Object dataItem) throws IOException{
 			
 			BufferedImage thumbnail=null; 
 			BufferedImage bi=null;
@@ -289,7 +316,12 @@ public class CliviaLibrary {
 					
 				case "embdesign":
 					EMBDesign embDesign=new EMBDesign(file.getPath());
-					bi=embDesign.getEMBDesignImage();
+					this.setFieldValue(dataItem, "stitchCount", embDesign.getStitchCount());
+					this.setFieldValue(dataItem, "stepCount",embDesign.getStepCount());
+					this.setFieldValue(dataItem, "width",  BigDecimal.valueOf(embDesign.getDesignWidthInMM()));
+					this.setFieldValue(dataItem, "height", BigDecimal.valueOf(embDesign.getDesignHeightInMM()));
+					
+					bi=embDesign.getEMBDesignImage(false);
 					break;
 			}
 
@@ -308,7 +340,7 @@ public class CliviaLibrary {
 				String filePath=(String)getFieldValue(dataItem,"filePath");
 				
 				if(fileName!=null && filePath!=null){
-					fileName=baseDir+"\\"+filePath+"\\"+fileName;
+					fileName=baseDir+File.separator+filePath+File.separator+fileName;
 						switch(this.type){
 							case "image":
 								File file=new File(fileName);
@@ -316,7 +348,7 @@ public class CliviaLibrary {
 								break;
 							case "embdesign":
 								EMBDesign embDesign=new EMBDesign(fileName);
-								bf=embDesign.getEMBDesignImage();				//.getEMBDesignRawImage();
+								bf=embDesign.getEMBDesignImage(false);	//false:do not use rawImage 		
 								break;
 						}
 				}

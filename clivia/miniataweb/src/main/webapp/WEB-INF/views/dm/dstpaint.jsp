@@ -12,7 +12,7 @@
       	
   		<!-- 		ng-model="dstPaint.backgroundColor"  -->
       		<div id="dst-first-pane">
-   				<div id="container" ng-style="{'background-color':dstPaint.backgroundColor}" 
+   				<div id="stagecontainer" ng-style="{'background-color':threadMatcher.backgroundColor}" 
    					 				ng-click="onClick()">
 				</div>
 			</div>	<!-- first-pane-->
@@ -21,6 +21,12 @@
       			<div thread-matcher="threadMatcher" c-emb-canvas="embCanvas"></div>
 			</div>	<!--  second-pane-->
 		</div>
+		
+		<div kendo-window="printOptions" k-title="'Print Options'"
+		           k-width="600" k-height="500" k-visible="false" k-options="printWindowOptions">
+		           
+		           
+		</div>			
 			
 	</div>
 

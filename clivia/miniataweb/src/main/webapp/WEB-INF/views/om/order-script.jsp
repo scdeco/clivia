@@ -794,6 +794,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				};
  		}
  		if(!address.receiver){
+ 			address.receiver="";
  			if(isBilling||(c.billing && c.shipping))	
  	 			address.receiver=_order.company.info.businessName;
  		}
@@ -947,7 +948,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  	
  	_order.printBill=function(billItems,lineItemOnly,mainColourOnly,hideDiscount){
  		var data=_order.createGarmentPrintModel(billItems,lineItemOnly,mainColourOnly,hideDiscount);
- 		util.printUrl("../om/print-confirm-dd",{data:JSON.stringify(data)},false);
+ 		util.printUrl("../om/print-confirm-dd",{data:JSON.stringify(data)},false);	//false=no preview
  		return;
  	}
 	

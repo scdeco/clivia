@@ -26,7 +26,10 @@ public class GridColumn extends CliviaSuperModel{
 	
 	@Column(name="Title",length=255)
 	private String title;
-	
+
+	@Column(name="Template",length=255)
+	private String template;
+
 	@Column(name="Width")
 	private int width;
 	
@@ -110,6 +113,14 @@ public class GridColumn extends CliviaSuperModel{
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public String getTemplate() {
+		return template;
+	}
+
+	public void setTemplate(String template) {
+		this.template = template;
 	}
 
 	public int getWidth() {

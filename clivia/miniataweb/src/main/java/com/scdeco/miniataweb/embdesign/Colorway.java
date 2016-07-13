@@ -99,8 +99,6 @@ public class Colorway {
 		defaultThreadList.add(new EmbroideryThread("", backgroundColor));
 		defaultThreadList.add(new EmbroideryThread("", new Color(0,255,0)));
 		defaultThreadList.add(new EmbroideryThread("", new Color(0,0,255)));
-		defaultThreadList.add(new EmbroideryThread("", new Color(0,255,0)));
-		defaultThreadList.add(new EmbroideryThread("", new Color(0,0,255)));
 		defaultThreadList.add(new EmbroideryThread("", new Color(255,0,0)));
 		defaultThreadList.add(new EmbroideryThread("", new Color(255,255,0)));
 		defaultThreadList.add(new EmbroideryThread("", new Color(0,255,255)));
@@ -109,11 +107,13 @@ public class Colorway {
 		defaultThreadList.add(new EmbroideryThread("", new Color(0,0,153)));
 		defaultThreadList.add(new EmbroideryThread("", new Color(153,0,0)));
 		defaultThreadList.add(new EmbroideryThread("", new Color(255,153,51)));
+		defaultThreadList.add(new EmbroideryThread("", new Color(153,0,0)));
+		defaultThreadList.add(new EmbroideryThread("", new Color(255,153,51)));
 		defaultThreadList.add(new EmbroideryThread("", new Color(153,0,204)));
 		defaultThreadList.add(new EmbroideryThread("", new Color(153,102,51)));
-		defaultThreadList.add(new EmbroideryThread("", new Color(255,255,255)));
-		defaultThreadList.add(new EmbroideryThread("", new Color(0,0,0)));
 		defaultThreadList.add(new EmbroideryThread("", new Color(255,126,204)));
+		defaultThreadList.add(new EmbroideryThread("", new Color(28,176,193)));
+		defaultThreadList.add(new EmbroideryThread("", new Color(112,56,56)));
 		return defaultThreadList;
 	};
 	

@@ -13,9 +13,63 @@
 	<div ng-controller="dmCtrl">
 	   	<div kendo-toolbar id="dstToolbar" k-options="dstToolbarOptions"></div>	
 		<div dst-paint="myDstPaint"></div>
-<pre>
+
+		<div kendo-window="newUploadWindow" k-title="'Upload DST'"
+		           k-width="600" k-height="500" k-visible="false" k-options="newUploadWindowOptions">
+		           
+		    <form name="infoForm" ng-submit="" novalidate class="simple-form" >
+				<ul id="fieldlist">
+		    		<li>
+					    <label>Design Number:</label>
+					    <input type="text"  name="designNumber" class="k-textbox" style="width:100px;"   ng-model="newUploadData.designNumber"/> 
+					</li>
+		    		<li>
+					    <label>Design Name:</label>
+					    <input type="text"  name="designName" class="k-textbox" style="width:100%;"   ng-model="newUploadData.description"/> 
+					</li>
+		    		<li>
+					    <label>Customer:</label>
+					    <map-combobox   style="width:300px;" c-options="newUploadCompanyOptions" ng-model="newUploadData.customerNumber"/>
+				     </li>
+		    		<li>
+					    <label>Remark:</label>
+					    <textarea  class="k-textbox" style="width:100%;height:100px;"  ng-model="newUploadData.remark"> </textarea>
+					</li>
+		    		<li>
+					    <label>Stitches:</label>
+					</li>
+		    		<li>
+					    <label>Steps:</label>
+					</li>
+		    		<li>
+					    <label>Size:</label>
+					</li>
+				 </ul>
+		    </form>
+		    
+			<input kendo-upload  name="file"  type="file" k-options="newUploadOptions" />
+		</div>			
+
+		<div kendo-window="queryWindow"			
+				k-width="1000"
+			 	k-height="680"
+			 	k-position="{top: 45, left: 320 }"	
+			 	k-resizable="true"
+				k-draggable="true"
+			 	k-title="'List'"
+			 	k-visible="false" 
+			 	k-actions="['Minimiz','Maximize','Close']"
+			 	k-pinned="true"
+			 	k-modal="false">
+		
+ 			<div  query-grid="queryGrid"  c-grid-no="'401'" c-options="queryGridOptions"></div> 
+		</div>
+			
+<!-- <pre>
 printModel={{myDstPaint.printModel|json}}
-</pre>		
+</pre>
+ -->
+
 	</div>
 </body>
 <script>
@@ -24,7 +78,11 @@ var designApp = angular.module("embDesignApp",
 		
 designApp.controller("dmCtrl",
 		["$scope",function($scope){
-			var id=3;
+			var id=16;
+			var imgUrl="../resources/images/";
+
+			var searchTemplate='<kendo-combobox name="searchDesignNumber" k-placeholder="\'Search Design#\'" ng-model="searchDesignNumber"  k-options="searchDesignNumberOptions" style="width: 140px;" />';
+			
 			$scope.dstToolbarOptions={items: [{
 		        type: "button",
 		        text: "New",
@@ -37,9 +95,22 @@ designApp.controller("dmCtrl",
 		        text: "Open",
 		        id:"btnOpen",
 		        click: function(e) {
+		        	$scope.newUploadWindow.open();
 			        }
 		    }, {
 		        type: "separator",
+            }, {	
+                template:searchTemplate,		                
+            }, {
+                type: "button",
+                text: "Find",
+                imageUrl:imgUrl+"i-find.ico",
+                id:"btnFind",
+                click: function(e) {
+                	$scope.openQueryWindow();
+                }	                
+            }, {
+                type: "separator",
 		    }, {	
 		        type: "button",
 		        text: "Print",
@@ -49,7 +120,128 @@ designApp.controller("dmCtrl",
 		        	}  
 		    }, {
 		        type: "separator",
-}]};
+			}]};
+			
+		    $scope.searchDesignNumberOptions={
+		        	dataSource:{data:[]},	//recent orders
+		        	//Fired when the value of the widget is changed by the user
+		        	change:function(e){
+		        		$scope.getDesign();
+		        	}
+		        }
+		    
+			$scope.newUploadWindowOptions={
+					open:function(e){
+//						$scope.imageItemToolbar.enable("#btnAdd",false);				
+					},
+					close:function(e){
+//						$scope.imageItemToolbar.enable("#btnAdd");				
+					}
+			}
+			 
+		    $scope.newUploadData={
+		    		designNumber:"",
+		    		description:"",
+		    		customerNumber:"",
+		    		remark:"",
+		    }
+		    
+		    $scope.newUploadCompanyOptions={
+		    				name:"companyComboBox",
+		    				dataTextField:"businessName",
+		    				dataValueField:"id",
+		    				minLength:1,
+		    				url:'../datasource/companyInfoDao/read',
+		    			}
+		    
+			$scope.newUploadOptions={
+		    		
+					multiple: false,
+					async:{
+						 saveUrl: '../lib/embdesign/upload',
+						 autoUpload: false,
+						 /* The selected files will be uploaded in separate requests */
+					},
+					
+					localization:{
+						uploadSelectedFiles: 'Upload',
+						select:"select a DST file..."
+					},
+					
+					//Triggered when a file(s) is selected. 
+					//Note: Cancelling this event will prevent the selection from occurring.
+					select:function(e){
+						var files=e.files;
+						if(files && files.length>0){
+							var file=files[0];
+							var ext=file.extension;
+							if(ext)
+								ext=ext.toLowerCase().trim();
+							if(ext!==".dst"){
+								e.preventDefault();
+								alert("You must select a dst file.")
+							}else{
+								$scope.newUploadData.designNumber=file.name.substring(0,file.name.lastIndexOf(file.extension));
+								if($scope.newUploadData.designNumber)
+									$scope.newUploadData.designNumber.trim().toUpperCase();
+								$scope.$apply();
+							}
+						}
+				    },
+					
+					upload:function (e) {
+						var data=$scope.newUploadData;
+						var error="";
+						if(data.designNumber)
+							data.designNumber=data.designNumber.trim().toUpperCase();
+						if(!data.designNumber)
+							error+="Design Number can not be empty. ";
+						
+						if(!data.customerNumber)
+							error+="Please select a company for this design. "
+							
+						if(error)	
+							e.preventDefault();
+						else
+						    e.data = {data:JSON.stringify(data)};
+					},
+					 
+					success: function (e) {
+					    if(e.response.status==="success"){
+					    	var data=e.response.data;
+							if(data){
+								$scope.myDstPaint.setDstDesign(data.id)
+							}
+				    	}
+					},
+					
+					error:function(e){
+			//	 		alert("failed:"+JSON.stringify(e.response.data));
+					},
+					
+					//Fires when all active uploads have completed either successfully or with errors
+					complete:function(e){
+					}
+			};
+					
+			$scope.queryGridOptions={
+					doubleClickEvent:function(e){
+							if(e.currentTarget){
+								var di=this.dataItem(e.currentTarget);
+								if(di&&di.id){
+									$scope.myDstPaint.setDstDesign(di.id);
+									if(e.target && e.target.cellIndex===0)
+										$scope.queryWindow.close();
+								}
+								
+							}
+						}
+			}
+			
+			$scope.openQueryWindow=function(){
+				$scope.queryWindow.open();
+			}
+			
 		}]);
 
 </script>
@@ -162,6 +354,27 @@ designApp.controller("dmCtrl",
  	#dst-info-pane{ 
  		overflow:hidden; 
  	} 
+
+     #fieldlist {
+        margin: 10px;
+        padding: 0;
+     }
+      
+     #fieldlist li {
+         list-style: none;
+         padding-top: .7em;
+         text-align: left;
+     }
+     
+     #fieldlist label {
+          display: block;
+      }
+      
+     
+      textarea { 
+      	resize: vertical; 
+      }
+      
 
 
 	

@@ -24,6 +24,7 @@
         <security:user name="leo" password="4728" authorities="ROLE_USER" />
         <security:user name="adrian" password="2756" authorities="ROLE_USER" />
         <security:user name="cathy" password="1069" authorities="ROLE_USER" />
+        <security:user name="chris" password="5835" authorities="ROLE_USER" />
       </security:user-service>
     </security:authentication-provider>
   </security:authentication-manager>

@@ -1,9 +1,11 @@
 package com.scdeco.miniataweb.embdesign;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
@@ -15,7 +17,7 @@ import java.util.ArrayList;
 public class EMBDesign 
 {
 //	public enum FunctionCode { 9-STOP, STITCH, JUMP, BORERIN, END, CHANGECOLOR};
-	
+	final double SCREEN_DESIGN_RATIO=0.3765d;	//(1280/340)/10
 	final class Stitch {
 		public int stepIndex;
 		public int funcCode;
@@ -105,7 +107,6 @@ public class EMBDesign
 			clearDesign();
 			this.dstFile = dstFile;
 			createStitchList();
-			drawDesign();
 		}
 	}
 	
@@ -286,76 +287,116 @@ public class EMBDesign
 		return new IndexColorModel(8,size,r,g,b);
 	}
 
-	public void drawStep(Step step,Graphics2D g2d){
+	//if color==null, the g2d is colorindexmode, image is raw image data, otherwise image is real color
+	public void drawStep(Step step,Graphics2D g2d,Color color){
 		
 		int stepIndex=step.stepIndex+1;
-		Color threadColor=new Color(stepIndex,stepIndex,stepIndex);
+		Color threadColor=color==null?new Color(stepIndex,stepIndex,stepIndex):color;
 		g2d.setColor(threadColor);
 		
 		Stitch currStitch;
 		Stitch prevStitch=stitchList[step.firstStitchIndex];
+		
+//Draw dotted line for jump 		
+//		float[] dash1 = {2f,0f,2f};		
+//		BasicStroke bs1 = new BasicStroke(1,BasicStroke.CAP_BUTT,BasicStroke.JOIN_ROUND,1.0f,dash1,2f);
+//		BasicStroke bs2 = new BasicStroke(1,BasicStroke.CAP_BUTT,BasicStroke.JOIN_ROUND);
 
+//		g2d.setStroke(bs2);
+		boolean prevStitchIsJump=true;
+		Shape line=null;
+		
 		for(int i=step.firstStitchIndex+1;i<=step.lastStitchIndex;i++){
 			currStitch=stitchList[i];
 			
 			//FunctionCode.JUMP||FunctionCode.STOP
-			if (currStitch.funcCode == 2||prevStitch.funcCode == 3 	
-					|| prevStitch.funcCode == 9){
-				if (showTrim){
-					float[] dash1 = {2f,0f,2f};
-					BasicStroke bs1 = new BasicStroke(1,BasicStroke.CAP_BUTT,BasicStroke.JOIN_ROUND,1.0f,dash1,2f);
-					g2d.setStroke(bs1);
-					g2d.drawLine(prevStitch.xImage,prevStitch.yImage,currStitch.xImage,currStitch.yImage);
+			
+			if(currStitch.funcCode==1){
+				if(prevStitchIsJump){
+					if (showTrim){
+//						g2d.setStroke(bs1);
+						line=new Line2D.Double(prevStitch.xImage*SCREEN_DESIGN_RATIO,prevStitch.yImage*SCREEN_DESIGN_RATIO,currStitch.xImage*SCREEN_DESIGN_RATIO,currStitch.yImage*SCREEN_DESIGN_RATIO);
+						g2d.draw(line);
+//						g2d.drawLine((int)(prevStitch.xImage*SCREEN_DESIGN_RATIO),(int)(prevStitch.yImage*SCREEN_DESIGN_RATIO),(int)(currStitch.xImage*SCREEN_DESIGN_RATIO),(int)(currStitch.yImage*SCREEN_DESIGN_RATIO));
+//						g2d.setStroke(bs2);
+					}
+					prevStitchIsJump=false;
+				}else{
+//					g2d.drawLine((int) (prevStitch.xImage*SCREEN_DESIGN_RATIO),(int) (prevStitch.yImage*SCREEN_DESIGN_RATIO),(int) (currStitch.xImage*SCREEN_DESIGN_RATIO),(int) (currStitch.yImage*SCREEN_DESIGN_RATIO));
+					line=new Line2D.Double(prevStitch.xImage*SCREEN_DESIGN_RATIO,prevStitch.yImage*SCREEN_DESIGN_RATIO,currStitch.xImage*SCREEN_DESIGN_RATIO,currStitch.yImage*SCREEN_DESIGN_RATIO);
+					g2d.draw(line);
 				}
-			}
-			else{
-				BasicStroke bs2 =  new BasicStroke(1,BasicStroke.CAP_BUTT,BasicStroke.JOIN_ROUND);
-				g2d.setStroke(bs2);
-				g2d.drawLine(prevStitch.xImage,prevStitch.yImage,currStitch.xImage,currStitch.yImage);
+			}else{
+				prevStitchIsJump=true;
 			}
 			prevStitch=currStitch;
 		}
 	
 	}
 	
-	public void drawDesign(){
-		if (getStitchCount() == 0) return;
+	//if colorway is null, draw BufferedImage.TYPE_BYTE_INDEXED to rawDesignBufferedImage, otherwaise draw design with provided colorway 
+	public BufferedImage drawDesign(Colorway colorway){
+		if (getStitchCount() == 0) return null;
 
 		int width = getDesignWidthInPixel();
 		int height = getDesignHeightInPixel();
+		BufferedImage bi=null;
+		Color bgColor=null;
 		
-		rawDesignBufferedImage = new BufferedImage(width,height,BufferedImage.TYPE_BYTE_INDEXED,createIndexColorModel(null));
-		Graphics2D g2d = rawDesignBufferedImage.createGraphics();
+		if(colorway==null){
+			bi = new BufferedImage(width,height,BufferedImage.TYPE_BYTE_INDEXED,createIndexColorModel(null));
+			bgColor=new Color(0,0,0);
+		}else{
+			bi= new BufferedImage(width,height,BufferedImage.TYPE_INT_RGB);
+			bgColor=new Color(255,255,255);
+		}
+		
+		Graphics2D g2d =bi.createGraphics();
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,   RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
-		g2d.setBackground(new Color(0,0,0));
+		g2d.setBackground(bgColor);
 		g2d.clearRect(0, 0, width, height);
 		
-		for(Step step:stepList)
-			drawStep(step,g2d);
+		if(colorway==null)
+			for(Step step:stepList)
+				drawStep(step,g2d,null);
+		else{
+			for(Step step:stepList){
+				Color color=colorway.getStepColor(step.stepIndex);
+				drawStep(step,g2d,color);
+			}
+		}
+			
+		return bi;
 	}
 	
 	public byte[] getRawImageData(){
+		if(rawDesignBufferedImage==null)
+			rawDesignBufferedImage=drawDesign(null);
 		 byte[] pixels = ((DataBufferByte) rawDesignBufferedImage.getRaster().getDataBuffer()).getData();
 		 return pixels;
 	}
 	
 	public BufferedImage getEMBDesignRawImage(){
+		if(rawDesignBufferedImage==null)
+			rawDesignBufferedImage=drawDesign(null);
 		return rawDesignBufferedImage;
 	}
 	
 	
 	public EMBDesignM getEMBDesignM(){
 		EMBDesignM emb=new EMBDesignM();
-		emb.setPixelWidth(getDesignWidthInPixel());
-		emb.setPixelHeight(getDesignHeightInPixel());
+		emb.setPixelWidth(getDesignWidth());
+		emb.setPixelHeight(getDesignHeight());
 		emb.setWidth(getDesignWidthInMM());
 		emb.setHeight(getDesignHeightInMM());
-		emb.setStartX(getStartX());
-		emb.setStartY(getStartY());
-		emb.setLeft(getDesignLeft());
-		emb.setTop(getDesignTop());
-		emb.setRight(getDesignRight());
-		emb.setBottom(getDesignBottom());
+		emb.setStartX(getStartXInMM());
+		emb.setStartY(getStartYInMM());
+		emb.setLeft(getDesignLeftInMM());
+		emb.setTop(getDesignTopInMM());
+		emb.setRight(getDesignRightInMM());
+		emb.setBottom(getDesignBottomInMM());
 		
 		emb.setStitchCount(getStitchCount());
 		emb.setStepCount(getStepCount());
@@ -390,19 +431,29 @@ public class EMBDesign
 	}
 		
 	//get design image with provided colorway
-	public BufferedImage getEMBDesignImage(Colorway colorway){
-		IndexColorModel indexColorModel=createIndexColorModel(colorway);
-		return new BufferedImage(indexColorModel,rawDesignBufferedImage.getRaster(),false,null); 
-		
+	public BufferedImage getEMBDesignImage(boolean fromRawImage,Colorway colorway){
+		BufferedImage bi=null;
+		if(fromRawImage){
+			IndexColorModel indexColorModel=createIndexColorModel(colorway);
+			if(rawDesignBufferedImage==null)
+				rawDesignBufferedImage=drawDesign(null);
+			bi=new BufferedImage(indexColorModel,rawDesignBufferedImage.getRaster(),false,null);
+		}else{
+			if(colorway==null)
+				colorway=new Colorway(getStepCount());
+			bi=drawDesign(colorway);
+		}
+		return bi;
 	}
 	
 	//get design image with default threads and runningstepList
-	public BufferedImage getEMBDesignImage(){
-		return getEMBDesignImage(new Colorway(getStepCount()));
+	public BufferedImage getEMBDesignImage(boolean fromRawImage){
+		return getEMBDesignImage(fromRawImage,new Colorway(getStepCount()));
 	}
 	
-	public BufferedImage getEMBDesignImage(String threads,String runningsteps){
-		return getEMBDesignImage(new Colorway(threads,runningsteps));
+	//get design image with privided strings of threads and runnng steps
+	public BufferedImage getEMBDesignImage(boolean fromRawImage,String threads,String runningsteps){
+		return getEMBDesignImage(fromRawImage,new Colorway(threads,runningsteps));
 	}
 
 	
@@ -418,46 +469,53 @@ public class EMBDesign
 		return this.trimCount;
 	}
 	
-	public int getDesignHeightInPixel(){
+	public int getDesignHeight(){
 		return getStitchCount()==0? 0 : ptTopLeft.y-ptBottomRight.y +1;
 	}
 	
-	public int getDesignWidthInPixel(){
+	public int getDesignWidth(){
 		return getStitchCount()==0 ? 0 : ptBottomRight.x-ptTopLeft.x+1;
 	}
 	
+	public int getDesignWidthInPixel(){
+		return (int) (getStitchCount()==0 ? 0 : getDesignWidth()*SCREEN_DESIGN_RATIO);
+	}
+	
+	public int getDesignHeightInPixel(){
+		return (int) (getStitchCount()==0? 0 : getDesignHeight()*SCREEN_DESIGN_RATIO);
+	}
 	
 	public double getDesignHeightInMM(){
-		return getStitchCount()==0? 0 : (double)getDesignHeightInPixel()/10.0d;
+		return getStitchCount()==0? 0 : (double)getDesignHeight()/10.0d;
 	}
 	
 	public double getDesignWidthInMM(){
-		return getStitchCount()==0 ? 0 : (double)getDesignWidthInPixel()/10.0d;
+		return getStitchCount()==0 ? 0 : (double)getDesignWidth()/10.0d;
 	}
 	
-	public double getStartX(){
+	public double getStartXInMM(){
 		return getStitchCount() == 0 ? 0 : ((double)(stitchList[0].xImage) 
 				- Math.abs((double)(ptBottomRight.x - ptTopLeft.x))/2.0d)/10.0d;
 	}
 	
-	public double getStartY(){
+	public double getStartYInMM(){
 		return getStitchCount() == 0 ? 0 : ((double)(stitchList[0].yImage) 
 				- Math.abs((double)(ptBottomRight.y - ptTopLeft.y))/2.0d)/10.0d;
 	}
 	
-	public double getDesignLeft(){
+	public double getDesignLeftInMM(){
 		return getStitchCount() == 0 ? 0 : Math.abs((double)ptTopLeft.x)/10.0d;
 	}
 	
-	public double getDesignTop()	{
+	public double getDesignTopInMM()	{
 		return getStitchCount() == 0 ? 0 : Math.abs((double)ptTopLeft.y)/10.0d;
 	}
 	
-	public double getDesignRight(){
+	public double getDesignRightInMM(){
 		return getStitchCount() == 0 ? 0 : Math.abs((double)ptBottomRight.x)/10.0d;
 	}
 	
-	public double getDesignBottom(){
+	public double getDesignBottomInMM(){
 		return getStitchCount() == 0 ? 0 : Math.abs((double)ptBottomRight.y)/10.0d;
 	}
 	
