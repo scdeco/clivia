@@ -17,7 +17,7 @@ import com.scdeco.miniataweb.util.CliviaLocalDateJsonSerializer;
 
 
 @Entity
-public class EmployeeInfo{
+public class EmployeeInfo extends CliviaSuperModel{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

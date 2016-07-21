@@ -31,7 +31,7 @@
 		</div>
 		
  <pre>
-<!--  printModel={{SO.printModel}} -->
+  printModel={{SO.printModel}} 
  
  	dataSet:{{SO.dataSet|json}} 
 <!-- 	instance:{{SO.instance|json}} -->

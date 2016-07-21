@@ -104,6 +104,9 @@ h2{
 	text-align:left; 
 	font-size:70%;
 }
+.listTable{
+	table-layout:fixed;
+}
 
 </style>
 <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
@@ -269,21 +272,25 @@ window.onload = function() {
 		countPixel +=  ($("#headerPart").height() + errorPixel);
 	}
 	
-	function orderList(){
+	function getTableHeader(){
 		var tableHeader ="";
-		tableHeader += "<div class='content' id='content'>"
-					+"<table width='700px'>"
+		tableHeader += "<table width='700px'>"
 					+"<tr class='left'>"
-					+"<th width='60px' style='border-bottom:1pt solid black;'>Style</th>"
-					+"<th width='310px' style='border-bottom:1pt solid black;'>Description</th>"
-					+"<th align='right' style='border-bottom:1pt solid black;'>Quantity</th>"
-					+"<th align='right' style='border-bottom:1pt solid black;'>Price</th>"
-					+"<th align='right' style='border-bottom:1pt solid black;'>% Off</th>"
-					+"<th align='right' style='border-bottom:1pt solid black;'>Net</th>"
-					+"<th align='right' style='border-bottom:1pt solid black;'>Amount</th>"
+					+"<th width='80px' style='border-bottom:1pt solid black;'>Style</th>"
+					+"<th width='320px' style='border-bottom:1pt solid black;'>Description</th>"
+					+"<th width='60' align='right' style='border-bottom:1pt solid black;'>Quantity</th>"
+					+"<th width='50' align='right' style='border-bottom:1pt solid black;'>Price</th>"
+					+"<th width='50' align='right' style='border-bottom:1pt solid black;'>% Off</th>"
+					+"<th width='50' align='right' style='border-bottom:1pt solid black;'>Net</th>"
+					+"<th width='80' align='right' style='border-bottom:1pt solid black;'>Amount</th>"
 					+"</tr>"
-					+"</table>"
-		display(tableHeader);
+					+"</table>";
+		return tableHeader;
+		
+	}
+	
+	function orderList(){
+		display("<div class='content' id='content'>"+getTableHeader());
 	}
 	
 	function listDetail(){
@@ -293,14 +300,15 @@ window.onload = function() {
             var item = items[i];
 			listTable += "<div id='listSpace" + i +"' class='listSpace'>"
 			listTable  += "<table width='700px' class='listTable'>";
-			listTable  += "<tr class='mainrow'><td class='left'>" + item.itemNo 
-						+ "</td><td width='370px' class='left'>" + item.desc 
-						+ "</td><td class='right' id='bold'>" + item.qty 
-						+ "</td><td class='right'>" + item.listPrice 
-						+ "</td><td class='right'>" + item.discount
-						+ "</td><td class='right' id='bold'>" + item.price 
-						+ "</td><td class='right' id='bold'>" + item.amt 
-						+ "</td></tr>" 
+			listTable  += "<tr class='mainrow'>"
+						+"<td width='80' class='left'>" + item.itemNo+ "</td>" 
+						+"<td width='320px' class='left'>" + item.desc + "</td>"
+						+"<td width='60' align='right' id='bold'>" + item.qty+ "</td>" 
+						+"<td width='50' align='right'>" + item.listPrice + "</td>"
+						+"<td width='50' align='right'>" + item.discount+ "</td>"
+						+"<td width='50' align='right' id='bold'>" + item.price + "</td>"
+						+"<td width='80' align='right' id='bold'>" + item.amt + "</td>"
+						+"</tr>"; 
 			var subItemRows = item.data;
 			if(subItemRows){
 				//image part			
@@ -330,9 +338,12 @@ window.onload = function() {
 	                }
 	                item_table += "</tr></td>";
 	            }
-				listTable += "<td colspan='2' id='itemTable'><table width ='400px' class='left'><tr height='5px'></tr>" + item_table + "</table><br><br><td colspan='4' id='quote'></td></table>"
+				listTable += "<td colspan='2' id='itemTable' align='right'><table width ='370px' class='left'><tr height='5px'></tr>" + item_table + "</table><br><br><td colspan='4' id='quote'></td></table>"
 							+"<div class ='modifySpace' id = 'modifySpace" + i +"'></div>"
-							+"</div>";
+			}
+
+			listTable +="</div>";
+						
 				if(i == listLength){
 					listTable += "</div>";
 				}
@@ -360,7 +371,6 @@ window.onload = function() {
 					countPixel += qtyDivHeight;
 				}
 				
-			}
 		}
 		
 		
@@ -419,20 +429,9 @@ window.onload = function() {
 					+"</table>"*/
 					+ needMorePage;
 					
-		var listHeader = "<div class='newPage' id='newPage'>"
-					+"<table width='700px'>"
-					+ "<tr class='left'>"
-					+"<th width='60px' style='border-bottom:1pt solid black;'>Style</th>"
-					+"<th width='310px' style='border-bottom:1pt solid black;'>Description</th>"
-					+"<th align='right' style='border-bottom:1pt solid black;'>Quantity</th>"
-					+"<th align='right' style='border-bottom:1pt solid black;'>Price</th>"
-					+"<th align='right' style='border-bottom:1pt solid black;'>% Off</th>"
-					+"<th align='right' style='border-bottom:1pt solid black;'>Net</th>"
-					+"<th align='right' style='border-bottom:1pt solid black;'>Amount</th>"
-					+"</tr>"
-					+"</table>"	
-					
-			return footer+(itemNo!= listLength? listHeader:"");
+		var listHeader = "<div class='newPage' id='newPage'>"+getTableHeader();
+
+		return footer+(itemNo!= listLength? listHeader:"");
 		
 	}
 

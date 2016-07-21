@@ -124,7 +124,7 @@
               		<div clivia-grid="contactGrid" 
               			c-grid-wrapper-name="'ContactGridWrapper'"
     					c-editable="true" 
-    					c-data-source="contactGridDataSource" 
+    					c-data-source="contactsGridDataSource" 
     					c-pageable="false" 
     					c-new-item-function="newContactItemFunction"
     					c-register-deleted-item-function="registerDeletedContactItemFunction">
@@ -135,7 +135,7 @@
               		<div clivia-grid="addressGrid" 
               			c-grid-wrapper-name="'AddressGridWrapper'"
     					c-editable="true" 
-    					c-data-source="addressGridDataSource" 
+    					c-data-source="addressesGridDataSource" 
     					c-pageable="false" 
     					c-new-item-function="newAddressItemFunction"
     					c-register-deleted-item-function="registerDeletedAddressItemFunction">
@@ -155,7 +155,7 @@
               		<div clivia-grid="journalGrid" 
               			c-grid-wrapper-name="'JournalGridWrapper'"
     					c-editable="true" 
-    					c-data-source="journalGridDataSource" 
+    					c-data-source="journalsGridDataSource" 
     					c-pageable="false" 
     					c-new-item-function="newJournalItemFunction"
     					c-register-deleted-item-function="registerDeletedJournalItemFunction">

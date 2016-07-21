@@ -6,11 +6,10 @@ import java.util.Map;
 public class Company {
 	
 	CompanyInfo info;
-	List<CompanyContact> contactItems;
-	List<CompanyAddress> addressItems;
-	List<CompanyJournal> journalItems;
+	List<CompanyContact> contacts;
+	List<CompanyAddress> addresses;
+	List<CompanyJournal> journals;
 	List<Map<String,String>> deleteds;
-	
 	
 	public CompanyInfo getInfo() {
 		return info;
@@ -18,23 +17,23 @@ public class Company {
 	public void setInfo(CompanyInfo info) {
 		this.info = info;
 	}
-	public List<CompanyContact> getContactItems() {
-		return contactItems;
+	public List<CompanyContact> getContacts() {
+		return contacts;
 	}
-	public void setContactItems(List<CompanyContact> contactItems) {
-		this.contactItems = contactItems;
+	public void setContacts(List<CompanyContact> contacts) {
+		this.contacts = contacts;
 	}
-	public List<CompanyAddress> getAddressItems() {
-		return addressItems;
+	public List<CompanyAddress> getAddresses() {
+		return addresses;
 	}
-	public void setAddressItems(List<CompanyAddress> addressItems) {
-		this.addressItems = addressItems;
+	public void setAddresses(List<CompanyAddress> addresses) {
+		this.addresses = addresses;
 	}
-	public List<CompanyJournal> getJournalItems() {
-		return journalItems;
+	public List<CompanyJournal> getJournals() {
+		return journals;
 	}
-	public void setJournalItems(List<CompanyJournal> journalItems) {
-		this.journalItems = journalItems;
+	public void setJournals(List<CompanyJournal> journals) {
+		this.journals = journals;
 	}
 	public List<Map<String, String>> getDeleteds() {
 		return deleteds;
@@ -42,5 +41,8 @@ public class Company {
 	public void setDeleteds(List<Map<String, String>> deleteds) {
 		this.deleteds = deleteds;
 	}
+	
+	
+	
 
 }

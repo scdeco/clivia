@@ -29,7 +29,7 @@
 					</li>
 		    		<li>
 					    <label>Customer:</label>
-					    <map-combobox   style="width:300px;" c-options="newUploadCompanyOptions" ng-model="newUploadData.customerNumber"/>
+					    <map-combobox   style="width:300px;" c-options="newUploadCompanyOptions" ng-model="newUploadData.companyId"/>
 				     </li>
 		    		<li>
 					    <label>Remark:</label>
@@ -65,10 +65,10 @@
  			<div  query-grid="queryGrid"  c-grid-no="'401'" c-options="queryGridOptions"></div> 
 		</div>
 			
-<!-- <pre>
-printModel={{myDstPaint.printModel|json}}
+<pre>
+<!-- printModel={{myDstPaint.printModel|json}} -->
 </pre>
- -->
+ 
 
 	</div>
 </body>
@@ -142,7 +142,7 @@ designApp.controller("dmCtrl",
 		    $scope.newUploadData={
 		    		designNumber:"",
 		    		description:"",
-		    		customerNumber:"",
+		    		companyId:"",
 		    		remark:"",
 		    }
 		    
@@ -197,20 +197,23 @@ designApp.controller("dmCtrl",
 						if(!data.designNumber)
 							error+="Design Number can not be empty. ";
 						
-						if(!data.customerNumber)
+						if(!data.companyId)
 							error+="Please select a company for this design. "
 							
-						if(error)	
+						if(error)	{
 							e.preventDefault();
-						else
+							alert(error);
+							
+						}else{
 						    e.data = {data:JSON.stringify(data)};
+						}
 					},
 					 
 					success: function (e) {
 					    if(e.response.status==="success"){
 					    	var data=e.response.data;
 							if(data){
-								$scope.myDstPaint.setDstDesign(data.id)
+								$scope.myDstPaint.loadDesignById(data.id);
 							}
 				    	}
 					},
@@ -229,7 +232,7 @@ designApp.controller("dmCtrl",
 							if(e.currentTarget){
 								var di=this.dataItem(e.currentTarget);
 								if(di&&di.id){
-									$scope.myDstPaint.setDstDesign(di.id);
+									$scope.myDstPaint.loadDesignById(di.id);
 									if(e.target && e.target.cellIndex===0)
 										$scope.queryWindow.close();
 								}

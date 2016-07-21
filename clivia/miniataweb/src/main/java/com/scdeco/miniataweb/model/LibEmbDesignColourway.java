@@ -10,7 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 
 @Entity
-public class LibEmbDesignColourway {
+public class LibEmbDesignColourway extends CliviaSuperModel{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private int id;	

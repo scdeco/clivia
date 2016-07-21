@@ -28,7 +28,7 @@ import com.scdeco.miniataweb.dao.GenericDao;
 import com.scdeco.miniataweb.embdesign.EMBDesign;
 import com.scdeco.miniataweb.embdesign.EMBDesignM;
 import com.scdeco.miniataweb.embdesign.EMBDesignRawImageData;
-import com.scdeco.miniataweb.model.LibEmbDesign;
+import com.scdeco.miniataweb.model.LibEmbDesignInfo;
 import com.scdeco.miniataweb.util.CliviaApplicationContext;
 import com.scdeco.miniataweb.util.CliviaUtils;
 
@@ -44,7 +44,7 @@ public class CliviaLibrary {
 		if(this.libs==null){
 			libs=new Library[2];
 			libs[0]=new Library("image","C:\\Clivia\\Images\\","i",new String[]{"jpg","jpeg","png","bmp","gif"},110,"libImageDao");
-			libs[1]=new Library("embdesign","C:\\Clivia\\EmbDesigns\\dst","d",new String[]{"dst"},110,"libEmbDesignDao");
+			libs[1]=new Library("embdesign","C:\\Clivia\\EmbDesigns\\dst","d",new String[]{"dst"},110,"libEmbDesignInfoDao");
 			
 		}
 		
@@ -150,11 +150,26 @@ public class CliviaLibrary {
 		return result;
 	}
 
+	public EMBDesignM getEmbDesignM(int id){
+		return getEmbDesignM((LibEmbDesignInfo)(getLibrary("embdesign").findById(id)));
+	}	
+	
+	public EMBDesignM getEmbDesignM(LibEmbDesignInfo info){
+		EMBDesignM result=null;
+		if(info!=null){
+			Library lib=getLibrary("embdesign");
+			String dstFile=lib.getBaseDir()+File.separator+info.getFilePath()+File.separator+info.getFileName();
+			EMBDesign embDesign=new EMBDesign(dstFile);
+			result=embDesign.getEMBDesignM();
+		}
+		return result;
+	}
+	
 	public Map<String, Object> getEmbDesignRawImageData(int id){
 		Map<String, Object> result=new HashMap<String, Object>();
 		
 		Library lib=getLibrary("embdesign");
-		LibEmbDesign di=(LibEmbDesign)lib.findById(id);
+		LibEmbDesignInfo di=(LibEmbDesignInfo)lib.findById(id);
 		EMBDesignRawImageData imageData=new EMBDesignRawImageData();
 		if(di!=null){
 			String dstFile=lib.getBaseDir()+File.separator+di.getFilePath()+File.separator+di.getFileName();
@@ -176,11 +191,11 @@ public class CliviaLibrary {
 		return result;
 	}
 	
-	public Map<String, Object> getEmbDesignStitches(int id){
+	public Map<String, Object> getEmbDesign(int id){
 		Map<String, Object> result=new HashMap<String, Object>();
 		
 		Library lib=getLibrary("embdesign");
-		LibEmbDesign di=(LibEmbDesign)lib.findById(id);
+		LibEmbDesignInfo di=(LibEmbDesignInfo)lib.findById(id);
 		EMBDesignM embDesignM=null;
 		if(di!=null){
 			String dstFile=lib.getBaseDir()+File.separator+di.getFilePath()+File.separator+di.getFileName();
@@ -188,7 +203,9 @@ public class CliviaLibrary {
 			embDesignM=embDesign.getEMBDesignM();
 			result.put("status","success");
 			result.put("message", "");
-			result.put("data", embDesignM);			
+			result.put("di",di);
+			result.put("data", embDesignM);	
+			
 		}
 		else{
 			result.put("status","error");
@@ -197,6 +214,8 @@ public class CliviaLibrary {
 		}
 		return result;
 	}
+	
+	
 	
 	@SuppressWarnings("rawtypes")
 	class Library{
@@ -278,7 +297,7 @@ public class CliviaLibrary {
 				case "embdesign":
 					this.setFieldValue(dataItem, "designNumber", model.get("designNumber"));
 					this.setFieldValue(dataItem, "description", model.get("description"));
-					this.setFieldValue(dataItem, "customerNumber", CliviaUtils.parseInt(model.get("customerNumber")));
+					this.setFieldValue(dataItem, "companyId", CliviaUtils.parseInt(model.get("companyId")));
 					this.setFieldValue(dataItem, "remark", model.get("remark"));
 					break;
 			}

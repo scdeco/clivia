@@ -5,19 +5,21 @@
 
       	<div 	kendo-splitter="DstSplitter"  
       			k-orientation="'horizontal'" 
-				k-panes="[{ collapsible: false},
+				k-panes="[{ collapsible:true,resizable: true,size:'250px'},
+						  { collapsible: false},
                   		  { collapsible: true, resizable: true,size:'250px'}]"
 
 		    	style="height:100%;">      	
       	
   		<!-- 		ng-model="dstPaint.backgroundColor"  -->
       		<div id="dst-first-pane">
+      		</div>
+      		<div id="dst- second-pane">
    				<div id="stagecontainer" ng-style="{'background-color':threadMatcher.backgroundColor}" 
    					 				ng-click="onClick()">
 				</div>
 			</div>	<!-- first-pane-->
-			
-      		<div id="dst- second-pane">
+      		<div id="dst- third-pane">
       			<div thread-matcher="threadMatcher" c-emb-canvas="embCanvas"></div>
 			</div>	<!--  second-pane-->
 		</div>

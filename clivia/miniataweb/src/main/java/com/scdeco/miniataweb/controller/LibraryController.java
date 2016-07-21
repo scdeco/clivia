@@ -1,7 +1,6 @@
 package com.scdeco.miniataweb.controller;
 
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +10,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.scdeco.miniataweb.dao.EmployeeInfoDao;
+import com.scdeco.miniataweb.dao.LibEmbDesignDao;
 import com.scdeco.miniataweb.model.EmployeeInfo;
 import com.scdeco.miniataweb.service.CliviaLibrary;
 
@@ -28,6 +27,9 @@ public class LibraryController {
 	
 	@Autowired
 	private CliviaLibrary cliviaLibrary;
+	
+	@Autowired
+	LibEmbDesignDao libEmbDesignDao;
 	
 	@Autowired
 	private EmployeeInfoDao employeeInfoDao;
@@ -86,10 +88,10 @@ public class LibraryController {
 		
 	}
 	
-	@RequestMapping(value="{type}/getstitches",method=RequestMethod.GET)
-	public @ResponseBody Map<String, Object> getEmbDesignStitches(@PathVariable String type, @RequestParam("id") Integer id){
+	@RequestMapping(value="{type}/getdesign",method=RequestMethod.GET)
+	public @ResponseBody Map<String, Object> getEmbDesign(@PathVariable String type, @RequestParam("id") Integer id){
 		
-		Map<String, Object> result=cliviaLibrary.getEmbDesignStitches(id);
+		Map<String, Object> result=cliviaLibrary.getEmbDesign(id);
 		return result;
 		
 	}

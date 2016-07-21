@@ -28,7 +28,7 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
  						};
  					for(var i=0,items,itemName;i<scope.companyItemNames.length;i++){
  						itemName=scope.companyItemNames[i];
- 						items=scope.dataSet[itemName+'Items'];
+ 						items=scope.dataSet[itemName];
  						items.splice(0,items.length);
  					}
  					scope.dataSet.deleteds=[];
@@ -88,7 +88,7 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 					scope.dataSet.info=data.info;
 					
 					for(var i=0,scopeItems,dataItems,itemName;i<scope.companyItemNames.length;i++){
-						itemName=scope.companyItemNames[i]+'Items';
+						itemName=scope.companyItemNames[i];
 						dataItems=data[itemName];
 						if(dataItems){
 							scopeItems=scope.dataSet[itemName];
@@ -167,7 +167,7 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 							type: "separator",
 					}]};
 				
-				scope.companyItemNames=['contact','address','journal'];
+				scope.companyItemNames=['contacts','addresses','journals'];
 				
 				scope.dataSet={info:{html:"test"}, deleteds:[]};
 				
@@ -176,10 +176,10 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 					
 					itemName=scope.companyItemNames[i];
 					
-					scope.dataSet[itemName+'Items']=new kendo.data.ObservableArray([]);
+					scope.dataSet[itemName]=new kendo.data.ObservableArray([]);
 					
 				 	scope[itemName+'GridDataSource']=new kendo.data.DataSource({
-				     	data:scope.dataSet[itemName+'Items'],
+				     	data:scope.dataSet[itemName],
 					    schema: {
 					    	model: { id: "id" }
 					    },	//end of schema

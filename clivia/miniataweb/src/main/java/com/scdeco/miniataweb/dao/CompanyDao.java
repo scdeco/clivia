@@ -10,7 +10,7 @@ public class CompanyDao extends GenericMainItemDao<Company>{
 	public CompanyDao(){
 		super();
 
-		super.registeredItemListNames=new String[]{"contactItems","addressItems","journalItems"};
+		super.registeredItemListNames=new String[]{"contacts","addresses","journals"};
 		super.registeredItemModelNames=new String[]{"companyContact","companyAddress","companyJournal"};
 		super.daoPrefix="company";
 		

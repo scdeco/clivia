@@ -407,10 +407,12 @@ public class EMBDesign
 		for(int i=0;i<getStitchCount()-3;i++){
 			EMBDesignStitch embStitch=new EMBDesignStitch();
 			Stitch stitch=this.stitchList[i];
-			embStitch.setX(stitch.xImage);
-			embStitch.setY(stitch.yImage);
-			embStitch.setF(stitch.funcCode);
-			embStitches[i]=embStitch;
+			if(stitch!=null){
+				embStitch.setX(stitch.xImage);
+				embStitch.setY(stitch.yImage);
+				embStitch.setF(stitch.funcCode);
+				embStitches[i]=embStitch;
+			}
 		}
 		
 		emb.setStitchList(embStitches);

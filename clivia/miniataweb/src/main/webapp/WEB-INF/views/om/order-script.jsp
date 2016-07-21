@@ -134,7 +134,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
     	var companyId=_order.dataSet.info.customerId;
 		if(!!companyId && _order.company.info.companyId!==companyId){
 			
-			var url="../crm/get-company?id="+companyId+"&list=contactItems,addressItems";
+			var url="../crm/get-company?id="+companyId+"&list=contacts,addresses";
 			$http.get(url).
 				success(function(data, status, headers, config) {
 					if(data){
@@ -149,10 +149,10 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 						if(!oinfo.term)
 							oinfo.term=cinfo.term;
 						
-						_order.company.contacts=data.contactItems;
+						_order.company.contacts=data.contacts;
 						var buyers=[];
-						for(var i=0;i<data.contactItems.length;i++){
-							buyers.push(data.contactItems[i].fullName)
+						for(var i=0;i<data.contacts.length;i++){
+							buyers.push(data.contacts[i].fullName)
 						}
 						
 						//PROBABEALY A KENDO'S BUG HERE
@@ -169,7 +169,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 						//	_order.dataSet.info.buyer=data[0].fullName;
 						//}
 						
-						_order.company.addresses=data.addressItems;
+						_order.company.addresses=data.addresses;
 					}
 				}).
 				error(function(data, status, headers, config) {
@@ -854,12 +854,12 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 						/* mbi.imageId=styleModel.garment.imageId; */
 						mbi.data=styleModel.data;
 					}
+	 	 			totalQty+=bi.orderQty?bi.orderQty:0;
 				} 				
  				
  				model.items.push(mbi);
 
  				totalAmt+=bi.orderAmt?bi.orderAmt:0;
- 	 			totalQty+=bi.orderQty?bi.orderQty:0;
  				
  			}
  		}
@@ -867,7 +867,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  		model.info.totalAmt=kendo.toString(totalAmt, "c");
  		model.info.totalQty=kendo.toString(totalQty,"##,#");
  		
- 	//test data 	_order.printModel=model; 
+ 	 	_order.printModel=model; //for testing data
+ 		
  		return model;
  	}
  	
@@ -948,7 +949,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  	
  	_order.printBill=function(billItems,lineItemOnly,mainColourOnly,hideDiscount){
  		var data=_order.createGarmentPrintModel(billItems,lineItemOnly,mainColourOnly,hideDiscount);
- 		util.printUrl("../om/print-confirm-dd",{data:JSON.stringify(data)},false);	//false=no preview
+ 		util.printUrl("../om/print-confirm-dd",{data:JSON.stringify(data)},true);	//false=no preview
  		return;
  	}
 	

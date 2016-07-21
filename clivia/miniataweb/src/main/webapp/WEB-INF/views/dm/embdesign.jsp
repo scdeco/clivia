@@ -416,12 +416,16 @@ factory("DstDesign",["$http","Event",function($http,Event){
 		design.stitchCount="";
 		design.stepCount="";
 		design.trimCount="";
-		design.designNumber="";				
 		
 		design.pixelWidth=0;
 		design.pixelHeight=0;	
 		design.stitchList=[];	
 		design.stepList=[];
+		
+		design.Info=null;			 //dataItem in model of LibEmbDesign
+		design.colourways=null;	//list of dataItems in model of LibEmbDesignColourway
+		design.samples=null; 		//list of dataItems in model of LibEmbDesignSalmple
+		
 	}
 	
 	var DstDesign=function(id){
@@ -437,25 +441,33 @@ factory("DstDesign",["$http","Event",function($http,Event){
 			return this.stitchList.length>0;
 		},
 		
+		loadDstById:function(designId){
 		
-		getDst:function(dstId){
-		
-			var url="/clivia/lib/embdesign/getstitches?id="+dstId;
+			var url="/clivia/lib/emb/get-embdesign?id="+designId+"&needStitches=true";
 			var self=this;
 			initDesign(this);
 			
 			$http.get(url).
 				success(function(data, status, headers, config) {
-					var design=data.data;
-					for(var property in design){
-						if(design.hasOwnProperty(property))
-							self[property]=design[property];
-					}
+					if(data&&data.embDesignM){
+						var design=data.embDesignM;
+						for(var property in design){
+							if(design.hasOwnProperty(property))
+								self[property]=design[property];
+							}
+						design.info=data.info;
+						design.colourway=data.colourway;
+						design.samples=data.samples;
+					}	
 					self.designChanged.fireEvent([self]);
 				}).
 				error(function(data, status, headers, config) {
 					self.designChanged.fireEvent([self]);
 				});								
+		},
+		
+		loadDstByNumber:function(designNumber){
+			
 		},
 			
 		drawStep:function(ctx,colour,stepIndex,scale){
@@ -508,7 +520,7 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 		
 		this.canvas=document.createElement('canvas');
 		this.canvas.id=createElementId();
-		this.canvas.style.visibility='visible';		//show or hide design's canvas--visible|hidden
+		this.canvas.style.visibility='hidden';		//show or hide design's canvas--visible|hidden
 		document.body.appendChild(this.canvas);
 		this.imageObj=document.getElementById(this.canvas.id);
 		
@@ -1617,17 +1629,19 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 
 				scope.print=function(){
 					//parameters:embMatcher,showThreads--list of threads,purgeRepeatCode
-					var printModel=scope.getPrintModel(scope.threadMatcher,false,true);
+					scope.printModel=scope.getPrintModel(scope.threadMatcher,false,true);
 					
 					//parameters:printModel,paperType,isLandscape,bgColor,showStitchCount
 					//paperTypess :[{type:"letter",width:191, height:255},{type:"ledger", width:260, height:416}]
-					var html=scope.getDesignHtml(printModel,"letter",false,scope.threadMatcher.backgroundColor,false);
+					var html=scope.getDesignHtml(scope.printModel,"letter",false,scope.threadMatcher.backgroundColor,false);
 					
 					util.print(html,true);
 				}				
 				
-				scope.setDstDesign=function(dstDesign){
-				    scope.dstDesign.getDst(dstDesign);
+				
+				
+				scope.loadDesignById=function(designId){
+				    scope.dstDesign.loadDstById(designId);
 				}
 
 				scope.onClick=function(){

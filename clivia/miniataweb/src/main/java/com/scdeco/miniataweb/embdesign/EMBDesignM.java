@@ -14,7 +14,6 @@ public class EMBDesignM {
 	private int stitchCount;
 	private int stepCount;
 	private int trimCount;
-	private String designNumber;
 	private EMBDesignStitch[] stitchList;
 	private EMBDesignStep[] stepList;
 	
@@ -97,12 +96,6 @@ public class EMBDesignM {
 	}
 	public void setTrimCount(int trimCount) {
 		this.trimCount = trimCount;
-	}
-	public String getDesignNumber() {
-		return designNumber;
-	}
-	public void setDesignNumber(String designNumber) {
-		this.designNumber = designNumber;
 	}
 	public EMBDesignStitch[] getStitchList() {
 		return stitchList;

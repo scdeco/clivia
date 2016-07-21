@@ -259,7 +259,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 							    
 				dataSource.fetch(function() {
 					  var billItems = dataSource.view();
-					  SO.printBill(billItems,true,true,id==="garmentConfirmationWithoutDsicount");		//if true,print billItems that from lineitem(typeid===2) only
+					  SO.printBill(billItems,false,true,id==="garmentConfirmationWithoutDsicount");		//if true,print billItems that from lineitem(typeid===2) only
 					});
 			}
 			
