@@ -792,9 +792,11 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 			
 			templateUrl:'../common/garmentgrid',
 			link:function(scope,element,attrs){
-				
-				scope.gridName=scope.cName+"Grid";
-				scope.inputWindowName=scope.cName+"InputWindow";
+				var tmpId=util.getTmpId();
+				scope.element=element;
+				scope.gridName=scope.cName+tmpId;
+				scope.gridContextMenuName=scope.gridName+"ContextMenu";
+				scope.garmentInputWindowName=scope.gridName+"InputWindow";
 
 				var ggw=new GarmentGridWrapper(scope.gridName);	
 				ggw.setBrandSeason(scope.cBrand,scope.cSeason);		//columns is set in setBrand,so ggw.setColumns(gridColumns) is not needed here.
@@ -811,13 +813,14 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 				scope.dict=ggw.dict;
 				scope.dictGarment=ggw.dictGarment;
 				scope.dds=cliviaDDS;
-
+				
 			    scope.$on("kendoWidgetCreated", function(event, widget){
 			        // the event is emitted for every widget; if we have multiple
 			        // widgets in this controller, we need to check that the event
 			        // is for the one we're interested in.
 			        //This happens after dataBound event
 			        if (widget ===scope[scope.gridName]) {
+			        	
 			        	ggw.wrapGrid(widget);
 			        	ggw.calculateTotal();
 			        	if(scope.cName)
@@ -843,11 +846,13 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 			        			
 			        	}
 			        }
+			        
 			    });	
 			    
 			    
 			 	scope.gridSortableOptions = ggw.getSortableOptions();
 			    
+			 	
 			 	scope.gridOptions = {
 							autoSync: true,
 					        columns: ggw.gridColumns,
@@ -932,24 +937,25 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 					target:'#'+scope.gridName,
 					select:function(e){
 					
-						switch(e.item.id){
-							case "menuAdd":
-								scope.setting.editing=true;
-								if(!ggw.isEditing)
-									ggw.enableEditing(true);
-								addRow(false);
-								break;
-							case "menuAddWindow":
-								scope.garmentInputWindow.center().open();
-								break;
-							case "menuInsert":
-								addRow(true);
-								break;
-							case "menuDelete":
-								deleteRow();
-								break;
+						switch(e.item.textContent){
+						case "Add":	
+							scope.setting.editing=true;
+							if(!ggw.isEditing)
+								ggw.enableEditing(true);
+							addRow(false);
+							break;
+						case "Add With dialog...":	
+							if(!scope[scope.garmentInputWindowName])
+								scope[scope.garmentInputWindowName]=$("#"+scope.garmentInputWindowName).data("kendoWindow");
+							scope[scope.garmentInputWindowName].center().open();
+							break;
+						case "Insert":
+							addRow(true);
+							break;
+						case "Delete":	
+							deleteRow();
+							break;
 						}
-						
 					}
 					
 				};
@@ -1042,11 +1048,16 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 			
 			templateUrl:'../common/billgrid',
 			link:function(scope,element,attrs){	
-				scope.gridName=scope.cName+"Grid";
+				var tmpId=util.getTmpId();
+				scope.element=element;
+				scope.gridName=scope.cName+tmpId;
+				scope.gridContextMenuName=scope.gridName+"ContextMenu";
 
 				var bgw=new BillGridWrapper(scope.gridName);	
 				bgw.setColumns();
-				
+				scope.$on('$destroy', function() {
+
+		      	});
 				scope.$on("kendoWidgetCreated", function(event, widget){
 
 					if (widget ===scope[scope.gridName]) {
@@ -1073,6 +1084,7 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 				        	}
 			        	}
 			        }
+					
 			    });	
 
 				scope.setting={};
@@ -1187,18 +1199,18 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 				filter:".gridLineNumber,.gridLineNumberHeader",
 				target:'#'+scope.gridName,
 				select:function(e){
-				
-					switch(e.item.id){
-						case "menuAdd":
+					
+					switch(e.item.textContent){
+						case "Add":
 							scope.setting.editing=true;
 							if(!bgw.isEditing)
 								bgw.enableEditing(true);
 							addRow(false);
 							break;
-						case "menuInsert":
+						case "Insert":
 							addRow(true);
 							break;
-						case "menuDelete":
+						case "Delete":
 							deleteRow();
 							break;
 					}
@@ -1288,8 +1300,11 @@ directive('imageGrid',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 			
 			templateUrl:'../common/imagegrid',
 			link:function(scope,element,attrs){	
-				scope.gridName=scope.cName+"Grid";
-
+				var tmpId=util.getTmpId();
+				scope.element=element;
+				scope.gridName=scope.cName+tmpId;
+				scope.gridContextMenuName=scope.gridName+"ContextMenu";
+				
 				var igw=new ImageGridWrapper(scope.gridName);	
 				igw.setColumns();
 				
@@ -1463,7 +1478,11 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 			
 			templateUrl:'../common/imageview',
 			link:function(scope,element,attrs){	
-				scope.gridName=scope.cName+"Grid";
+				
+				var tmpId=util.getTmpId();
+				scope.element=element;
+				scope.gridName=scope.cName+tmpId;
+				scope.gridContextMenuName=scope.gridName+"ContextMenu";
 
 				var igw=new ImageGridWrapper(scope.gridName);	
 				igw.setColumns();
@@ -1717,7 +1736,10 @@ directive('cliviaGrid',["cliviaGridWrapperFactory","cliviaDDS","util",function(c
 			
 			templateUrl:'../common/cliviagrid',
 			link:function(scope,element,attrs){	
-				scope.gridName=scope.cName+"Grid";
+				var tmpId=util.getTmpId();
+				scope.element=element;
+				scope.gridName=scope.cName+tmpId;
+				scope.gridContextMenuName=scope.gridName+"ContextMenu";
 
 				var gw=cliviaGridWrapperFactory.getGridWrapper(scope.cGridWrapperName,scope.gridName,scope.cCallFrom);	
 				
@@ -1738,6 +1760,7 @@ directive('cliviaGrid',["cliviaGridWrapperFactory","cliviaDDS","util",function(c
 			        	}
 			        }
 			    });	
+				
 
 				scope.setting={};
 				scope.setting.editing=true;
@@ -1811,6 +1834,7 @@ directive('cliviaGrid',["cliviaGridWrapperFactory","cliviaDDS","util",function(c
 			};
 			
 			var newItem=function(){
+				
 				if(!scope.cNewItemFunction)
 					scope.cNewItemFunction=function(){
 							return {};
@@ -1844,7 +1868,7 @@ directive('cliviaGrid',["cliviaGridWrapperFactory","cliviaDDS","util",function(c
 		   		}
 			    
 			}
-		}	//end of contactGrid:link
+		}
 	}
 	
 	return directive;

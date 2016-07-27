@@ -1,4 +1,3 @@
-<div id="billItem">
     <div kendo-splitter="billItemSplitter"
 				k-orientation="'vertical'"
 				k-panes="[{ collapsible: false, resizable:false,size:'40px'},
@@ -26,7 +25,7 @@
     					c-pageable="false" 
     					c-new-item-function="newItemFunction"
     					c-register-deleted-item-function="registerDeletedItemFunction"
-    					c-get-bill-detail-function="getBillDetailFunction(billItem)">
+    					c-get-bill-detail-function="getDetailFunction(billItem)">
     		</div> 
    		</div> 	
  		
@@ -37,29 +36,4 @@
 		</div>  <!-- end of bottom pane -->	
     </div>
 	 
-</div>
 
-<style>
- 
-#billitemdetail table, th, td {
-    border: 1px dotted gray;
-    border-collapse: collapse;
-}
-#billitemdetail table, th, td {
-    padding: 5px;
-}
-#billitemdetail table tr:nth-child(even) {
-    background-color: #eee;
-}
-#billitemdetail table tr:nth-child(odd) {
-   background-color:#fff;
-}
-#billitemdetail table th	{
-    background-color: black;
-    color: white;
-}
-
-.billDetailQty{
-	width:40px;
-}
-</style>

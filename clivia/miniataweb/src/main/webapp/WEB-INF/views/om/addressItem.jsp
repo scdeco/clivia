@@ -1,4 +1,4 @@
-<div id="contactItem" style="padding: 1em">
+<div id="addressItem" style="padding: 1em">
     	<div clivia-grid="addressGrid"
    					c-grid-wrapper-name="'AddressGridWrapper'"
    					c-editable="true" 

@@ -1700,10 +1700,20 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					}
 					$scope.embImage.setWidth($scope.embCanvas.getOriginalWidth());
 					$scope.embImage.setHeight($scope.embCanvas.getOriginalHeight());
-/*					$scope.embStage.setWidth($scope.embImage.width()+10);
-					$scope.embStage.setHeight($scope.embImage.Height()+10);
-*/					$scope.embCanvas.drawDesign();
+					$scope.embCanvas.drawDesign();
 				}
+				
+			    $scope.colorwayGridDataSource=new kendo.data.DataSource({
+	    	    	data:[],	//$scope.dstDesign.info.colorway,
+				    schema: {
+				        model: {
+				            id: "id"
+				        }
+				    },
+				    serverFiltering:false,
+				    pageSize: 0,
+
+		        });
 				
 				$scope.dstDesign.designChanged.addListener($scope.embCanvas,$scope.onDesignChanged);
 				$scope.embCanvas.imageChanged.addListener($scope.embStage,$scope.onImageChanged);

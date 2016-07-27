@@ -59,8 +59,6 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				},
 				
 			instance:{
-				itemButtons:new kendo.data.ObservableArray([]),
-				currentItemId:0,
 				tmpId:1,
 				}};
 
@@ -103,8 +101,6 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
     _order.clearInstance=function(){
     	instance.isDirty=false;
     	instance.tmpId=0;
-    	instance.currentItemId=0;
-    	instance.itemButtons.splice(0,instance.itemButtons.length);
     }
     
 	_order.clearDataSet=function(){
@@ -349,154 +345,6 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 	}
 	
 	
-	_order.setCurrentOrderItem=function(orderItemId){
-        var dataItem=null;
-		
-        var oldId=instance.currentItemId;
-        
-		instance.currentItemId=orderItemId;	
-		if(orderItemId>0) {
-	        for(var i=0;i<instance.itemButtons.length;i++){
-        		instance.itemButtons[i].selected=instance.itemButtons[i].orderItemId===orderItemId;
-	        }
-		       	  
-	        dataItem=_order.getOrderItem(orderItemId);
-		}
-		
-		if(dataItem){
-			if(instance.currentItemId!==oldId){
-				var type=_order.getRegisteredItemType(dataItem.typeId);
-	 		  	 $state.go('main.'+type.name,{orderItemId:orderItemId});
-			}
-		}else{
-			$state.go('main.blankitem');
-		}
- 	};
- 	
- 	
- 	_order.getCurrentOrderItem=function(){
- 		return _order.getOrderItem(instance.currentItemId);
- 	}
- 	
- 	
- 	_order.getOrderItem=function(itemId){
- 		var dataItem=null;
- 		for(var i=0;i<dataSet.items.length;i++)
- 			if(itemId===dataSet.items[i].id){
- 				dataItem=dataSet.items[i];
- 				break;
- 			}
- 		return dataItem;		
- 	}
-	
- 	_order.getCurrentOrderItemButton=function(){
- 		var item=_order.getCurrentOrderItem();
- 		var buttons=instance.itemButtons;
- 		var button=null;
- 		for(var i=0;i<buttons.length;i++){
- 			if(buttons[i].orderItemId===item.id){
- 				button=buttons[i];
- 				break;
- 			}
- 		}
- 		return button;
- 	}
-
- 	_order.addOrderItemButton=function(orderItem){
- 		
-        button={
-        		text:orderItem.title, 
-        		id: "btn"+orderItem.id, 
-        		icon: "insert-n",
-        		togglable: true, 
-        		group: "OrderItem",
-        		orderItemId:orderItem.id,
-        	};
-        
-        instance.itemButtons.push(button);
-        return button;
- 	}
- 	
-	
-    _order.addOrderItem = function(menuItem) {
-     	var orderItemId=_order.getTmpId();
-     	var orderItem={
-    			orderId:dataSet.info.orderId ,
-    			id:orderItemId,
-    			lineNo:dataSet.items.length+1,
-	     		title:menuItem.text,
- 				typeId:menuItem.itemTypeId,
- 				snpId:menuItem.snpId,
- 				spec:menuItem.spec,
- 				isDirty:true,
-     		};
-     	
-     	if(menuItem.itemTypeId===2){		//"lineItem"
-     		var brand=_order.getBrandFromSpec(menuItem.spec);
-   			var season=_order.getSeasonFromSpec(menuItem.spec);
-   			orderItem.spec=season.brandId+":"+season.id;
-     	}
-     	dataSet.items.push(orderItem);
-     	_order.addOrderItemButton(orderItem)
-     	return orderItem;
-       };	
-       
-    _order.removeOrderItem=function(orderItem){
-    	
-    	var items=_order.dataSet.items,
-    		itemButtons=_order.instance.itemButtons;
-
-    	//remove the item button from _order.instance.itemButtons
-    	var idx=util.findIndex(itemButtons,"orderItemId",orderItem.id);
-    	itemButtons.splice(idx,1);
-    	
-    	//remove the orderItem from  _order.dataSet.items
-    	var idx=util.findIndex(items,"id",orderItem.id);
-    	items.splice(idx,1);
-    	
-    	//set lineNo same as item index+1
-    	_order.setOrderItemLineNo();
-
-    	
-    	//set new current orderItem. if no more item, set to blank.
-    	if (idx===items.length)
-    		idx--;
-    	idx=idx>=0?items[idx].id:0;
-   		_order.setCurrentOrderItem(idx);
-   		
-   		//register to deleted items
-	   	_order.registerDeletedItem("orderItem",orderItem.id,true);
-	   	
-    	//get dataTable from the dataSet, orderItem.typeId registeredItemType.name is the dataTable name
-		 var type=_order.getRegisteredItemType(orderItem.typeId);
-	   	 var dis=_order.dataSet[type.name+"s"];  
-		 for(var i=dis.length-1;i>=0;i--){
-			 di=dis[i];
-			 if(di.orderItemId===orderItem.id){
-				 
-		   		 //register to deleted items 
-				_order.registerDeletedItem(type.model,di.id);
-		   		
-				 //remove from the dataTable
-			    dis.splice(i,1);
-			 }
-		 }
-   		 
-        };
-    _order.setOrderItemLineNo=function(){
-    	var items=_order.dataSet.items;
-    	
-    	//set lineNo same as item index+1
-		for(var i=0,lineNo;i<items.length;i++){
-			lineNo=i+1;
-			if(items[i].lineNo!==lineNo){
-	  			 items[i].lineNo=lineNo;
-	  			 items[i].isDirty=true;
-			}
-			
-		}
-    	
-    }
     
 	_order.registerDeletedItem=function(entity,id,hasDependent){
 		var flag=(!!hasDependent)?id>=consts.maxTmpId:!!id
@@ -529,7 +377,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		
 		var useWSP=_order.company.info.useWsp;
 		var useUSD=_order.company.info.country!=="Canada";
-		var listPriceField=useWSP?(useUSD?"wsp":"wspCad"):(usedUSD?"rrp":"rrpCad");
+		var listPriceField=useWSP?(useUSD?"wsp":"wspCad"):(useUSD?"rrp":"rrpCad");
 		
 		var	billableItems=[];
 		var billableIdx={};
@@ -947,11 +795,13 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		
 	}	 	
  	
- 	_order.printBill=function(billItems,lineItemOnly,mainColourOnly,hideDiscount){
+ 	_order.printBill=function(billItems,lineItemOnly,mainColourOnly,hideDiscount,file){
  		var data=_order.createGarmentPrintModel(billItems,lineItemOnly,mainColourOnly,hideDiscount);
- 		util.printUrl("../om/print-confirm-dd",{data:JSON.stringify(data)},true);	//false=no preview
+ 		url="../om/print-order?file="+file;
+ 		util.printUrl(url,{data:JSON.stringify(data)},true);	//false=no preview
  		return;
  	}
+ 	
 	
 	_order.generateUpcItems=function(){
 		var dictUpc=_order.dds.upc;

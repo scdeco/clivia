@@ -9,42 +9,50 @@
 				id:1,
 				name:"billItem",
 				model:"orderBillItem",
-				hasDetail:false
+				hasDetail:false,
+				directive:"bill-item",
 			},{
 				id:2,
 				name:"lineItem",
 				model:"orderLineItem",
-				hasDetail:false
+				hasDetail:false,
+			 	directive:"line-item",
 			},{
 				id:3,
 				name:"designItem",	
 				model:"orderDesign",
-				hasDetail:false
+				hasDetail:false,
+				directive:"design-item",
 			},{
 				id:4,
 				name:"imageItem",
 				model:"orderImage",
-				hasDetail:false
+				hasDetail:false,
+				directive:"image-item",
 			},{
 				id:5,
 				name:"fileItem",
 				model:"orderFile",
-				hasDetail:false
+				hasDetail:false,
+				directive:"file-item",
 			},{
 				id:6,
 				name:"emailItem",
 				model:"orderEmail",
-				hasDetail:false
+				hasDetail:false,
+				directive:"email-item",
 			},{
 				id:7,
 				name:"contactItem",
 				model:"orderContact",
-				hasDetail:false
+				hasDetail:false,
+				directive:"contact-item",
 			},{
 				id:8,
 				name:"addressItem",
 				model:"orderAddress",
-				hasDetail:false				
+				hasDetail:false,			
+				directive:"address-item",
 			}],
 			
 		registeredOrderItems:[{ 
@@ -87,7 +95,6 @@
 				spec:"",
 				itemType: "imageItem",
 				itemTypeId:4,
-
 			},{ 
 				text: "File", 
 				icon: "insert-s",
@@ -121,7 +128,8 @@
 				icon: "insert-s",
 			   	id:"shipping",
 				spec:"",
-				itemType: "shippingItem"
+				itemType: "shippingItem",
+				directive:"send-receive",
 			}],
 			
 	});

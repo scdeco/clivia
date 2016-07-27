@@ -21,11 +21,11 @@ public class LibEmbDesignColourway extends CliviaSuperModel{
 	@Column(name="RunningSteps",length=255)
 	private String runningSteps;
 	
-	@Column(name="Colourway",length=100)
-	private String colourway;
+	@Column(name="Threads",length=100)
+	private String threads;
 	
-	@Column(name="BackGroundColour")
-	private int backGroundColour;
+	@Column(name="BackgroundColour")
+	private int backgroundColour;
 	
 	@Column(name="Remark",length=255)
 	private String remark;
@@ -33,5 +33,61 @@ public class LibEmbDesignColourway extends CliviaSuperModel{
 	@Lob @Basic(fetch=FetchType.EAGER)
 	@Column(name="Thumbnail")
 	private byte[] thumbnail;
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getLibEmbDesignId() {
+		return libEmbDesignId;
+	}
+
+	public void setLibEmbDesignId(int libEmbDesignId) {
+		this.libEmbDesignId = libEmbDesignId;
+	}
+
+	public String getRunningSteps() {
+		return runningSteps;
+	}
+
+	public void setRunningSteps(String runningSteps) {
+		this.runningSteps = runningSteps;
+	}
+
+	public String getThreads() {
+		return threads;
+	}
+
+	public void setThreads(String threads) {
+		this.threads = threads;
+	}
+
+	public int getBackgroundColour() {
+		return backgroundColour;
+	}
+
+	public void setBackgroundColour(int backgroundColour) {
+		this.backgroundColour = backgroundColour;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+
+	public byte[] getThumbnail() {
+		return thumbnail;
+	}
+
+	public void setThumbnail(byte[] thumbnail) {
+		this.thumbnail = thumbnail;
+	}
 	
 }

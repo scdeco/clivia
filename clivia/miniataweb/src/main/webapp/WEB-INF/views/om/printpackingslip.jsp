@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 
 <html>
-<title>Order confirm</title>
+<title>Packing List</title>
 <header>
 <style>
 body{
 	font-family: "Times New Roman";
+	width: 700px;
 }
 
 img{
@@ -113,7 +114,6 @@ h2{
 <script>
 
 window.onload = function() {
-	
 
     var printModel = ${data.data};
 
@@ -167,7 +167,7 @@ window.onload = function() {
 				+ "info@scdeco.com&nbsp;&nbsp;&nbsp;www.ScDeco.com<br>"
 				+ "</p>"
 				+ "</div>" //------------------------------------------------------Closes info
-				+"<h2 class='header'>Order Confirmation</h2>"
+				+"<h2 class='header'>Packing List</h2>"
 		
 		logoAndTitle +="<table class='order' border='1' top = '0px' height='50px' width='250px' >"
 				+ "<tr>"
@@ -287,12 +287,8 @@ window.onload = function() {
 		tableHeader += "<table class='tableHeader' width='700px'>"
 					+"<tr class='left'>"
 					+"<th width='70' style='border-bottom:1pt solid black;'>Style</th>"
-					+"<th width='300' style='border-bottom:1pt solid black;'>Description</th>"
-					+"<th width='65' align='right' style='border-bottom:1pt solid black;'>Quantity</th>"
-					+"<th width='60' align='right' style='border-bottom:1pt solid black;'>Price</th>"
-					+"<th width='65' align='right' style='border-bottom:1pt solid black;'>% Off</th>"
-					+"<th width='60' align='right' style='border-bottom:1pt solid black;'>Net</th>"
-					+"<th width='65' align='right' style='border-bottom:1pt solid black;'>Amount</th>"
+					+"<th width='580' style='border-bottom:1pt solid black;'>Description</th>"
+					+"<th width='50' align='right' style='border-bottom:1pt solid black;'>Quantity</th>"
 					+"</tr>"
 					+"</table>";
 		return tableHeader;
@@ -307,12 +303,8 @@ window.onload = function() {
 			table  += "<table width='700px' class='listTable'>";
 			table  += "<tr class='mainrow'>"
 						+"<td width='70' class='left'>" + item.itemNo+ "</td>" 
-						+"<td width='300' class='left'>" + item.desc + "</td>"
-						+"<td width='65' align='right' id='bold'>" + item.qty+ "</td>" 
-						+"<td width='60' align='right'>" + item.listPrice + "</td>"
-						+"<td width='65' align='right'>" + item.discount+ "</td>"
-						+"<td width='60' align='right' id='bold'>" + item.price + "</td>"
-						+"<td width='65' align='right' id='bold'>" + item.amt + "</td>"
+						+"<td width='580' class='left'>" + item.desc + "</td>"
+						+"<td width='50' align='right' id='bold'>" + item.qty+ "</td>" 
 						+"</tr>"; 
 			var subItemRows = item.data;
 			if(subItemRows){
@@ -328,22 +320,22 @@ window.onload = function() {
 	            var subItemRows = item.data;
 	            for (var j = 0; j < subItemRows.length; j++) {
 	            	
-	                item_table += "<td><tr width='30px'>";
+	                item_table += "<td><tr width='630px'; colspan='3';>";
 	                
-	                var tOpen = "<td class='left'>";
+	                var tOpen = "<td class='left' width='150'>";
 	                var tClose = "</td>";
 	                var subItemCols = subItemRows[j];
 	                
 	                for (var k = 0; k < subItemCols.length; k++) {
 						if(k == 0) item_table += tOpen + (subItemCols[k] ? subItemCols[k] : "") + tClose;
-						else {if(k < subItemCols.length - 1)  item_table += "<td class='right' width='30px'>" + (subItemCols[k] ? subItemCols[k] : "") + tClose;
-						else item_table += "<td class='right' width='50px'>" 
+						else {if(k < subItemCols.length - 1)  item_table += "<td class='right' width='60px'>" + (subItemCols[k] ? subItemCols[k] : "") + tClose;
+						else item_table += "<td class='right' width='100px'>" 
 									+ (subItemCols[k] ? subItemCols[k] : "") 
 									+ tClose;}
 	                }
 	                item_table += "</tr></td>";
 	            }
-				table += "<td colspan='2' id='itemTable' align='right'><table width ='370px' class='left'><tr height='5px'></tr>" + item_table + "</table><br><br><td colspan='4' id='quote'></td></table>"
+				table += "<td colspan='2' id='itemTable' align='right'><table width ='630px' class='left'><tr height='5px'></tr>" + item_table + "</table><br><br><td colspan='4' id='quote'></td></table>"
 							+"<div class ='modifySpace' id = 'modifySpace" + i +"'></div>"
 			}
 
@@ -381,16 +373,15 @@ window.onload = function() {
 	function getTotalQty(){
 		qtyDisplay = true;
 		var qtyList="";
-		qtyList +="<table class='totalQty' id='totalQty'>"
+		qtyList +="<table class='totalQty' id='totalQty' style='width:700px'>"
 				+"<tr style='border-top-style:solid; border-width:1px;'>"
 				+"<td style='width:80px;vertical-align:text-top;'></td>"
-				+"<td id='totalQty' colspan='1' style='width:320px;text-align:left;vertical-align:text-top'>" + "Total Garment Supply Quantity: " + info.totalQty + " pcs"+"</td>"
-				+"<td id='totalAmt' colspan='2' style='width:290px;text-align:right;vertical-align: text-top'>" + "Total Amount: " + "<b>" + info.totalAmt + "</b>" + "</td>"
+				+"<td id='totalQty' colspan='1' style='width:600px;text-align:right;vertical-align:text-top'>" + "Total Garment Supply Quantity: " + info.totalQty + " pcs"+"</td>"
 				+"</tr>"
 				+"<tr style='height:16px;'>"
 				+"</tr>"
 				+"<tr>"+"<th style='width:35px; vertical-align:text-top;'>Remark:</th>"
-				+"<td id='remark' colspan='2' class='left' style='word-spacing:none; width:200px'>" + (info.remark?info.remark:"") + "</td>" 
+				+"<td id='remark' colspan='2' class='left' style='word-spacing:none; width:600px'>" + (info.remark?info.remark:"") + "</td>" 
 				+"</tr>"
 				+"</table><br><br>";
 		return qtyList;

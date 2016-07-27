@@ -25,7 +25,7 @@
 			</div> <!-- left pane -->
 			
 			<div id="right-pane">
-				<div ui-view="orderitem"></div>
+				<div order-items></div>
 			</div>
 			
 		</div>

@@ -92,12 +92,12 @@ public class OrderController {
 		return "";
 	}
 
-	@RequestMapping(value="print-confirm-dd",method=RequestMethod.POST)
-	public String printConfirm(@RequestBody Map<String,String> data,Model model){
+	@RequestMapping(value="print-order",method=RequestMethod.POST)
+	public String printConfirm(@RequestBody Map<String,String> data,Model model,@RequestParam("file") String file){
 		
 		System.out.println(data);
 		model.addAttribute("data",data);
-		return "/om/printconfirmdd";
+		return "/om/"+file;
 	}
 	
 

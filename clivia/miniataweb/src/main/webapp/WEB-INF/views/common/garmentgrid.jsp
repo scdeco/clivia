@@ -2,23 +2,16 @@
 	<div  kendo-grid="{{gridName}}" id="{{gridName}}" k-options="gridOptions"></div>
 </div>
 
-<ul kendo-context-menu k-options="gridContextMenuOptions">
+<ul kendo-context-menu="{{gridContextMenuName}}" k-options="gridContextMenuOptions">
        
-  	<li id="menuAdd">Add</li>
-  	<li ng-show="cBrand.hasInventory" id="menuAddWindow">Add With dialog...</li>
-  	<li id="menuInsert">Insert</li>
-  	<li id="menuDelete">Delete</li>
-  	<li class="k-separator"></li>		          
-    <li>Subitem 1.3
-         <ul>
-		      <li>Item 2</li>
-		      <li>Item 3</li>
-         </ul>
-  	<li> 
+	<li >Add</li>
+  	<li ng-show="cBrand.hasInventory">Add With dialog...</li>
+  	<li >Insert</li>
+  	<li >Delete</li>
 </ul>
 			
 			
-<div kendo-window="garmentInputWindow" 
+<div kendo-window="{{garmentInputWindowName}}" id="{{garmentInputWindowName}}"    
 		k-width="850"
 	 	k-height="410"
 	 	k-position="{top: 50, left: 100 }"	
@@ -28,7 +21,6 @@
 	 	k-visible="false" 
 	 	k-actions="['Maximize']"
 	 	k-modal="false">
-	 	
 	 <div garment-input	c-season-id="cSeason.id" c-dict-garment="dictGarment" c-add-function="inputWindowAddFunction"></div>
 	 
 </div>

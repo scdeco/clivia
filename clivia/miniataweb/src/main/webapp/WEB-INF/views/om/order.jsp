@@ -14,18 +14,7 @@
 	<%@include file="aconsts.jsp"%>
 	<%@include file="aconfig.jsp"%>
  	<%@include file="ordermain-script.jsp"%>
-	<%@include file="orderitem-script.jsp"%>
 
- 	<%@include file="billitem-script.jsp"%> 
-	<%@include file="lineitem-script.jsp"%> 
-	<%@include file="lineitemdetail-script.jsp"%> 
-	<%@include file="imageitem-script.jsp"%> 
-	<%@include file="contactitem-script.jsp"%> 
-	<%@include file="addressitem-script.jsp"%> 
-	<%@include file="designitem-script.jsp"%> 
-	<%@include file="fileitem-script.jsp"%>  
-	<%@include file="emailitem-script.jsp"%>  
-	
 </head>
 
 <body  ng-controller="orderCtrl" spellcheck="false">
@@ -131,7 +120,28 @@
       textarea { 
       	resize: vertical; 
       }
-      
+
+#billitemdetail table, th, td {
+    border: 1px dotted gray;
+    border-collapse: collapse;
+}
+#billitemdetail table, th, td {
+    padding: 5px;
+}
+#billitemdetail table tr:nth-child(even) {
+    background-color: #eee;
+}
+#billitemdetail table tr:nth-child(odd) {
+   background-color:#fff;
+}
+#billitemdetail table th	{
+    background-color: black;
+    color: white;
+}
+
+.billDetailQty{
+	width:40px;
+}      
 	
 /* 	image item styles */
 	#imageItemToolbar, #lineItemToolbar{

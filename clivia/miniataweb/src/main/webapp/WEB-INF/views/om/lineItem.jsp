@@ -1,4 +1,3 @@
-<div id="lineItem">
     <div kendo-splitter="lineItemSplitter"
 				k-orientation="'vertical'"
 				k-panes="[{ collapsible: false, resizable:false,size:'40px'},
@@ -48,7 +47,6 @@
 		</div>  <!-- end of bottom pane -->	
     </div>
 	
-</div>
 
 
 

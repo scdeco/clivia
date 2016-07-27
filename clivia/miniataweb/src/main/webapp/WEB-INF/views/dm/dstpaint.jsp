@@ -1,8 +1,5 @@
 
     <div class="k-header wide" style="height:800px;">
-    
-
-
       	<div 	kendo-splitter="DstSplitter"  
       			k-orientation="'horizontal'" 
 				k-panes="[{ collapsible:true,resizable: true,size:'250px'},
@@ -13,6 +10,16 @@
       	
   		<!-- 		ng-model="dstPaint.backgroundColor"  -->
       		<div id="dst-first-pane">
+      			 <div clivia-grid="colorwayGrid" 
+	      			   	c-grid-wrapper-name="'ColorwayGridWrapper'"
+	  					c-call-from="'paint'"
+	  					c-editable="false" 
+	  					c-data-source="colorwayGridDataSource" 
+	  					c-pageable="false" 
+	  					c-new-item-function="newItemFunction"
+	  					c-register-deleted-item-function="registerDeletedItemFunction">
+  				</div>
+      			 
       		</div>
       		<div id="dst- second-pane">
    				<div id="stagecontainer" ng-style="{'background-color':threadMatcher.backgroundColor}" 
