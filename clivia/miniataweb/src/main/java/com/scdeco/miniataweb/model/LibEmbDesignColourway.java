@@ -25,7 +25,7 @@ public class LibEmbDesignColourway extends CliviaSuperModel{
 	private String threads;
 	
 	@Column(name="BackgroundColour")
-	private int backgroundColour;
+	private String backgroundColour;
 	
 	@Column(name="Remark",length=255)
 	private String remark;
@@ -66,11 +66,11 @@ public class LibEmbDesignColourway extends CliviaSuperModel{
 		this.threads = threads;
 	}
 
-	public int getBackgroundColour() {
+	public String getBackgroundColour() {
 		return backgroundColour;
 	}
 
-	public void setBackgroundColour(int backgroundColour) {
+	public void setBackgroundColour(String backgroundColour) {
 		this.backgroundColour = backgroundColour;
 	}
 

@@ -159,7 +159,44 @@ clivia.factory("util",["$http","$q",function($http,$q){
 			},
 		getTerms:function(){
 			return ["Prepaid","Net Before Jan.10","Net Before Feb.10","Net 15 Days","Net 30 Days","Net 45 Days","Net 60 Days","2%/10/N30","2%/10/N45","2%/10/N60",""];
-		}
+		},
+			
+		getThumbnail:function(source,thumbnailSize){
+				var tempCanName = "tempCan";
+				
+				function getImage(s){	
+					var strDataURI = s.toDataURL();
+					var img = new Image;
+					img.src = strDataURI;
+					return img;
+				}
+			
+				function createTemporaryCan(img,w,h){
+					var canvas = document.createElement('canvas');
+					
+					canvas.id = tempCanName;
+					canvas.width = w;
+					canvas.height = h;
+					
+					document.body.appendChild(canvas);
+				
+					return  document.getElementById(tempCanName);
+				}
+				
+				
+				var img = getImage(source);
+				var f= ((img.width>=img.height)?img.width:img.height)/thumbnailSize;
+				var w=Math.round(img.width/f),
+					h=Math.round(img.height/f);
+				
+				var tempCan = createTemporaryCan(img,w,h);
+				var ctxTemp = tempCan.getContext("2d");
+				ctxTemp.drawImage(img, 0, 0, w, h);
+				
+				var iData=tempCan.toDataURL("image/png");
+				$('#'+tempCanName).remove();
+				return iData;
+			}		
 		
 	}	
 }]).
@@ -2123,7 +2160,7 @@ clivia.factory("ColumnGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapp
 }]); //end of JournalGridWrapper
 
 
-clivia.factory("ColorwayGridWrapper",["GridWrapper","cliviaDDS","DataDict",function(GridWrapper,cliviaDDS,DataDict){
+clivia.factory("ColourwayGridWrapper",["GridWrapper","cliviaDDS","DataDict",function(GridWrapper,cliviaDDS,DataDict){
 	
 	 var thisGGW;
 
@@ -2138,8 +2175,8 @@ clivia.factory("ColorwayGridWrapper",["GridWrapper","cliviaDDS","DataDict",funct
 			        width: 25,
 				}, {			
 					name:"thumbnail",
-				    title: "thumbnail",
-/* 				    template:'<img ng-src="data:image/JPEG;base64,{{getImage(#:imageId#).thumbnail}}" alt="{{#:imageId#}} image">', */
+				    title: "Thumbnail",
+ 				    template:'<img src="data:image/JPEG;base64,#:thumbnail#" alt="image #:id#" style="background-color:#:backgroundColour#;">', 
 				    width: 150
 				}, {
 					name:"threads",
@@ -2161,23 +2198,23 @@ clivia.factory("ColorwayGridWrapper",["GridWrapper","cliviaDDS","DataDict",funct
 			return gridColumns;
 		}
 		
-	 var ColorwayGridWrapper=function(gridName){
+	 var ColourwayGridWrapper=function(gridName){
 		 
 		GridWrapper.call(this,gridName);
 		thisGGW=this;
 		this.setColumns=function(){this.gridColumns=getColumns()};		
 	}
 	 
-	ColorwayGridWrapper.prototype=new GridWrapper();
+	ColourwayGridWrapper.prototype=new GridWrapper();
 	
-	return ColorwayGridWrapper;
+	return ColourwayGridWrapper;
 	
-}]); /* end of ImageGridWrapper */
+}]); /* end of ColourGridWrapper */
 
 
 //service
-clivia.factory("cliviaGridWrapperFactory",["ContactGridWrapper","AddressGridWrapper","JournalGridWrapper","ColumnGridWrapper","ColorwayGridWrapper",
-              function(ContactGridWrapper,AddressGridWrapper,JournalGridWrapper,ColumnGridWrapper,ColorwayGridWrapper){
+clivia.factory("cliviaGridWrapperFactory",["ContactGridWrapper","AddressGridWrapper","JournalGridWrapper","ColumnGridWrapper","ColourwayGridWrapper",
+              function(ContactGridWrapper,AddressGridWrapper,JournalGridWrapper,ColumnGridWrapper,ColourwayGridWrapper){
 	return {
 		getGridWrapper:function(wrapperName,gridName,callFrom){
 			var gw=null;			
@@ -2202,8 +2239,8 @@ clivia.factory("cliviaGridWrapperFactory",["ContactGridWrapper","AddressGridWrap
 				gw=new ColumnGridWrapper(gridName);
 				gw.setColumns();
 				break;
-			case "ColorwayGridWrapper":
-				gw=new ColorwayGridWrapper(gridName);
+			case "ColourwayGridWrapper":
+				gw=new ColourwayGridWrapper(gridName);
 				gw.setColumns();
 				break;
 			}

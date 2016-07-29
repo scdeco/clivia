@@ -25,10 +25,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scdeco.miniataweb.dao.CliviaAutoNumberDao;
 import com.scdeco.miniataweb.dao.GenericDao;
+import com.scdeco.miniataweb.dao.LibEmbDesignInfoViewDao;
 import com.scdeco.miniataweb.embdesign.EMBDesign;
 import com.scdeco.miniataweb.embdesign.EMBDesignM;
 import com.scdeco.miniataweb.embdesign.EMBDesignRawImageData;
 import com.scdeco.miniataweb.model.LibEmbDesignInfo;
+import com.scdeco.miniataweb.model.LibEmbDesignInfoView;
 import com.scdeco.miniataweb.util.CliviaApplicationContext;
 import com.scdeco.miniataweb.util.CliviaUtils;
 
@@ -37,6 +39,9 @@ public class CliviaLibrary {
 	
 	@Autowired 
 	private CliviaAutoNumberDao cliviaAutoNumberDao;
+
+	@Autowired 
+	private LibEmbDesignInfoViewDao libEmbDesignInfoViewDao;
 	
 	private Library[] libs;
 	
@@ -195,7 +200,7 @@ public class CliviaLibrary {
 		Map<String, Object> result=new HashMap<String, Object>();
 		
 		Library lib=getLibrary("embdesign");
-		LibEmbDesignInfo di=(LibEmbDesignInfo)lib.findById(id);
+		LibEmbDesignInfoView di=libEmbDesignInfoViewDao.findById(id);
 		EMBDesignM embDesignM=null;
 		if(di!=null){
 			String dstFile=lib.getBaseDir()+File.separator+di.getFilePath()+File.separator+di.getFileName();

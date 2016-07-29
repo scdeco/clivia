@@ -26,20 +26,15 @@ public class LibEmbDesignDao extends GenericMainItemDao<LibEmbDesign> {
 	}
 	
 	//itemListNames:colourways,samples
-	public LibEmbDesign getById(int id,String[] itemListNames,boolean needStitches,boolean needThumbnail) 
+	public LibEmbDesign getById(int id,String[] itemListNames,boolean needThumbnail) 
 			throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException{
 		
 		LibEmbDesign design=super.getById(id, itemListNames);
 		
 		if(design!=null){
-			
-			if(needStitches)
-				design.setEmbDesignM(cliviaLibrary.getEmbDesignM(design.getInfo()));
-
 			if(!needThumbnail)
 				design.getInfo().setThumbnail(null);
 		}
-		
 		
 		return design;
 	}

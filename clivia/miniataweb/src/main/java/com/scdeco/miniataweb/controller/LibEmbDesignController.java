@@ -32,7 +32,7 @@ public class LibEmbDesignController {
 											 @RequestParam(value="needThumbnail",required=false) boolean needThumbnail) 
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
 		
-		return libEmbDesignDao.getById(id,list,needStitches,needThumbnail);
+		return libEmbDesignDao.getById(id,list,needThumbnail);
 	}	
 	
 	@RequestMapping(value="save-embdesign",method=RequestMethod.POST)

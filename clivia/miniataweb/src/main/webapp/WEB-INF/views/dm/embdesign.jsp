@@ -358,25 +358,25 @@ factory("dictThread",["$http",function($http){		//service
 			return colorModel;
 		},
 
-		//colorway={threadCodes:"1024,1043",runningSteps:"1-2-1-2",alaphaSteps:"0-0-1-0",alpha:0.1};
+		//colourway={threadCodes:"1024,1043",runningSteps:"1-2-1-2",alaphaSteps:"0-0-1-0",alpha:0.1};
 		//stepCount=4;
-		getColorModel:function(colorway,stepCount){
+		getColorModel:function(colourway,stepCount){
 			var colorModel;
-			if(!colorway || (!colorway.threadCodes && !colorway.runningSteps)){
+			if(!colourway || (!colourway.threadCodes && !colourway.runningSteps)){
 				colorModel=this.getDefaultColorModel();
 			}else{
 				
 				colorModel=[dictThread.defaultThreadColor];
 				
-				var threadColors=dictThread.getThreadColors(colorway.threadCodes);
-				var runningSteps=dictThread.getRunningSteps(colorway.runningSteps,stepCount);
-				var alphaSteps=dictThread.getRunningSteps(colorway.alphaSteps,stepCount);
+				var threadColors=dictThread.getThreadColors(colourway.threadCodes);
+				var runningSteps=dictThread.getRunningSteps(colourway.runningSteps,stepCount);
+				var alphaSteps=dictThread.getRunningSteps(colourway.alphaSteps,stepCount);
 				
-				var alpha=typeof colorway.alpha==='undefined'?0:colorway.alpha;
+				var alpha=typeof colourway.alpha==='undefined'?0:colourway.alpha;
 				
 				for(var i=0,idx,c,a; i<stepCount; i++){
 					
-					idx=(i>=colorway.runningSteps.length)?0: parseInt(runningSteps[i]);
+					idx=(i>=colourway.runningSteps.length)?0: parseInt(runningSteps[i]);
 					if(idx>=16)
 						c=dictThread.cursorThreadColor;
 					else if (idx<threadColors.length)
@@ -421,11 +421,6 @@ factory("DstDesign",["$http","Event",function($http,Event){
 		design.pixelHeight=0;	
 		design.stitchList=[];	
 		design.stepList=[];
-		
-		design.Info=null;			 //dataItem in model of LibEmbDesign
-		design.colourways=null;	//list of dataItems in model of LibEmbDesignColourway
-		design.samples=null; 		//list of dataItems in model of LibEmbDesignSalmple
-		
 	}
 	
 	var DstDesign=function(id){
@@ -443,21 +438,19 @@ factory("DstDesign",["$http","Event",function($http,Event){
 		
 		loadDstById:function(designId){
 		
-			var url="/clivia/lib/emb/get-embdesign?id="+designId+"&needStitches=true";
+			var url="/clivia/lib/emb/getdesign?id="+designId;
 			var self=this;
 			initDesign(this);
 			
 			$http.get(url).
 				success(function(data, status, headers, config) {
-					if(data&&data.embDesignM){
-						var design=data.embDesignM;
+					if(data&&data.data){
+						var design=data.data;
 						for(var property in design){
 							if(design.hasOwnProperty(property))
 								self[property]=design[property];
-							}
-						design.info=data.info;
-						design.colourway=data.colourway;
-						design.samples=data.samples;
+						}
+						self.info=data.di
 					}	
 					self.designChanged.fireEvent([self]);
 				}).
@@ -512,7 +505,7 @@ factory("DstDesign",["$http","Event",function($http,Event){
 		
 }]).
 
-factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
+factory("EmbCanvas",["dictThread","Event","util",function(dictThread,Event,util){
 	
 	var SCREEN_PPM=1280/340,SCREEN_DESIGN_RATIO=SCREEN_PPM/10;
 	
@@ -553,14 +546,14 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 			 
 			 	this.colorModel=null;
 			 	
-				var colorway=null;
+				var colourway=null;
 				if(this.embDesign && this.embDesign.stepCount>0){
 
 					this.canvas.width=Math.round(this.embDesign.pixelWidth*SCREEN_DESIGN_RATIO)+1;		//original size of image
 					this.canvas.height=Math.round(this.embDesign.pixelHeight*SCREEN_DESIGN_RATIO)+1;
 					
 					if( this.embDesign.stepCount===this.runningSteps.split(',').length)
-						colorway={};
+						colourway={};
 					else{
 						this.threadCodes="";
 						this.runningSteps="";
@@ -571,7 +564,7 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 					this.canvas.height=0;
 				}
 				//do nor draw here. Leave the job to parent controller.
-				//this.drawDesign(colorway);
+				//this.drawDesign(colourway);
 			},
 			
 		setEmbDesign:function(embDesign){
@@ -606,9 +599,20 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 			this.colorModel=null;
 		},
 
-		setColorway:function(threadCodes,runningSteps){
+		getThumbnail:function(){
+			return util.getThumbnail(this.canvas,120);
+		},
+		
+		setColourway:function(threadCodes,runningSteps){
 			this.threadCodes=threadCodes,
 			this.runningSteps=runningSteps;
+		},
+		
+		getColourway:function(){
+			return {
+				threads:this.threadCodes,
+				runningSteps:this.runningSteps
+			}
 		},
 		
 		normalizeThreadCodes:function(){
@@ -634,22 +638,22 @@ factory("EmbCanvas",["dictThread","Event",function(dictThread,Event){
 			return false;
 		},
 		
-		//if typeof colorway==="undefined", use delautColorModel
-		//if colorway==={}, use thredCodes or runningSteps of this embCanvas
-		drawDesign:function(colorway){
+		//if typeof colourway==="undefined", use delautColorModel
+		//if colourway==={}, use thredCodes or runningSteps of this embCanvas
+		drawDesign:function(colourway){
 			if(!(this.embDesign && this.embDesign.isValid())){
 				this.imageChanged.fireEvent([this]);
 				return;
 			} 
 	
-			if(colorway){
-				if(!colorway.threadCode)
-					colorway.threadCodes=this.threadCodes;
-				if(!colorway.runningSteps)
-					colorway.runningSteps=this.runningSteps;
+			if(colourway){
+				if(!colourway.threadCode)
+					colourway.threadCodes=this.threadCodes;
+				if(!colourway.runningSteps)
+					colourway.runningSteps=this.runningSteps;
 			};
 			
-			var colorModel=dictThread.getColorModel(colorway,this.embDesign.stepCount);
+			var colorModel=dictThread.getColorModel(colourway,this.embDesign.stepCount);
 			
 			if (this.isNewColorModel(colorModel)){
 				this.colorModel=colorModel;
@@ -765,7 +769,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			},
 			
 			//threadList(threadGrid) and runningStepList(stepGrid)
-			initColorwayList:function(){	
+			initColourwayList:function(){	
 				this.threadList.splice(0,this.threadList.length)
 				this.runningStepList.splice(0,this.runningStepList.length)
 				if(this.embCanvas.embDesign){
@@ -900,22 +904,22 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			
 			
 			
-			normalizeColorway:function(){
+			normalizeColourway:function(){
 				
 				
 			},
 			
 			setEmbCanvas:function(embCanvas){
 				this.embCanvas=embCanvas;
-				this.initColorwayList();
+				this.initColourwayList();
 			},
 			
 			//editing mode, called from events of gwStep.grid 
 			drawDesign:function(gw){
 
-				var colorway={};
+				var colourway={};
 				if(!gw){
-					this.embCanvas.drawDesign(colorway);
+					this.embCanvas.drawDesign(colourway);
 					return;
 				}
 				var isStepGrid=gw.gridName==="embStepGrid";
@@ -984,11 +988,11 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 						steps+="-"+idx;
 						alphaSteps+="-"+a;
 					}
-					colorway.runningSteps=steps.substring(1);
-					colorway.alphaSteps=alphaSteps.substring(1);
-					colorway.alpha=cellIndex==1?0.15:0.03;
+					colourway.runningSteps=steps.substring(1);
+					colourway.alphaSteps=alphaSteps.substring(1);
+					colourway.alpha=cellIndex==1?0.15:0.03;
 				
-					this.embCanvas.drawDesign(colorway);
+					this.embCanvas.drawDesign(colourway);
 				}
 			}, //end of drawDesign()
 			
@@ -1156,7 +1160,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 				}
 			},//end of stepGridOptions
 			
-			getBackgroundColorPaletteOptions:function(){
+			getBackgroundColourPaletteOptions:function(){
 				return {
 				    palette: paletteColors
 				}
@@ -1301,7 +1305,6 @@ factory("EmbStage",["Selector",function(Selector){
 	
 }]).
 
-
 directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 	
 	var templateUrl="../dm/dstpaint";
@@ -1389,13 +1392,13 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 						}
 						
 						var topLine="",space=10;
-						topLine+=dst.designNumber?(dst.designNumber+"&nbsp;&nbsp;"):"";
 						topLine+="H:"+dst.height+"&nbsp;".repeat(space);
 						topLine+="W:"+dst.width+"&nbsp;".repeat(space);
 						topLine+="St:"+dst.stitchCount+"&nbsp;".repeat(space);
 						topLine+="Steps:"+dst.stepCount+"&nbsp;".repeat(space);
-						
-						var bottomLine="K:\Wilcom\2005934 Ontario Inc Mark's Promotional";
+						topLine+=dst.info&&dst.info.designNumber?(dst.info.designNumber+"&nbsp;".repeat(space)):"";
+						topLine+=(dst.info&&dst.info.companyName?dst.info.companyName:"")+"&nbsp;";
+						var bottomLine=""
 						
 						model={
 								topLine:topLine,
@@ -1633,7 +1636,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					
 					//parameters:printModel,paperType,isLandscape,bgColor,showStitchCount
 					//paperTypess :[{type:"letter",width:191, height:255},{type:"ledger", width:260, height:416}]
-					var html=scope.getDesignHtml(scope.printModel,"letter",false,scope.threadMatcher.backgroundColor,false);
+					var html=scope.getDesignHtml(scope.printModel,"letter",false,scope.threadMatcher.backgroundColour,false);
 					
 					util.print(html,true);
 				}				
@@ -1648,6 +1651,8 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					scope.embStage.onClick();		//selct/deselect an object
 					scope.threadMatcher.drawDesign();	//drag image of design with current colourway
 				}
+				
+
 				
 			}, //end of link function
 			
@@ -1696,27 +1701,30 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 							&&  $scope.threadMatcher.embCanvas 
 							&&  $scope.threadMatcher.embCanvas.embDesign===e){
 						
-						$scope.threadMatcher.initColorwayList();
+						$scope.threadMatcher.initColourwayList();
 					}
 					$scope.embImage.setWidth($scope.embCanvas.getOriginalWidth());
 					$scope.embImage.setHeight($scope.embCanvas.getOriginalHeight());
 					$scope.embCanvas.drawDesign();
 				}
 				
-			    $scope.colorwayGridDataSource=new kendo.data.DataSource({
-	    	    	data:[],	//$scope.dstDesign.info.colorway,
-				    schema: {
-				        model: {
-				            id: "id"
-				        }
-				    },
-				    serverFiltering:false,
-				    pageSize: 0,
-
-		        });
-				
 				$scope.dstDesign.designChanged.addListener($scope.embCanvas,$scope.onDesignChanged);
 				$scope.embCanvas.imageChanged.addListener($scope.embStage,$scope.onImageChanged);
+				
+				$scope.setColourway=function(threads,runningSteps){
+					$scope.threadMatcher.embCanvas.setColourway(threads,runningSteps);
+				}
+				$scope.getColourway=function(){
+					return $scope.threadMatcher.embCanvas.getColourway();
+				}
+				$scope.getThumbnail=function(){
+					return $scope.threadMatcher.embCanvas.getThumbnail();
+				}
+				
+				$scope.getBackgroundColour=function(){
+					var bgColour=$scope.threadMatcher.backgroundColour;
+					return bgColour?bgColour:"#FFFFFF";
+				}
 				
 			}],
 	}

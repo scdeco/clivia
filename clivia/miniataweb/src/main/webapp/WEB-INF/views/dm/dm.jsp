@@ -11,8 +11,22 @@
 </head>
 <body ng-app="embDesignApp" spellcheck="false">
 	<div ng-controller="dmCtrl">
-	   	<div kendo-toolbar id="dstToolbar" k-options="dstToolbarOptions"></div>	
-		<div dst-paint="myDstPaint"></div>
+	   	<div kendo-toolbar id="dstToolbar" k-options="dstToolbarOptions"></div>
+     	<div 	kendo-splitter="dmSplitter"  
+      			k-orientation="'horizontal'" 
+				k-panes="[{ collapsible: true, resizable: true,size:'150px'}
+						 ,{ collapsible: true,resizable: true}]"
+	   	 		style="height:800px;">
+		    	 
+		   	<div>
+		   		<div kendo-grid="colourwayGrid" k-options="colourwayGridOptions">	</div>
+		   	</div>
+		   	
+		   	<div>
+				<div dst-paint="myDstPaint"></div>
+			</div>
+			
+		</div>      		   	
 
 		<div kendo-window="newUploadWindow" k-title="'Upload DST'"
 		           k-width="600" k-height="500" k-visible="false" k-options="newUploadWindowOptions">
@@ -67,6 +81,8 @@
 			
 <pre>
 <!-- printModel={{myDstPaint.printModel|json}} -->
+ 
+ 	dataSet:{{dataSet|json}} 
 </pre>
  
 
@@ -77,8 +93,16 @@ var designApp = angular.module("embDesignApp",
 		["kendo.directives","embdesign"]);
 		
 designApp.controller("dmCtrl",
-		["$scope",function($scope){
-			var id=16;
+		["$scope","$http","ColourwayGridWrapper",function($scope,$http,ColourwayGridWrapper){
+
+			$scope.dataSet={
+					info:{},
+					colourways:new kendo.data.ObservableArray([]), 
+					samples:new kendo.data.ObservableArray([]), 
+					deleteds:[]
+				};
+			
+			
 			var imgUrl="../resources/images/";
 
 			var searchTemplate='<kendo-combobox name="searchDesignNumber" k-placeholder="\'Search Design#\'" ng-model="searchDesignNumber"  k-options="searchDesignNumberOptions" style="width: 140px;" />';
@@ -88,7 +112,7 @@ designApp.controller("dmCtrl",
 		        text: "New",
 		        id:"btnNew",
 		        click: function(e) {
-		        	$scope.myDstPaint.setDstDesign(--id)
+		        	//$scope.myDstPaint.setDstDesign(--id)
 		       		 }
 		    }, {
 		        type: "button",
@@ -120,7 +144,39 @@ designApp.controller("dmCtrl",
 		        	}  
 		    }, {
 		        type: "separator",
+		    }, {	
+		        type: "button",
+		        text: "Save",
+		        id: "btnSave",
+		        click: function(e){
+		        	$scope.saveDesign();
+		        	}  
+		    }, {
+		        type: "separator",
+		    }, {	
+		    	
+		        type: "button",
+		        text: "Add Colourway",
+		        id: "btnAddColourway",
+		        click: function(e){
+		        	$scope.addColourway();
+		        	}  
+		    }, {	
+		        type: "button",
+		        text: "Remove Colourway",
+		        id: "btnRemoveColourway",
+		        click: function(e){
+		        	$scope.removeColourway();
+		        	}  
+		    }, {	
+		        type: "button",
+		        text: "Print",
+		        id: "btnPrint",
+		        click: function(e){
+		        	$scope.myDstPaint.print();
+		        	}  
 			}]};
+			
 			
 		    $scope.searchDesignNumberOptions={
 		        	dataSource:{data:[]},	//recent orders
@@ -232,7 +288,7 @@ designApp.controller("dmCtrl",
 							if(e.currentTarget){
 								var di=this.dataItem(e.currentTarget);
 								if(di&&di.id){
-									$scope.myDstPaint.loadDesignById(di.id);
+									$scope.loadDesign(di.id);
 									if(e.target && e.target.cellIndex===0)
 										$scope.queryWindow.close();
 								}
@@ -245,6 +301,147 @@ designApp.controller("dmCtrl",
 				$scope.queryWindow.open();
 			}
 			
+			
+			$scope.newItemFunction=function(){
+			    var newItem={
+				}
+				return newItem;
+			}
+
+			$scope.registerDeletedItemFunction=function(dataItem){
+				//SO.registerDeletedItem("colorway",dataItem.id);
+			}				
+			
+			
+			var cgw=new ColourwayGridWrapper("colourwayGrid");	
+			cgw.setColumns();
+
+			$scope.$on("kendoWidgetCreated", function(event, widget){
+
+				if (widget ===$scope["colourwayGrid"]) {
+		        	cgw.wrapGrid(widget);
+/* 		        			resize:function(gridHeight){
+		        				bgw.resizeGrid(gridHeight);
+		        				},
+ */			        	
+		        }
+				
+		    });				
+			
+			
+		    $scope.colourwayGridDataSource=new kendo.data.DataSource({
+		    	data:$scope.dataSet.colourways,	//$scope.dstDesign.info.colorway,
+			    schema: {
+			        model: {
+			            id: "id"
+			        }
+			    },
+			    serverFiltering:false,
+			    pageSize: 0,
+			    
+ 		       	save: function(e) {
+ 		       		
+ 		       	},
+ 		       	
+		         //row or cloumn changed
+		       	change:function(e){
+		       		
+		       	},
+
+
+		    });
+		    
+			$scope.colourwayGridOptions={
+					autoSync: true,
+			        columns: cgw.gridColumns,
+			        dataSource: $scope.colourwayGridDataSource,
+			        pageable:false,
+			        selectable: "cell",
+			        navigatable: true,
+			        resizable: true,
+						
+			}
+
+		    var populate=function(data){
+				$scope.dataSet.info=data.info;
+				var itemNames=["colourways","samples"];
+				for(var i=0,scopeItems,dataItems,itemName;i<itemNames.length;i++){
+					itemName=itemNames[i];
+					dataItems=data[itemName];
+					if(dataItems){
+						scopeItems=$scope.dataSet[itemName];
+						for(var j=0;j<dataItems.length;j++){
+							scopeItems.push(dataItems[j]);
+						}
+					}
+				}
+		    }
+		    
+			var clearDataSet=function(){
+		    	$scope.dataSet.info={};
+		    	$scope.dataSet.colourways.splice(0,$scope.dataSet.colourways.length);
+		    	$scope.dataSet.samples.splice(0,$scope.dataSet.samples.length);
+			}
+			
+		    $scope.clear=function(){
+		    	$scope.searchDesignNumber=null;
+		    	clearDataSet();
+		    }
+		    
+		    $scope.loadDesign=function(id){
+		    	$scope.clear();
+		    	
+		    	var url="../lib/emb/get-embdesign?id="+id;
+				$http.get(url).then(
+					function(data, status, headers, config) {
+						if(data.data){
+				    		populate(data.data);
+						}
+					},function(data, status, headers, config) {
+				});
+
+		    	$scope.myDstPaint.loadDesignById(id);
+
+		    }
+		    
+		    $scope.saveDesign=function(){
+		    	//if(!validDesign()) return;
+				var url="../lib/emb/save-embdesign";
+				
+//				if(scope.companyForm.$dirty||scope.instructionsForm.$dirty)
+//					scope.dataSet.info.isDirty=true;
+				
+				$http.post(url,$scope.dataSet).then(
+					  function(data, status, headers, config) {
+							if(data.data){
+								$scope.clearDataSet();
+					    		populate(data.data);
+							}else{
+								alert("failed to save:"+JSON.stringify(data));
+							}
+					  },function(data, status, headers, config) {
+						  alert( "failure message: " + JSON.stringify(data));
+					  });		
+		    }
+		    
+		    $scope.addColourway=function(){
+		    	var colourway=$scope.myDstPaint.getColourway();
+		    	var thumbnail=$scope.myDstPaint.getThumbnail();
+		    	var bgColour=$scope.myDstPaint.getBackgroundColour();
+		    	var pos=thumbnail.indexOf(",");
+		    	thumbnail=pos>0?thumbnail.substr(pos+1):"";
+		    	var di={
+		    		libEmbDesignId:$scope.dataSet.info.id,
+		    		threads:colourway.threads,
+		    		runningSteps:colourway.runningSteps,
+		    		backgroundColour:bgColour,
+		    		thumbnail:thumbnail,
+		    	}
+		    	
+		    	cgw.addRow(di);
+		    }
+		    
+		    
 		}]);
 
 </script>
