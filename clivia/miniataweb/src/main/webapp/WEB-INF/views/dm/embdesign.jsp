@@ -436,6 +436,11 @@ factory("DstDesign",["$http","Event",function($http,Event){
 			return this.stitchList.length>0;
 		},
 		
+		clearDesign:function(){
+			initDesign(this);
+			this.designChanged.fireEvent([this]);
+		},
+		
 		loadDstById:function(designId){
 		
 			var url="/clivia/lib/emb/getdesign?id="+designId;
@@ -559,7 +564,8 @@ factory("EmbCanvas",["dictThread","Event","util",function(dictThread,Event,util)
 						this.runningSteps="";
 					}
 				}else{
-					
+					this.threadCodes="";
+					this.runningSteps="";
 					this.canvas.width=0;		//original size of image
 					this.canvas.height=0;
 				}
@@ -600,6 +606,7 @@ factory("EmbCanvas",["dictThread","Event","util",function(dictThread,Event,util)
 		},
 
 		getThumbnail:function(){
+			this.drawDesign({});
 			return util.getThumbnail(this.canvas,120);
 		},
 		
@@ -751,6 +758,11 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 	
 	embMatcher.prototype={
 			
+			//set design of this canvas to null and the designchanged event will be raised
+			clear:function(){
+				this.embCanvas.embDesign.clearDesign();
+			},
+			
 			//clear contents(code,colour) of dataSource of threadGrid
 			clearThreadList:function(){			
 				for(var i=0;i<this.threadList.length;i++){
@@ -768,7 +780,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 				}
 			},
 			
-			//threadList(threadGrid) and runningStepList(stepGrid)
+			//initialize threadList(threadGrid) and runningStepList(stepGrid) for the design of this matcher
 			initColourwayList:function(){	
 				this.threadList.splice(0,this.threadList.length)
 				this.runningStepList.splice(0,this.runningStepList.length)
@@ -902,11 +914,26 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 				}
 			},
 			
-			
-			
-			normalizeColourway:function(){
+			setColourway:function(threads,runningSteps){
 				
-				
+				this.embCanvas.setColourway(threads,runningSteps);
+
+				this.embCanvas.normalizeThreadCodes();
+				this.embCanvas.normalizeRunningSteps();
+				this.populateThreads();
+				this.populateRunningSteps();
+				this.setThreadStitchCount();
+                this.gwThread.grid.refresh();
+                this.gwStep.grid.refresh();
+                this.drawDesign();
+			},
+			
+			getColourway:function(){
+				return this.embCanvas.getColourway();
+			},
+			
+			getThumbnail:function(){
+				return this.embCanvas.getThumbnail();
 			},
 			
 			setEmbCanvas:function(embCanvas){
@@ -1152,8 +1179,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 					},	//end of save
 					
 		       		dataBinding:function(e){
-		       			console.log("binding");
-		       			//create a globle variable
+		       			//create a globle variable for template of the colour column to show step colour 
 		       			renderingPaint=self;
 		       		}
 
@@ -1184,27 +1210,8 @@ directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThr
 	
 			templateUrl:templateUrl,
 			
-			link:function(scope,element,attrs){
-				
-				scope.populateThreads=function(){
-					var emb=scope.embMatcher;
-					emb.embCanvas.normalizeThreadCodes();
-					emb.populateThreads();
-					emb.populateRunningSteps();
-					emb.setThreadStitchCount();
-                    emb.gwThread.grid.refresh();
-                    emb.gwStep.grid.refresh();
-				}
-				
-				scope.populateSteps=function(){
-					var emb=scope.embMatcher;
-					emb.embCanvas.normalizeRunningSteps();
-					emb.populateRunningSteps();
-					emb.setThreadStitchCount();
-                    emb.gwThread.grid.refresh();
-                    emb.gwStep.grid.refresh();
-				}
-				
+			link:function(scope){
+
 			}, //end of link function
 			
 			controller:function($scope){
@@ -1321,7 +1328,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 			link:function(scope,element,attrs){
 				
 				
-				scope.getPrintModel=function(embMatcher,showThreads,purgeRepeatCode){
+				scope.getPrintModel=function(embMatcher,settings){
 					var model={};
 					if(!embMatcher) return model;
 					var embCanvas=embMatcher.embCanvas;
@@ -1344,7 +1351,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 								col4:"",
 						}
 						
-						if(showThreads){
+						if(settings.showThreadList){
 							for(var i=0,t;i<threadList.length;i++){
 								t=threadList[i];
 								if(t.code){
@@ -1369,7 +1376,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 							t=(idx>0 && idx<=threadList.length)?threadList[idx-1]:null;
 							if(t && t.code){
 								code=t.code;
-								if(purgeRepeatCode){
+								if(settings.purgeRepeat){
 									if(idxThreads[String(idx)]){
 										code="";
 									}else{
@@ -1392,8 +1399,8 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 						}
 						
 						var topLine="",space=10;
-						topLine+="H:"+dst.height+"&nbsp;".repeat(space);
-						topLine+="W:"+dst.width+"&nbsp;".repeat(space);
+						topLine+="H:"+dst.height+"&nbsp;("+dst.info.heightInch.toFixed(1)+")"+ "&nbsp;".repeat(space);
+						topLine+="W:"+dst.width+"&nbsp;("+dst.info.widthInch.toFixed(1)+")"+ "&nbsp;".repeat(space);
 						topLine+="St:"+dst.stitchCount+"&nbsp;".repeat(space);
 						topLine+="Steps:"+dst.stepCount+"&nbsp;".repeat(space);
 						topLine+=dst.info&&dst.info.designNumber?(dst.info.designNumber+"&nbsp;".repeat(space)):"";
@@ -1407,6 +1414,8 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 								height:dst.height,
 								list:list,
 								image:embCanvas.imageObj.toDataURL(),
+								bgColour:embMatcher.backgroundColour?embMatcher.backgroundColour:"#FFFFFF",
+								settings:settings,
 						}
 						
 					}
@@ -1415,13 +1424,10 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 				}			
 				
 				//paperType:letter-8.5"x11";ledger:11"x17"				
-				scope.getDesignHtml= function (printModel,paperType,isLandscape,bgColor,showStitchCount){	
-					
-					if(!bgColor)
-						bgColor="#FFFFFF";
-					
+				scope.getDesignHtml= function (printModel){	
+					var bgColor=printModel.settings.bgColour?printModel.bgColour:"#FFFFFF";
 					var Paper = {
-						papers :[{type:"letter",width:191, height:255},{type:"ledger", width:260, height:416}],//191 255 272 432
+						papers :[{type:"Letter",width:191, height:255},{type:"Ledger", width:260, height:416}],//191 255 272 432
 						getPaper :function (paperType){
 							var paper;
 							var papers = this.papers;
@@ -1439,10 +1445,10 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 						}
 					}
 				
-					var paper = Paper.getPaper(paperType);
+					var paper = Paper.getPaper(printModel.settings.paperType);
 						
 					//var layout ="portrait";
-					if(isLandscape){
+					if(printModel.settings.orientation==="Landscape"){
 						var temp = paper.width;
 						paper.width = paper.height;
 						paper.height = temp;
@@ -1457,7 +1463,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					var table_width= paper.width;
 					var table_height = 5;
 					
-					var mmToPixel = 3.64;		//pixel per mm
+					var mmToPixel = 3.77;		//pixel per mm
 
 					var font_family = "Times New Roman";
 					var info_font_size = 80;	//top info and bottom info font size
@@ -1526,7 +1532,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					var tdDot = "";
 					var tdEmpty="";
 					
-					if(showStitchCount){
+					if(printModel.settings.showStitchCount){
 						var tdNeed = 5;
 						display = "true";
 					}
@@ -1631,14 +1637,55 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 				
 
 				scope.print=function(){
-					//parameters:embMatcher,showThreads--list of threads,purgeRepeatCode
-					scope.printModel=scope.getPrintModel(scope.threadMatcher,false,true);
 					
-					//parameters:printModel,paperType,isLandscape,bgColor,showStitchCount
-					//paperTypess :[{type:"letter",width:191, height:255},{type:"ledger", width:260, height:416}]
-					var html=scope.getDesignHtml(scope.printModel,"letter",false,scope.threadMatcher.backgroundColour,false);
-					
-					util.print(html,true);
+					var printSettings =[{
+								type: "radio",
+								name: "paperType",
+								value: ["Letter", "Ledger"],
+								question: "Paper Type: ",
+								answer: "Letter"
+							  }, {
+								type: "radio",
+								name: "orientation",
+								value: ["Landscape", "Portrait"],
+								question: "Orientation: ",
+								answer: "Portrait"
+							  }, {
+								type: "checkbox",
+								name: "bgColour",
+								value: true,
+								question: "Show background colour: ",
+								answer: true
+							  }, {
+								type: "checkbox",
+								name: "showStitchCount",
+								value: true,
+								question: "Show stitch count: ",
+								answer: true
+							  }, {
+								type: "checkbox",
+								name: "showThreadList",
+								value: false,
+								question: "Show Thread List: ",
+								answer: false
+							  }, {
+								type: "checkbox",
+								name: "purgeRepeat",
+								value: true,
+								question: "Purge repeat codes: ",
+								answer: true
+							  }];
+							
+					util.getSettingDialog(printSettings).then(function(settings){
+						//parameters:embMatcher,showThreads--list of threads,purgeRepeatCode
+						scope.printModel=scope.getPrintModel(scope.threadMatcher,settings);
+						
+						//parameters:printModel,paperType,isLandscape,bgColor,showStitchCount
+						//paperTypess :[{type:"letter",width:191, height:255},{type:"ledger", width:260, height:416}]
+						var html=scope.getDesignHtml(scope.printModel);
+						
+						util.print(html,true);
+					});
 				}				
 				
 				
@@ -1712,13 +1759,14 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 				$scope.embCanvas.imageChanged.addListener($scope.embStage,$scope.onImageChanged);
 				
 				$scope.setColourway=function(threads,runningSteps){
-					$scope.threadMatcher.embCanvas.setColourway(threads,runningSteps);
+					$scope.threadMatcher.setColourway(threads,runningSteps);
+					
 				}
 				$scope.getColourway=function(){
-					return $scope.threadMatcher.embCanvas.getColourway();
+					return $scope.threadMatcher.getColourway();
 				}
 				$scope.getThumbnail=function(){
-					return $scope.threadMatcher.embCanvas.getThumbnail();
+					return $scope.threadMatcher.getThumbnail();
 				}
 				
 				$scope.getBackgroundColour=function(){
@@ -1726,6 +1774,14 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					return bgColour?bgColour:"#FFFFFF";
 				}
 				
+				$scope.setBackgroundColour=function(bgColour){
+					$scope.threadMatcher.backgroundColour=bgColour?bgColour:"#FFFFFF";
+					$scope.$apply();
+				}
+				
+				$scope.clear=function(){
+					$scope.threadMatcher.clear();
+				}
 			}],
 	}
 	

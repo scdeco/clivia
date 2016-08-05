@@ -11,8 +11,8 @@
 		       			 k-animation="false">
 		       			<ul>
 		       				<li class="k-state-active">Info</li>
-		       				<li>palette</li>
-		       				<li>picker</li>
+		       				<li>Palette</li>
+		       				<li>Picker</li>
 		       				<li>Fabric</li>
 		       				<li>Thread</li>
 		       			</ul>
@@ -20,7 +20,10 @@
 			      			<div id="info">		<!-- tabpage of info -->
 			      				<table>
 			      					<tr>
-			      						<td>{{embMatcher.embCanvas.embDesign.designNumber}}</td>
+			      						<td colspan='4'>{{embMatcher.embCanvas.embDesign.info.designNumber}}</td>
+			      					</tr>
+			      					<tr>
+			      						<td colspan='4' >{{embMatcher.embCanvas.embDesign.info.companyName}}</td>
 			      					</tr>
 			      					<tr>
 			      						<td>Stitches:</td>
@@ -30,9 +33,9 @@
 			      					</tr>
 			      					<tr>
 			      						<td>Width:</td>
-			      						<td>{{embMatcher.embCanvas.embDesign.width}}</td>
+			      						<td>{{embMatcher.embCanvas.embDesign.info.width+' ('+(embMatcher.embCanvas.embDesign.info.widthInch|number:1)+')'}}</td>
 			      						<td>Height:</td>
-			      						<td>{{embMatcher.embCanvas.embDesign.height}}</td>
+			      						<td>{{embMatcher.embCanvas.embDesign.info.height+' ('+(embMatcher.embCanvas.embDesign.info.heightInch|number:1)+')'}}</td>
 			      					</tr>
 			      				</table>
 			      			</div>

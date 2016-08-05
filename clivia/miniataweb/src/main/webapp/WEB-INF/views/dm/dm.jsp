@@ -14,7 +14,7 @@
 	   	<div kendo-toolbar id="dstToolbar" k-options="dstToolbarOptions"></div>
      	<div 	kendo-splitter="dmSplitter"  
       			k-orientation="'horizontal'" 
-				k-panes="[{ collapsible: true, resizable: true,size:'150px'}
+				k-panes="[{ collapsible: true, resizable: true,size:'700px'}
 						 ,{ collapsible: true,resizable: true}]"
 	   	 		style="height:800px;">
 		    	 
@@ -108,73 +108,78 @@ designApp.controller("dmCtrl",
 			var searchTemplate='<kendo-combobox name="searchDesignNumber" k-placeholder="\'Search Design#\'" ng-model="searchDesignNumber"  k-options="searchDesignNumberOptions" style="width: 140px;" />';
 			
 			$scope.dstToolbarOptions={items: [{
-		        type: "button",
-		        text: "New",
-		        id:"btnNew",
-		        click: function(e) {
-		        	//$scope.myDstPaint.setDstDesign(--id)
-		       		 }
-		    }, {
-		        type: "button",
-		        text: "Open",
-		        id:"btnOpen",
-		        click: function(e) {
-		        	$scope.newUploadWindow.open();
-			        }
-		    }, {
-		        type: "separator",
-            }, {	
-                template:searchTemplate,		                
-            }, {
-                type: "button",
-                text: "Find",
-                imageUrl:imgUrl+"i-find.ico",
-                id:"btnFind",
-                click: function(e) {
-                	$scope.openQueryWindow();
-                }	                
-            }, {
-                type: "separator",
-		    }, {	
-		        type: "button",
-		        text: "Print",
-		        id: "btnPrint",
-		        click: function(e){
-		        	$scope.myDstPaint.print();
-		        	}  
-		    }, {
-		        type: "separator",
-		    }, {	
-		        type: "button",
-		        text: "Save",
-		        id: "btnSave",
-		        click: function(e){
-		        	$scope.saveDesign();
-		        	}  
-		    }, {
-		        type: "separator",
-		    }, {	
-		    	
-		        type: "button",
-		        text: "Add Colourway",
-		        id: "btnAddColourway",
-		        click: function(e){
-		        	$scope.addColourway();
-		        	}  
-		    }, {	
-		        type: "button",
-		        text: "Remove Colourway",
-		        id: "btnRemoveColourway",
-		        click: function(e){
-		        	$scope.removeColourway();
-		        	}  
-		    }, {	
-		        type: "button",
-		        text: "Print",
-		        id: "btnPrint",
-		        click: function(e){
-		        	$scope.myDstPaint.print();
-		        	}  
+					template: "<span><label>Design:</label></span>",
+				},{
+			        type: "button",
+			        text: "New",
+			        id:"btnNew",
+			        click: function(e) {
+			        	$scope.clear();
+			        	//$scope.myDstPaint.setDstDesign(--id)
+			       		 }
+			    }, {
+			        type: "button",
+			        text: "Open",
+			        id:"btnOpen",
+			        click: function(e) {
+			        	$scope.newUploadWindow.open();
+				        }
+	            }, {	
+	                template:searchTemplate,		                
+	            }, {
+	                type: "button",
+	                text: "Find",
+	                imageUrl:imgUrl+"i-find.ico",
+	                id:"btnFind",
+	                click: function(e) {
+	                	$scope.openQueryWindow();
+	                }	                
+	            }, {
+	                type: "separator",
+			    }, {	
+					template: "<span><label>Colourway:</label></span>",
+			    }, {	
+			    	
+			        type: "button",
+			        text: "Add",
+			        id: "btnAddColourway",
+			        click: function(e){
+			        	$scope.addColourway();
+			        	}  
+			    }, {	
+			        type: "button",
+			        text: "Update",
+			        id: "btnUpdateColourway",
+			        click: function(e){
+			        	$scope.updateColourway();
+			        	}  
+			    }, {	
+			        type: "button",
+			        text: "Remove",
+			        id: "btnRemoveColourway",
+			        click: function(e){
+			        	$scope.removeColourway();
+			        	}  
+			    }, {
+			        type: "separator",
+			    }, {	
+			        type: "button",
+			        text: "Save",
+			        id: "btnSave",
+			        click: function(e){
+			        	$scope.saveDesign();
+			        	}  
+			    }, {
+			        type: "button",
+			        text: "Print",
+			        id: "btnPrint",
+			        click: function(e){
+			        	$scope.myDstPaint.print();
+			        	}  
+  	            }, {
+	                type: "separator",
+ 	            }, {
+ 	            	template:'Choose Theme:<theme-chooser></theme-chooser>'
 			}]};
 			
 			
@@ -246,6 +251,9 @@ designApp.controller("dmCtrl",
 				    },
 					
 					upload:function (e) {
+						
+						$scope.clear();
+						
 						var data=$scope.newUploadData;
 						var error="";
 						if(data.designNumber)
@@ -302,17 +310,6 @@ designApp.controller("dmCtrl",
 			}
 			
 			
-			$scope.newItemFunction=function(){
-			    var newItem={
-				}
-				return newItem;
-			}
-
-			$scope.registerDeletedItemFunction=function(dataItem){
-				//SO.registerDeletedItem("colorway",dataItem.id);
-			}				
-			
-			
 			var cgw=new ColourwayGridWrapper("colourwayGrid");	
 			cgw.setColumns();
 
@@ -320,6 +317,10 @@ designApp.controller("dmCtrl",
 
 				if (widget ===$scope["colourwayGrid"]) {
 		        	cgw.wrapGrid(widget);
+					widget.bind("dataBound",function(e){
+						this.tbody.find("tr").dblclick(onDoubleClick);
+					});
+
 /* 		        			resize:function(gridHeight){
 		        				bgw.resizeGrid(gridHeight);
 		        				},
@@ -356,10 +357,19 @@ designApp.controller("dmCtrl",
 			        columns: cgw.gridColumns,
 			        dataSource: $scope.colourwayGridDataSource,
 			        pageable:false,
-			        selectable: "cell",
+			        selectable: "row",
 			        navigatable: true,
 			        resizable: true,
-						
+			}
+			
+			var onDoubleClick=function(e){
+				if(e.currentTarget){
+					var di=$scope.colourwayGrid.dataItem(e.currentTarget);
+					if(di&&di.threads&&di.runningSteps){
+						$scope.myDstPaint.setColourway(di.threads,di.runningSteps);
+						$scope.myDstPaint.setBackgroundColour(di.backgroundColour);
+					}
+				}
 			}
 
 		    var populate=function(data){
@@ -381,11 +391,15 @@ designApp.controller("dmCtrl",
 		    	$scope.dataSet.info={};
 		    	$scope.dataSet.colourways.splice(0,$scope.dataSet.colourways.length);
 		    	$scope.dataSet.samples.splice(0,$scope.dataSet.samples.length);
+		    	$scope.dataSet.deleteds=[];
 			}
 			
 		    $scope.clear=function(){
 		    	$scope.searchDesignNumber=null;
 		    	clearDataSet();
+		    	$scope.myDstPaint.clear();
+		    	$scope.myDstPaint.setBackgroundColour("#FFFFFF");
+		    	$scope.$apply();
 		    }
 		    
 		    $scope.loadDesign=function(id){
@@ -414,7 +428,7 @@ designApp.controller("dmCtrl",
 				$http.post(url,$scope.dataSet).then(
 					  function(data, status, headers, config) {
 							if(data.data){
-								$scope.clearDataSet();
+								clearDataSet();
 					    		populate(data.data);
 							}else{
 								alert("failed to save:"+JSON.stringify(data));
@@ -424,21 +438,68 @@ designApp.controller("dmCtrl",
 					  });		
 		    }
 		    
-		    $scope.addColourway=function(){
+		    var getColorwayDiFromPaint=function(){
 		    	var colourway=$scope.myDstPaint.getColourway();
 		    	var thumbnail=$scope.myDstPaint.getThumbnail();
 		    	var bgColour=$scope.myDstPaint.getBackgroundColour();
 		    	var pos=thumbnail.indexOf(",");
 		    	thumbnail=pos>0?thumbnail.substr(pos+1):"";
+		    	
 		    	var di={
-		    		libEmbDesignId:$scope.dataSet.info.id,
 		    		threads:colourway.threads,
 		    		runningSteps:colourway.runningSteps,
 		    		backgroundColour:bgColour,
 		    		thumbnail:thumbnail,
 		    	}
-		    	
+		    	return di;
+		    }
+		    
+		    $scope.addColourway=function(){
+		    	var di=getColorwayDiFromPaint();
+		    	di.libEmbDesignId=$scope.dataSet.info.id;
 		    	cgw.addRow(di);
+		    }
+		    
+		    $scope.removeColourway=function(){
+				var dataItem=cgw.getCurrentDataItem();
+		    	var confirmed=true;
+			    if (dataItem) {
+			        if (dataItem.threads&&dataItem.runningSteps){
+			        	confirmed=confirm('Please confirm to delete the selected row.');	
+			        }
+			        if(confirmed){
+				    	if(dataItem.id){
+				    		var item= {entity:"libEmbDesignColourway",id:dataItem.id};
+							$scope.dataSet.deleteds.push(item);				    	
+				    	}
+						cgw.deleteRow(dataItem);
+			        }
+			    }else {
+		        	alert('Please select a  colorway  to delete.');
+		   		}
+		    	
+		    }
+		    
+		    $scope.updateColourway=function(){
+		    	var currentCell=cgw.grid.current();
+		    	if(currentCell){
+			    	var diCurrent=cgw.getCurrentDataItem();
+			    	var diPaint=getColorwayDiFromPaint();
+			    	if(diCurrent&&diPaint){
+			    		diCurrent.threads=diPaint.threads;
+			    		diCurrent.runningSteps=diPaint.runningSteps;
+			    		diCurrent.backgroundColour=diPaint.backgroundColour;
+			    		diCurrent.thumbnail=diPaint.thumbnail;
+			    		diCurrent.isDirty=true;
+			    	}
+			    	$scope.$apply();
+			    	var columnIndex=cgw.getColumnIndex("thumbnail");
+	                var template = kendo.template(cgw.gridColumns[columnIndex].template);
+	            	var cell = currentCell.parent().children('td').eq(columnIndex);
+	                cell.html(template(diCurrent));		                    
+		    	}else{
+		        	alert('Please select a  colorway  to update.');
+		    	}
 		    }
 		    
 		    

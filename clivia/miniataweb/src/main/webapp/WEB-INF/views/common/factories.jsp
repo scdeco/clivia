@@ -196,7 +196,102 @@ clivia.factory("util",["$http","$q",function($http,$q){
 				var iData=tempCan.toDataURL("image/png");
 				$('#'+tempCanName).remove();
 				return iData;
-			}		
+			},
+			
+		getSettingDialog:function(settings){
+			var dfd;
+			var win;
+			var dialogId="settingDialog"+this.getTmpId();
+			var okId=dialogId+"Ok";
+			var cancelId=dialogId+"Cancel";
+			var result
+			var getButton=function(caption,id){
+				return "<a id='"+id+"' class='k-button' style='margin: 10px;'><span class='k-icon k-i-"+(caption==="Ok"?"tick":"close")+"'></span>"+caption+"</a>";
+			}
+			
+			var onButtonClick=function(button){
+				if(button.id==okId)
+					dfd.resolve(getResult());
+				else
+					dfd.reject();
+				
+				win.close();
+			}
+			
+			var getResult=function(){
+				var answer = {};
+				for(var i=0, r; i<settings.length; i++){
+					r = settings[i];
+					
+					switch(r.type){
+						case "checkbox":
+							r.answer = document.getElementById(r.id).checked;
+							break;
+						case "radio":
+							r.answer = $("input[name='"+r.id+"']:checked").val(); 
+							break;
+					}	
+					
+					answer[r.name]=r.answer;
+
+					
+				}
+				return answer;
+			}
+			
+			var createDialog=function(settings){
+				
+				var b= "<div id='"+dialogId+"' style='width: auto; height: auto;'>" + "<div style='width: 350px; margin:20px;'>";
+			    for (var i = 0, r; i < settings.length; i++) {
+			      r = settings[i];
+			      r.id=dialogId+r.name;
+			      
+				  switch(r.type){
+					case "checkbox":
+						b += "<input type=" + r.type + " id=" +r.id +  (r.value?" checked":"") + ">" +  r.question +"<br><br>";
+						break;
+					case "radio":
+						b +=  "<div id=" +r.id+">"+r.question +"&nbsp;"; 
+						for(var j=0; j<r.value.length; j++){
+							b +=  "<input type=" + r.type +  " name="+r.id+ " value=" + r.value[j] + (r.answer===r.value[j]?" checked":"") + ">" +r.value[j] + "&nbsp;&nbsp;";
+						}
+						b += "</div><br>";
+						break;
+				  }	
+			      
+			    }
+			    b += "<p style='width: 180px; margin: auto;'>" +getButton("Ok",okId)+getButton("Cancel",cancelId)+ "</p>";  
+			    b += "</div>";
+			    
+			    var div=document.createElement("div");
+			    div.Id=dialogId;
+			    div.innerHTML=b;
+			    document.body.appendChild(div);
+			    
+			    win=$("#"+dialogId).kendoWindow({
+				        title: "Print Settings",
+				        visible: false,
+				        modal: true,
+				        actions: ["Close"],
+			  	  		close: function () {
+	  			 				var self=this;
+	  			 		       	setTimeout(function() {
+	  			 		       		self.destroy();
+	  			 		       		}, 500);
+	  			 		       	if(!dfd.promise.$$status)
+		  			 				dfd.reject("cancel");
+		  					},
+		  				activate:function(){
+		  					$("#"+okId).click(function(){onButtonClick(this)});
+		  					$("#"+cancelId).click(function(){onButtonClick(this)});
+		  				}
+			      }).data("kendoWindow").center().open();
+			}
+			
+			dfd= $q.defer();
+			createDialog(settings);
+			return dfd.promise;
+		}
 		
 	}	
 }]).
@@ -1086,7 +1181,7 @@ clivia.factory("GridWrapper",function(){
 				}
 				return index;
 			}
-			//use in grid save event, e is parameter of save(e); columnIndex is the index of column intend to update
+			//used in grid save event, e is parameter of save(e); columnIndex is the index of column intend to update
 			//The grid will not update templte column automatically when change data value in save event
 			//column can be column index or name, used in billGrid,setpGrid,threadGrid,garmentInput grid... 
 			GridWrapper.prototype.updateTemplateColumn=function(e,column){
@@ -2182,12 +2277,14 @@ clivia.factory("ColourwayGridWrapper",["GridWrapper","cliviaDDS","DataDict",func
 					name:"threads",
 				    field: "threads",
 				    title: "Threads",
+			        attributes: {style:"white-space:normal;"},
 				    width: 120
 				}, {
 					name:"runningSteps",
 				    field: "runningSteps",
 				    title: "Running Steps",
-				    width: 250
+			        attributes: {style:"white-space:normal;"},
+				    width: 120
 				}, {
 					name:"remark",
 				    field: "remark",

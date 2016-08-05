@@ -1,4 +1,4 @@
- <div design-view="designGrid" 
+ <div design-view="designView" 
 			c-editable="true" 
 			c-data-source="designGridDataSource" 
 			c-pageable="false" 

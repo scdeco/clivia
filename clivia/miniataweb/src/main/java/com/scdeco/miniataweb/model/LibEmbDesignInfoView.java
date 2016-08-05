@@ -12,6 +12,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 
+import org.hibernate.annotations.Formula;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.scdeco.miniataweb.util.CliviaLocalDateTimeJsonDeserializer;
@@ -65,6 +67,12 @@ public class LibEmbDesignInfoView {
 	
 	@Column(name="Height")
 	private BigDecimal height;
+	
+	@Formula("Width*0.03937")
+	private BigDecimal widthInch;
+	
+	@Formula("Height*0.03937")
+	private BigDecimal heightInch;
 	
 	@Column(name="StitchCount")
 	private Integer stitchCount;
@@ -131,6 +139,14 @@ public class LibEmbDesignInfoView {
 		return height;
 	}
 
+	public BigDecimal getWidthInch() {
+		return widthInch;
+	}
+
+	public BigDecimal getHeightInch() {
+		return heightInch;
+	}
+
 	public Integer getStitchCount() {
 		return stitchCount;
 	}
@@ -142,5 +158,7 @@ public class LibEmbDesignInfoView {
 	public String getCompanyName() {
 		return companyName;
 	}
+
+	
 	
 }

@@ -7,13 +7,12 @@
 
 		    	style="height:100%;">      	
       	
-  		<!-- 		ng-model="dstPaint.backgroundColor"  -->
-      		<div id="dst-first-pane">
+      		<div>
    				<div id="stagecontainer" ng-style="{'background-color':threadMatcher.backgroundColour}" 
    					 				ng-click="onClick()">
 				</div>
 			</div>	<!-- first-pane-->
-      		<div id="dst- third-pane">
+      		<div>
       			<div thread-matcher="threadMatcher" c-emb-canvas="embCanvas"></div>
 			</div>	<!--  second-pane-->
 		</div>

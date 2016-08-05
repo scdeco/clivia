@@ -191,6 +191,98 @@ directive('checklistModel', ['$parse', '$compile', function($parse, $compile) {
 	    }
 	  };
 	}]).
+	
+directive("themeChooser",function(){
+	var template='<select kendo-dropdownlist="themeDropDownList"  k-options="listOptions" ></select>'; 
+	return {
+		restrict:"EA",
+		replace:true,
+		scope:{
+		},
+		template:template,
+		
+		link:function(scope,element){	//["scope","element","attrs","controller",
+
+		    scope.element=element;
+		                                              	   
+			scope.kendoDropDownList=element.getKendoDropDownList();
+			
+			scope.changeTheme=function(skinName, animate) {
+			    var doc = document,
+		        kendoLinks = $("link[href*='kendo.']", doc.getElementsByTagName("head")[0]),
+		        commonLink = kendoLinks.filter("[href*='kendo.common']"),
+		        skinLink = kendoLinks.filter(":not([href*='kendo.common'])"),
+		        href = location.href,
+		        skinRegex = /kendo\.\w+(\.min)?\.css/i,
+		        extension = skinLink.attr("rel") === "stylesheet" ? ".css" : ".less",
+		        url = commonLink.attr("href").replace(skinRegex, "kendo." + skinName + "$1" + extension),
+		        exampleElement = $("#example");
+		    
+			    function preloadStylesheet(file, callback) {
+			        var element = $("<link rel='stylesheet' media='print' href='" + file + "'").appendTo("head");
+			        
+			        setTimeout(function () {
+			            callback();
+			            element.remove();
+			        }, 100);
+			    }
+
+			    function replaceTheme() {
+			        var oldSkinName = $(doc).data("kendoSkin"),
+			            newLink;
+	
+			        if (kendo.support.browser.msie) {
+			            newLink = doc.createStyleSheet(url);
+			        } else {
+			            newLink = skinLink.eq(0).clone().attr("href", url);
+			            newLink.insertBefore(skinLink[0]);
+			        }
+			        
+			        skinLink.remove();
+	
+			        $(doc.documentElement).removeClass("k-" + oldSkinName).addClass("k-" + skinName);
+			    }
+
+			    if (animate) {
+			        preloadStylesheet(url, replaceTheme);
+			    } else {
+			        replaceTheme();
+			    }
+			};
+		},
+		
+		controller: ['$scope', function($scope){
+			
+			$scope.listOptions={
+				    dataSource: [
+				                { text: "Black", value: "black" },
+				                { text: "Blue Opal", value: "blueopal" },
+				         		{ text: "Bootstrap", value: "bootstrap" },
+				                { text: "Default", value: "default" },
+				         		{ text: "Flat", value: "flat" },
+				         		{ text: "High Contrast", value: "highcontrast" },
+				         		{ text: "Material", value: "material" },
+				         		{ text: "Material Black", value: "materialblack" },
+				                { text: "Metro", value: "metro" },
+				         		{ text: "Metro Black", value: "metroblack" },
+				         		{ text: "Moonlight", value: "moonlight" },
+				                { text: "Silver", value: "silver" },
+				         		{ text: "Uniform", value: "uniform" },
+				         		{ text: "Fiori", value: "fiori" },
+				         		{ text: "Nova", value: "nova" },
+				             ],
+				             dataTextField: "text",
+				             dataValueField: "value",
+				             change: function (e) {
+				                 var theme = (this.value() || "default").toLowerCase();
+				                 
+				                 $scope.changeTheme(theme);
+				             }	
+			}
+			
+		}]
+	}
+}).
 
 directive("mapCombobox",function(){
 	var template='<input kendo-combobox="comboBox"  k-options="comboBoxOptions" ></input>'; 
@@ -2098,7 +2190,6 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 					if (widget ===$scope.queryGrid){
 						var self=widget;					
 						widget.bind("dataBound",function(e){
-							console.log("double click 1");
 							this.tbody.find("tr").dblclick(onDoubleClick);
 						});
 					}

@@ -12,6 +12,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 
+import org.hibernate.annotations.Formula;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.scdeco.miniataweb.util.CliviaLocalDateTimeJsonDeserializer;
@@ -66,6 +68,12 @@ public class LibEmbDesignInfo extends CliviaSuperModel {
 	@Column(name="Height")
 	private BigDecimal height;
 	
+	@Formula("Width*0.03937")
+	private BigDecimal widthInch;
+	
+	@Formula("Height*0.03937")
+	private BigDecimal heightInch;
+		
 	@Column(name="StitchCount")
 	private Integer stitchCount;
 	
@@ -183,6 +191,15 @@ public class LibEmbDesignInfo extends CliviaSuperModel {
 	public void setHeight(BigDecimal height) {
 		this.height = height;
 	}
+
+	public BigDecimal getWidthInch() {
+		return widthInch;
+	}
+
+	public BigDecimal getHeightInch() {
+		return heightInch;
+	}
+
 
 	public Integer getStitchCount() {
 		return stitchCount;

@@ -3,8 +3,6 @@ package com.scdeco.miniataweb.model;
 import java.util.List;
 import java.util.Map;
 
-import com.scdeco.miniataweb.embdesign.EMBDesignM;
-
 public class LibEmbDesign {
 
 		LibEmbDesignInfo info;

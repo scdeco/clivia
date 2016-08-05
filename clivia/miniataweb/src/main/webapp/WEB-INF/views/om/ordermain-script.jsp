@@ -7,7 +7,6 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	
 	var searchTemplate='<kendo-combobox name="searchOrderNumber" k-placeholder="\'Search Order#\'" ng-model="searchOrderNumber" ng-disabled="getOrderDisabled" k-options="searchOrderNumberOptions" style="width: 140px;" />';
 						
-						
     $scope.orderToolbarOptions = {
 	        items: [{
 	                type: "button",
@@ -94,7 +93,10 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	                click: function(e) {
 		                	$scope.openCompany(SO.dataSet.info.customerId);
 		                }
- 	                
+  	            }, {
+	                type: "separator",
+ 	            }, {
+ 	            	template:'Choose Theme:<theme-chooser></theme-chooser>'
 	       }]
 	    };	
     $scope.saveResultOptions={
@@ -550,10 +552,12 @@ orderApp.directive("orderItems",["SO","cliviaDDS","util","$compile",function(SO,
 			    	}else{
 			    		typeId=orderItem.typeId;
 			    	}
+			    	
+                  	scope.addOrderItemButton(orderItem);
+
 			    	var itemType=SO.getRegisteredItemType(typeId);
 	                var itemName=itemType.name+orderItem.id;
                  	var itemElements=$compile("<div "+itemType.directive+"='"+itemName+"' c-item-id='"+orderItem.id+"'></div>")(scope);
-                  	scope.addOrderItemButton(orderItem);
                   	scope.addOrderItemElement(orderItem,itemElements);
                   	return orderItem;
 			    };
