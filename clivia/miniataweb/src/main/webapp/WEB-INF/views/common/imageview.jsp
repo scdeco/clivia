@@ -12,9 +12,9 @@
 
 					<ul kendo-context-menu="{{gridContextMenuName}}" id="{{gridContextMenuName}}" k-options="gridContextMenuOptions">
 					       
-					  	<li id="menuAdd">Add</li>
-					  	<li id="menuUpload">Upload</li>
-					  	<li id="menuRemove">Delete</li>
+					  	<li>Add</li>
+					  	<li>Upload</li>
+					  	<li>Delete</li>
 					
 					</ul>
 		     		

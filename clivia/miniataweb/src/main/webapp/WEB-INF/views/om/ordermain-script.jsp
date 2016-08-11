@@ -603,7 +603,7 @@ orderApp.directive("orderItems",["SO","cliviaDDS","util","$compile",function(SO,
 						 if(di.orderItemId===orderItem.id){
 							 
 					   		 //register to deleted items 
-							SO.registerDeletedItem(type.model,di.id);
+							SO.registerDeletedItem(type.model,di.id,type.hasDetail);
 					   		
 							 //remove from the dataTable
 						    dis.splice(i,1);
@@ -772,31 +772,33 @@ orderApp.directive("lineItem",function(SO){
 			templateUrl:'lineItem',
 			
 			link:function(scope){
-				$scope=scope;
 
 				//pass to garmentGird directive to create new lineitem		        
-		    	$scope.newItemFunction=function(){
+		    	scope.newItemFunction=function(){
 						
-						var orderItem=$scope.$parent.getCurrentOrderItemDi();
-						var s=$scope.$parent.getOrderItemScope(orderItem);
-		    		    return {
+	    		    return {
 		    			    	orderId:SO.dataSet.info.orderId,
-		    			    	orderItemId:orderItem.id, 
-		    			    	brandId:s.brand.id,
-		    			    	seasonId:s.season.id,
+		    			    	orderItemId:scope.orderItem.id, 
+		    			    	brandId:scope.brand.id,
+		    			    	seasonId:scope.season.id,
+		    			    	id:SO.getTmpId()
 		    			    }
 		    		}
 		    		        
 		    	//pass to garmentGird directive to register removed lineitem		        
-		    	$scope.registerDeletedItemFunction=function(dataItem){
-		    		SO.registerDeletedItem("orderLineItem",dataItem.id);
+		    	scope.registerDeletedItemFunction=function(dataItem){
+		    		SO.registerDeletedItem("orderLineItem",dataItem.id,true);
 		    	}
 		    	
-		    	$scope.resize=function(){
-		    		var orderItem=$scope.$parent.getCurrentOrderItemDi();
-					var s=$scope.$parent.getOrderItemScope(orderItem);
-		    		s.lineItemSplitter.resize();
+		    	scope.getDetailFunction=function(diLineItem){
+		    			console.log("get into line item detail"+diLineItem.lineNo);
+		    			scope.services.initDetail(diLineItem);
 		    	}
+		    	
+		    	scope.resize=function(){
+	    		scope.lineItemSplitter.resize();
+		    	}
+		    	
 			},
 			controller: ["$scope",function($scope) {
 				
@@ -856,6 +858,44 @@ orderApp.directive("lineItem",function(SO){
 	return directive;
 });	//end of lineItem directive
 	
+	
+orderApp.directive("lineItemDetail",function(SO){
+	var directive={
+			restrict:'EA',
+			replace:false,
+			scope:{
+				cName:'@lineItemDetail',
+				},
+			templateUrl:'lineItemDetail',
+			
+			link:function(scope){
+
+		    	scope.initDetail=function(lineItemDi){
+		    		scope.lineItemDi=lineItemDi;
+		    		scope.$apply();
+		    	}
+		    	
+		    	scope.resize=function(){
+		    	}
+		    	
+			},
+			controller: ["$scope",function($scope) {
+				
+					$scope.SO=SO;
+					if($scope.cName)
+						$scope.$parent[$scope.cName]=$scope;
+					
+					
+				//	$scope.orderItem=$scope.$parent.getOrderItemDi(parseInt($scope.cLineItemId));
+				//	$scope.lineItem=$scope.$parent.get
+					
+					
+					
+			}]	//end of controller
+	};
+	return directive;
+});	//end of lineItem directive	
+
 
 orderApp.directive("billItem",function(SO,$sce){
 	var directive={
@@ -868,61 +908,56 @@ orderApp.directive("billItem",function(SO,$sce){
 			templateUrl:'billItem',
 			
 			link:function(scope){
-				$scope=scope;
-				
+
 				//pass to billGird directive to create new lineitem		        
-				$scope.newItemFunction=function(){
-						//Don't know why the $scope changed to last added orderItem's scope
-						var orderItem=$scope.$parent.getCurrentOrderItemDi();
+				scope.newItemFunction=function(){
 					    return {
 						    	orderId:SO.dataSet.info.orderId,
-						    	orderItemId:orderItem.id, 
+						    	orderItemId:scope.orderItem.id, 
 						    	snpId:0,
 						    	orderAmt:0,
 						    };
 					}
 					        
 				//pass to billGrid directive to register removed billitem		        
-				$scope.registerDeletedItemFunction=function(dataItem){
+				scope.registerDeletedItemFunction=function(dataItem){
 					SO.registerDeletedItem("orderBillItem",dataItem.id);
 				}
 				
-				$scope.getDetailFunction=function(billItem){
+				scope.getDetailFunction=function(billItemDi){
 					var html;
 					//if itemTypeId===2, the item is from lineItem and its billingKey is a string of garmentId
-					if(billItem && billItem.itemTypeId===2){
-						html=SO.getStyleGridHtml(parseInt(billItem.billingKey),true);
+					if(billItemDi && billItemDi.itemTypeId===2){
+						html=SO.getStyleGridHtml(parseInt(billItemDi.billingKey),true);
 					}
 					
 					if(!html)
 						html="<div></div>";
-					$scope.htmlBillItemDetail=$sce.trustAsHtml(html); 
+					scope.htmlBillItemDetail=$sce.trustAsHtml(html); 
 				}
 				
 
-				$scope.getTotalAmount=function(){
-					if(!$scope.billGrid) return "";
-					var totalAmt=$scope.billGrid.getTotal(),
+				scope.getTotalAmount=function(){
+					if(!scope.billGrid) return "";
+					var totalAmt=scope.billGrid.getTotal(),
 						c=SO.company.info.country==="Canada"?"CA":"US",
 						result=c+(totalAmt?kendo.toString(totalAmt,"c"):"");
 					return result;
 				}
 				
-				$scope.setDiscount=function(oldValue,newValue){
+				scope.setDiscount=function(oldValue,newValue){
 					oldValue=parseFloat(oldValue);
 					newValue=parseFloat(newValue);
 					if(oldValue===newValue) 
 						return;
 					
-					$scope.orderItem.isDirty=true;
-					$scope.billGrid.gridWrapper.setDiscount(newValue);
-					$scope.billGrid.grid.refresh();
+					scope.orderItem.isDirty=true;
+					scope.billGrid.gridWrapper.setDiscount(newValue);
+					scope.billGrid.grid.refresh();
 				}
 				
-		    	$scope.resize=function(){
-		    		var orderItem=$scope.$parent.getCurrentOrderItemDi();
-					var s=$scope.$parent.getOrderItemScope(orderItem);
-		    		s.billItemSplitter.resize();
+		    	scope.resize=function(){
+		    		scope.billItemSplitter.resize();
 		    	}				
 			},
 
@@ -1002,28 +1037,24 @@ orderApp.directive("designItem",function(SO,$sce){
 			templateUrl:'designItem',
 			
 			link:function(scope){
-				$scope=scope;
+				scope=scope;
 				
-				$scope.newItemFunction=function(){
-						//Don't know why the $scope changed to last added orderItem's scope
-						var orderItem=$scope.$parent.getCurrentOrderItemDi();
+				scope.newItemFunction=function(){
 					    return {
 						    	orderId:SO.dataSet.info.orderId,
-						    	orderItemId:orderItem.id, 
+						    	orderItemId:scope.orderItem.id, 
 						    	snpId:0,
 						    	orderAmt:0,
 						    };
 					}
 					        
 				//pass to designGrid directive to register removed billitem		        
-				$scope.registerDeletedItemFunction=function(dataItem){
+				scope.registerDeletedItemFunction=function(dataItem){
 					SO.registerDeletedItem("orderDesignItem",dataItem.id);
 				}
 
- 				$scope.resize=function(){
-		    		var orderItem=$scope.$parent.getCurrentOrderItemDi();
-					var s=$scope.$parent.getOrderItemScope(orderItem);
-					s.designItemSplitter.resize();
+ 				scope.resize=function(){
+					//scope.designItemSplitter.resize();
 		    	}				
  			},
 
@@ -1033,22 +1064,6 @@ orderApp.directive("designItem",function(SO,$sce){
 					$scope.$parent[$scope.cName]=$scope;
 				
 				$scope.orderItem=$scope.$parent.getOrderItemDi(parseInt($scope.cItemId));
-				if($scope.orderItem.spec==="")
-					$scope.orderItem.spec=SO.company.info.discount;
-				
-
-			    $scope.designItemSplitterOptions={
-			        	resize:function(e){
-
-			        		var panes=e.sender.element.children(".k-pane"),
-			    			gridHeight=$(panes[1]).innerHeight();
-			    	      	window.setTimeout(function(){
-			    	      		if($scope.designGrid)
-			    		      		$scope.designGrid.resize(gridHeight);
-			    		    },1);    
-			    	      	console.log("resize2:");
-			        	}		
-			        }
 				
 			 	$scope.designGridDataSource=new kendo.data.DataSource({
 			     	data:SO.dataSet.designItems, 
@@ -1087,22 +1102,19 @@ orderApp.directive("imageItem",function(SO,$sce){
 			templateUrl:'imageItem',
 			
 			link:function(scope){
-				$scope=scope;
 
 				//pass to imageView directive to create new imageitem		        
-				$scope.newItemFunction=function(dataItem){
-					var orderItem=$scope.$parent.getCurrentOrderItemDi();
+				scope.newItemFunction=function(dataItem){
 					return {
 						    	orderId:SO.dataSet.info.id,
-						    	orderItemId:orderItem.id, 
+						    	orderItemId:scope.orderItem.id, 
 						    	imageId:dataItem.id,
 						    	isDirty:true,
 						    }
 					}
-				$scope.registerDeletedItemFunction=function(dataItem){
+				scope.registerDeletedItemFunction=function(dataItem){
 					SO.registerDeletedItem("orderImage",dataItem.id);
 				}
-								
 				
 			},
 			controller: ["$scope",function($scope) {
@@ -1177,14 +1189,12 @@ orderApp.directive("contactItem",function(SO,$sce){
 			templateUrl:'contactItem',
 			
 			link:function(scope){
-				$scope=scope;
 
 				//pass to contactView directive to create new contactitem		        
-				$scope.newItemFunction=function(){
-					var orderItem=$scope.$parent.getCurrentOrderItemDi();
+				scope.newItemFunction=function(){
 				    return {
 						    	orderId:SO.dataSet.info.id,
-						    	orderItemId:orderItem.id, 
+						    	orderItemId:scope.orderItem.id, 
 						    	isBuyer:true,
 						    	isActive:true,
 						    }
@@ -1192,7 +1202,7 @@ orderApp.directive("contactItem",function(SO,$sce){
 
 
 				
-				$scope.registerDeletedItemFunction=function(dataItem){
+				scope.registerDeletedItemFunction=function(dataItem){
 					SO.registerDeletedItem("orderContact",dataItem.id);
 				}
 								
@@ -1241,14 +1251,12 @@ orderApp.directive("addressItem",function(SO,$sce){
 			templateUrl:'addressItem',
 			
 			link:function(scope){
-				$scope=scope;
 
 				//pass to contactView directive to create new contactitem		        
-				$scope.newItemFunction=function(){
-					var orderItem=$scope.$parent.getCurrentOrderItemDi();
+				scope.newItemFunction=function(){
 				    var newItem={
 						    	orderId:SO.dataSet.info.id,
-						    	orderItemId:orderItem.id, 
+						    	orderItemId:scope.orderItem.id, 
 						    	billing:false,
 						    	shipping:true
 						    }
@@ -1261,7 +1269,7 @@ orderApp.directive("addressItem",function(SO,$sce){
 					return newItem;
 				}
 
-				$scope.registerDeletedItemFunction=function(dataItem){
+				scope.registerDeletedItemFunction=function(dataItem){
 					SO.registerDeletedItem("orderAddress",dataItem.id);
 				}
 								

@@ -13,7 +13,7 @@
 					<ul kendo-context-menu="{{gridContextMenuName}}" id="{{gridContextMenuName}}" k-options="gridContextMenuOptions">
 					       
 					  	<li >Add</li>
-					  	<li >Upload</li>
+					  	<li >Insert</li>
 					  	<li >Delete</li>
 					
 					</ul>

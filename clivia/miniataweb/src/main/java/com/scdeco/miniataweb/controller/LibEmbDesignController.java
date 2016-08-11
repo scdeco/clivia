@@ -1,14 +1,19 @@
 package com.scdeco.miniataweb.controller;
 
+import java.security.Principal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.scdeco.miniataweb.dao.EmployeeInfoDao;
 import com.scdeco.miniataweb.dao.LibEmbDesignDao;
+import com.scdeco.miniataweb.model.EmployeeInfo;
 import com.scdeco.miniataweb.model.LibEmbDesign;
 
 @Controller
@@ -18,9 +23,16 @@ public class LibEmbDesignController {
 	@Autowired
 	LibEmbDesignDao libEmbDesignDao;
 	
+	@Autowired
+	private EmployeeInfoDao employeeInfoDao;
+	
 	@RequestMapping(value="/",method=RequestMethod.GET)
-
-	public String  dm(){
+	public String  dm(Model model,Principal principal){
+		
+		String username=principal.getName();
+		EmployeeInfo employeeInfo=employeeInfoDao.findByUsername(username);
+		String theme=employeeInfo!=null?employeeInfo.getTheme():"default";
+		model.addAttribute("theme", theme!=null?theme:"default");		
 		return "dm/dm";
 	}
 	

@@ -9,13 +9,13 @@
 				id:1,
 				name:"billItem",
 				model:"orderBillItem",
-				hasDetail:false,
+				hasDetail:true,
 				directive:"bill-item",
 			},{
 				id:2,
 				name:"lineItem",
 				model:"orderLineItem",
-				hasDetail:false,
+				hasDetail:true,
 			 	directive:"line-item",
 			},{
 				id:3,
@@ -56,7 +56,7 @@
 			}],
 			
 		registeredOrderItems:[{ 
-				 text: "Bill", 
+				 text: "Pricing", 
 				 icon: "insert-n",
 				 id:"billitem",
 				 spec:"",

@@ -2,7 +2,7 @@
 				k-orientation="'vertical'"
 				k-panes="[{ collapsible: false, resizable:false,size:'40px'},
 						   { collapsible: false, resizable:true,size:'600px', min:'100px'},
-                    	  { collapsible: true,collapsed:true}]"
+                    	  { collapsible: true,collapsed:false}]"
                 k-Options="lineItemSplitterOptions"
 				style="height: 800px; width: 100%;">    
 				
@@ -38,12 +38,13 @@
     					c-brand="brand"
     					c-season="season" 
     					c-new-item-function="newItemFunction"
-    					c-register-deleted-item-function="registerDeletedItemFunction"></div> 
+    					c-register-deleted-item-function="registerDeletedItemFunction" 
+    					c-get-detail-function="getDetailFunction"></div>
    		</div> 	
  		
  		
 		<div>   <!--  bottom pane -->	
-			<h1>	right oane</h1>
+			<div line-item-detail="services"></div>
 		</div>  <!-- end of bottom pane -->	
     </div>
 	

@@ -79,6 +79,9 @@ public class EmployeeInfo extends CliviaSuperModel{
 	@Column(name="IsCsr")
 	private Boolean isCsr=false;
 	
+	@Column(name="Theme",length=30)
+	private String theme;
+	
 	@Column(name="Remark",length=500)
 	private String  remark;
 
@@ -232,6 +235,14 @@ public class EmployeeInfo extends CliviaSuperModel{
 
 	public void setIsCsr(Boolean isCsr) {
 		this.isCsr = isCsr;
+	}
+
+	public String getTheme() {
+		return theme;
+	}
+
+	public void setTheme(String theme) {
+		this.theme = theme;
 	}
 
 	public String getRemark() {

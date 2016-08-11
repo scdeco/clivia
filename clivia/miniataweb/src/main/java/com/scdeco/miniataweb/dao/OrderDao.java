@@ -30,7 +30,8 @@ public class OrderDao extends GenericMainItemDao<OrderClivia>{
 
 	public OrderDao(){
 		super();
-
+		
+		//propertity name of OrderClivia
 		super.registeredItemListNames=new String[]{"billItems","lineItems","designItems","imageItems","fileItems","emailItems","contactItems","addressItems","upcItems"};
 		super.registeredItemModelNames=new String[]{"orderBillItem","orderLineItem","orderDesign","orderImage","orderFile","orderEmail","orderContact","orderAddress","orderUpc"};
 		super.daoPrefix="order";

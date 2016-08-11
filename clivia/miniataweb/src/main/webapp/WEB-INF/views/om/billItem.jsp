@@ -25,7 +25,7 @@
     					c-pageable="false" 
     					c-new-item-function="newItemFunction"
     					c-register-deleted-item-function="registerDeletedItemFunction"
-    					c-get-bill-detail-function="getDetailFunction(billItem)">
+    					c-get-bill-detail-function="getDetailFunction">
     		</div> 
    		</div> 	
  		

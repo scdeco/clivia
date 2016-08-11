@@ -197,25 +197,32 @@ clivia.factory("util",["$http","$q",function($http,$q){
 				$('#'+tempCanName).remove();
 				return iData;
 			},
-			
-		getSettingDialog:function(settings){
+		
+			//
+		getSettingDialog:function(settings,destroyDelayTime){
 			var dfd;
 			var win;
 			var dialogId="settingDialog"+this.getTmpId();
 			var okId=dialogId+"Ok";
 			var cancelId=dialogId+"Cancel";
 			var result
+			var buttonClicked=false;
 			var getButton=function(caption,id){
 				return "<a id='"+id+"' class='k-button' style='margin: 10px;'><span class='k-icon k-i-"+(caption==="Ok"?"tick":"close")+"'></span>"+caption+"</a>";
 			}
 			
 			var onButtonClick=function(button){
+				var result;
+				buttonClicked=true;
 				if(button.id==okId)
-					dfd.resolve(getResult());
-				else
-					dfd.reject();
+					result=getResult();
 				
 				win.close();
+				
+				if(result)
+					dfd.resolve(result);
+				else
+					dfd.reject();
 			}
 			
 			var getResult=function(){
@@ -274,13 +281,17 @@ clivia.factory("util",["$http","$q",function($http,$q){
 				        modal: true,
 				        actions: ["Close"],
 			  	  		close: function () {
-	  			 				var self=this;
-	  			 		       	setTimeout(function() {
-	  			 		       		self.destroy();
-	  			 		       		}, 500);
-	  			 		       	if(!dfd.promise.$$status)
-		  			 				dfd.reject("cancel");
-		  					},
+				  	  				if(destroyDelayTime){
+		 	  			 				var self=this;
+			  			 		       	setTimeout(function() {
+		  				 		       		self.destroy();
+		  				 		       		}, destroyDelayTime);
+				  	  				}else
+				  	  					this.destroy();		
+	  			 		  
+	 								if(!buttonClicked)
+			  			 				dfd.reject("cancel");
+			  					},
 		  				activate:function(){
 		  					$("#"+okId).click(function(){onButtonClick(this)});
 		  					$("#"+cancelId).click(function(){onButtonClick(this)});
@@ -1469,10 +1480,10 @@ clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",f
 			}else{
 				garment=this.dictGarment.getGarment(this.season.id,styleNo);
 				if(garment){
-					thisGGW.currentGarment=garment;
+					this.currentGarment=garment;
 			    	model.set("description",thisGGW.currentGarment.styleName);
 			    	model.set("garmentId",this.currentGarment.id);
-					thisGGW.setRowDict();
+					this.setRowDict();
 				}
 			}
 		}
@@ -1606,7 +1617,7 @@ clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",f
 	
 	GarmentGridWrapper.prototype.calculateLineTotal=function(dataItem) {
 		var result=0;
-		var sizeFields=thisGGW.season.sizeFields.split(",");
+		var sizeFields=this.season.sizeFields.split(",");
 		for(var i=0;i<sizeFields.length;i++){  //exclude colour,total,remark
 			var field="qty"+("00"+i).slice(-2); 	//right(2)
 			var quantity=parseInt(dataItem[field]);
@@ -1616,6 +1627,7 @@ clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",f
 		}
 		return result;
 	}
+	
 	
 	GarmentGridWrapper.prototype.calculateTotal=function(calculate) {
 		if(!this.grid) return;
@@ -1633,7 +1645,7 @@ clivia.factory("GarmentGridWrapper",["GridWrapper","cliviaDDS","DataDict","$q",f
 		return total;
 	}
 	
-	
+	//in column editor function,"this" is the window.
 	GarmentGridWrapper.prototype.colourColumnEditor=function(container, options) {
  		var items=thisGGW.dict.colourway;
  		thisGGW.kendoDropDownListEditor(container,options,items);
@@ -2255,6 +2267,80 @@ clivia.factory("ColumnGridWrapper",["GridWrapper","cliviaDDS",function(GridWrapp
 }]); //end of JournalGridWrapper
 
 
+
+clivia.factory("DesignGridWrapper",["GridWrapper","cliviaDDS","DataDict",function(GridWrapper,cliviaDDS,DataDict){
+	
+	 var thisGGW;
+
+	 var getColumns=function(){
+
+		 var gridColumns=[{
+			        name:"lineNumber",
+			        title: "#",
+			        //locked: true, if true will cause the wrong cell get focus when add new row
+			        attributes:{class:"gridLineNumber"},
+			        headerAttributes:{class:"gridLineNumberHeader"},
+			        width: 25,
+				}, {			
+					name:"thumbnail",
+				    title: "Thumbnail",
+ 				  //  template:'<img src="data:image/JPEG;base64,#:thumbnail#" alt="image #:id#" style="background-color:#:backgroundColour#;">', 
+				    width: 150
+				}, {
+					name:"designNumber",
+				    field: "designNumber",
+				    title: "Design#",
+				    width: 120
+				}, {
+					name:"designName",
+				    field: "designName",
+				    title: "Design Name",
+				    width: 200
+				}, {
+					name:"stitchCount",
+				    field: "stitchCount",
+				    title: "Stitches",
+				    width: 80
+				}, {
+					name:"colourCount",
+				    field: "colourCount",
+				    title: "Colours",
+				    width: 80
+				}, {
+					name:"threads",
+				    field: "threads",
+				    title: "Threads",
+				    width: 200
+				}, {
+					name:"runningSteps",
+				    field: "runningSteps",
+				    title: "Running Steps",
+				    width: 200
+				    
+				}, {
+					name:"remark",
+				    field: "remark",
+				    title: "Remark"
+					//the column is extended if its width is not set   
+			}];
+			
+			return gridColumns;
+		}
+		
+	 var ColourwayGridWrapper=function(gridName){
+		 
+		GridWrapper.call(this,gridName);
+		thisGGW=this;
+		this.setColumns=function(){this.gridColumns=getColumns()};		
+	}
+	 
+	ColourwayGridWrapper.prototype=new GridWrapper();
+	
+	return ColourwayGridWrapper;
+	
+}]); /* end of ColourGridWrapper */
+
+
 clivia.factory("ColourwayGridWrapper",["GridWrapper","cliviaDDS","DataDict",function(GridWrapper,cliviaDDS,DataDict){
 	
 	 var thisGGW;
@@ -2308,6 +2394,78 @@ clivia.factory("ColourwayGridWrapper",["GridWrapper","cliviaDDS","DataDict",func
 	
 }]); /* end of ColourGridWrapper */
 
+clivia.factory("EmbServiceGridWrapper",["GridWrapper","cliviaDDS","DataDict",function(GridWrapper,cliviaDDS,DataDict){
+	
+	 var thisGGW;
+
+	 var getColumns=function(){
+
+		 var gridColumns=[{
+			        name:"lineNumber",
+			        title: "#",
+			        //locked: true, if true will cause the wrong cell get focus when add new row
+			        attributes:{class:"gridLineNumber"},
+			        headerAttributes:{class:"gridLineNumberHeader"},
+			        width: 25,
+				}, {			
+					name:"location",
+				    field: "location",
+				    title: "Location",
+				    width: 120
+				}, {
+					name:"designNo",
+				    field: "designNo",
+				    title: "Design#",
+				    width: 120
+				}, {
+					name:"designName",
+				    field: "designName",
+				    title: "Design Name",
+				    width: 150
+				}, {
+					name:"stitchCount",
+				    field: "stitchCount",
+				    title: "Stitches",
+				    width: 90
+				}, {
+					name:"colourCount",
+				    field: "colourCount",
+				    title: "Colours",
+				    width: 150
+				}, {
+					name:"threads",
+				    field: "threads",
+				    title: "Threads",
+			        attributes: {style:"white-space:normal;"},
+				    width: 150
+				}, {
+					name:"runningSteps",
+				    field: "runningSteps",
+				    title: "Running Steps",
+			        attributes: {style:"white-space:normal;"},
+				    width: 200
+				}, {
+					name:"remark",
+				    field: "remark",
+				    title: "Remark"
+					//the column is extended if its width is not set   
+			}];
+			
+			return gridColumns;
+		}
+		
+	 var ColourwayGridWrapper=function(gridName){
+		 
+		GridWrapper.call(this,gridName);
+		thisGGW=this;
+		this.setColumns=function(){this.gridColumns=getColumns()};		
+	}
+	 
+	ColourwayGridWrapper.prototype=new GridWrapper();
+	
+	return ColourwayGridWrapper;
+	
+}]); /* end of ColourGridWrapper */
 
 //service
 clivia.factory("cliviaGridWrapperFactory",["ContactGridWrapper","AddressGridWrapper","JournalGridWrapper","ColumnGridWrapper","ColourwayGridWrapper",
@@ -2336,6 +2494,10 @@ clivia.factory("cliviaGridWrapperFactory",["ContactGridWrapper","AddressGridWrap
 				gw=new ColumnGridWrapper(gridName);
 				gw.setColumns();
 				break;
+			case "DesignGridWrapper":
+				gw=new ColourwayGridWrapper(gridName);
+				gw.setColumns();
+				break;
 			case "ColourwayGridWrapper":
 				gw=new ColourwayGridWrapper(gridName);
 				gw.setColumns();
@@ -2348,7 +2510,7 @@ clivia.factory("cliviaGridWrapperFactory",["ContactGridWrapper","AddressGridWrap
 	}
 }]);
 
-//seems not being use
+//seems not being used
 /* clivia.factory("gridColumnFactory",["cliviaDDS","utils",function(cliviaDDS,util){
 	var dictGrid=cliviaDDS.getDict("grid");
 	var dictColumns=cliviaDDS.getDict("columns");

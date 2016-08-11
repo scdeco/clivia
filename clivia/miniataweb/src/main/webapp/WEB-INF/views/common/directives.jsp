@@ -207,51 +207,54 @@ directive("themeChooser",function(){
 		                                              	   
 			scope.kendoDropDownList=element.getKendoDropDownList();
 			
-			scope.changeTheme=function(skinName, animate) {
-			    var doc = document,
-		        kendoLinks = $("link[href*='kendo.']", doc.getElementsByTagName("head")[0]),
-		        commonLink = kendoLinks.filter("[href*='kendo.common']"),
-		        skinLink = kendoLinks.filter(":not([href*='kendo.common'])"),
-		        href = location.href,
-		        skinRegex = /kendo\.\w+(\.min)?\.css/i,
-		        extension = skinLink.attr("rel") === "stylesheet" ? ".css" : ".less",
-		        url = commonLink.attr("href").replace(skinRegex, "kendo." + skinName + "$1" + extension),
-		        exampleElement = $("#example");
+		    var preloadStylesheet=function(file, callback) {
+		        var tempElement = $("<link rel='stylesheet' media='print' href='" + file + "'").appendTo("head");
+		        
+		        setTimeout(function () {
+		            callback();
+		            tempElement.remove();
+		        }, 100);
+		    }
 		    
-			    function preloadStylesheet(file, callback) {
-			        var element = $("<link rel='stylesheet' media='print' href='" + file + "'").appendTo("head");
-			        
-			        setTimeout(function () {
-			            callback();
-			            element.remove();
-			        }, 100);
-			    }
-
-			    function replaceTheme() {
-			        var oldSkinName = $(doc).data("kendoSkin"),
-			            newLink;
-	
-			        if (kendo.support.browser.msie) {
-			            newLink = doc.createStyleSheet(url);
-			        } else {
-			            newLink = skinLink.eq(0).clone().attr("href", url);
-			            newLink.insertBefore(skinLink[0]);
-			        }
-			        
-			        skinLink.remove();
-	
-			        $(doc.documentElement).removeClass("k-" + oldSkinName).addClass("k-" + skinName);
-			    }
+			scope.changeTheme=function(newSkinName, animate) {
+			    var oldSkinLink =scope.getSkinLinks().eq(0);
+			    var oldSkinName=scope.getSkinName();
+		        var url = oldSkinLink.attr("href").replace(oldSkinName, newSkinName );
 
 			    if (animate) {
 			        preloadStylesheet(url, replaceTheme);
-			    } else {
-			        replaceTheme();
+			    } else {		//replace theme
+			    	
+			    	var newSkinLink;
+			        if (kendo.support.browser.msie) {
+			            newSkinLink = document.createStyleSheet(url);
+			        } else {
+			            newSkinLink = oldSkinLink.clone().attr("href", url);
+			            newSkinLink.insertBefore(oldSkinLink);
+			        }
+			        
+			        oldSkinLink.remove();
+
+			        $(document.documentElement).removeClass("k-" + oldSkinName).addClass("k-" + newSkinName);
 			    }
 			};
 		},
 		
-		controller: ['$scope', function($scope){
+		controller: ['$scope','util', function($scope,util){
+
+			$scope.getSkinLinks=function(){
+				var doc = document,
+		        	kendoLinks = $("link[href*='kendo.']", doc.getElementsByTagName("head")[0]),
+		        	commonLink = kendoLinks.filter("[href*='kendo.common']"),
+		        	skinLinks = kendoLinks.filter(":not([href*='kendo.common'])");
+				return skinLinks.eq(0);
+			}
+			$scope.getSkinName=function(){
+				var skinLinks=$scope.getSkinLinks();
+                var skinLink=skinLinks.eq(0).attr("href").replace(".min.css","");
+                var skinName = skinLink.substring(skinLink.lastIndexOf(".")+1);
+                return skinName;
+			 }			
 			
 			$scope.listOptions={
 				    dataSource: [
@@ -273,10 +276,11 @@ directive("themeChooser",function(){
 				             ],
 				             dataTextField: "text",
 				             dataValueField: "value",
+				             value:($scope.getSkinName()||"default").toLowerCase(),
 				             change: function (e) {
 				                 var theme = (this.value() || "default").toLowerCase();
-				                 
 				                 $scope.changeTheme(theme);
+			                	 util.getRemote("../service/save-theme?theme="+theme);
 				             }	
 			}
 			
@@ -880,6 +884,7 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 				cPageable:'=',
 				cNewItemFunction:'&',
 				cRegisterDeletedItemFunction:'&',
+				cGetDetailFunction:'&',
 			},
 			
 			templateUrl:'../common/garmentgrid',
@@ -966,22 +971,22 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 					       	},
 					       	
 			 		       	save: function(e) {
-				 		       	console.log("event save:"+JSON.stringify(e.values));
 			 		       		
-					       		if(ggw.brand.hasInventory && typeof e.values.styleNo!== 'undefined'){		//styleNo changed
+					       		if( typeof e.values.styleNo!== 'undefined'){		//styleNo changed,ggw.brand.hasInventory &&
 						       		
 					       			//stop accept the default value,use the value after processed below
-					       			e.preventDefault();
 			 		       			if(e.values.styleNo===";"){
+						       			e.preventDefault();
 					       				ggw.copyPreviousRow();
 					       				setTimeout(function(){
 					       						ggw.calculateTotal();
 					       						scope.$apply();	//show changes
 											},1);
-					       		 	}else {
-						          		e.model.set("styleNo",e.values.styleNo.toUpperCase().trim());
-						          		ggw.setCurrentGarment(e.model);
-					          		}
+					       		 	}else if(ggw.brand.hasInventory){
+						          			e.model.set("styleNo",e.values.styleNo.toUpperCase().trim());
+						          			ggw.setCurrentGarment(e.model);
+					       		 	}
+					          		
 					          	}else{
 						        	for(var c=0,field; c<ggw.season.sizeFields.length; c++){
 						        		field="qty"+("00"+c).slice(-2);
@@ -1006,7 +1011,10 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 				        		if(ggw.rowChanged()){
 				        			var dataItem=ggw.getCurrentDataItem();
 				        			ggw.setCurrentGarment(dataItem);
-					        			//$state.go('main.lineItem.detail',{orderItemId:orderItemId,lineItemId:dataItem.lineNumber});
+				        			if(scope.cGetDetailFunction){
+				        				var getDetail=scope.cGetDetailFunction();
+				        				getDetail(dataItem);
+				        			}				        				
 				        		};
 					       	},
 					       	
@@ -1264,10 +1272,12 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 					       		console.log("bill grid event: row changed");
 					       		setTimeout(function(){
 				        			var dataItem=bgw.getCurrentDataItem();
-				        			getBillDetail(dataItem);
-				        			scope.$apply();
+				    				if(scope.cGetBillDetailFunction){
+				    					var getDetail=scope.cGetBillDetailFunction();
+				    					getDetail(dataItem);
+					        			scope.$apply();
+				    				}
 					       		},1)
-				        			//$state.go('main.lineItem.detail',{orderItemId:orderItemId,lineItemId:dataItem.lineNumber});
 			        		};
 
 				       		
@@ -1320,14 +1330,6 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 					model.orderPrice=result;
 				}
 				return result;
-			}
-			
-			var getBillDetail=function(billItem){
-				var detail;
-				if(scope.cGetBillDetailFunction){
-					var f=scope.cGetBillDetailFunction({billItem:billItem});
-				}
-				return detail;
 			}
 			
 			
@@ -1457,7 +1459,6 @@ directive('imageGrid',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 				        			showImageDetail(dataItem);
 				        			scope.$apply();
 					       		},1)
-				        			//$state.go('main.lineItem.detail',{orderItemId:orderItemId,lineItemId:dataItem.lineNumber});
 			        		};
 
 				       		
@@ -1559,7 +1560,7 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 			restrict:'EA',
 			replace:false,
 			scope:{
-				cName:'@imageGrid',
+				cName:'@imageView',
 				cEditable:'=',
 				cDataSource:'=',
 				cPageable:'=',
@@ -1576,21 +1577,21 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 				scope.gridName=scope.cName+tmpId;
 				scope.gridContextMenuName=scope.gridName+"ContextMenu";
 
-				var igw=new ImageGridWrapper(scope.gridName);	
-				igw.setColumns();
+				var gw=new ImageGridWrapper(scope.gridName);	
+				gw.setColumns();
 				
 				scope.$on("kendoWidgetCreated", function(event, widget){
 
 					if (widget ===scope[scope.gridName]) {
-			        	igw.wrapGrid(widget);
+			        	gw.wrapGrid(widget);
 			        	
 			        	if(scope.cName){
 				        	scope.$parent[scope.cName]={
 			        			name:scope.cName,
 			        			grid:widget,
-			        			gridWrapper:igw,
+			        			gridWrapper:gw,
 			        			resize:function(gridHeight){
-			        				igw.resizeGrid(gridHeight);
+			        				gw.resizeGrid(gridHeight);
 			        				},
 				        	}
 			        	}
@@ -1600,11 +1601,11 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 				scope.setting={};
 				scope.setting.editing=true;
 				
-				scope.gridSortableOptions = igw.getSortableOptions();
+				scope.gridSortableOptions = gw.getSortableOptions();
 				
 				scope.gridOptions = {
 						autoSync: true,
-				        columns: igw.gridColumns,
+				        columns: gw.gridColumns,
 				        dataSource: scope.cDataSource,
 				        editable: scope.cEditable,
 				        pageable:scope.cPageable,
@@ -1629,14 +1630,13 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 				       	change:function(e){
 				       		console.log("image grid event: change");
 				       	
-			        		if(igw.rowChanged()){
+			        		if(gw.rowChanged()){
 					       		console.log("image grid event: row changed");
 					       		setTimeout(function(){
-				        			var dataItem=igw.getCurrentDataItem();
+				        			var dataItem=gw.getCurrentDataItem();
 				        			showImageDetail(dataItem);
 				        			scope.$apply();
 					       		},1)
-				        			//$state.go('main.lineItem.detail',{orderItemId:orderItemId,lineItemId:dataItem.lineNumber});
 			        		};
 
 				       		
@@ -1646,7 +1646,7 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 				        	console.log("image grid event: edit");
 				        	
 /* 				        	//without code below,when navigate with keybord like tab key, the editing cell will not be selected 
-						    var editingCell=igw.getEditingCell();
+						    var editingCell=gw.getEditingCell();
 						    if(!!editingCell){
 						    	this.select(editingCell);
 						    } 				        	 */
@@ -1661,11 +1661,11 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 				target:'#'+scope.gridName,
 				select:function(e){
 				
-					switch(e.item.id){
+					switch(e.item.textContent){
 						case "menuAdd":
 							scope.setting.editing=true;
-							if(!igw.isEditing)
-								igw.enableEditing(true);
+							if(!gw.isEditing)
+								gw.enableEditing(true);
 //							addRow(false);
 							break;
 						case "menuUpload":
@@ -1734,11 +1734,11 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 			
 			var addRow=function(data,isInsert){
 				var item=newItem(data);
-			    igw.addRow(item,isInsert);
+			    gw.addRow(item,isInsert);
 			}
 						
 			var deleteRow=function (){
-				var dataItem=igw.getCurrentDataItem();
+				var dataItem=gw.getCurrentDataItem();
 		    	var confirmed=true;
 			    if (dataItem) {
 			        if (dataItem.orderAmt){
@@ -1749,7 +1749,7 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 				    		var register=scope.cRegisterDeletedItemFunction();
 				    		register(dataItem);
 				    	}
-						igw.deleteRow(dataItem);
+						gw.deleteRow(dataItem);
 			        }
 			    }
 		   		else {
@@ -1810,6 +1810,150 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 	
 	return directive;
 }]).
+
+directive('designView',["DesignGridWrapper","cliviaDDS","util",function(DesignGridWrapper,cliviaDDS,util){
+	var directive={
+			restrict:'EA',
+			replace:false,
+			scope:{
+				cName:'@designView',
+				cEditable:'=',
+				cDataSource:'=',
+				cPageable:'=',
+				cDictImage:'=',
+				cNewItemFunction:'&',
+				cRegisterDeletedItemFunction:'&',
+			},
+			
+			templateUrl:'../common/designview',
+			link:function(scope,element,attrs){	
+				
+				var tmpId=util.getTmpId();
+				scope.element=element;
+				scope.gridName=scope.cName+tmpId;
+				scope.gridContextMenuName=scope.gridName+"ContextMenu";
+
+				var gw=new DesignGridWrapper(scope.gridName);	
+				gw.setColumns();
+				
+				scope.$on("kendoWidgetCreated", function(event, widget){
+
+					if (widget ===scope[scope.gridName]) {
+			        	gw.wrapGrid(widget);
+			        	
+			        	if(scope.cName){
+				        	scope.$parent[scope.cName]={
+			        			name:scope.cName,
+			        			grid:widget,
+			        			gridWrapper:gw,
+			        			resize:function(gridHeight){
+			        				gw.resizeGrid(gridHeight);
+			        				},
+				        	}
+			        	}
+			        }
+			    });	
+
+				scope.setting={};
+				scope.setting.editing=true;
+				
+				scope.gridSortableOptions = gw.getSortableOptions();
+				
+				scope.gridOptions = {
+						autoSync: true,
+				        columns: gw.gridColumns,
+				        dataSource: scope.cDataSource,
+				        editable: scope.cEditable,
+				        pageable:scope.cPageable,
+				        selectable: "cell",
+				        navigatable: true,
+				        resizable: true,
+				         //row or cloumn changed
+				       	change:function(e){
+				       	
+				       	}, 
+				       	
+				        edit:function(e){
+				        	
+/* 				        	//without code below,when navigate with keybord like tab key, the editing cell will not be selected 
+						    var editingCell=gw.getEditingCell();
+						    if(!!editingCell){
+						    	this.select(editingCell);
+						    } 				        	 */
+				        }
+
+			}; //end of imageGridOptions
+
+								
+			scope.gridContextMenuOptions={
+				closeOnClick:true,
+				filter:".gridLineNumber,.gridLineNumberHeader",
+				target:'#'+scope.gridName,
+				select:function(e){
+				
+					switch(e.item.textContent){
+						case "Add":
+							scope.setting.editing=true;
+							if(!gw.isEditing)
+								gw.enableEditing(true);
+							addRow(false);
+							break;
+						case "Insert":
+							scope.setting.editing=true;
+							if(!gw.isEditing)
+								gw.enableEditing(true);
+							addRow(true);
+							break;
+						case "Delete":
+							deleteRow();
+							break;
+					}
+					
+				}
+				
+			};
+
+			var newItem=function(){
+				if(!scope.cNewItemFunction)
+					scope.cNewItemFunction=function(){
+							return {};
+						};
+				var f=scope.cNewItemFunction();
+				return f();
+			}
+			
+			var addRow=function(isInsert){
+				var item=newItem();
+			    gw.addRow(item,isInsert);
+			}
+						
+			var deleteRow=function (){
+				var dataItem=gw.getCurrentDataItem();
+		    	var confirmed=true;
+			    if (dataItem) {
+			        if (dataItem.orderAmt){
+			        	confirmed=confirm('Please confirm to remove the selected row.');	
+			        }
+			        if(confirmed){
+				    	if(dataItem.id && scope.cRegisterDeletedItemFunction){
+				    		var register=scope.cRegisterDeletedItemFunction();
+				    		register(dataItem);
+				    	}
+						gw.deleteRow(dataItem);
+			        }
+			    }
+		   		else {
+		        	alert('Please select a  row to delete.');
+		   		}
+			    
+			}
+
+				
+		}	//end of designView:link
+	}
+	
+	return directive;
+}]).	//end of designView:directive
 
 directive('cliviaGrid',["cliviaGridWrapperFactory","cliviaDDS","util",function(cliviaGridWrapperFactory,cliviaDDS,util){
 	var directive={

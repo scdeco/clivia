@@ -1,4 +1,3 @@
-<h1>lineitem detail</h1>
+<h2>Service on lineitem  {{'#'+lineItemDi.lineNo}}:</h2>
 
-<h5>order item id:{{detailOrderItemId}}</h5>
-<h5>line item id:{{detailLineItemId}}</h5>
+<h5>order item id:{{lineItemDi.orderItemId}}  line item id:{{lineItemDi.id}}</h5>

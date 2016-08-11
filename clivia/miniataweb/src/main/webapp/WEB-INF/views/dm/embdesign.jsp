@@ -1339,7 +1339,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					if(dst && dst.isValid()){
 						//embCanvas.drawDesign();
 						
-						var list=[],line;
+						var list=[],line,firstStepIndex;
 						var threadList=embMatcher.threadList;
 						var stepList=embMatcher.runningStepList;
 						var idxThreads={};
@@ -1369,6 +1369,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 							}
 							list.push(emptyLine);
 						}
+						firstStepIndex=list.length;
 						
 						for(var i=0,idx,step,code,t;i<stepList.length;i++){
 							step=stepList[i];
@@ -1413,6 +1414,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 								width:dst.width,
 								height:dst.height,
 								list:list,
+								firstStepIndex:firstStepIndex,
 								image:embCanvas.imageObj.toDataURL(),
 								bgColour:embMatcher.backgroundColour?embMatcher.backgroundColour:"#FFFFFF",
 								settings:settings,
@@ -1496,7 +1498,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					
 				
 					var threadLists = printModel.list;
-					var colorDiv = 10;
+					var colorDivSize = 10;
 					var col1Width = 25;
 					var col2Width = 20;
 					var col3Width = 20;
@@ -1506,9 +1508,9 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					var rightList="";
 				
 					//test part start here
-					var row_height = 20;
+					var rowHeight = 20;
 					//calculate how many row needed
-					var row_count = Math.floor(borderHeight/row_height)-2;
+					var row_count = Math.floor(borderHeight/rowHeight)-2;
 					//calculate how many col needed
 					var needed_row = threadLists.length;
 					var col_count = Math.ceil(needed_row/row_count);
@@ -1555,11 +1557,14 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 							if(count < needed_row){
 								t = threadLists[count];
 								
-								rightList += "<td style='width:" + col1Width + "px;text-align:right;'>" + t.col0 + ".</td>";
+								rightList += "<td style='height:"+rowHeight+"px; width:" + col1Width + "px;text-align:right;'>" +(t.col0?(t.col0+"."):"") + "</td>";
 								rightList += "<td style='width:" + col2Width + "px;text-align:right; display:"+ display + "'>"+ t.col1  +"</td>";
-								rightList += "<td style='width: "+ col3Width  +"px;'><center><div style ='border:1px solid black; width:" + colorDiv + "px; height:" 
-												  + colorDiv +"px; 	background-color:" + t.col2+ "'></div></center></td>"
-												  +"<td style ='text-align:right;width:" + col4Width+ "px;'>"+ t.col3 +"</td>";
+								
+								rightList += "<td style='width: "+ col3Width  +"px;'>"
+											+(t.col2?("<center><div style ='border:1px solid black; width:" + colorDivSize + "px; height:"  + colorDivSize +"px; background-color:" + t.col2+ "'></div></center>"):"")
+											+"</td>";
+								
+								rightList += "<td style ='text-align:right;width:" + col4Width+ "px;'>"+ t.col3 +"</td>";
 								
 								if(count < row_count && col_count !=1){		  
 									rightList += "<td style ='width:" + col5Width  + "px;text-align:right;border-right-style:solid; border-right-width: 1px;'>" + t.col4+ "</td>";
@@ -1676,7 +1681,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 								answer: true
 							  }];
 							
-					util.getSettingDialog(printSettings).then(function(settings){
+					util.getSettingDialog(printSettings,1).then(function(settings){
 						//parameters:embMatcher,showThreads--list of threads,purgeRepeatCode
 						scope.printModel=scope.getPrintModel(scope.threadMatcher,settings);
 						

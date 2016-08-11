@@ -5,7 +5,7 @@
  -->
  
   	<link href="/clivia/resources/styles/kendo/2016.1.217/kendo.common.min.css" rel="stylesheet" /> 
- 	<link href="/clivia/resources/styles/kendo/2016.1.217/kendo.bootstrap.min.css" rel="stylesheet" /> 
+ 	<link href="/clivia/resources/styles/kendo/2016.1.217/kendo.${theme}.min.css" rel="stylesheet" /> 
 
 
 	<script src="/clivia/resources/js/jquery/jquery.min.js"></script>
