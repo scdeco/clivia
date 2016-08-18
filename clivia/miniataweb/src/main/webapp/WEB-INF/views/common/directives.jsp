@@ -2345,4 +2345,5 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 	return directive;
 }]);
 
+
 </script>

@@ -132,5 +132,24 @@
 				directive:"send-receive",
 			}],
 			
+			registeredServices:[{
+				 text: "Embroidery", 
+				 icon: "insert-n",
+				 name:"orderServiceEmb",
+			},{
+				 text: "Screen Printing", 
+				 icon: "insert-n",
+				 name:"orderServiceSp",
+				
+			},{
+				 text: "Heat Transfer", 
+				 icon: "insert-n",
+				 name:"orderServiceHt",
+			},{
+				 text: "Laser Etching", 
+				 icon: "insert-n",
+				 name:"orderServiceLaser",
+			}],
+			
 	});
 </script>

@@ -48,6 +48,10 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 		        	$scope.getCommission();
 		        	
 		        	}
+		    }, {
+		        type: "separator",
+	        }, {
+ 	           	template:'Choose Theme:<theme-chooser></theme-chooser>'		    
 		}]};
 	
 	scope.chooseAllColumns=function(chooseAll){

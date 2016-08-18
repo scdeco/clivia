@@ -44,7 +44,7 @@
  		
  		
 		<div>   <!--  bottom pane -->	
-			<div line-item-detail="services"></div>
+			<div deco-service="decoServices"></div>
 		</div>  <!-- end of bottom pane -->	
     </div>
 	

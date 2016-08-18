@@ -160,6 +160,20 @@ designApp.controller("dmCtrl",
 			        click: function(e){
 			        	$scope.removeColourway();
 			        	}  
+			    }, {	
+			        type: "button",
+			        text: "New",
+			        id: "btnNewColourway",
+			        click: function(e){
+			        	$scope.newColourway();
+			        	}  
+			    }, {	
+			        type: "button",
+			        text: "Normalize",
+			        id: "btnNormalizeColourway",
+			        click: function(e){
+			        	$scope.normalizeColourway();
+			        	}  
 			    }, {
 			        type: "separator",
 			    }, {	
@@ -277,7 +291,7 @@ designApp.controller("dmCtrl",
 					    if(e.response.status==="success"){
 					    	var data=e.response.data;
 							if(data){
-								$scope.myDstPaint.loadDesignById(data.id);
+								$scope.loadDesign(data.id);
 							}
 				    	}
 					},

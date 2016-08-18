@@ -46,7 +46,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				//corresponding to a menu item of insertable items
 				registeredOrderItems:consts.registeredOrderItems,
 				
-				
+				registeredServices:consts.registeredServices,
 				},
 				
 			dds:{
@@ -68,6 +68,11 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 	for(var i=0;i<setting.registeredItemTypes.length;i++){
 		dataSet[setting.registeredItemTypes[i].name+"s"]=new kendo.data.ObservableArray([]);	
 	}
+	
+	for(var i=0;i<setting.registeredServices.length;i++){
+		dataSet[setting.registeredServices[i].name]=new kendo.data.ObservableArray([]);	
+	}
+
 	
 	_order.getRegisteredItemType=function(id){
 		 var item=null;
@@ -111,6 +116,13 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			var dt=dataSet[_order.setting.registeredItemTypes[i].name+"s"];
 			dt.splice(0,dt.length);
 		}
+
+		for(var i=0;i<_order.setting.registeredServices.length;i++){
+			var dt=dataSet[_order.setting.registeredServices[i].name];
+			dt.splice(0,dt.length);
+		}
+		
+		
 		dataSet.deleteds.splice(0,dataSet.deleteds.length);	
 		dataSet.upcItems.splice(0,dataSet.upcItems.length);
 	}
@@ -192,6 +204,16 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			    	for(var j=0;j<dataItems.length;j++)
 			    		dataTable.push(dataItems[j]);
 			}
+
+			for(var i=0;i<setting.registeredServices.length;i++){
+				var serviceName=setting.registeredServices.name,
+					dataTable=dataSet[serviceName],
+					dataItems=data[serviceName];
+				if(dataItems)
+			    	for(var j=0;j<dataItems.length;j++)
+			    		dataTable.push(dataItems[j]);
+			}
+			
 			
 			if(data.upcItems)
 				dataSet.upcItems=data.upcItems;
@@ -797,6 +819,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  	
  	_order.printBill=function(billItems,lineItemOnly,mainColourOnly,hideDiscount,file){
  		var data=_order.createGarmentPrintModel(billItems,lineItemOnly,mainColourOnly,hideDiscount);
+ /* to get testing data of print model		_order.printModel=data; */
  		url="../om/print-order?file="+file;
  		util.printUrl(url,{data:JSON.stringify(data)},true);	//false=no preview
  		return;

@@ -6,6 +6,7 @@
 	<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
 
 	<shared:header/> 
+	
 	<%@include file="../common/factories.jsp"%>
 	<%@include file="../common/directives.jsp"%>
 	<%@include file="query-script.jsp"%>

@@ -631,6 +631,10 @@ factory("EmbCanvas",["dictThread","Event","util",function(dictThread,Event,util)
 				this.runningSteps=dictThread.normalizeRunningSteps(this.runningSteps,this.embDesign.stepCount);
 		},
 		
+		normalizeColourway:function(){
+			
+		},
+		
 		isNewColorModel:function(colorModel){
 			if(!this.colorModel)
 				return true;
@@ -1459,7 +1463,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					//before change to pixel, all variable are in mm.
 					var margin = 0; 
 					var r_table_w = 40;
-					var r_table_h = 240.5;
+					var r_table_h = 240.5;//240.5
 					var paper_width = (paper.width - (margin*2));
 					var paper_height = (paper.height - (margin*2));
 					var table_width= paper.width;
@@ -1508,7 +1512,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					var rightList="";
 				
 					//test part start here
-					var rowHeight = 20;
+					var rowHeight = 20;//15
 					//calculate how many row needed
 					var row_count = Math.floor(borderHeight/rowHeight)-2;
 					//calculate how many col needed

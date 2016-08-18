@@ -781,22 +781,27 @@ orderApp.directive("lineItem",function(SO){
 		    			    	orderItemId:scope.orderItem.id, 
 		    			    	brandId:scope.brand.id,
 		    			    	seasonId:scope.season.id,
-		    			    	id:SO.getTmpId()
+		    			    	id:SO.getTmpId(),
 		    			    }
-		    		}
-		    		        
+				}
+				        
 		    	//pass to garmentGird directive to register removed lineitem		        
 		    	scope.registerDeletedItemFunction=function(dataItem){
 		    		SO.registerDeletedItem("orderLineItem",dataItem.id,true);
 		    	}
 		    	
 		    	scope.getDetailFunction=function(diLineItem){
-		    			console.log("get into line item detail"+diLineItem.lineNo);
-		    			scope.services.initDetail(diLineItem);
+		    		
+		    			//put initDetail in setTimeout to avoid error "$apply already in progress"
+		    			//caused by "add with dialog"  
+		    			setTimeout(function(){
+		    					scope.decoServices.initDetail(diLineItem);
+		    				},1);
+		    			
 		    	}
 		    	
 		    	scope.resize=function(){
-	    		scope.lineItemSplitter.resize();
+	    			scope.lineItemSplitter.resize();
 		    	}
 		    	
 			},
@@ -805,6 +810,7 @@ orderApp.directive("lineItem",function(SO){
 					$scope.SO=SO;
 					if($scope.cName)
 						$scope.$parent[$scope.cName]=$scope;
+					
 					
 					$scope.orderItem=$scope.$parent.getOrderItemDi(parseInt($scope.cItemId));
 					
@@ -859,36 +865,71 @@ orderApp.directive("lineItem",function(SO){
 });	//end of lineItem directive
 	
 	
-orderApp.directive("lineItemDetail",function(SO){
+orderApp.directive("decoService",function(SO){
 	var directive={
 			restrict:'EA',
 			replace:false,
 			scope:{
-				cName:'@lineItemDetail',
+				cName:'@decoService',
 				},
-			templateUrl:'lineItemDetail',
+			templateUrl:'decoservice',
 			
 			link:function(scope){
 
 		    	scope.initDetail=function(lineItemDi){
+		    		
 		    		scope.lineItemDi=lineItemDi;
-		    		scope.$apply();
+   	 	    		scope.embServiceGrid.grid.setDataSource(scope.getEmbServiceGridDataSource());
+//		    		scope.$apply();
+		    	}
+		    	
+		    	scope.embServiceNewItemFunction=function(){
+	    		    return {
+    			    	orderId:SO.dataSet.info.orderId,
+    			    	orderItemId:scope.lineItemDi.orderItemId, 
+    			    	lineItemId:scope.lineItemDi.id,	
+    			    }
+
+		    	}
+		    	
+		    	scope.registerDeletedEmbServiceFunction=function(){
+		    		
 		    	}
 		    	
 		    	scope.resize=function(){
 		    	}
 		    	
+				scope.getEmbServiceGridDataSource=function(){
+					return new kendo.data.DataSource({
+	     		        	data:SO.dataSet.orderServiceEmb, 
+	    		    	    schema: {
+	    		    	    	model: 
+	    		    	    		{ 
+	    		    	    			id: "id" ,
+										fields:{lineItemId: {type: "number"}}
+	    		    		    }},	
+	    		    	    filter: {
+	    		    	        field: "lineItemId",
+	    		    	        operator: "eq",
+	    		    	        value: scope.lineItemDi.id,
+	    		    	    },    
+	    		    	    
+	    		    	    serverFiltering:false,
+	    		    	    pageSize: 0,			//paging in pager
+	
+	    		        }); //end of dataSource,
+				}
+		    	
+		    	
 			},
-			controller: ["$scope",function($scope) {
+			controller: ["$scope","cliviaGridWrapperFactory",function($scope,cliviaGridWrapperFactory) {
 				
 					$scope.SO=SO;
 					if($scope.cName)
 						$scope.$parent[$scope.cName]=$scope;
 					
-					
-				//	$scope.orderItem=$scope.$parent.getOrderItemDi(parseInt($scope.cLineItemId));
-				//	$scope.lineItem=$scope.$parent.get
-					
+					$scope.lineItemDi={};
+					$scope.lineItemDi.id=null;
 					
 					
 			}]	//end of controller

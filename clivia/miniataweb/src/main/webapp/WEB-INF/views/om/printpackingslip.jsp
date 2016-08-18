@@ -19,7 +19,7 @@ img{
 
 .info {
 	position:absolute;
-	margin-top:-40px;
+	margin-top:-35px;
 	left:220px;
 	font-size:70%;
 }
@@ -28,7 +28,7 @@ img{
 	position:relative;
 	table-layout:fixed;
 	left:445px;
-	top:-80px;
+	top:-70px;
 	font-size:70%;
 }
 table{
@@ -37,7 +37,7 @@ table{
 
 h2{
 	position:relative;
-	top:-60px;
+	top:-50px;
 	margin-left:485px;
 }
 .billShip{
@@ -210,10 +210,10 @@ window.onload = function() {
 		billAndShip += "<br>"
 					+ "<tr>"
 					+ "<br><br>"
-					+ "<table width='500px' class='billShip'>"
+					+ "<table width='700px' class='billShip'>"
 					+ "<tr style='background-color:#C0C0C0'>"
 					+ "<th class='left'>Bill To:</th>"
-					+ "<th id='ship'>Ship To:</th>"
+					+ "<th id='ship' class='left'>Ship To:</th>"
 					+ "</tr>"
 					+ "<table>"
 					+ "<table width='350px' align='center' class='billTable'>"

@@ -2327,16 +2327,16 @@ clivia.factory("DesignGridWrapper",["GridWrapper","cliviaDDS","DataDict",functio
 			return gridColumns;
 		}
 		
-	 var ColourwayGridWrapper=function(gridName){
+	 var gw=function(gridName){
 		 
 		GridWrapper.call(this,gridName);
 		thisGGW=this;
 		this.setColumns=function(){this.gridColumns=getColumns()};		
 	}
 	 
-	ColourwayGridWrapper.prototype=new GridWrapper();
+	gw.prototype=new GridWrapper();
 	
-	return ColourwayGridWrapper;
+	return gw;
 	
 }]); /* end of ColourGridWrapper */
 
@@ -2381,22 +2381,22 @@ clivia.factory("ColourwayGridWrapper",["GridWrapper","cliviaDDS","DataDict",func
 			return gridColumns;
 		}
 		
-	 var ColourwayGridWrapper=function(gridName){
+	 var gw=function(gridName){
 		 
 		GridWrapper.call(this,gridName);
 		thisGGW=this;
 		this.setColumns=function(){this.gridColumns=getColumns()};		
 	}
 	 
-	ColourwayGridWrapper.prototype=new GridWrapper();
+	gw.prototype=new GridWrapper();
 	
-	return ColourwayGridWrapper;
+	return gw;
 	
 }]); /* end of ColourGridWrapper */
 
 clivia.factory("EmbServiceGridWrapper",["GridWrapper","cliviaDDS","DataDict",function(GridWrapper,cliviaDDS,DataDict){
 	
-	 var thisGGW;
+	 var thisGW;
 
 	 var getColumns=function(){
 
@@ -2411,6 +2411,7 @@ clivia.factory("EmbServiceGridWrapper",["GridWrapper","cliviaDDS","DataDict",fun
 					name:"location",
 				    field: "location",
 				    title: "Location",
+				    editor: thisGW.locationEditor,
 				    width: 120
 				}, {
 					name:"designNo",
@@ -2454,22 +2455,26 @@ clivia.factory("EmbServiceGridWrapper",["GridWrapper","cliviaDDS","DataDict",fun
 			return gridColumns;
 		}
 		
-	 var ColourwayGridWrapper=function(gridName){
+	 var gw=function(gridName){
 		 
 		GridWrapper.call(this,gridName);
-		thisGGW=this;
+		thisGW=this;
 		this.setColumns=function(){this.gridColumns=getColumns()};		
 	}
 	 
-	ColourwayGridWrapper.prototype=new GridWrapper();
+	gw.prototype=new GridWrapper();
 	
-	return ColourwayGridWrapper;
+	gw.prototype.locationEditor=function(container, options) {
+		var items=['Cap Back','Cap Front','Center','Full Back','L./Chest','L./Sleeve','L.Collar'];
+		thisGW.kendoComboBoxEditor(container, options,items);
+	}
+	return gw;
 	
 }]); /* end of ColourGridWrapper */
 
 //service
-clivia.factory("cliviaGridWrapperFactory",["ContactGridWrapper","AddressGridWrapper","JournalGridWrapper","ColumnGridWrapper","ColourwayGridWrapper",
-              function(ContactGridWrapper,AddressGridWrapper,JournalGridWrapper,ColumnGridWrapper,ColourwayGridWrapper){
+clivia.factory("cliviaGridWrapperFactory",["ContactGridWrapper","AddressGridWrapper","JournalGridWrapper","ColumnGridWrapper","ColourwayGridWrapper","EmbServiceGridWrapper",
+              function(ContactGridWrapper,AddressGridWrapper,JournalGridWrapper,ColumnGridWrapper,ColourwayGridWrapper,EmbServiceGridWrapper){
 	return {
 		getGridWrapper:function(wrapperName,gridName,callFrom){
 			var gw=null;			
@@ -2500,6 +2505,10 @@ clivia.factory("cliviaGridWrapperFactory",["ContactGridWrapper","AddressGridWrap
 				break;
 			case "ColourwayGridWrapper":
 				gw=new ColourwayGridWrapper(gridName);
+				gw.setColumns();
+				break;
+			case "EmbServiceGridWrapper":
+				gw=new EmbServiceGridWrapper(gridName);
 				gw.setColumns();
 				break;
 			}

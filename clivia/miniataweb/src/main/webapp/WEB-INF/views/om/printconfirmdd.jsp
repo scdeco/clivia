@@ -18,7 +18,7 @@ img{
 
 .info {
 	position:absolute;
-	margin-top:-40px;
+	margin-top:-35px;
 	left:220px;
 	font-size:70%;
 }
@@ -27,7 +27,7 @@ img{
 	position:relative;
 	table-layout:fixed;
 	left:445px;
-	top:-80px;
+	top:-70px;
 	font-size:70%;
 }
 table{
@@ -36,7 +36,7 @@ table{
 
 h2{
 	position:relative;
-	top:-60px;
+	top:-50px;
 	margin-left:485px;
 }
 .billShip{
@@ -111,11 +111,11 @@ h2{
 </style>
 <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 <script>
-
+	
 window.onload = function() {
 	
 
-    var printModel = ${data.data};
+	var printModel = ${data.data};
 
     var info = printModel.info;
     var hideDiscount = info.hideDiscount;
@@ -123,12 +123,13 @@ window.onload = function() {
     var headerPart = "";
     var currentPage = 0;
     var totalPage = 0;
-    var breakPixel = 880.3; //910.3;
+    var breakPixel = 915.3; //910.3;
     var countPixel = {p:0};
-    var pagePixel = 890.3; //924.3;
+    var pagePixel = 924.3; //924.3;
     var endList = false;
     var qtyDisplay = false;
     var errorPixel = 20.813; // Compensation pixel for line break
+	var hideDiscount = false;
 
     var logoTitle = getLogoAndTitle();
     var billShip = getBillAndShip();
@@ -138,7 +139,9 @@ window.onload = function() {
     headerPart += logoTitle + billShip + contact + infoTable;
 	display(headerPart);
 	
-    countPixel.p += ($("#headerPart").height() + errorPixel);//-----------Count pixel of headerPart
+	showDiscount();
+	
+   	countPixel.p += ($("#headerPart").height() + errorPixel);//-----------Count pixel of headerPart
     display("<div class='content' id='content'>" + getTableHeader());
 	//display(getTableHeader());
 	
@@ -156,7 +159,8 @@ window.onload = function() {
 		var logoAndTitle = ""
 				+ "<div class='firstPage' id='firstPage'>"
 				+ "<div class='headerPart' id='headerPart'>"
-				+ "<img src='../resources/images/DD LOGO.jpg' alt='logo'>"
+				//+ "<img src='../resources/images/DD LOGO.jpg' alt='logo'>"
+				+ "<img src='http://192.6.2.108:8080/clivia/resources/images/DD LOGO.jpg' alt='logo'>"
 				+ "<div class='info' id='info'><p style='white-space: nowrap;'>"
 				+ "<b>STITCHES CREATION INC.</b><br>"
 				+ "3889 Keith Street, Unit D<br>"
@@ -210,10 +214,10 @@ window.onload = function() {
 		billAndShip += "<br>"
 					+ "<tr>"
 					+ "<br><br>"
-					+ "<table width='500px' class='billShip'>"
+					+ "<table width='700px' class='billShip'>"
 					+ "<tr style='background-color:#C0C0C0'>"
 					+ "<th class='left'>Bill To:</th>"
-					+ "<th id='ship'>Ship To:</th>"
+					+ "<th id='ship' class='left'>Ship To:</th>"
 					+ "</tr>"
 					+ "<table>"
 					+ "<table width='350px' align='center' class='billTable'>"
@@ -284,6 +288,18 @@ window.onload = function() {
 	
 	function getTableHeader(){
 		var tableHeader ="";
+		if(hideDiscount == true){
+		tableHeader += "<table class='tableHeader' width='700px'>"
+					+"<tr class='left'>"
+					+"<th width='70' style='border-bottom:1pt solid black;'>Style</th>"
+					+"<th width='300' style='border-bottom:1pt solid black;'>Description</th>"
+					+"<th width='130' align='right' style='border-bottom:1pt solid black;'>Quantity</th>"
+					+"<th width='100' align='right' style='border-bottom:1pt solid black;'>Price</th>"
+					+"<th width='100' align='right' style='border-bottom:1pt solid black;'>Amount</th>"
+					+"</tr>"
+					+"</table>";
+		}
+		else{
 		tableHeader += "<table class='tableHeader' width='700px'>"
 					+"<tr class='left'>"
 					+"<th width='70' style='border-bottom:1pt solid black;'>Style</th>"
@@ -295,6 +311,7 @@ window.onload = function() {
 					+"<th width='65' align='right' style='border-bottom:1pt solid black;'>Amount</th>"
 					+"</tr>"
 					+"</table>";
+		}
 		return tableHeader;
 		
 	}
@@ -305,7 +322,16 @@ window.onload = function() {
 			var table = lt;
 			table += "<div id='listSpace" + i +"' class='listSpace'>"
 			table  += "<table width='700px' class='listTable'>";
+			if(hideDiscount == true){
 			table  += "<tr class='mainrow'>"
+						+"<td width='70' class='left'>" + item.itemNo+ "</td>" 
+						+"<td width='300' class='left'>" + item.desc + "</td>"
+						+"<td width='130' align='right' id='bold'>" + item.qty+ "</td>" 
+						+"<td width='100' align='right' id='bold'>" + item.price + "</td>"
+						+"<td width='100' align='right' id='bold'>" + item.amt + "</td>"
+						+"</tr>"; 
+			}else{
+				table  += "<tr class='mainrow'>"
 						+"<td width='70' class='left'>" + item.itemNo+ "</td>" 
 						+"<td width='300' class='left'>" + item.desc + "</td>"
 						+"<td width='65' align='right' id='bold'>" + item.qty+ "</td>" 
@@ -314,6 +340,7 @@ window.onload = function() {
 						+"<td width='60' align='right' id='bold'>" + item.price + "</td>"
 						+"<td width='65' align='right' id='bold'>" + item.amt + "</td>"
 						+"</tr>"; 
+			}
 			var subItemRows = item.data;
 			if(subItemRows){
 				//image part			
@@ -347,7 +374,7 @@ window.onload = function() {
 							+"<div class ='modifySpace' id = 'modifySpace" + i +"'></div>"
 			}
 
-			table +="</div>"; //--------------------------- Closes with listSpace
+			table += "</div>"; //--------------------------- Closes with listSpace
 						
 				if(i == listLength){
 					table += "</div>";//--------------------Closes firstPage
@@ -355,13 +382,20 @@ window.onload = function() {
 		return table;
 	}
 	
+	function showDiscount(){
+		hideDiscount = info.hideDiscount;
+	}
+	
 	 function addLineBreak(i, pixel) {
 
 			var listSpace = "#listSpace" + i;		// listSpace+i is the number of rows of items
 			pixel.p += $(listSpace).height();
-			console.log(pixel.p);
-
+			//console.log(pixel.p);// the pixel in here is correct, just need to adjust the page break position.
+			
 			if (pixel.p > breakPixel && i != listLength) {
+				//var margin_top_pixel = pagePixel - pixel.p;
+				//var footerText = needPageBreak(i, listLength, pixel);
+			
 				var thisList = "#listSpace" + i;
 				var thisListHeight = $(thisList).height();
 				pixel.p = pixel.p - thisListHeight;
@@ -369,7 +403,8 @@ window.onload = function() {
 				var modify = "#modifySpace" + (i - 1);
 				var headerPixel = 20;
 				$(modify).html(footerText);
-				pixel.p = thisListHeight + headerPixel
+				pixel.p = thisListHeight + headerPixel;
+				
 			} else if (i == listLength) {
 				endList = true;
 				display(getTotalQty() + needPageBreak(listLength, listLength, pixel));
@@ -397,7 +432,7 @@ window.onload = function() {
 	}
 	
 	function needPageBreak(itemNo,listLength, px){
-	
+		
 		currentPage++;
 		var newPageEnd = "";
 		if(endList == true){
@@ -408,29 +443,39 @@ window.onload = function() {
 		else{
 			totalPage = currentPage + 1;
 			var className = "footer";
-			var needMorePage = "</div>";//-------------Closes firstPage
+			var needMorePage = "</div></div>";//-------------Closes firstPage
 		}
 
-		if(currentPage != 1 && qtyDisplay==false ){
-			px.p = px.p - (errorPixel + 10);
+		if(currentPage == 1 && qtyDisplay==false ){
+			px.p = px.p - (errorPixel) + 10; // 10 are image pixel error
+		}
+		else if(currentPage == 1 && qtyDisplay==true){
+			
+			px.p = px.p - (errorPixel - 95); //95 are image pixel error
+		}
+		
+		else if(currentPage != 1 && qtyDisplay==false ){
+			px.p = px.p - (errorPixel + 10); // after first page all the pages will have 10 header pixel error.
 		}
 		
 		else if (qtyDisplay==true){
-			px.p = px.p + (errorPixel + 10);
+			px.p = px.p + (errorPixel + 25);// total will cause 25 pixel error
 		}
 	
+		var marginPixel = 0;
+		marginPixel = pagePixel - px.p; 
 		
-	
-		var footer = "<div class='" + className +"' >"//style='margin-top:" + marginPixel +"px'>"
-					/*+"<table width='700px'>"
+		var footer = "<div class='" + className + "'" + "style='margin-top:" + marginPixel +"px'>"
+					+"<table width='700px'>"
 					+"<tr style='border-top-style: solid; border-width:1px;'>"
 					+"<td width = 400px></td>"
+					+"<td class='right'>" + "Printed at "+ Date().substring(25,Date() - 1)+ "</td>"
 					+"<td class='right'>" 
 					+ "Page " + currentPage + " of " + totalPage 
-					+("&nbsp;").repeat(4) + (info.poNo?info.poNo:"")
+					+("&nbsp;").repeat(4) + (info.orderNo?info.orderNo:"")
 					+"</td>"
 					+"</tr>"
-					+"</table>"*/
+					+"</table>"
 					+ needMorePage;
 					
 		var listHeader = "<div class='newPage' id='newPage'>"+getTableHeader();
