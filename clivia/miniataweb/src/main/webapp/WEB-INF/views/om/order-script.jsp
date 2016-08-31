@@ -6,7 +6,7 @@
 orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",function($http, $q, $state,consts,cliviaDDS,util){
 	var _order={
 			dataSet:{
-					info:{},
+					info:{isDirty:false,isNewDi:true},
 					items:[],
 					deleteds:[],
 					upcItems:[]
@@ -70,7 +70,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 	}
 	
 	for(var i=0;i<setting.registeredServices.length;i++){
-		dataSet[setting.registeredServices[i].name]=new kendo.data.ObservableArray([]);	
+		dataSet[setting.registeredServices[i].name+"s"]=new kendo.data.ObservableArray([]);	
 	}
 
 	
@@ -111,6 +111,9 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 	_order.clearDataSet=function(){
 		util.clearProperties(dataSet.info);
 		
+		dataSet.info.isNewDi=true;
+		dataSet.info.isDirty=false;
+		
 		dataSet.items.splice(0,dataSet.items.length);
 		for(var i=0;i<_order.setting.registeredItemTypes.length;i++){
 			var dt=dataSet[_order.setting.registeredItemTypes[i].name+"s"];
@@ -118,7 +121,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		}
 
 		for(var i=0;i<_order.setting.registeredServices.length;i++){
-			var dt=dataSet[_order.setting.registeredServices[i].name];
+			var dt=dataSet[_order.setting.registeredServices[i].name+"s"];
 			dt.splice(0,dt.length);
 		}
 		
@@ -138,6 +141,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 	_order.getEmployee=function(id){
 		
 	}
+	
     _order.getCompany=function(){
     	var companyId=_order.dataSet.info.customerId;
 		if(!!companyId && _order.company.info.companyId!==companyId){
@@ -206,7 +210,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			}
 
 			for(var i=0;i<setting.registeredServices.length;i++){
-				var serviceName=setting.registeredServices.name,
+				var serviceName=setting.registeredServices[i].name+"s",
 					dataTable=dataSet[serviceName],
 					dataItems=data[serviceName];
 				if(dataItems)
@@ -234,8 +238,13 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		if(dataSet.deleteds.length>0)
 			return true;
 		
+		var dis=dataSet.items;
+		for(var i=0;i<dis.length;i++)
+			if(dis[i].isDirty)
+				return true;
+		
 		for(var i=0;i<setting.registeredItemTypes.length;i++){
-			var dis=dataSet[setting.registeredItemTypes[i].name+"s"];
+			dis=dataSet[setting.registeredItemTypes[i].name+"s"];
 			
 			if(dis){
 		    	for(var j=0;j<dis.length;j++){
@@ -245,6 +254,19 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				
 			}
 		}
+
+		for(var i=0;i<setting.registeredServices.length;i++){
+			dis=dataSet[setting.registeredServices[i].name+"s"];
+			
+			if(dis){
+		    	for(var j=0;j<dis.length;j++){
+		    		if(dis[j].isDirty)
+		    			return true;
+		    	}
+				
+			}
+		}
+		
 		
 		return false;
 	}
@@ -257,6 +279,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		info.finishDate=null;
 		info.invoiceDate=null;
 		info.isDirty=true;
+		info.isNewDi=true;
 		info.createBy=null;
 		info.finishBy=null;
 		info.invoiceBy=null;

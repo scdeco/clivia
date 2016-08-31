@@ -66,20 +66,22 @@
 		       </div>
 		       
 		       <div id="emb-thread-pane">
-		       		Threads:
-			       		<textarea ng-model="embMatcher.embCanvas.threadCodes" 
+		       		<span style="vertical-align:-3px;">Threads:&nbsp;</span> <kendo-button ng-disabled="!embMatcher.embCanvas.threadCodes" style="height:20px;margin-top:2px;" k-options="parseThreadsButtonOptions"></kendo-button>
+
+			       	<textarea ng-model="embMatcher.embCanvas.threadCodes" 
 			       				  ng-trim="true"
 			       				  change-on-blur="populateThreads()"
 			       				  class="k-textbox" 
 			       				  style="width:100%;resize: vertical;"></textarea>
 			       				  
-			    		<div kendo-sortable="embThreadGridSortable"	k-options="embMatcher.gwThread.getSortableOptions()">
-							<div  kendo-grid="embThreadGrid" k-options="threadGridOptions" ></div>
-						</div>
+		    		<div kendo-sortable="embThreadGridSortable"	k-options="embMatcher.gwThread.getSortableOptions()">
+						<div  kendo-grid="embThreadGrid" k-options="threadGridOptions" ></div>
+					</div>
 		       </div>
 		       
 		       <div id="emb-step-pane">
-		       		Running Steps:
+		       		<span style="vertical-align:-3px;">Running Steps::&nbsp;</span> <kendo-button ng-disabled="!embMatcher.embCanvas.runningSteps" style="height:20px;margin-top:2px;" k-options="parseStepsButtonOptions"></kendo-button>
+		       		
 		       		<textarea ng-model="embMatcher.embCanvas.runningSteps" 
 		       				  ng-trim="true"
 		       				  class="k-textbox" 

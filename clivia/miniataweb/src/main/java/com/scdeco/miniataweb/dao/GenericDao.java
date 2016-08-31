@@ -264,6 +264,19 @@ public abstract class GenericDao<T> {
 		return list;
 	}
 	
+	public List<T> findListBySuperId(String superIdFieldName,int mainId) {
+		
+		Criteria criteria=createCriteria().add(Restrictions.eq(superIdFieldName, mainId));
+		try{
+			entityClass.getDeclaredField("lineNo");
+			criteria.addOrder(Order.asc("lineNo"));
+		} catch (NoSuchFieldException | SecurityException e) {
+		}
+
+		return findList(criteria);
+	}
+	
+	
 	public List<T> findListByKeys(String keyName,String strKeyValues){
 		String[] keyValues=strKeyValues.split(",");
 		return  findListByKeys(keyName,keyValues);

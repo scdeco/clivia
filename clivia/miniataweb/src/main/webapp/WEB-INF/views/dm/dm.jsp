@@ -474,6 +474,12 @@ designApp.controller("dmCtrl",
 		    	cgw.addRow(di);
 		    }
 		    
+		    $scope.newColourway=function(){
+		    	$scope.myDstPaint.threadMatcher.embCanvas.setColourway("","");
+		    	$scope.myDstPaint.threadMatcher.initColourwayList();
+		    	$scope.myDstPaint.threadMatcher.embCanvas.drawDesign();
+		    }
+		    
 		    $scope.removeColourway=function(){
 				var dataItem=cgw.getCurrentDataItem();
 		    	var confirmed=true;
@@ -516,6 +522,10 @@ designApp.controller("dmCtrl",
 		    	}
 		    }
 		    
+		    $scope.normalizeColourway=function(){
+		    	$scope.myDstPaint.threadMatcher.embCanvas.normalizeColourway();
+		    	$scope.myDstPaint.threadMatcher.parseColourway();
+		    }
 		    
 		}]);
 

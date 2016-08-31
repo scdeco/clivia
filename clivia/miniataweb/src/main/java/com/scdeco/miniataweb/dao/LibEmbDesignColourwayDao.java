@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository;
 import com.scdeco.miniataweb.model.LibEmbDesignColourway;
 
 @Repository("libEmbDesignColourwayDao")
-public class LibEmbDesignColourwayDao  extends GenericSubItemDao<LibEmbDesignColourway> {
+public class LibEmbDesignColourwayDao  extends GenericDao<LibEmbDesignColourway> {
 
 }

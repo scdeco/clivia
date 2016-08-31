@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository;
 import com.scdeco.miniataweb.model.OrderContact;
 
 @Repository("orderContactDao")
-public class OrderContactDao extends GenericSubItemDao<OrderContact> {
+public class OrderContactDao extends GenericDao<OrderContact> {
 
 }

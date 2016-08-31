@@ -135,20 +135,20 @@
 			registeredServices:[{
 				 text: "Embroidery", 
 				 icon: "insert-n",
-				 name:"orderServiceEmb",
+				 name:"serviceEmb",
 			},{
 				 text: "Screen Printing", 
 				 icon: "insert-n",
-				 name:"orderServiceSp",
+				 name:"serviceSp",
 				
 			},{
 				 text: "Heat Transfer", 
 				 icon: "insert-n",
-				 name:"orderServiceHt",
+				 name:"serviceHt",
 			},{
 				 text: "Laser Etching", 
 				 icon: "insert-n",
-				 name:"orderServiceLaser",
+				 name:"serviceLaser",
 			}],
 			
 	});

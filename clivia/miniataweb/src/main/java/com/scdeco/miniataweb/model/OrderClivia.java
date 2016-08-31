@@ -18,6 +18,8 @@ public class OrderClivia {
 	private List<OrderContact> contactItems;
 	private List<OrderAddress> addressItems;
 	
+	private List<OrderServiceEmb> serviceEmbs;
+	
 	private List<OrderUpc> upcItems;
 	
 	private List<Map<String,String>> deleteds;
@@ -100,6 +102,14 @@ public class OrderClivia {
 
 	public void setAddressItems(List<OrderAddress> addressItems) {
 		this.addressItems = addressItems;
+	}
+
+	public List<OrderServiceEmb> getServiceEmbs() {
+		return serviceEmbs;
+	}
+
+	public void setServiceEmbs(List<OrderServiceEmb> serviceEmbs) {
+		this.serviceEmbs = serviceEmbs;
 	}
 
 	public List<OrderUpc> getUpcItems() {

@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import com.scdeco.miniataweb.model.CompanyAddress;
 
 @Repository("companyAddressDao")
-public class CompanyAddressDao extends GenericSubItemDao<CompanyAddress> {
+public class CompanyAddressDao extends GenericDao<CompanyAddress> {
 }

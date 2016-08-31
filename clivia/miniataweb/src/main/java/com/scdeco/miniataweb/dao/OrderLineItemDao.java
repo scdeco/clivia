@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository;
 import com.scdeco.miniataweb.model.OrderLineItem;
 
 @Repository("orderLineItemDao")
-public class OrderLineItemDao extends GenericSubItemDao<OrderLineItem> {
+public class OrderLineItemDao extends GenericDao<OrderLineItem> {
 	
 }

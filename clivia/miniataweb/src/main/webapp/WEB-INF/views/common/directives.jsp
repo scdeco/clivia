@@ -34,17 +34,14 @@ directive('changeOnBlur', function() {
             elm.bind('focus',function() {
                 scope.$apply(function() {
                     oldValue = elm.val();
-                    console.log(oldValue);
                 });
             })
             elm.bind('blur', function() {
                 scope.$apply(function() {
                     var newValue = elm.val();
-                    console.log(newValue);
                     if (newValue !== oldValue){
                         scope.$eval(expressionToCall+"('"+oldValue+"','"+newValue+"')");
                     }
-                        //alert('changed ' + oldValue);
                 });         
             });
         }
@@ -201,7 +198,7 @@ directive("themeChooser",function(){
 		},
 		template:template,
 		
-		link:function(scope,element){	//["scope","element","attrs","controller",
+		link:function(scope,element){
 
 		    scope.element=element;
 		                                              	   

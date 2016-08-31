@@ -7,22 +7,22 @@ import com.scdeco.miniataweb.model.LibEmbDesign;
 import com.scdeco.miniataweb.service.CliviaLibrary;
 
 @Repository ("libEmbDesignDao")
-public class LibEmbDesignDao extends GenericMainItemDao<LibEmbDesign> {
+public class LibEmbDesignDao extends GenericItemSetDao<LibEmbDesign> {
 	
 	@Autowired 
 	CliviaLibrary cliviaLibrary;
 	
-	public  LibEmbDesignDao(){
-		super();
-
-		super.registeredItemListNames=new String[]{"colourways","samples"};
-		super.registeredItemModelNames=new String[]{"libEmbDesignColourway","libEmbDesignSample"};
-		super.daoPrefix="libEmbDesign";
+	protected void initItemSet() throws NoSuchFieldException, SecurityException{
 		
-		super.infoItemName="info";
-		super.infoDaoName="libEmbDesignInfo";
-
-		super.mainIdFieldName="libEmbDesignId";
+		IdDependentItem mainItem=new IdDependentItem(super.mainEntityClass,"info","libEmbDesignInfo","libEmbDesignId");
+		
+		IdDependentItem colourway=new IdDependentItem(super.mainEntityClass,"colourways","libEmbDesignColourway","");
+		IdDependentItem sample=new IdDependentItem(super.mainEntityClass,"samples","libEmbDesignSample","");
+		
+		mainItem.dependentItems.add(colourway);
+		mainItem.dependentItems.add(sample);
+		
+		super.setMainItem(mainItem);
 	}
 	
 	//itemListNames:colourways,samples

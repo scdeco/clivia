@@ -16,12 +16,12 @@
  	<context:component-scan base-package="com.scdeco.miniataweb.dao" />
  	<context:component-scan base-package="com.scdeco.miniataweb.service" />
  	<context:component-scan base-package="com.scdeco.miniataweb.util" />
- 	<context:component-scan base-package="com.scdeco.miniataweb.embdeisgn" />
+
 	
 	<bean id="dataSource"
 		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 		<property name="driverClassName" value="com.mysql.jdbc.Driver" /> 
-		<property name="url" value="jdbc:mysql://localhost/world" />
+		<property name="url" value="jdbc:mysql://localhost/clivia" />
 		<property name="username" value="root" />
 		<property name="password" value="ztmcjbd0507" />
 	</bean>

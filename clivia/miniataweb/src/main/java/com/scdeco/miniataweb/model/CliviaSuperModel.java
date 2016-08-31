@@ -7,14 +7,27 @@ import javax.persistence.Transient;
 public class CliviaSuperModel {
 	
 	@Transient
-	private Boolean isDirty=false;
+	private boolean isDirty=false;
 
-	public Boolean getIsDirty() {
+	@Transient
+	private boolean isNewDi=false;
+
+	public boolean getIsDirty() {
 		return isDirty;
 	}
 
-	public void setIsDirty(Boolean isDirty) {
+	public void setIsDirty(boolean isDirty) {
 		this.isDirty = isDirty;
 	}
+
+	public boolean getIsNewDi() {
+		return isNewDi;
+	}
+
+	public void setIsNewDi(boolean isNewDi) {
+		this.isNewDi = isNewDi;
+	}
+
+	
 
 }

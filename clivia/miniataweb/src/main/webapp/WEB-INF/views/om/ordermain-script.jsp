@@ -258,15 +258,19 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 				    	//adjust new orderitem button orderItemId value
 				    	
 				    	var items=SO.dataSet.items;
-				    	var currentId=0;
-				    	for(var i=0,item,button;i<items.length;i++){
+				    	var currenOrderItemId=0;
+				    	for(var i=0,item,button,el;i<items.length;i++){
 				    		item=items[i];
-				    		button=SO.instance.itemButtons[item.lineNo-1];
+				    		
+				    		el=$scope.orderItems.instance.itemElements[item.lineNo-1];
+				    		el.orderItemId=item.id;
+				    		
+				    		button=$scope.orderItems.instance.itemButtons[item.lineNo-1];
 				    		button.orderItemId=item.id;
 				    		if(button.selected)
-				    			currentId=button.orderItemId;
+				    			currenOrderItemId=button.orderItemId;
 				    	}		
-			    		SO.setCurrentOrderItem(currentId);
+				    	$scope.orderItems.setCurrentOrderItem(currenOrderItemId);
 			    		$scope.orderInfo.infoForm.$setPristine();
 			    		$scope.saveResult.show('<p style="width: 16em; height:2em; padding:1em;white-space:nowrap">Order#:'+SO.dataSet.info.orderNumber+ ' saved successfully. </p>',"info");
 				    }else{
@@ -307,8 +311,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	$scope.openQueryWindow=function(){
 		$scope.queryWindow.open();
 	}
-	
-	
+
 }]);
 
 
@@ -531,6 +534,7 @@ orderApp.directive("orderItems",["SO","cliviaDDS","util","$compile",function(SO,
 			 				snpId:menuItem.snpId,
 			 				spec:menuItem.spec,
 			 				isDirty:true,
+			 				isNewDi:true,
 			     		};
 			     	
 			     	if(menuItem.itemTypeId===2){		//"lineItem"
@@ -782,6 +786,7 @@ orderApp.directive("lineItem",function(SO){
 		    			    	brandId:scope.brand.id,
 		    			    	seasonId:scope.season.id,
 		    			    	id:SO.getTmpId(),
+		    			    	isNewDi:true,
 		    			    }
 				}
 				        
@@ -887,13 +892,14 @@ orderApp.directive("decoService",function(SO){
 	    		    return {
     			    	orderId:SO.dataSet.info.orderId,
     			    	orderItemId:scope.lineItemDi.orderItemId, 
-    			    	lineItemId:scope.lineItemDi.id,	
+    			    	lineItemId:scope.lineItemDi.id,
+    			    	isNewDi:true,
     			    }
 
 		    	}
 		    	
 		    	scope.registerDeletedEmbServiceFunction=function(){
-		    		
+		    		SO.registerDeletedItem("orderServiceEmb",dataItem.id,true);
 		    	}
 		    	
 		    	scope.resize=function(){
@@ -901,13 +907,8 @@ orderApp.directive("decoService",function(SO){
 		    	
 				scope.getEmbServiceGridDataSource=function(){
 					return new kendo.data.DataSource({
-	     		        	data:SO.dataSet.orderServiceEmb, 
-	    		    	    schema: {
-	    		    	    	model: 
-	    		    	    		{ 
-	    		    	    			id: "id" ,
-										fields:{lineItemId: {type: "number"}}
-	    		    		    }},	
+	     		        	data:SO.dataSet.serviceEmbs, 
+	    		    	    schema: {model: {id: "id" }},	
 	    		    	    filter: {
 	    		    	        field: "lineItemId",
 	    		    	        operator: "eq",
@@ -957,6 +958,7 @@ orderApp.directive("billItem",function(SO,$sce){
 						    	orderItemId:scope.orderItem.id, 
 						    	snpId:0,
 						    	orderAmt:0,
+						    	isNewDi:true,
 						    };
 					}
 					        
@@ -1086,6 +1088,7 @@ orderApp.directive("designItem",function(SO,$sce){
 						    	orderItemId:scope.orderItem.id, 
 						    	snpId:0,
 						    	orderAmt:0,
+						    	isNewDi:true,
 						    };
 					}
 					        
@@ -1151,6 +1154,7 @@ orderApp.directive("imageItem",function(SO,$sce){
 						    	orderItemId:scope.orderItem.id, 
 						    	imageId:dataItem.id,
 						    	isDirty:true,
+						    	isNewDi:true,
 						    }
 					}
 				scope.registerDeletedItemFunction=function(dataItem){
@@ -1238,6 +1242,7 @@ orderApp.directive("contactItem",function(SO,$sce){
 						    	orderItemId:scope.orderItem.id, 
 						    	isBuyer:true,
 						    	isActive:true,
+						    	isNewDi:true,
 						    }
 					}
 
@@ -1299,7 +1304,8 @@ orderApp.directive("addressItem",function(SO,$sce){
 						    	orderId:SO.dataSet.info.id,
 						    	orderItemId:scope.orderItem.id, 
 						    	billing:false,
-						    	shipping:true
+						    	shipping:true,
+						    	isNewDi:true,
 						    }
 					if(SO.company && SO.company.info && SO.company.info.id===SO.dataSet.info.customerId){
 						

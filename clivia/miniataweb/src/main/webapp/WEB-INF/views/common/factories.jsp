@@ -2363,7 +2363,7 @@ clivia.factory("ColourwayGridWrapper",["GridWrapper","cliviaDDS","DataDict",func
 					name:"threads",
 				    field: "threads",
 				    title: "Threads",
-			        attributes: {style:"white-space:normal;"},
+			        attributes: {style:"white-space:normal;word-wrap:break-word;"},	//word-wrap:break-word ---- break any long words that might potentially go outside the layout due to space limitations and lack of breaking spaces
 				    width: 120
 				}, {
 					name:"runningSteps",
@@ -2425,23 +2425,25 @@ clivia.factory("EmbServiceGridWrapper",["GridWrapper","cliviaDDS","DataDict",fun
 				    width: 150
 				}, {
 					name:"stitchCount",
-				    field: "stitchCount",
-				    title: "Stitches",
-				    width: 90
+				    field: "ks",
+				    title: "Ks",
+				    width: 60,
+				    attributes:{style:"text-align:right;"},
 				}, {
 					name:"colourCount",
 				    field: "colourCount",
 				    title: "Colours",
-				    width: 150
+				    width: 60,
+				    attributes:{style:"text-align:right;"},
 				}, {
 					name:"threads",
-				    field: "threads",
+				    field: "threadCode",
 				    title: "Threads",
-			        attributes: {style:"white-space:normal;"},
+			        attributes: {style:"white-space:normal;word-wrap:break-word;"},
 				    width: 150
 				}, {
 					name:"runningSteps",
-				    field: "runningSteps",
+				    field: "runningStep",
 				    title: "Running Steps",
 			        attributes: {style:"white-space:normal;"},
 				    width: 200

@@ -7,22 +7,22 @@ import com.scdeco.miniataweb.model.Garment;
 import com.scdeco.miniataweb.model.GarmentInfo;
 
 @Repository ("garmentDao")
-public class GarmentDao extends GenericMainItemDao<Garment>{
+public class GarmentDao extends GenericItemSetDao<Garment>{
 
 	@Autowired
 	GarmentInfoDao garmentInfoDao;
 	
-	public GarmentDao(){
-		super();
+	protected void initItemSet() throws NoSuchFieldException, SecurityException{
 
-		super.registeredItemListNames=new String[]{"upcItems","imageItems"};
-		super.registeredItemModelNames=new String[]{"garmentUpc","garmentImage"};
-		super.daoPrefix="garment";
+		IdDependentItem mainItem=new IdDependentItem(super.mainEntityClass,"info","garmentInfo","garmentId");
 		
-		super.infoItemName="info";
-		super.infoDaoName="garmentInfo";
+		IdDependentItem upcItem=new IdDependentItem(super.mainEntityClass,"upcItems","garmentUpc","");
+		IdDependentItem imageItem=new IdDependentItem(super.mainEntityClass,"imageItems","garmentImage","");
 		
-		super.mainIdFieldName="garmentId";
+		mainItem.dependentItems.add(upcItem);
+		mainItem.dependentItems.add(imageItem);
+		
+		super.setMainItem(mainItem);
 		
 	}
 	

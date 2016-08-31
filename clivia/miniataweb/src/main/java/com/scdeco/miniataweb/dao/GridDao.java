@@ -7,21 +7,20 @@ import com.scdeco.miniataweb.model.Grid;
 import com.scdeco.miniataweb.model.GridInfo;
 
 @Repository("gridDao")
-public class GridDao extends GenericMainItemDao<Grid> {
+public class GridDao extends GenericItemSetDao<Grid> {
 	
 	@Autowired
 	private GridInfoDao gridInfoDao;
-	public GridDao(){
-		super();
-
-		super.registeredItemListNames=new String[]{"columnItems"};
-		super.registeredItemModelNames=new String[]{"gridColumn"};
-		super.daoPrefix="grid";
+	
+	protected void initItemSet() throws NoSuchFieldException, SecurityException{
 		
-		super.infoItemName="info";
-		super.infoDaoName="gridInfo";
-
-		super.mainIdFieldName="gridId";		
+		IdDependentItem mainItem=new IdDependentItem(super.mainEntityClass,"info","gridInfo","gridId");
+		
+		IdDependentItem columnItem=new IdDependentItem(super.mainEntityClass,"columnItems","gridColumn","");
+		
+		mainItem.dependentItems.add(columnItem);
+		
+		super.setMainItem(mainItem);
 	}
 
 	public Grid getByGridNo(String gridNo) 

@@ -72,7 +72,7 @@ public class OrderController {
 				throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
 		
 		System.out.println("Order#:"+orderNumber);
-		return orderDao.getOrderByOrderNumber(orderNumber);
+		return orderDao.getByOrderNumber(orderNumber);
 	}
 
 	@RequestMapping(value="save-order",method=RequestMethod.POST)
@@ -91,7 +91,7 @@ public class OrderController {
 	public @ResponseBody String deleteOrder(@RequestParam("id") int id) 
 				throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
 		
-		orderDao.deleteOrder(id);
+		orderDao.delete(id);
 		
 		return "";
 	}
