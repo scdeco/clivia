@@ -794,7 +794,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 	embMatcher.prototype={
 			
 			//set design of this canvas to null and the designchanged event will be raised
-			clear:function(){
+			clearDesign:function(){
 				this.embCanvas.embDesign.clearDesign();
 			},
 			
@@ -1253,6 +1253,16 @@ directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThr
 			templateUrl:templateUrl,
 			
 			link:function(scope){
+				
+				scope.parseThreads=function(){
+					scope.embMatcher.embCanvas.normalizeThreadCodes();
+					scope.embMatcher.parseColourway();
+				}
+				
+				scope.parseSteps=function(){
+					scope.embMatcher.embCanvas.normalizeRunningSteps();
+					scope.embMatcher.parseColourway();
+				}
 
 			}, //end of link function
 			
@@ -1261,19 +1271,12 @@ directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThr
 				
 				$scope.parseThreadsButtonOptions={
 					imageUrl:"../resources/images/i-parse.ico",
-					click:function(){
-						$scope.embMatcher.embCanvas.normalizeThreadCodes();
-						$scope.embMatcher.parseColourway();
-
-					}
+					click:$scope.parseThreads
 				}
 				
 				$scope.parseStepsButtonOptions={
 					imageUrl:"../resources/images/i-parse.ico",
-					click:function(){
-						$scope.embMatcher.embCanvas.normalizeRunningSteps();
-						$scope.embMatcher.parseColourway();
-					}
+					click:$scope.parseSteps
 				}
 				
 				$scope.$on("kendoWidgetCreated", function(event, widget){
@@ -1293,6 +1296,7 @@ directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThr
 
 				if($scope.cEmbCanvas)
 					$scope.embMatcher.setEmbCanvas($scope.cEmbCanvas);
+				
 				$scope.threadGridOptions=$scope.embMatcher.getThreadGridOptions($scope);
 				$scope.stepGridOptions=$scope.embMatcher.getStepGridOptions($scope);
 				
@@ -1768,12 +1772,10 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 				//{code:"S0561",r:255,g:0,b:0},{code:"S1011",r:125,g:125,b:125},{code:"S1043",r:0,g:0,b:255}
 				//var runningStepList=new kendo.data.ObservableArray([{code:"S1043",codeIndex:1}]);
 				
-				var scope=$scope;
-
 				
 				//expose this directive scope to parent directive
-				if(scope.cName) 
-					scope.$parent[scope.cName]=scope;
+				if($scope.cName) 
+					$scope.$parent[$scope.cName]=$scope;
 
 					
 			    $scope.dstDesign=new DstDesign();
@@ -1836,18 +1838,225 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 				
 				$scope.setBackgroundColour=function(bgColour){
 					$scope.threadMatcher.backgroundColour=bgColour?bgColour:"#FFFFFF";
-					$scope.$apply();
 				}
 				
 				$scope.clear=function(){
-					$scope.threadMatcher.clear();
+					$scope.threadMatcher.clearDesign();	//designchanged event will be fired 
 				}
+				
+			    $scope.newColourway=function(){
+			    	$scope.threadMatcher.embCanvas.setColourway("","");
+			    	$scope.threadMatcher.initColourwayList();
+			    	$scope.threadMatcher.embCanvas.drawDesign();
+			    }				
+				
+			    $scope.normalizeColourway=function(){
+			    	$scope.threadMatcher.embCanvas.normalizeColourway();
+			    	$scope.threadMatcher.parseColourway();
+			    }			    
 			}],
 	}
 	
 	return directive;
-}]);
+}]).
 
+directive("dstEditor",["EmbMatcher","util","$http",function(EmbMatcher,util,$http){
+	
+	var templateUrl="../dm/dsteditor";
+	
+	var directive={
+			restrict:'EA',
+			replace:true,
+			scope:{
+				cName:'@dstEditor',
+				cEmbDataSource:'=',
+				cColourwayDataSource:'=',
+			},
+	
+			templateUrl:templateUrl,
+			
+			link:function(scope,element,attrs){
+			    var populate=function(data){
+					scope.dataSet.info=data.info;
+					var itemNames=["colourways","samples"];
+					for(var i=0,scopeItems,dataItems,itemName;i<itemNames.length;i++){
+						itemName=itemNames[i];
+						dataItems=data[itemName];
+						if(dataItems){
+							scopeItems=scope.dataSet[itemName];
+							for(var j=0;j<dataItems.length;j++){
+								scopeItems.push(dataItems[j]);
+							}
+						}
+					}
+			    }
+
+				var clearDataSet=function(){
+			    	scope.dataSet.info={};
+			    	scope.dataSet.colourways.splice(0,scope.dataSet.colourways.length);
+			    	scope.dataSet.samples.splice(0,scope.dataSet.samples.length);
+			    	scope.dataSet.deleteds=[];
+				}
+				
+			    scope.clear=function(){
+			    	scope.searchDesignNumber=null;
+			    	clearDataSet();
+			    	scope.myDstPaint.clear();
+			    	scope.myDstPaint.setBackgroundColour("#FFFFFF");
+			    	scope.$apply();
+			    }
+			    
+			    scope.loadDesignById=function(id){
+			    	scope.clear();
+			    	
+			    	var url="../lib/emb/get-embdesign?id="+id;
+					$http.get(url).then(
+						function(data, status, headers, config) {
+							if(data.data){
+					    		populate(data.data);
+							}
+						},function(data, status, headers, config) {
+					});
+
+			    	scope.myDstPaint.loadDesignById(id);
+
+			    }
+			    
+			    scope.saveDesign=function(){
+			    	//if(!validDesign()) return;
+					var url="../lib/emb/save-embdesign";
+					
+					$http.post(url,scope.dataSet).then(
+						  function(data, status, headers, config) {
+								if(data.data){
+									clearDataSet();
+						    		populate(data.data);
+								}else{
+									alert("failed to save:"+JSON.stringify(data));
+								}
+						  },function(data, status, headers, config) {
+							  alert( "failure message: " + JSON.stringify(data));
+						  });		
+			    }
+			    
+			    var getColorwayDiFromPaint=function(){
+			    	var colourway=scope.myDstPaint.getColourway();
+			    	var thumbnail=scope.myDstPaint.getThumbnail();
+			    	var bgColour=scope.myDstPaint.getBackgroundColour();
+			    	var pos=thumbnail.indexOf(",");
+			    	thumbnail=pos>0?thumbnail.substr(pos+1):"";
+			    	
+			    	var di={
+			    		threads:colourway.threads,
+			    		runningSteps:colourway.runningSteps,
+			    		backgroundColour:bgColour,
+			    		thumbnail:thumbnail,
+			    	}
+			    	return di;
+			    }
+			    
+			    scope.addColourway=function(){
+			    	var di=getColorwayDiFromPaint();
+			    	di.libEmbDesignId=scope.dataSet.info.id;
+			    	scope.cgw.addRow(di);
+			    }
+			    
+			    scope.newColourway=function(){
+			    	scope.myDstPaint.threadMatcher.embCanvas.setColourway("","");
+			    	scope.myDstPaint.threadMatcher.initColourwayList();
+			    	scope.myDstPaint.threadMatcher.embCanvas.drawDesign();
+			    }
+			    
+			    scope.removeColourway=function(){
+					var dataItem=scope.cgw.getCurrentDataItem();
+			    	var confirmed=true;
+				    if (dataItem) {
+				        if (dataItem.threads&&dataItem.runningSteps){
+				        	confirmed=confirm('Please confirm to delete the selected row.');	
+				        }
+				        if(confirmed){
+					    	if(dataItem.id){
+					    		var item= {entity:"libEmbDesignColourway",id:dataItem.id};
+								scope.dataSet.deleteds.push(item);				    	
+					    	}
+							scope.cgw.deleteRow(dataItem);
+				        }
+				    }else {
+			        	alert('Please select a  colorway  to delete.');
+			   		}
+			    	
+			    }
+			    
+			    scope.updateColourway=function(){
+			    	var currentCell=scope.cgw.grid.current();
+			    	if(currentCell){
+				    	var diCurrent=scope.cgw.getCurrentDataItem();
+				    	var diPaint=getColorwayDiFromPaint();
+				    	if(diCurrent&&diPaint){
+				    		diCurrent.threads=diPaint.threads;
+				    		diCurrent.runningSteps=diPaint.runningSteps;
+				    		diCurrent.backgroundColour=diPaint.backgroundColour;
+				    		diCurrent.thumbnail=diPaint.thumbnail;
+				    		diCurrent.isDirty=true;
+				    	}
+				    	scope.$apply();
+				    	var columnIndex=scope.cgw.getColumnIndex("thumbnail");
+		                var template = kendo.template(scope.cgw.gridColumns[columnIndex].template);
+		            	var cell = currentCell.parent().children('td').eq(columnIndex);
+		                cell.html(template(diCurrent));		                    
+			    	}else{
+			        	alert('Please select a  colorway  to update.');
+			    	}
+			    }
+			    
+			    scope.normalizeColourway=function(){
+			    	scope.myDstPaint.threadMatcher.embCanvas.normalizeColourway();
+			    	scope.myDstPaint.threadMatcher.parseColourway();
+			    }
+				
+
+				
+			},
+			controller:["$scope","ColourwayGridWrapper",function($scope,ColourwayGridWrapper){
+				
+				$scope.cgw=new ColourwayGridWrapper("colourwayGrid");	
+				$scope.cgw.setColumns();
+
+				var onColourwayGridDoubleClicked=function(e){
+					if(e.currentTarget){
+						var di=$scope.colourwayGrid.dataItem(e.currentTarget);
+						if(di&&di.threads&&di.runningSteps){
+							$scope.myDstPaint.setColourway(di.threads,di.runningSteps);
+							$scope.myDstPaint.setBackgroundColour(di.backgroundColour);
+						}
+					}
+				}
+				
+				$scope.$on("kendoWidgetCreated", function(event, widget){
+					if (widget ===$scope[$scope.cgw.name]) {
+			        	$scope.cgw.wrapGrid(widget);
+						widget.bind("dataBound",function(e){
+							this.tbody.find("tr").dblclick(onColourwayGridDoubleClicked);
+						});
+			        }
+			    });				
+				
+				$scope.colourwayGridOptions={
+						autoSync: true,
+				        columns: $scope.cgw.gridColumns,
+				        dataSource: $scope.cColourwayDataSource,
+				        pageable:false,
+				        selectable: "row",
+				        navigatable: true,
+				        resizable: true,
+				}
+						
+			}],
+	}
+	
+	return directive;
+
+}]);
 
 
 </script>

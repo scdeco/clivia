@@ -18,8 +18,8 @@
 	<script src="/clivia/resources/js/angular-ui-router/0.2.13/angular-ui-router.js"></script>
 <!--<script data-require="ui-router@*" data-semver="0.2.13" src="//rawgit.com/angular-ui/ui-router/0.2.13/release/angular-ui-router.js"></script> -->     
 
-<!--<script src="/clivia/resources/js/kendo/2016.1.217/kendo.all.min.js"></script> -->
-	<script src="http://kendo.cdn.telerik.com/2016.1.112/js/kendo.all.min.js"></script> 
+	<script src="/clivia/resources/js/kendo/2016.1.217/kendo.all.min.js"></script> 
+<!-- 	<script src="http://kendo.cdn.telerik.com/2016.1.112/js/kendo.all.min.js"></script> --> 
 	
 	<script src="/clivia/resources/js/kendo/2016.1.217/jszip.min.js"></script>
 <!--<script src="http://kendo.cdn.telerik.com/2016.1.112/js/jszip.min.js"></script>  -->

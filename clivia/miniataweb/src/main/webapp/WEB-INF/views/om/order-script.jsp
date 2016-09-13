@@ -391,13 +391,29 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 	
 	
     
-	_order.registerDeletedItem=function(entity,id,hasDependent){
-		var flag=(!!hasDependent)?id>=consts.maxTmpId:!!id
-		if(flag){
-			var deletedItem={entity:entity,id:id};
+	_order.registerDeletedItem=function(entity,di){
+		if(!di.isNewDi){
+			var deletedItem={entity:entity,id:di.id};
 			dataSet.deleteds.push(deletedItem);
 		}
 	}
+	
+	_order.deleteDependentItems=function(dependentItemName,modelName,superIdName,superIdValue){
+    	var dis=_order.dataSet[dependentItemName+"s"];  
+    	
+		for(var i=dis.length-1;i>=0;i--){
+			 di=dis[i];
+			 if(di[superIdName]===superIdValue){
+				 
+		   		 //register to deleted items 
+				_order.registerDeletedItem(modelName,di);
+		   		
+				 //remove from the dataTable
+			    dis.splice(i,1);
+			 }
+		 }
+
+	}	
 	
 	_order.setDiscount=function(billOrderItem,discount){
 		if(!billOrderItem) return;
@@ -414,6 +430,185 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			}
 		}
 	}
+	
+	
+	_order.generateBillOfServiceEmb=function(billOrderItem){//itemTypreId:11,billingKey:designNo+";"+garmentType
+	
+		var serviceDis=_order.dataSet.serviceEmbs,serviceDi;
+	
+		var lineItemDis=_order.dataSet.lineItems,lineItemDi;
+		var lineItemDisIdx=util.createIndexOnId(lineItemDis);
+	
+		var generatedBillDis=[],generatedBillDi,generatedBillDiIdx;
+		var generatedBillDisIdx={};
+		
+		for(var i=0,billingKey;i<serviceDis.length;i++){
+			serviceDi=serviceDis[i];
+			if(!!serviceDi.designNo){
+				lineItemDi=lineItemDisIdx[String(serviceDi.lineItemId)];
+				if(lineItemDi.quantity>0){
+					billingKey=serviceDi.designNo+";"+"Garment"					//lineItemDi.type;
+	
+					generatedBillDiIdx=generatedBillDisIdx[billingKey];
+
+					if(generatedBillDiIdx>=0){
+						generatedBillDi=generatedBillDis[generatedBillDiIdx];
+					}else{
+						generatedBillDi={
+								
+								orderId:serviceDi.orderId,
+								orderItemId:billOrderItem.id,
+								snpId:1,			//Embroidery Service
+								itemTypeId:11,			//registeredSerives[i].id
+								billingKey:billingKey,
+								itemNumber:serviceDi.designNo,	//+" "+serviceDi.ks+",000st"
+								description:serviceDi.designName,
+								unit:"PCS",
+								listPrice:0,
+								discount:0,
+								orderPrice:0,
+								orderAmt:0,
+								orderQty:0,
+								isNewDi:true,
+								isDirty:true,
+								
+								
+							};
+						generatedBillDiIdx=generatedBillDis.push(generatedBillDi)-1;
+						generatedBillDisIdx[billingKey]=generatedBillDiIdx;
+					}
+					
+					generatedBillDi.orderQty+=lineItemDi.quantity;
+				}
+			}
+		}
+		
+		
+		var billItemDis=_order.dataSet.billItems,billItemDi;
+		var firstServiceInBillItemsIdx=billItemDis.length;
+		for(var i=billItemDis.length-1;i>=0;i--){
+			billItemDi=billItemDis[i];
+			if(billItemDi.itemTypeId===11){
+				firstServiceInBillItemsIdx=i;
+				generatedBillDiIdx=generatedBillDisIdx[billItemDi.billingKey];
+				if(generatedBillDiIdx>=0){
+					generatedBillDi=generatedBillDis[generatedBillDiIdx];
+					if(generatedBillDi.orderQty!==billItemDi.orderQty){
+						billItemDi.orderQty=generatedBillDi.orderQty;
+						billItemDi.isDirty=true;
+					}
+					
+					generatedBillDis[generatedBillDiIdx]=billItemDi;
+				}else{
+					_order.registerDeletedItem("orderBillItem",billItemDi);
+				}
+				billItemDis.splice(i,1);
+			}
+		}
+		
+		for(var i=0,di;i<generatedBillDis.length;i++){
+			di=generatedBillDis[i];
+			di.orderAmt=(di.orderQty?di.orderQty:0)*(di.orderPrice?di.orderPrice:0);
+			billItemDis.splice(firstServiceInBillItemsIdx++,0,di);
+		}
+		
+	}
+	
+	_order.generateBillOfGarmentSupply=function(billOrderItem){
+
+		if(!_order.company ||!_order.company.info) return;
+		
+		var useWSP=_order.company.info.useWsp;
+		var useUSD=_order.company.info.country!=="Canada";
+		var listPriceField=useWSP?(useUSD?"wsp":"wspCad"):(useUSD?"rrp":"rrpCad");
+
+		var lineItemDis=_order.dataSet.lineItems,lineItemDi;
+		
+		var generatedBillDis=[],generatedBillDi,generatedBillDiIdx;
+		var generatedBillDisIdx={};
+		
+		var discount=billOrderItem.spec===""?_order.company.info.discount:billOrderItem.spec,listPrice,orderPrice;
+		var dictGarment=_order.dds.garment;
+		
+		var orderId=_order.dataSet.info.id;
+		
+		for(var i=0,billingKey;i<lineItemDis.length;i++){
+			lineItemDi=lineItemDis[i];
+			if(lineItemDi.garmentId && lineItemDi.quantity){
+				billingKey=String(lineItemDi.garmentId);
+
+				generatedBillDiIdx=generatedBillDisIdx[billingKey];
+
+				if(generatedBillDiIdx>=0){
+					generatedBillDi=generatedBillDis[generatedBillDiIdx];
+				}else{
+					var garment=dictGarment.getGarmentById(lineItemDi.garmentId);
+					listPrice=garment[listPriceField];
+					orderPrice=(discount>0 && discount<1)?listPrice*(1-discount):listPrice;
+					
+					if(orderPrice)
+							orderPrice.toFixed(2);
+				
+				
+					generatedBillDi={
+							orderId:orderId,
+							orderItemId:billOrderItem.id,											
+							snpId:14,	//Garment Supply id in dictSnp
+							itemTypeId:2,
+							itemNumber:lineItemDi.styleNo,
+							billingKey:billingKey,
+							description:lineItemDi.description,
+							unit:"PCS",
+							orderQty:0,
+							listPrice:listPrice,
+							discount:discount,
+							orderPrice:orderPrice,
+							orderAmt:0,
+							isDirty:true,
+							isNewDi:true,
+						}
+					
+					generatedBillDiIdx=generatedBillDis.push(generatedBillDi)-1;
+					generatedBillDisIdx[billingKey]=generatedBillDiIdx;
+				}
+				
+				generatedBillDi.orderQty+=lineItemDi.quantity;
+			}
+		}
+		
+		var billItemDis=_order.dataSet.billItems,billItemDi;
+		for(var i=billItemDis.length-1;i>=0;i--){
+			billItemDi=billItemDis[i];
+			
+			if(billItemDi.itemTypeId===2){	//lineItem
+
+				generatedBillDiIdx=generatedBillDisIdx[billItemDi.billingKey];
+				if(generatedBillDiIdx>=0){
+					generatedBillDi=generatedBillDis[generatedBillDiIdx];
+					if(generatedBillDi.orderQty!==billItemDi.orderQty){
+						billItemDi.orderQty=generatedBillDi.orderQty;
+						billItemDi.isDirty=true;
+					}
+					
+					generatedBillDis[generatedBillDiIdx]=billItemDi;
+				}else{
+					_order.registerDeletedItem("orderBillItem",billItemDi);
+				}
+				billItemDis.splice(i,1);
+			}
+		}
+		
+		var firstServiceInBillItemsIdx=0;
+
+		for(var i=0,di;i<generatedBillDis.length;i++){
+			di=generatedBillDis[i];
+			di.orderAmt=(di.orderQty?di.orderQty:0)*(di.orderPrice?di.orderPrice:0);
+
+			billItemDis.splice(firstServiceInBillItemsIdx++,0,di);
+		}
+		
+	}
+	
 	
 	_order.generateBillableItems=function(billOrderItem){
 		if(!billOrderItem) return;
@@ -474,6 +669,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 											orderPrice:orderPrice,
 											orderAmt:0,
 											isDirty:true,
+											isNewDi:true,
 										}
 									f=billableItems.push(billableItem);
 									idx[sid]=f-1;
@@ -533,7 +729,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			item=billItems[i];
 			if(item.itemTypeId && !item.checked){
 				if(item.id)
-					_order.registerDeletedItem("orderBillItem",item.id);
+					_order.registerDeletedItem("orderBillItem",item);
 				billItems.splice(i,1);
 			}
 		}
@@ -543,9 +739,10 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		
 	}
 	
- 	_order.getStyleGridHtml=function(garmentId){
+ 	_order.getBillingHtmlOfGarmentSupply=function(garmentId){
 
-		var model=_order.createStyleGridModel(garmentId);
+		var model=_order.createStyleGridModel(garmentId,_order.dataSet.lineItems);
+
 		var data=model?model.data:null;
 		if(!data) return "";
 		
@@ -576,11 +773,39 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		return html;
 	}	
  	
- 	_order.getBillHeaderHtml=function(){
- 		
+ 	_order.getBillingHtmlOfEmbService=function(billingKey){
+ 		var model=_order.getEmbServiceBillingDetailModel(billingKey);
+		html+="<table style='float:left;text-align: right;'>";
+		html+="<tr><th class='tal'>Style</th><th>Colour</th><th>Location</th><th>Sizes</th><th>Qty</th>";
+ 		for(var i=0,di;i<model.length;i++){
+ 			di=model[i];
+ 			html+="<tr><td>"+di.style+"</td><td>"+di.colour+"</td><td>"+di.location+"</td><td>"+di.sizes+"</td><td>"+di.qty+"</td>";
+ 		} 			
+		html+="</table></div>";
  		
  	}
+ 	
+	_order.getEmbServiceBillingDetailModel=function(billingKey){	//billingKey:designNo+garmentType,
+		
+		var lineItemDis=_order.dataSet.lineItems,lineItemDi;
+		var lineItemDisIdx=util.createIndexOnId(lineItemDis);
+		var dis=[];
+		var embServiceDis=_order.dataSet.embServices,embServiceDi;
+		for(var i=0,di;i<embServiceDis.length;i++){
+			embServiceDi=emServiceDis[i];
+			lineItemDi=lineItemDisIdx[embServiceDi.lineItemId];
+			if(embServiceDi.billingKey+";Garment"===billingKey){
+				di={
+					style:(lineItemDi.styleNo?lineItemDi.styleNo:"")+(lineItemDi.description?lineItemDi.description:""),
+					colour:linieItemDi.colour,
+					location:embServiceDi.location,
+				}
+				dis.push(s);
+			}
+		}
+	}
 
+ 	
  	var createContactPrintModel=function(){
  		var companyContacts=_order.company.contacts;
 		var buyer=_order.dataSet.info.buyer;
@@ -742,7 +967,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  					amt:bi.orderAmt?kendo.toString(bi.orderAmt, "c"):"",
  				};
  				if(bi.itemTypeId===2){		//lineItem
-					var styleModel=_order.createStyleGridModel(parseInt(bi.billingKey),mainColorOnly);	//show main color only
+					var styleModel=_order.createStyleGridModel(parseInt(bi.billingKey),_order.dataSet.lineItems,mainColorOnly);	//show main color only
 					if(styleModel){
 						/* mbi.imageId=styleModel.garment.imageId; */
 						mbi.data=styleModel.data;
@@ -765,7 +990,116 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  		return model;
  	}
  	
- 	_order.createStyleGridModel=function(garmentId,mainColourOnly){
+ 	_order.createDecoOrderPrintModel=function(){
+ 		var info=_order.dataSet.info;
+ 		var company=_order.company;
+ 		var model={
+					jobNo:info.orderNumber,
+ 					jobName:info.orderName,
+ 					date:info.orderDate,
+ 					poNo:info.customerPO,
+ 					
+ 					rep:_order.repName,
+ 					csr:_order.csrName,
+ 					company:company.info.businessName,
+ 					terms:info.term,
+ 					shipDate:info.requireDate,
+ 		};
+ 		model.ddLineItems=_order.createGarmentServicePrintModel();
+ 		model.pricingItems=_order.createPricingPrintModel();
+ 		return model;
+ 	}
+ 	
+ 	//for print Deco Order;
+ 	_order.createGarmentServicePrintModel=function(){
+ 		var printDis=[];
+ 		
+ 		
+ 		//create index of serviceEmbs on lineItemId
+ 		var idxServices={};	//index of serviceEmbs,serviceSps,serviceHts,...on lineItemId
+ 		
+ 		var  serviceDis=_order.dataSet.serviceEmbs,serviceDi;
+ 		for(var i=0,sId,idx;i<serviceDis.length;i++){
+ 			serviceDi=serviceDis[i];
+ 			sId=String(serviceDi.lineItemId);
+ 			idx=idxServices[sId];
+ 			if(!idx){
+ 				idx={serviceKey:"",services:[]};
+ 				idxServices[sId]=idx;
+ 			}
+ 			idx.serviceKey+="|1|"+serviceDi.designNo+"|"+serviceDi.location;
+ 			idx.services.push({deco:"Emb",position:serviceDi.location,designNo:serviceDi.designNo});
+ 		}
+ 		
+ 		var lineItemDis=_order.dataSet.lineItems,lineItemDi;
+ 		var group={},groupChanged;
+ 		var i=0,style;
+ 		while(i<lineItemDis.length){
+ 			
+			groupChanged=false;
+ 			lineItemDi=lineItemDis[i];
+			service=idxServices[String(lineItemDi.id)];
+
+ 			if(lineItemDi.styleNo!==group.itemNo||service.serviceKey!==group.serviceKey){
+ 				groupChanged=true;
+ 			}else{
+				group.qty+=lineItemDi.quantity;
+				group.lineItems.push(lineItemDi);
+				i++;
+ 			}
+ 			if(groupChanged|| i===lineItemDis.length){
+ 				
+				if(group.garmentId){
+	 				style=_order.createStyleGridModel(group.garmentId,group.lineItems,true);	//true-main colour only
+	 				group.data=style.data;
+	 				delete group.serviceKey;
+	 				delete group.lineItems;
+	 				delete group.garmentId,
+ 					printDis.push(group);
+				}
+ 				group={				//create a new group
+						itemNo:lineItemDi.styleNo,
+						garmentId:lineItemDi.garmentId,
+						desc:lineItemDi.description,
+						serviceKey:service.serviceKey,
+						qty:0,
+						lineItems:[],
+						data:[],
+						services:service.services
+				};
+ 			}
+ 		}
+ 		return printDis;
+ 	}
+ 	
+ 	// for print deco order
+ 	_order.createPricingPrintModel=function(){
+ 		var billItemDis=_order.dataSet.billItems.filter(function(value){
+ 			return value.snpId!=14;
+ 		});
+			
+	 	var billItemDi;
+		var model=[];
+		var idxDictSnp=util.createIndexOnId(cliviaDDS.getDict("snp").items);
+		for(var i=0,service;i<billItemDis.length;i++){
+			  billItemDi=billItemDis[i];
+			  service=idxDictSnp[String(billItemDi.snpId)];
+			  model.push({
+				 service: service.name,
+				 description:billItemDi.description,
+				 qty:billItemDi.orderQty,
+				 unit:billItemDi.unit,
+				 price:billItemDi.orderPrice,
+				 amt:billItemDi.orderAmt,
+				 remark:billItemDi.remark,
+			  });
+		 }
+		  
+		 return model;
+ 	}
+ 	
+ 	
+ 	_order.createStyleGridModel=function(garmentId,lineItems,mainColourOnly){
 		
 		if(!garmentId) return null;
 		
@@ -794,7 +1128,6 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		}
 		var idxLineQty=sizes.length+1;
 		
-		var lineItems=_order.dataSet.lineItems;
 		for(var i=0,r,lineItem,row;i<lineItems.length;i++){
 			lineItem=lineItems[i];
 			if(lineItem.garmentId===garmentId){
@@ -908,7 +1241,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 													upcId:upcId,
 													billingKey:String(lineItem.garmentId),
 													orderQty:qty,
-													isDirty:true
+													isDirty:true,
+													isNewDi:true,
 												};
 											idxUpc[String(upcId)]=upcs.push(upc)-1;
 											
@@ -942,7 +1276,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 				
 			}else{
 				if(orderUpc.id){
-					_order.registerDeletedItem("orderUpc",orderUpc.id);
+					_order.registerDeletedItem("orderUpc",orderUpc);
 				}
 				orderUpcs.splice(i-1,1);
 			}

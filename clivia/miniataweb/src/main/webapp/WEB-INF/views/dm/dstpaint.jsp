@@ -12,9 +12,11 @@
    					 				ng-click="onClick()">
 				</div>
 			</div>	<!-- first-pane-->
+			
       		<div>
       			<div thread-matcher="threadMatcher" c-emb-canvas="embCanvas"></div>
 			</div>	<!--  second-pane-->
+			
 		</div>
 		
 		<div kendo-window="printOptions" k-title="'Print Options'"

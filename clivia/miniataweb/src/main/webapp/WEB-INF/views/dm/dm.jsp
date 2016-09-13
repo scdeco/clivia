@@ -115,7 +115,8 @@ designApp.controller("dmCtrl",
 			        id:"btnNew",
 			        click: function(e) {
 			        	$scope.clear();
-			        	//$scope.myDstPaint.setDstDesign(--id)
+				    	$scope.$apply();
+
 			       		 }
 			    }, {
 			        type: "button",
@@ -165,7 +166,7 @@ designApp.controller("dmCtrl",
 			        text: "New",
 			        id: "btnNewColourway",
 			        click: function(e){
-			        	$scope.newColourway();
+			        	$scope.myDstPaint.newColourway();
 			        	}  
 			    }, {	
 			        type: "button",
@@ -291,7 +292,7 @@ designApp.controller("dmCtrl",
 					    if(e.response.status==="success"){
 					    	var data=e.response.data;
 							if(data){
-								$scope.loadDesign(data.id);
+								$scope.loadDesignById(data.id);
 							}
 				    	}
 					},
@@ -310,7 +311,7 @@ designApp.controller("dmCtrl",
 							if(e.currentTarget){
 								var di=this.dataItem(e.currentTarget);
 								if(di&&di.id){
-									$scope.loadDesign(di.id);
+									$scope.loadDesignById(di.id);
 									if(e.target && e.target.cellIndex===0)
 										$scope.queryWindow.close();
 								}
@@ -382,6 +383,7 @@ designApp.controller("dmCtrl",
 					if(di&&di.threads&&di.runningSteps){
 						$scope.myDstPaint.setColourway(di.threads,di.runningSteps);
 						$scope.myDstPaint.setBackgroundColour(di.backgroundColour);
+						$scope.$apply();
 					}
 				}
 			}
@@ -408,15 +410,15 @@ designApp.controller("dmCtrl",
 		    	$scope.dataSet.deleteds=[];
 			}
 			
+			//clear everything
 		    $scope.clear=function(){
 		    	$scope.searchDesignNumber=null;
 		    	clearDataSet();
 		    	$scope.myDstPaint.clear();
 		    	$scope.myDstPaint.setBackgroundColour("#FFFFFF");
-		    	$scope.$apply();
 		    }
 		    
-		    $scope.loadDesign=function(id){
+		    $scope.loadDesignById=function(id){
 		    	$scope.clear();
 		    	
 		    	var url="../lib/emb/get-embdesign?id="+id;
@@ -474,11 +476,6 @@ designApp.controller("dmCtrl",
 		    	cgw.addRow(di);
 		    }
 		    
-		    $scope.newColourway=function(){
-		    	$scope.myDstPaint.threadMatcher.embCanvas.setColourway("","");
-		    	$scope.myDstPaint.threadMatcher.initColourwayList();
-		    	$scope.myDstPaint.threadMatcher.embCanvas.drawDesign();
-		    }
 		    
 		    $scope.removeColourway=function(){
 				var dataItem=cgw.getCurrentDataItem();
@@ -522,10 +519,7 @@ designApp.controller("dmCtrl",
 		    	}
 		    }
 		    
-		    $scope.normalizeColourway=function(){
-		    	$scope.myDstPaint.threadMatcher.embCanvas.normalizeColourway();
-		    	$scope.myDstPaint.threadMatcher.parseColourway();
-		    }
+
 		    
 		}]);
 

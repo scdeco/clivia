@@ -576,6 +576,10 @@ directive("seasonDropdownlist",["cliviaDDS",function(cliviaDDS){
 				return temp?temp.text():"";
 			}
 			
+			scope.$on('$destroy',function(){
+				console.log("destroying...");
+			})
+			
 			scope.dict.getItems()
 				.then(function(items){
 					var thisItems=[];
@@ -591,6 +595,7 @@ directive("seasonDropdownlist",["cliviaDDS",function(cliviaDDS){
 							dataSource:{data:thisItems}, 
 					};
 			})},
+			
 		controller: ['$scope', function($scope) {
 			
 			var scope=$scope;
@@ -1808,18 +1813,23 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 	return directive;
 }]).
 
-directive('designView',["DesignGridWrapper","cliviaDDS","util",function(DesignGridWrapper,cliviaDDS,util){
+directive('embDesignView',["DesignGridWrapper","cliviaDDS","util",function(DesignGridWrapper,cliviaDDS,util){
 	var directive={
 			restrict:'EA',
 			replace:false,
 			scope:{
 				cName:'@designView',
 				cEditable:'=',
-				cDataSource:'=',
 				cPageable:'=',
-				cDictImage:'=',
-				cNewItemFunction:'&',
-				cRegisterDeletedItemFunction:'&',
+
+				cEmbDataSource:'=',
+				cColourwayDataSource:'=',
+				
+				cNewEmbItemFunction:'&',
+				cNewColourwayItemFunction:'&',
+				
+				cRegisterDeletedEmbItemFunction:'&',
+				cRegisterDeletedColourwayItemFunction:'&',
 			},
 			
 			templateUrl:'../common/designview',

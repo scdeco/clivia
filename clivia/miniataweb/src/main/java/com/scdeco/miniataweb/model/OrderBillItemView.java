@@ -60,7 +60,7 @@ public class OrderBillItemView {
 	@Column(name = "unit", length = 20)
 	private String unit;
 
-	@Column(name = "billingKey", length = 20)
+	@Column(name = "billingKey", length = 100)
 	private String billingKey;
 
 	@Column(name = "itemTypeId")

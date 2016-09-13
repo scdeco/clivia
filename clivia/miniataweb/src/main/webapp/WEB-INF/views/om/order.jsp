@@ -128,16 +128,7 @@
 #billitemdetail table, th, td {
     padding: 5px;
 }
-#billitemdetail table tr:nth-child(even) {
-    background-color: #eee;
-}
-#billitemdetail table tr:nth-child(odd) {
-   background-color:#fff;
-}
-#billitemdetail table th	{
-    background-color: black;
-    color: white;
-}
+
 
 .billDetailQty{
 	width:40px;

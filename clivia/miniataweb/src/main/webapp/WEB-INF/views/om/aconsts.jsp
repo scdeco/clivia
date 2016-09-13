@@ -133,22 +133,30 @@
 			}],
 			
 			registeredServices:[{
-				 text: "Embroidery", 
-				 icon: "insert-n",
-				 name:"serviceEmb",
+				id:10,
+				text: "Embroidery", 
+				icon: "insert-n",
+				model:"orderServiceEmb",
+				name:"serviceEmb",
 			},{
-				 text: "Screen Printing", 
-				 icon: "insert-n",
-				 name:"serviceSp",
+				id:11,
+				text: "Screen Printing", 
+				icon: "insert-n",
+				model:"orderServiceSp",
+				name:"serviceSp",
 				
 			},{
-				 text: "Heat Transfer", 
-				 icon: "insert-n",
-				 name:"serviceHt",
+				id:12,
+				text: "Heat Transfer", 
+				icon: "insert-n",
+				model:"orderServiceHt",
+				name:"serviceHt",
 			},{
-				 text: "Laser Etching", 
-				 icon: "insert-n",
-				 name:"serviceLaser",
+				id:13,
+				text: "Laser Etching", 
+				icon: "insert-n",
+				model:"orderServiceLaser",
+				name:"serviceLaser",
 			}],
 			
 	});

@@ -100,16 +100,13 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	       }]
 	    };	
     $scope.saveResultOptions={
-/*             templates: [{
-                type: "ngTemplate",
-                template: '<p style="width: 16em; heigth:5em; padding:1em;white-space:nowrap">Order# {{SO.dataSet.info.orderNumber}} save successful. </p>''
-             }]*/
              position: {
                  pinned: true,
                  top: 50,
                  left: 200,
                  bottom: null,
                  right: null,
+                 autoHideAfter: 1000,
              }             
              
         };
@@ -183,6 +180,9 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 			}
 		}
 		
+		if(id==="decoConfirmation"){
+			var model=SO.createDecoOrderPrintModel();
+		}
 	}
 	
 	$scope.confirmDiscardChanges=function(){
@@ -258,8 +258,8 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 				    	//adjust new orderitem button orderItemId value
 				    	
 				    	var items=SO.dataSet.items;
-				    	var currenOrderItemId=0;
-				    	for(var i=0,item,button,el;i<items.length;i++){
+				    	var currentOrderItemId=0;
+				    	for(var i=0,item,button,el,itemScope;i<items.length;i++){
 				    		item=items[i];
 				    		
 				    		el=$scope.orderItems.instance.itemElements[item.lineNo-1];
@@ -267,12 +267,18 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 				    		
 				    		button=$scope.orderItems.instance.itemButtons[item.lineNo-1];
 				    		button.orderItemId=item.id;
+				    		
+				    		itemScope=$scope.orderItems[$scope.orderItems.instance.itemScopeNames[item.lineNo-1]];
+				    		itemScope.orderItem=item;
+				    		
 				    		if(button.selected)
-				    			currenOrderItemId=button.orderItemId;
+				    			currentOrderItemId=button.orderItemId;
 				    	}		
-				    	$scope.orderItems.setCurrentOrderItem(currenOrderItemId);
+				    	
+				    	$scope.orderItems.instance.currentOrderItemId=currentOrderItemId;
+				    	$scope.orderItems.setCurrentOrderItem(currentOrderItemId);
 			    		$scope.orderInfo.infoForm.$setPristine();
-			    		$scope.saveResult.show('<p style="width: 16em; height:2em; padding:1em;white-space:nowrap">Order#:'+SO.dataSet.info.orderNumber+ ' saved successfully. </p>',"info");
+			    		$scope.saveResult.show('<p style="width: 16em; height:2em; padding:1em;white-space:nowrap">Order #'+SO.dataSet.info.orderNumber+ ': save succeed. </p>',"info");
 				    }else{
 			    		alert("Can not find order:"+$scope.searchOrderNumber+".");
 				    }
@@ -408,9 +414,8 @@ orderApp.directive("orderItems",["SO","cliviaDDS","util","$compile",function(SO,
 			link:function(scope){
 				scope.clearInstance=function(){
 					var items=SO.dataSet.items;
-					for(var i=0;i<items.length;i++){
-						scope.removeOrderItemElement(items[i]);
-						scope.removeOrderItemButton(items[i]);
+					for(var i=items.length-1;i>=0;i--){
+						scope.removeOrderItem(items[i]);
 					}
 					scope.$apply();
 				}
@@ -425,8 +430,10 @@ orderApp.directive("orderItems",["SO","cliviaDDS","util","$compile",function(SO,
 			       		
 						var orderItem=scope.getOrderItemDi(orderItemId);
 						if(orderItem.typeId===1){
-							SO.generateBillableItems(orderItem);
-							scope.$apply();
+							SO.generateBillOfGarmentSupply(orderItem);
+							SO.generateBillOfServiceEmb(orderItem);
+							//var billItemScope=scope.getOrderItemScope(orderItem);
+							//billItemScope.
 						}
 						
 						instance.currentItemId=orderItemId;
@@ -508,8 +515,6 @@ orderApp.directive("orderItems",["SO","cliviaDDS","util","$compile",function(SO,
 			        return button;
 			 	}
 			 	
-			 	
-			 	
 			 	scope.addOrderItemElement=function(orderItem,itemElement){
 			        var element={
 			        		orderItemId:orderItem.id,
@@ -563,6 +568,8 @@ orderApp.directive("orderItems",["SO","cliviaDDS","util","$compile",function(SO,
 	                var itemName=itemType.name+orderItem.id;
                  	var itemElements=$compile("<div "+itemType.directive+"='"+itemName+"' c-item-id='"+orderItem.id+"'></div>")(scope);
                   	scope.addOrderItemElement(orderItem,itemElements);
+			    	scope.instance.itemScopeNames.push(itemName);
+                  	
                   	return orderItem;
 			    };
 			       
@@ -580,12 +587,6 @@ orderApp.directive("orderItems",["SO","cliviaDDS","util","$compile",function(SO,
 			    	var element=itemElements[idx].element;
 			    	itemElements.splice(idx,1);
 			    	kendo.destroy(element);
-			    	
-			    	var type=SO.getRegisteredItemType(orderItem.typeId);
-			    	var tempScope=scope[type.name+orderItem.id];
-			    	delete scope[type.name+orderItem.id];
-			    	tempScope.$destroy();
-			    	
 			    	element.remove();
 			    }
 			    
@@ -596,23 +597,21 @@ orderApp.directive("orderItems",["SO","cliviaDDS","util","$compile",function(SO,
 			    	var idx=util.findIndex(items,"id",orderItem.id);
 			    	items.splice(idx,1);
 			    	
+			    	
 			   		//register deleted items
-				   	SO.registerDeletedItem("orderItem",orderItem.id,true);
-			   		
-			    	//get dataTable from the dataSet, orderItem.typeId registeredItemType.name is the dataTable name
-					var type=SO.getRegisteredItemType(orderItem.typeId);
-			    	var dis=SO.dataSet[type.name+"s"];  
-					 for(var i=dis.length-1;i>=0;i--){
-						 di=dis[i];
-						 if(di.orderItemId===orderItem.id){
-							 
-					   		 //register to deleted items 
-							SO.registerDeletedItem(type.model,di.id,type.hasDetail);
-					   		
-							 //remove from the dataTable
-						    dis.splice(i,1);
-						 }
-					 }
+				   	SO.registerDeletedItem("orderItem",orderItem);
+
+			    	for(var i=0,itemName,modelName;i<SO.setting.registeredItemTypes.length;i++){
+			    		itemName=SO.setting.registeredItemTypes[i].name;
+			    		modelName=SO.setting.registeredItemTypes[i].model;	//server model name
+			    		SO.deleteDependentItems(itemName,modelName,"orderItemId",orderItem.id);
+			    	}
+			    	
+			    	for(var i=0,itemName,modelName;i<SO.setting.registeredServices.length;i++){
+			    		itemName=SO.setting.registeredServices[i].name;
+			    		modelName=SO.setting.registeredServices[i].model;
+			    		SO.deleteDependentItems(itemName,modelName,"orderItemId",orderItem.id);
+			    	}
 			   		
 			    	//set lineNo same as item index+1
 			    	scope.setOrderItemLineNo();
@@ -624,6 +623,7 @@ orderApp.directive("orderItems",["SO","cliviaDDS","util","$compile",function(SO,
 			    
 			    scope.removeOrderItem=function(orderItem){
 			    	
+			    	scope.removeOrderItemScope(orderItem);
 			    	scope.removeOrderItemButton(orderItem);
 			    	scope.removeOrderItemElement(orderItem);
 					var newCurrentItemId=scope.removeOrderItemDi(orderItem);	
@@ -647,8 +647,30 @@ orderApp.directive("orderItems",["SO","cliviaDDS","util","$compile",function(SO,
 			    }
 			    
 			    scope.getOrderItemScope=function(orderItem){
-					 var type=SO.getRegisteredItemType(orderItem.typeId);
-					 return scope[type.name+orderItem.id];
+			    	var itemScope;
+			    	for(var i=0,isn;i<scope.instance.itemScopeNames.length;i++){
+			    		isn=scope.instance.itemScopeNames[i];
+			    		if(scope[isn]&&scope[isn].orderItem.id===orderItem.id){
+			    			itemScope=scope[isn];
+			    			break;
+			    		}
+			    	}
+			    	return itemScope;
+			    }
+			    
+			    scope.removeOrderItemScope=function(orderItem){
+			    	for(var i=0,isn;i<scope.instance.itemScopeNames.length;i++){
+			    		isn=scope.instance.itemScopeNames[i];
+			    		if(scope[isn].orderItem.id===orderItem.id){
+			    			scope.instance.itemScopeNames.splice(i,1);
+					    	var itemScope=scope[isn];
+					    	delete scope[isn];
+					    	itemScope.$destroy();
+			    			break;
+			    		}
+			    	}
+			    	
+			    	
 			    }
 				
 			},
@@ -659,10 +681,10 @@ orderApp.directive("orderItems",["SO","cliviaDDS","util","$compile",function(SO,
 				$scope.$parent["orderItems"]=$scope;
 
 				$scope.instance={
-					orderItems:[],
 					orderItemElement:$element,
 					itemButtons:new kendo.data.ObservableArray([]),
 					itemElements:[],
+					itemScopeNames:[],
 					currentItemId:0,
 					};
 
@@ -717,6 +739,18 @@ orderApp.directive("orderItems",["SO","cliviaDDS","util","$compile",function(SO,
 			            		 button=buttons.splice(e.oldIndex,1)[0];
 			           		 
 			            	 buttons.splice(e.newIndex,0,button);
+			            	 
+			           		 var elements=$scope.instance.itemElements,
+		            		 	 element=elements.splice(e.oldIndex,1)[0];
+		           		 
+		            	 	 elements.splice(e.newIndex,0,element);
+		            	 	 
+			           		 var scopeNames=$scope.instance.itemScopeNames,
+		            		 	 scopeName=scopeNames.splice(e.oldIndex,1)[0];
+		           		 
+			            	 scopeNames.splice(e.newIndex,0,scopeName);
+		            	 	 
+			            	 
 			             }
 			              		 
 			     };
@@ -779,6 +813,8 @@ orderApp.directive("lineItem",function(SO){
 
 				//pass to garmentGird directive to create new lineitem		        
 		    	scope.newItemFunction=function(){
+					
+	    			var t=scope.garmentGridDataSource.view();
 						
 	    		    return {
 		    			    	orderId:SO.dataSet.info.orderId,
@@ -792,8 +828,16 @@ orderApp.directive("lineItem",function(SO){
 				        
 		    	//pass to garmentGird directive to register removed lineitem		        
 		    	scope.registerDeletedItemFunction=function(dataItem){
-		    		SO.registerDeletedItem("orderLineItem",dataItem.id,true);
+		    		SO.registerDeletedItem("orderLineItem",dataItem);
+		    		
+		    		for(var j=0,serviceName,serviceModel;j<SO.setting.registeredServices.length;j++){
+		    			serviceName=SO.setting.registeredServices[j].name;
+		    			serviceModel=SO.setting.registeredServices[j].model;
+		    			SO.deleteDependentItems(serviceName,serviceModel,"lineItemId",dataItem.id);
+		    		}
+		    			
 		    	}
+		    	
 		    	
 		    	scope.getDetailFunction=function(diLineItem){
 		    		
@@ -833,7 +877,6 @@ orderApp.directive("lineItem",function(SO){
 				    	      		if($scope.garmentGrid)
 				    		      		$scope.garmentGrid.resize(gridHeight);
 				    		    },1);    
-				    	      	console.log("resize2:");
 				        	}		
 				        }
 
@@ -845,23 +888,37 @@ orderApp.directive("lineItem",function(SO){
 				    		}
 				    	});
 				    	
-				     	$scope.garmentGridDataSource=new kendo.data.DataSource({
-				     		        	data:SO.dataSet.lineItems, 
-				    		    	    schema: {
-				    		    	    	model: { id: "id" }
-				    		    	    },	//end of schema
-				    		    	    
-				       		    	    filter: {
-				    		    	        field: "orderItemId",
-				    		    	        operator: "eq",
-				    		    	        value: $scope.orderItem.id,
-				    		    	    },    
-				    		    	    
-				    		    	    serverFiltering:false,
-				    		    	    pageSize: 0,			//paging in pager
+				    	$scope.$watch("orderItem.id",function(newValue,oldValue){
+				    		if(!!newValue&& newValue!=oldValue)
+				    			$scope.garmentGrid.grid.setDataSource($scope.getGridDataSource());
 
-				    		        }); //end of dataSource,
+				    	});
 				    	
+				    	$scope.getGridDataSource=function(){
+				    		return new kendo.data.DataSource({
+		     		        	data:SO.dataSet.lineItems, 
+		     		        	
+		    		    	    schema: {
+		    		    	    	model: { id: "id" }
+		    		    	    },	//end of schema
+		    		    	    
+			       		    	    filter: {
+		    		    	        field: "orderItemId",
+		    		    	        operator: "eq",
+		    		    	        value: $scope.orderItem.id,
+		    		    	    },     
+		    		    	    
+		    		    	    serverFiltering:false,
+		    		    	    pageSize: 0,			//paging in pager
+		    		    	    
+		    		    	    change:function(e){
+		    		    	    	var data=this.data();
+		    		    	    }
+
+		    		        }); //end of dataSource,
+				    	}
+
+				     	$scope.garmentGridDataSource=$scope.getGridDataSource();				    	
 					
 					
 			}]	//end of controller
@@ -870,7 +927,7 @@ orderApp.directive("lineItem",function(SO){
 });	//end of lineItem directive
 	
 	
-orderApp.directive("decoService",function(SO){
+orderApp.directive("decoService",function(SO,util){
 	var directive={
 			restrict:'EA',
 			replace:false,
@@ -884,11 +941,12 @@ orderApp.directive("decoService",function(SO){
 		    	scope.initDetail=function(lineItemDi){
 		    		
 		    		scope.lineItemDi=lineItemDi;
-   	 	    		scope.embServiceGrid.grid.setDataSource(scope.getEmbServiceGridDataSource());
+   	 	    		scope.serviceEmbGrid.grid.setDataSource(scope.getServiceEmbGridDataSource());
+   	 	    		scope.serviceSpGrid.grid.setDataSource(scope.getServiceSpGridDataSource());
 //		    		scope.$apply();
 		    	}
 		    	
-		    	scope.embServiceNewItemFunction=function(){
+		    	scope.serviceEmbNewItemFunction=function(){
 	    		    return {
     			    	orderId:SO.dataSet.info.orderId,
     			    	orderItemId:scope.lineItemDi.orderItemId, 
@@ -898,14 +956,11 @@ orderApp.directive("decoService",function(SO){
 
 		    	}
 		    	
-		    	scope.registerDeletedEmbServiceFunction=function(){
-		    		SO.registerDeletedItem("orderServiceEmb",dataItem.id,true);
+		    	scope.registerDeletedServiceEmbFunction=function(dataItem){
+		    		SO.registerDeletedItem("orderServiceEmb",dataItem);
 		    	}
 		    	
-		    	scope.resize=function(){
-		    	}
-		    	
-				scope.getEmbServiceGridDataSource=function(){
+				scope.getServiceEmbGridDataSource=function(){
 					return new kendo.data.DataSource({
 	     		        	data:SO.dataSet.serviceEmbs, 
 	    		    	    schema: {model: {id: "id" }},	
@@ -920,7 +975,75 @@ orderApp.directive("decoService",function(SO){
 	
 	    		        }); //end of dataSource,
 				}
+
+		    	scope.serviceSpNewItemFunction=function(){
+	    		    return {
+    			    	orderId:SO.dataSet.info.orderId,
+    			    	orderItemId:scope.lineItemDi.orderItemId, 
+    			    	lineItemId:scope.lineItemDi.id,
+    			    	isNewDi:true,
+    			    }
+
+		    	}
 		    	
+		    	scope.registerDeletedServiceSpFunction=function(dataItem){
+		    		SO.registerDeletedItem("orderServiceSp",dataItem);
+		    	}
+		    	
+				scope.getServiceSpGridDataSource=function(){
+					return new kendo.data.DataSource({
+	     		        	data:SO.dataSet.serviceSps, 
+	    		    	    schema: {model: {id: "id" }},	
+	    		    	    filter: {
+	    		    	        field: "lineItemId",
+	    		    	        operator: "eq",
+	    		    	        value: scope.lineItemDi.id,
+	    		    	    },    
+	    		    	    
+	    		    	    serverFiltering:false,
+	    		    	    pageSize: 0,			//paging in pager
+	
+	    		        }); //end of dataSource,
+				}
+				
+				
+				
+				scope.duplicateDeco=function(){
+					console.log("Duplicate"+scope.lineItemDi.id);
+					
+					scope.duplicateDecoToGarments(scope.lineItemDi.lineNo+1);
+				
+				}
+				
+				scope.duplicateDecoToGarments=function(startLineNo,endLineNo){
+					if(!endLineNo) endLineNo=10000;
+					var garmentView=scope.$parent.garmentGridDataSource.view();
+					
+					for(var i=0,garDi;i<garmentView.length;i++){
+						garDi=garmentView[i];
+						if(garDi.lineNo>=startLineNo && garDi.lineNo<=endLineNo){
+							scope.duplicateDecoToGarment("serviceEmb",garDi);		
+							scope.duplicateDecoToGarment("serviceSp",garDi);		
+						}
+					}
+				}
+				
+ 				scope.duplicateDecoToGarment=function(service,garmentDi){
+ 					var decoDataSource=scope[service+"Grid"].grid.dataSource;
+ 					var decoView=decoDataSource.view();
+					var newDis=[],newDi;
+					for(var i=0,di;i<decoView.length;i++){
+						di=decoView[i];
+						newDi=util.duplicateObject(di);
+						newDi.id=null;
+						newDi.lineItemId=garmentDi.id;
+						newDi.isNewDi=true;
+						newDi.isDirty=true;
+						newDis.push(newDi);
+					}
+					for(var i=0;i<newDis.length;i++)
+						decoDataSource.add(newDis[i]);
+				} 
 		    	
 			},
 			controller: ["$scope","cliviaGridWrapperFactory",function($scope,cliviaGridWrapperFactory) {
@@ -964,14 +1087,23 @@ orderApp.directive("billItem",function(SO,$sce){
 					        
 				//pass to billGrid directive to register removed billitem		        
 				scope.registerDeletedItemFunction=function(dataItem){
-					SO.registerDeletedItem("orderBillItem",dataItem.id);
+					SO.registerDeletedItem("orderBillItem",dataItem);
 				}
 				
 				scope.getDetailFunction=function(billItemDi){
 					var html;
-					//if itemTypeId===2, the item is from lineItem and its billingKey is a string of garmentId
-					if(billItemDi && billItemDi.itemTypeId===2){
-						html=SO.getStyleGridHtml(parseInt(billItemDi.billingKey),true);
+					
+					if(billItemDi && billItemDi.billingKey){
+						switch(billItemDi.snpId){
+						case 14: //Garment Supply	
+							 //if itemTypeId===2, the item is from lineItem and its billingKey is a string of garmentId
+								html=SO.getStyleGridHtml(parseInt(billItemDi.billingKey));
+							break;
+						case 1:	//Embroidery Service
+							html=SO.getEmbServiceHtml(billItemDi.billingKey);
+							break;
+							
+						}
 					}
 					
 					if(!html)
@@ -995,7 +1127,7 @@ orderApp.directive("billItem",function(SO,$sce){
 						return;
 					
 					scope.orderItem.isDirty=true;
-					scope.billGrid.gridWrapper.setDiscount(newValue);
+					scope.billGrid.gridWrapper.setDiscount(newValue,14);
 					scope.billGrid.grid.refresh();
 				}
 				
@@ -1014,7 +1146,7 @@ orderApp.directive("billItem",function(SO,$sce){
 					$scope.orderItem.spec=SO.company.info.discount;
 				
 				//generate auto bill items from lineItems...
-				SO.generateBillableItems($scope.orderItem);
+				//SO.generateBillableItems($scope.orderItem);
 
 			    $scope.billItemSplitterOptions={
 			        	resize:function(e){
@@ -1028,33 +1160,42 @@ orderApp.directive("billItem",function(SO,$sce){
 			    	      	console.log("resize2:");
 			        	}		
 			        }
-				
-			 	$scope.billGridDataSource=new kendo.data.DataSource({
-			     	data:SO.dataSet.billItems, 
-				    schema: {
-				    	model: { 
-				    		id: "id" ,
-				    		fields:{
-				    			snpId: {type: "number"},
-			 					listPrice:{type: "number"},
-			 					orderQty:{type: "number"},
-			 					orderPrice:{type: "number", validation: {  min: 0} },
-			 					orderAmt:{type: "number"},
-			 				}}
-			 			
-				    },	//end of schema
-				    
-			   	    filter: {
-				        field: "orderItemId",
-				        operator: "eq",
-				        value: $scope.orderItem.id,
-				    },    
-				    
-				    serverFiltering:false,
-				    pageSize: 0,			//paging in pager
+		    	$scope.$watch("orderItem.id",function(newValue,oldValue){
+		    		if(!!newValue&& newValue!=oldValue)
+		    			$scope.billGrid.grid.setDataSource($scope.getGridDataSource());
 
-			    }); //end of dataSource,
+		    	});
+
+			    $scope.getGridDataSource=function(){
+			    	return new kendo.data.DataSource({
+				     	data:SO.dataSet.billItems, 
+					    schema: {
+					    	model: { 
+					    		id: "id" ,
+					    		fields:{
+					    			snpId: {type: "number"},
+				 					listPrice:{type: "number"},
+				 					orderQty:{type: "number"},
+				 					orderPrice:{type: "number", validation: {  min: 0} },
+				 					orderAmt:{type: "number"},
+				 				}}
+				 			
+					    },	//end of schema
+					    
+				   	    filter: {
+					        field: "orderItemId",
+					        operator: "eq",
+					        value: $scope.orderItem.id,
+					    },    
+					    
+					    serverFiltering:false,
+					    pageSize: 0,			//paging in pager
+
+				    }); //end of dataSource,
+
+			    }
 			    
+			 	$scope.billGridDataSource=$scope.getGridDataSource();		    
 			    
 				$scope.discountOptions={
 						min: 0,
@@ -1094,7 +1235,7 @@ orderApp.directive("designItem",function(SO,$sce){
 					        
 				//pass to designGrid directive to register removed billitem		        
 				scope.registerDeletedItemFunction=function(dataItem){
-					SO.registerDeletedItem("orderDesignItem",dataItem.id);
+					SO.registerDeletedItem("orderDesignItem",dataItem);
 				}
 
  				scope.resize=function(){
@@ -1158,7 +1299,7 @@ orderApp.directive("imageItem",function(SO,$sce){
 						    }
 					}
 				scope.registerDeletedItemFunction=function(dataItem){
-					SO.registerDeletedItem("orderImage",dataItem.id);
+					SO.registerDeletedItem("orderImage",dataItem);
 				}
 				
 			},
@@ -1249,7 +1390,7 @@ orderApp.directive("contactItem",function(SO,$sce){
 
 				
 				scope.registerDeletedItemFunction=function(dataItem){
-					SO.registerDeletedItem("orderContact",dataItem.id);
+					SO.registerDeletedItem("orderContact",dataItem);
 				}
 								
 				
@@ -1317,7 +1458,7 @@ orderApp.directive("addressItem",function(SO,$sce){
 				}
 
 				scope.registerDeletedItemFunction=function(dataItem){
-					SO.registerDeletedItem("orderAddress",dataItem.id);
+					SO.registerDeletedItem("orderAddress",dataItem);
 				}
 								
 				

@@ -7,7 +7,7 @@
 				style="height: 800px; width: 100%;">    
 				
 		<div style="margin:6px;"><!-- top pane-->
-			<label style="margin-left:40px;">Discount:&nbsp;
+			<label style="margin-left:40px;">Garment Supply Discount:&nbsp;
 				<input kendo-numerictextbox name="discount" style="width:60px;"
 					change-on-blur="setDiscount" 
 					ng-model="orderItem.spec" 
