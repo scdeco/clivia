@@ -223,6 +223,7 @@ factory("Selector",function(){
 factory("dictThread",["$http",function($http){		//service
 	var dictThread={
 		threads:[],
+		idxCode:{},
 		defaultThreadColor:{r:100,g:100,b:100,a:0.05},
 		cursorThreadColor:{r:0,g:255,b:0,a:1},
 		defaultThreadColors:[{r:0,	g:255,	b:0 },
@@ -242,15 +243,17 @@ factory("dictThread",["$http",function($http){		//service
 		     				{r:112,	g:56,	b:56}],
 		loadThreads:function(){
 			var url="http:///192.6.2.108:8080/clivia/data/dictEmbroideryThreadDao/get"
+			var self=this;
 			$http.get(url).
 				success(function(data, status, headers, config) {
 			    	ts=[];
 			    	for(var i=0,t,d;i<data.length;i++){
 			    		d=data[i];
-			    		t={code:d.code,r:d.red,g:d.green,b:d.blue};
+			    		t={code:d.code,r:d.red,g:d.green,b:d.blue,name:d.name};
 			    		ts.push(t);
+			    		self.idxCode[d.code]=t;
 			    	}
-			    	dictThread.threads=ts
+			    	self.threads=ts
 				}).
 				error(function(data, status, headers, config) {
 				});
@@ -261,19 +264,20 @@ factory("dictThread",["$http",function($http){		//service
 			var c=dictThread.defaultThreadColor;
 			if(code){
 				code=code.trim().toUpperCase();
-				var threads=dictThread.threads;
-				for(var i=0;i<threads.length;i++ )
-					if(threads[i].code===code){
-						c=threads[i];
-						break;
-					}
+				if(code)
+					c=this.idxCode[code];
 			}
 			return c;
 		},
 
+		//convert{r: ,g:, b:} to "#FFAABB"
+		convertRgbToHexColor:function(c){
+			return "#" + ((1 << 24) + (c.r << 16) + (c.g << 8) + c.b).toString(16).slice(1);
+		},
+		
 		getThreadColorHex:function(code){
 			var c=dictThread.getThreadColor(code);
-			return (c===this.defaultThreadColor)?"":"#" + ((1 << 24) + (c.r << 16) + (c.g << 8) + c.b).toString(16).slice(1);
+			return (c===this.defaultThreadColor)?"":this.convertRgbToHexColor(c);
 		},
 		
 		getThreadColors:function(threadCodes){
@@ -284,6 +288,29 @@ factory("dictThread",["$http",function($http){		//service
 				threadColors.push(dictThread.getThreadColor(codeList[i]))
 			}
 			return threadColors;
+		},
+		
+		getThreads:function(strCodes){
+			var threads=[];
+			strCodes=this.normalizeThreadCodes(strCodes);
+			if(strCodes){
+				var codes=strCodes.split(",");
+				for(var i=0,t,code;i<codes.length;i++){
+					code=codes[i];
+					t=null;
+					if(code)
+						t=this.idxCode[code];
+					if(!t)
+						t={code:code,colour:"",hexColour:""};
+					else{
+						t={code:code,colour:t.name,hexColour:this.convertRgbToHexColor(t)};
+					}
+					threads.push(t);
+				}
+				
+			}
+			return threads;
+			
 		},
 		
 		getRunningSteps:function(steps,stepCount){

@@ -181,7 +181,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 		}
 		
 		if(id==="decoConfirmation"){
-			var model=SO.createDecoOrderPrintModel();
+			SO.printDecoOrder("printdecoorder");
 		}
 	}
 	
@@ -1007,15 +1007,52 @@ orderApp.directive("decoService",function(SO,util){
 				}
 				
 				
-				
 				scope.duplicateDeco=function(){
-					console.log("Duplicate"+scope.lineItemDi.id);
+	
 					
-					scope.duplicateDecoToGarments(scope.lineItemDi.lineNo+1);
+					var fromDis=[];
+ 					var dis=scope["serviceEmbGrid"].grid.dataSource.view();
+ 					
+ 					for(var i=0,di;i<dis.length;i++){
+ 						di=dis[i];
+ 						fromDis.push({
+ 							id:di.id,
+ 							serviceType:"Emb",
+ 							location:di.location,
+ 							designNo:di.designNo,
+ 							designName:di.designName,
+ 							detail:di.threadCode+"    "+di.runningStep,
+ 						});
+ 					}
+ 					
+ 					scope.duplicateDecoGrid.setDataSource(new kendo.data.DataSource({data:fromDis}));
+ 					
+ 					
+ 					var toDis=[];
+ 					var dis=scope.$parent.garmentGridDataSource.view();
+ 					for(var i=0,di;i<dis.length;i++){
+ 						di=dis[i];
+ 						if(di.id!=scope.lineItemDi.id){
+ 							toDis.push({
+ 								id:di.id,
+ 								style:(di.styleNo?di.styleNo:"")+" "+(di.description?di.description:""),
+ 								colour:di.colour,
+ 								sizes:SO.getLineItemSizes(di),
+ 								qty:di.quantity,
+ 								remark:di.remark,
+ 							});
+ 						}
+ 					}
+ 					
+ 					scope.duplicateLineItemGrid.setDataSource(new kendo.data.DataSource({data:toDis}));
+ 					
+					scope.decoDuplicateWindow.open();
+
+				} 
 				
-				}
 				
-				scope.duplicateDecoToGarments=function(startLineNo,endLineNo){
+				
+/* 				scope.duplicateDecoToGarments=function(startLineNo,endLineNo){
 					if(!endLineNo) endLineNo=10000;
 					var garmentView=scope.$parent.garmentGridDataSource.view();
 					
@@ -1028,9 +1065,15 @@ orderApp.directive("decoService",function(SO,util){
 					}
 				}
 				
- 				scope.duplicateDecoToGarment=function(service,garmentDi){
- 					var decoDataSource=scope[service+"Grid"].grid.dataSource;
+ 				scope.duplicateDecoToLineItem=function(service ,garmentDi){
+ 					
+ 					
+  					var decoDataSource=scope[service+"Grid"].grid.dataSource;
  					var decoView=decoDataSource.view();
+ 					
+ 					
+ 					
+ 					
 					var newDis=[],newDi;
 					for(var i=0,di;i<decoView.length;i++){
 						di=decoView[i];
@@ -1043,7 +1086,12 @@ orderApp.directive("decoService",function(SO,util){
 					}
 					for(var i=0;i<newDis.length;i++)
 						decoDataSource.add(newDis[i]);
-				} 
+					
+					scope.decoDuplicateWindow.open();
+				}
+ 				
+*/
+ 				
 		    	
 			},
 			controller: ["$scope","cliviaGridWrapperFactory",function($scope,cliviaGridWrapperFactory) {
@@ -1055,7 +1103,58 @@ orderApp.directive("decoService",function(SO,util){
 					$scope.lineItemDi={};
 					$scope.lineItemDi.id=null;
 					
+					$scope.duplicateDecoGridOptions={
+						dataSource:[],
+						columns:[{
+							field:"serviceType",
+							title:"Service",
+							width:"80px",
+						},{
+							field:"location",
+							title:"Location",
+							width:"100px",
+						},{
+							field:"designNo",
+							title:"Design#",
+							width:"100px",
+							attributes:{style:"text-align:center;"},
+						},{
+							field:"designName",
+							title:"Design Name",
+							width:"150px",
+						},{
+							field:"detail",
+							title:"Detail",
+						}],
+						selectable: "multiple, row",
+					}
 					
+					$scope.duplicateLineItemGridOptions={
+							dataSource:[],
+							columns:[{
+								field:"style",
+								title:"Copy To Line Item",
+								width:"300px",
+							},{
+								field:"colour",
+								title:"Colour",
+								width:"150px",
+							},{
+								field:"qty",
+								title:"Line Qty",
+								width:"70px",
+								attributes:{style:"text-align:right;"},
+							},{
+								field:"sizes",
+								title:"Sizes",
+								width:"200px",
+							},{
+								field:"remark",
+								title:"Remark",
+							}],
+							selectable: "multiple, row",
+						}
+
 			}]	//end of controller
 	};
 	return directive;
@@ -1097,10 +1196,10 @@ orderApp.directive("billItem",function(SO,$sce){
 						switch(billItemDi.snpId){
 						case 14: //Garment Supply	
 							 //if itemTypeId===2, the item is from lineItem and its billingKey is a string of garmentId
-								html=SO.getStyleGridHtml(parseInt(billItemDi.billingKey));
+								html=SO.getBillingHtmlOfGarmentSupply(parseInt(billItemDi.billingKey));
 							break;
 						case 1:	//Embroidery Service
-							html=SO.getEmbServiceHtml(billItemDi.billingKey);
+							html=SO.getBillingHtmlOfEmbService(billItemDi.billingKey);
 							break;
 							
 						}

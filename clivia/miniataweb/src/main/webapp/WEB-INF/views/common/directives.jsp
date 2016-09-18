@@ -577,7 +577,7 @@ directive("seasonDropdownlist",["cliviaDDS",function(cliviaDDS){
 			}
 			
 			scope.$on('$destroy',function(){
-				console.log("destroying...");
+				////console.log("destroying...");
 			})
 			
 			scope.dict.getItems()
@@ -963,12 +963,12 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 					        resizable: true,
 						//events:		 
 					       	dataBinding: function(e) {
-					       		//console.log("event binding:"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
-					       		console.log("event binding:");
+					       		////console.log("event binding:"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
+					       		////console.log("event binding:");
 					       	},
 					       	
 					       	dataBound:function(e){
-					       		console.log("event databound:");
+					       		////console.log("event databound:");
 					       		
 					       	},
 					       	
@@ -1021,7 +1021,7 @@ directive('garmentGrid',["GarmentGridWrapper","cliviaDDS","util",function(Garmen
 					       	},
 					       	
 					        edit:function(e){
-					        	console.log("event edit:");
+					        	////console.log("event edit:");
 					        	//without code below,when navigate with keybord like tab key, the editing cell will not be selected 
 							    var editingCell=ggw.getEditingCell();
 							    if(!!editingCell){
@@ -1206,15 +1206,15 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 						
 				        //events:		 
 				       	dataBinding: function(e) {
-				       		console.log("bill grid event: binding--"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
+				       		////console.log("bill grid event: binding--"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
 				       	},
 				       	
 				       	dataBound:function(e){
-				       		console.log("bill grid event: dataBound");
+				       		////console.log("bill grid event: dataBound");
 				       	},
 				       	
 		 		       	save: function(e) {
-				       		console.log("bill grid event: save");
+				       		////console.log("bill grid event: save");
 				       		var model=e.model;
 				       		
 		 		       		if(typeof e.values.snpId!== 'undefined'){
@@ -1268,10 +1268,10 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 				       	
 				         //row or cloumn changed
 				       	change:function(e){
-				       		console.log("bill grid event: change");
+				       		////console.log("bill grid event: change");
 				       	
 			        		if(bgw.rowChanged()){
-					       		console.log("bill grid event: row changed");
+					       		////console.log("bill grid event: row changed");
 					       		setTimeout(function(){
 				        			var dataItem=bgw.getCurrentDataItem();
 				    				if(scope.cGetBillDetailFunction){
@@ -1286,7 +1286,7 @@ directive('billGrid',["BillGridWrapper","cliviaDDS","util",function(BillGridWrap
 				       	}, 
 				       	
 				        edit:function(e){
-				        	console.log("bill grid event: edit");
+				        	////console.log("bill grid event: edit");
 				        	
 /* 				        	//without code below,when navigate with keybord like tab key, the editing cell will not be selected 
 						    var editingCell=bgw.getEditingCell();
@@ -1439,23 +1439,23 @@ directive('imageGrid',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 						
 				        //events:		 
 				       	dataBinding: function(e) {
-				       		console.log("image grid event: binding--"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
+				       		////console.log("image grid event: binding--"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
 				       	},
 				       	
 				       	dataBound:function(e){
-				       		console.log("image grid event: dataBound");
+				       		////console.log("image grid event: dataBound");
 				       	},
 				       	
 		 		       	save: function(e) {
-				       		console.log("image grid event: save");
+				       		////console.log("image grid event: save");
 				         },
 				       	
 				         //row or cloumn changed
 				       	change:function(e){
-				       		console.log("image grid event: change");
+				       		////console.log("image grid event: change");
 				       	
 			        		if(igw.rowChanged()){
-					       		console.log("image grid event: row changed");
+					       		////console.log("image grid event: row changed");
 					       		setTimeout(function(){
 				        			var dataItem=igw.getCurrentDataItem();
 				        			showImageDetail(dataItem);
@@ -1467,7 +1467,7 @@ directive('imageGrid',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 				       	}, 
 				       	
 				        edit:function(e){
-				        	console.log("image grid event: edit");
+				        	////console.log("image grid event: edit");
 				        	
 /* 				        	//without code below,when navigate with keybord like tab key, the editing cell will not be selected 
 						    var editingCell=igw.getEditingCell();
@@ -1617,23 +1617,23 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 						
 				        //events:		 
 				       	dataBinding: function(e) {
-				       		console.log("image grid event: binding--"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
+				       		//console.log("image grid event: binding--"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
 				       	},
 				       	
 				       	dataBound:function(e){
-				       		console.log("image grid event: dataBound");
+				       		//console.log("image grid event: dataBound");
 				       	},
 				       	
 		 		       	save: function(e) {
-				       		console.log("image grid event: save");
+				       		//console.log("image grid event: save");
 				         },
 				       	
 				         //row or cloumn changed
 				       	change:function(e){
-				       		console.log("image grid event: change");
+				       		//console.log("image grid event: change");
 				       	
 			        		if(gw.rowChanged()){
-					       		console.log("image grid event: row changed");
+					       		//console.log("image grid event: row changed");
 					       		setTimeout(function(){
 				        			var dataItem=gw.getCurrentDataItem();
 				        			showImageDetail(dataItem);
@@ -1645,7 +1645,7 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 				       	}, 
 				       	
 				        edit:function(e){
-				        	console.log("image grid event: edit");
+				        	//console.log("image grid event: edit");
 				        	
 /* 				        	//without code below,when navigate with keybord like tab key, the editing cell will not be selected 
 						    var editingCell=gw.getEditingCell();
@@ -1781,9 +1781,9 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 				var items=e.originalEvent.clipboardData.items;
 			    for (var i = 0 ; i < items.length ; i++) {
 			        var item = items[i];
-			        console.log("Item: " + item.type);
+			        //console.log("Item: " + item.type);
 			        item.getAsString(function(s){
-			        	console.log("-----"+s);
+			        	//console.log("-----"+s);
 			        	});
 			       
 			        if (item.type.indexOf("image")!==-1) {
@@ -1794,7 +1794,7 @@ directive('imageView',["ImageGridWrapper","cliviaDDS","util",function(ImageGridW
 			            			});
 			           
 			        } else {
-			            console.log("Discardingimage paste data");
+			            //console.log("Discardingimage paste data");
 			        }
 			    }
 			}
@@ -2022,24 +2022,24 @@ directive('cliviaGrid',["cliviaGridWrapperFactory","cliviaDDS","util",function(c
 						
 				        //events:		 
 				       	dataBinding: function(e) {
-				       		console.log("grid event: binding--"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
+				       		//console.log("grid event: binding--"+e.action+" index:"+e.index+" items:"+JSON.stringify(e.items));
 				       	},
 				       	
 				       	dataBound:function(e){
-				       		console.log("grid event: dataBound");
+				       		//console.log("grid event: dataBound");
 				       	},
 				       	
 		 		       	save: function(e) {
-				       		console.log("grid event: save");
+				       		//console.log("grid event: save");
 				         },
 				       	
 				         //row or cloumn changed
 				       	change:function(e){
-				       		console.log("grid event: change");
+				       		//console.log("grid event: change");
 				       	}, 
 				       	
 				        edit:function(e){
-				        	console.log("grid event: edit");
+				        	//console.log("grid event: edit");
 				        	
 /* 				        	//without code below,when navigate with keybord like tab key, the editing cell will not be selected 
 						    var editingCell=gw.getEditingCell();

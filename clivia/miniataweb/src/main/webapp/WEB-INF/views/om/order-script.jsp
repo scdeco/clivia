@@ -1,9 +1,9 @@
 <script>
 	'user strict';
 	var orderApp = angular.module("orderApp",
-			[ "ui.router", "kendo.directives","clivia","crmApp"]);
+			[ "ui.router", "kendo.directives","clivia","crmApp","embdesign"]);
  //SO
-orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",function($http, $q, $state,consts,cliviaDDS,util){
+orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util","dictThread",function($http, $q, $state,consts,cliviaDDS,util,dictThread){
 	var _order={
 			dataSet:{
 					info:{isDirty:false,isNewDi:true},
@@ -434,6 +434,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 	
 	_order.generateBillOfServiceEmb=function(billOrderItem){//itemTypreId:11,billingKey:designNo+";"+garmentType
 	
+		var startTime=(new Date()).getTime();
 		var serviceDis=_order.dataSet.serviceEmbs,serviceDi;
 	
 		var lineItemDis=_order.dataSet.lineItems,lineItemDi;
@@ -486,6 +487,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		
 		var billItemDis=_order.dataSet.billItems,billItemDi;
 		var firstServiceInBillItemsIdx=billItemDis.length;
+		
 		for(var i=billItemDis.length-1;i>=0;i--){
 			billItemDi=billItemDis[i];
 			if(billItemDi.itemTypeId===11){
@@ -495,122 +497,31 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 					generatedBillDi=generatedBillDis[generatedBillDiIdx];
 					if(generatedBillDi.orderQty!==billItemDi.orderQty){
 						billItemDi.orderQty=generatedBillDi.orderQty;
+						billItemDi.orderAmt=(billItemDi.orderQty?billItemDi.orderQty:0)*(billItemDi.orderPrice?billItemDi.orderPrice:0);
 						billItemDi.isDirty=true;
 					}
 					
-					generatedBillDis[generatedBillDiIdx]=billItemDi;
+					generatedBillDis[generatedBillDiIdx]=null;
 				}else{
 					_order.registerDeletedItem("orderBillItem",billItemDi);
+					billItemDis.splice(i,1);
 				}
-				billItemDis.splice(i,1);
 			}
 		}
 		
 		for(var i=0,di;i<generatedBillDis.length;i++){
 			di=generatedBillDis[i];
-			di.orderAmt=(di.orderQty?di.orderQty:0)*(di.orderPrice?di.orderPrice:0);
-			billItemDis.splice(firstServiceInBillItemsIdx++,0,di);
+			if(di){
+				billItemDis.splice(firstServiceInBillItemsIdx++,0,di);
+			}
 		}
+		
+		console.log("generateBillOfServiceEmb:"+((new Date()).getTime()-startTime));
+
 		
 	}
 	
 	_order.generateBillOfGarmentSupply=function(billOrderItem){
-
-		if(!_order.company ||!_order.company.info) return;
-		
-		var useWSP=_order.company.info.useWsp;
-		var useUSD=_order.company.info.country!=="Canada";
-		var listPriceField=useWSP?(useUSD?"wsp":"wspCad"):(useUSD?"rrp":"rrpCad");
-
-		var lineItemDis=_order.dataSet.lineItems,lineItemDi;
-		
-		var generatedBillDis=[],generatedBillDi,generatedBillDiIdx;
-		var generatedBillDisIdx={};
-		
-		var discount=billOrderItem.spec===""?_order.company.info.discount:billOrderItem.spec,listPrice,orderPrice;
-		var dictGarment=_order.dds.garment;
-		
-		var orderId=_order.dataSet.info.id;
-		
-		for(var i=0,billingKey;i<lineItemDis.length;i++){
-			lineItemDi=lineItemDis[i];
-			if(lineItemDi.garmentId && lineItemDi.quantity){
-				billingKey=String(lineItemDi.garmentId);
-
-				generatedBillDiIdx=generatedBillDisIdx[billingKey];
-
-				if(generatedBillDiIdx>=0){
-					generatedBillDi=generatedBillDis[generatedBillDiIdx];
-				}else{
-					var garment=dictGarment.getGarmentById(lineItemDi.garmentId);
-					listPrice=garment[listPriceField];
-					orderPrice=(discount>0 && discount<1)?listPrice*(1-discount):listPrice;
-					
-					if(orderPrice)
-							orderPrice.toFixed(2);
-				
-				
-					generatedBillDi={
-							orderId:orderId,
-							orderItemId:billOrderItem.id,											
-							snpId:14,	//Garment Supply id in dictSnp
-							itemTypeId:2,
-							itemNumber:lineItemDi.styleNo,
-							billingKey:billingKey,
-							description:lineItemDi.description,
-							unit:"PCS",
-							orderQty:0,
-							listPrice:listPrice,
-							discount:discount,
-							orderPrice:orderPrice,
-							orderAmt:0,
-							isDirty:true,
-							isNewDi:true,
-						}
-					
-					generatedBillDiIdx=generatedBillDis.push(generatedBillDi)-1;
-					generatedBillDisIdx[billingKey]=generatedBillDiIdx;
-				}
-				
-				generatedBillDi.orderQty+=lineItemDi.quantity;
-			}
-		}
-		
-		var billItemDis=_order.dataSet.billItems,billItemDi;
-		for(var i=billItemDis.length-1;i>=0;i--){
-			billItemDi=billItemDis[i];
-			
-			if(billItemDi.itemTypeId===2){	//lineItem
-
-				generatedBillDiIdx=generatedBillDisIdx[billItemDi.billingKey];
-				if(generatedBillDiIdx>=0){
-					generatedBillDi=generatedBillDis[generatedBillDiIdx];
-					if(generatedBillDi.orderQty!==billItemDi.orderQty){
-						billItemDi.orderQty=generatedBillDi.orderQty;
-						billItemDi.isDirty=true;
-					}
-					
-					generatedBillDis[generatedBillDiIdx]=billItemDi;
-				}else{
-					_order.registerDeletedItem("orderBillItem",billItemDi);
-				}
-				billItemDis.splice(i,1);
-			}
-		}
-		
-		var firstServiceInBillItemsIdx=0;
-
-		for(var i=0,di;i<generatedBillDis.length;i++){
-			di=generatedBillDis[i];
-			di.orderAmt=(di.orderQty?di.orderQty:0)*(di.orderPrice?di.orderPrice:0);
-
-			billItemDis.splice(firstServiceInBillItemsIdx++,0,di);
-		}
-		
-	}
-	
-	
-	_order.generateBillableItems=function(billOrderItem){
 		if(!billOrderItem) return;
 		if(billOrderItem.typeId!==1) return;	//not a billItem
 		if(!_order.company ||!_order.company.info) return;
@@ -688,7 +599,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		
 		for(var i=0,item;i<billItems.length;i++){
 			item=billItems[i];
-			if(item.itemTypeId){			//auto generated item
+			if(item.itemTypeId===2){			//auto generated item from lineItem
 				var strItemTypeId=String(item.itemTypeId);
 				if(typeof billItemsIdx[strItemTypeId]=='undefined')	//billItemsIdx[strItemTypeId] could be zero, so typeof must be used in condition
 					billItemsIdx[strItemTypeId]={};
@@ -708,14 +619,14 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 			
 			if(j>=0){	
 				//if found, only quantity need to change and recalcuate the amount using the original price,
-				//price might has been chaneged by user
+				//price might has been changed by user
 				billItem=billItems[j];
 				if(billItem.orderQty!==billableItem.orderQty){
 					billItem.orderQty=billableItem.orderQty;
+					billItem.orderAmt=billableItem.orderQty*billItem.orderPrice;	
 					billItem.isDirty=true;
 				}
 
-				billItem.orderAmt=billableItem.orderQty*billItem.orderPrice;	
 				billItem.checked=true;
 			}else{
 				billableItem.orderAmt=billableItem.orderQty*billableItem.orderPrice;
@@ -727,7 +638,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		
 		for(var i=billItems.length-1,item;i>=0;i--){
 			item=billItems[i];
-			if(item.itemTypeId && !item.checked){
+			if(item.itemTypeId===2 && !item.checked){	//2:generated from lineitem
 				if(item.id)
 					_order.registerDeletedItem("orderBillItem",item);
 				billItems.splice(i,1);
@@ -775,14 +686,14 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  	
  	_order.getBillingHtmlOfEmbService=function(billingKey){
  		var model=_order.getEmbServiceBillingDetailModel(billingKey);
-		html+="<table style='float:left;text-align: right;'>";
+ 		var html="<table style='float:left;text-align:left;'>";
 		html+="<tr><th class='tal'>Style</th><th>Colour</th><th>Location</th><th>Sizes</th><th>Qty</th>";
  		for(var i=0,di;i<model.length;i++){
  			di=model[i];
  			html+="<tr><td>"+di.style+"</td><td>"+di.colour+"</td><td>"+di.location+"</td><td>"+di.sizes+"</td><td>"+di.qty+"</td>";
  		} 			
 		html+="</table></div>";
- 		
+ 		return html;
  	}
  	
 	_order.getEmbServiceBillingDetailModel=function(billingKey){	//billingKey:designNo+garmentType,
@@ -790,19 +701,22 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		var lineItemDis=_order.dataSet.lineItems,lineItemDi;
 		var lineItemDisIdx=util.createIndexOnId(lineItemDis);
 		var dis=[];
-		var embServiceDis=_order.dataSet.embServices,embServiceDi;
-		for(var i=0,di;i<embServiceDis.length;i++){
-			embServiceDi=emServiceDis[i];
-			lineItemDi=lineItemDisIdx[embServiceDi.lineItemId];
-			if(embServiceDi.billingKey+";Garment"===billingKey){
+		var serviceDis=_order.dataSet.serviceEmbs,serviceDi;
+		for(var i=0,di;i<serviceDis.length;i++){
+			serviceDi=serviceDis[i];
+			lineItemDi=lineItemDisIdx[serviceDi.lineItemId];
+			if(serviceDi.designNo+";Garment"===billingKey){
 				di={
-					style:(lineItemDi.styleNo?lineItemDi.styleNo:"")+(lineItemDi.description?lineItemDi.description:""),
-					colour:linieItemDi.colour,
-					location:embServiceDi.location,
+					style:(lineItemDi.styleNo?lineItemDi.styleNo:"")+" "+(lineItemDi.description?lineItemDi.description:""),
+					colour:lineItemDi.colour,
+					location:serviceDi.location,
+					sizes:_order.getLineItemSizes(lineItemDi),
+					qty:lineItemDi.quantity,
 				}
-				dis.push(s);
+				dis.push(di);
 			}
 		}
+		return dis;
 	}
 
  	
@@ -921,6 +835,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  		
  	}
  	
+ 	//print garment confirmation
  	_order.createGarmentPrintModel=function(billItems,lineItemOnly,mainColorOnly,hideDiscount){
  		var info=_order.dataSet.info;
  		var company=_order.company;
@@ -990,23 +905,32 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  		return model;
  	}
  	
+ 	//for print deco order
  	_order.createDecoOrderPrintModel=function(){
  		var info=_order.dataSet.info;
  		var company=_order.company;
  		var model={
+					customer:company.info.businessName,
 					jobNo:info.orderNumber,
  					jobName:info.orderName,
  					date:info.orderDate,
  					poNo:info.customerPO,
- 					
- 					rep:_order.repName,
- 					csr:_order.csrName,
- 					company:company.info.businessName,
+ 					buyer:info.buyer,
  					terms:info.term,
- 					shipDate:info.requireDate,
+ 					shipment:"",
+ 					phone:"",
+ 					fax:"",
+ 					issued:_order.csrName,
+ 					require:(info.requireDate+(info.requireTime?"  "+info.requireTime:"")).trim(),
+ 					
  		};
+ 		
  		model.ddLineItems=_order.createGarmentServicePrintModel();
- 		model.pricingItems=_order.createPricingPrintModel();
+ 		model.services=_order.createPricingPrintModel();
+ 		model.decoEmbs=_order.createServiceEmbPrintModel();
+
+ 		_order.printModel=model; //for testing data
+ 		
  		return model;
  	}
  	
@@ -1072,7 +996,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
  		return printDis;
  	}
  	
- 	// for print deco order
+ 	//for print deco order
  	_order.createPricingPrintModel=function(){
  		var billItemDis=_order.dataSet.billItems.filter(function(value){
  			return value.snpId!=14;
@@ -1098,6 +1022,125 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		 return model;
  	}
  	
+	_order.getLineItemSizes=function(lineItemDi){
+		var dictGarment=_order.dds.garment;
+		var dictSeason=_order.dds.season;
+		var season,sizes="";
+		if(lineItemDi.garmentId){
+			var garment=dictGarment.getGarmentById(lineItemDi.garmentId);
+				season=dictSeason.getLocalItem("id",garment.seasonId);
+		}else{
+			season=dictSeason.getLocalItem("id",3);	//general lineItem
+		}	
+		var sizeFields=season.sizeFields.split(",");
+		for(var i=0,q;i<sizeFields.length;i++){
+			q="qty"+("00"+i).slice(-2);
+			if(lineItemDi[q]){
+				sizes+=sizeFields[i]+":"+lineItemDi[q]+" ";
+			}
+		}
+		return sizes;
+		//var sizeFields=
+	}
+ 	
+ 	
+ 	//for print deco order
+ 	_order.createServiceEmbPrintModel=function(){
+		var lineItemDis=_order.dataSet.lineItems,lineItemDi;
+		var idxLineItemDis={};
+
+		
+		
+		for(var i=0,di;i<lineItemDis.length;i++){
+			lineItemDi=lineItemDis[i];
+			idxLineItemDis[String(lineItemDi.id)]={
+					lineNo:lineItemDi.lineNo,
+					style:((lineItemDi.styleNo?lineItemDi.styleNo:"")+"  "+(lineItemDi.description?lineItemDi.description:"")).trim(),
+					totalQty:lineItemDi.quantity,
+					colour:lineItemDi.colour,
+					sizes:_order.getLineItemSizes(lineItemDi),
+				}
+			
+		}
+		util.createIndexOnId(lineItemDis);
+		
+		var sortedServiceDis=[],serviceDi;
+		
+		//sort _order.dataSet.serviceEmbs on lineItems.LineNo and serviceEmbs.lineNo 
+		var serviceDis=_order.dataSet.serviceEmbs;
+		for(var i=0;i<serviceDis.length;i++){
+			serviceDi=serviceDis[i];
+			lineItemDi=idxLineItemDis[String(serviceDi.lineItemId)];
+			sortedServiceDis.push({
+				lineNo:("000"+lineItemDi.lineNo).slice(-3)+("000"+serviceDi.lineNo).slice(-3),
+				serviceDi:serviceDi,
+				lineItemDi:lineItemDi,
+			});
+		}		
+		
+		sortedServiceDis.sort(function(a,b){
+			return a.lineNo>b.lineNo?1:(a.lineNo<b.lineNo?-1:0);
+		});
+		
+		var designs=[],design,idxDesignNo={};
+		var colourway,garment;
+		
+		for(var i=0,s;i<sortedServiceDis.length;i++){
+			
+			serviceDi=sortedServiceDis[i].serviceDi;
+			lineItemDi=sortedServiceDis[i].lineItemDi;
+			
+			design=idxDesignNo[serviceDi.designNo];
+			
+			if(!design){
+				design={
+						designNo:serviceDi.designNo,
+						description:serviceDi.designName,
+						stitches:serviceDi.ks,
+						steps:2,	//serviceDi.stepCount,
+						totalQty:0,
+						colourways:[],
+						idxColourway:{},
+					};
+				designs.push(design);
+				idxDesignNo[serviceDi.designNo]=design;
+			}
+			
+			s=serviceDi.threadCode+"|"+serviceDi.runningStep;
+			colourway=design.idxColourway[s];
+			if(!colourway){
+				colourway={
+						threads:dictThread.getThreads(serviceDi.threadCode),
+						runningStep:serviceDi.runningStep,
+						totalQty:0,
+						garments:[],
+				}
+				design.colourways.push(colourway);
+				design.idxColourway[s]=colourway;
+			}
+			
+			garment={
+				position:serviceDi.location,
+				style:lineItemDi.style,
+				colour:lineItemDi.colour,
+				sizes:lineItemDi.sizes,
+				totalQty:lineItemDi.totalQty,
+			}
+			
+			colourway.garments.push(garment);
+			
+			colourway.totalQty+=garment.totalQty;
+			design.totalQty+=garment.totalQty;
+			
+		}
+		
+		for(var i=0;i<designs.length;i++){
+			design=designs[i];
+			delete design.idxColourway;
+		}
+		
+		return designs;
+ 	}
  	
  	_order.createStyleGridModel=function(garmentId,lineItems,mainColourOnly){
 		
@@ -1172,6 +1215,13 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util",functio
 		return {garment:garment,data:data};
 		
 	}	 	
+ 	
+ 	_order.printDecoOrder=function(file){
+ 		var data=_order.createDecoOrderPrintModel();
+ 		url="../om/print-order?file="+file;
+ 		util.printUrl(url,{data:JSON.stringify(data)},true);	//false=no preview
+ 		return;
+ 	}
  	
  	_order.printBill=function(billItems,lineItemOnly,mainColourOnly,hideDiscount,file){
  		var data=_order.createGarmentPrintModel(billItems,lineItemOnly,mainColourOnly,hideDiscount);

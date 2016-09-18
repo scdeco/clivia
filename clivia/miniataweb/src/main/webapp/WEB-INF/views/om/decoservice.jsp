@@ -1,5 +1,5 @@
 			<div class="demo-section k-content">
-				<h3> <img src="../resources/images/i-copydeco.ico" ng-click="duplicateDeco()" ng-show="lineItemDi.lineNo">Deco on line item {{' #'+lineItemDi.lineNo}}: </h3> 
+				<h3> <img src="../resources/images/i-copydeco.ico" ng-click="duplicateDeco()" ng-show="lineItemDi.lineNo">Decorations/Services on line item {{' #'+lineItemDi.lineNo}}: </h3> 
 			
 				
 			</div>
@@ -37,5 +37,37 @@
 			          <div style="padding: 1em">
 			            This is the forth......... tab
 			          </div>
-				</div> 			
+			</div> 			
+			<div kendo-window="decoDuplicateWindow"    
+					k-width="1200"
+				 	k-height="410"
+				 	k-position="{top: 50, left: 100 }"	
+				 	k-resizable="true"
+					k-draggable="true"
+				 	k-title="'Duplicate Decoration'"
+				 	k-visible="false" 
+				 	k-actions="['Close','Minimize','Maximize']"
+				 	k-modal="true">
+				 	
+				 	<div kendo-splitter  
+      						k-orientation="'vertical'" 
+							k-panes="[{ collapsible:false,resizable: false,size:'30px'}
+									,{ collapsible: true, resizable: true,size:'120px'}
+						 			,{ collapsible: true,resizable: true}]"
+	   	 					style="height:100%;">
+	   	 			<div>
+	   	 				Selected Services:{{scope.duplicateDecoGrid.select().length}}    Selected Line Items:{{selectedLineItems}} 
+	   	 			</div>
+			   		<div>
+				   		<div kendo-grid="duplicateDecoGrid" k-options="duplicateDecoGridOptions"></div>
+				   	</div>
+				   		
+				   	<div>
+				   		<div kendo-grid="duplicateLineItemGrid" k-options="duplicateLineItemGridOptions"></div>
+				   	</div>
+	   	 		
+	   	 	</div>	
+
+	 
+			</div>
 			

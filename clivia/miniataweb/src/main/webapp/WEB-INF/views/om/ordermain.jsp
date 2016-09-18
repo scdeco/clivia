@@ -32,7 +32,7 @@
 		
  <pre>
 <!-- to get testing data of print model	  printModel={{SO.printModel}}  -->
- 
+ printModel={{SO.printModel|json}}
  	dataSet:{{SO.dataSet|json}} 
 <!-- 	instance:{{SO.instance|json}} -->
 <!-- 	dds:{{SO.dds|json}} -->

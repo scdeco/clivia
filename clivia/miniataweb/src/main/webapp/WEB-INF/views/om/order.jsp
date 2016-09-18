@@ -14,6 +14,8 @@
 	<%@include file="aconsts.jsp"%>
 	<%@include file="aconfig.jsp"%>
  	<%@include file="ordermain-script.jsp"%>
+ 	<%@include file="../dm/embdesign.jsp"%>
+ 	
 
 </head>
 
