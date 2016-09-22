@@ -1,13 +1,17 @@
 package com.scdeco.miniataweb.controller;
 
+import java.security.Principal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.scdeco.miniataweb.dao.EmployeeInfoDao;
 import com.scdeco.miniataweb.dao.GarmentDao;
 import com.scdeco.miniataweb.dao.GarmentTransDao;
 import com.scdeco.miniataweb.model.Garment;
@@ -23,8 +27,14 @@ public class GarmentController {
 	@Autowired
 	GarmentTransDao garmentTransDao;
 	
+	@Autowired
+	private EmployeeInfoDao employeeInfoDao;
+	
 	@RequestMapping(value="/",method=RequestMethod.GET)
-	public String  inventory(){
+	public String  inventory(Model model,Principal principal){
+		
+		model.addAttribute("theme", employeeInfoDao.getTheme(principal.getName()));
+
 		return "im/im";
 	}
 	

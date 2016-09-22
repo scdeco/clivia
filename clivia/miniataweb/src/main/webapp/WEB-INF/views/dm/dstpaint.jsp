@@ -8,6 +8,7 @@
 		    	style="height:100%;">      	
       	
       		<div>
+      			<input type="text" ng-paste="handlePaste($event)" value='Press "Ctrl+V" or right click here and choose "paste" to paste an image.'>
    				<div id="stagecontainer" ng-style="{'background-color':threadMatcher.backgroundColour}" 
    					 				ng-click="onClick()">
 				</div>
@@ -21,8 +22,6 @@
 		
 		<div kendo-window="printOptions" k-title="'Print Options'"
 		           k-width="600" k-height="500" k-visible="false" k-options="printWindowOptions">
-		           
-		           
 		</div>			
 			
 	</div>

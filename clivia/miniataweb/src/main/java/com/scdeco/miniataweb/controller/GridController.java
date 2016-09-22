@@ -1,13 +1,17 @@
 package com.scdeco.miniataweb.controller;
 
+import java.security.Principal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.scdeco.miniataweb.dao.EmployeeInfoDao;
 import com.scdeco.miniataweb.dao.GridDao;
 import com.scdeco.miniataweb.model.Grid;
 
@@ -17,9 +21,14 @@ public class GridController {
 
 	@Autowired
 	GridDao gridDao;
-
+	
+	@Autowired
+	private EmployeeInfoDao employeeInfoDao;
+	
 	@RequestMapping(value="/",method=RequestMethod.GET)
-	public String list(){
+	public String list(Model model,Principal principal){
+		model.addAttribute("theme", employeeInfoDao.getTheme(principal.getName()));
+
 		return "gd/gd";
 	}
 	

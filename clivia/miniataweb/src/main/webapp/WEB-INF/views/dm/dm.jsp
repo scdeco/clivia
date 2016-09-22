@@ -30,6 +30,7 @@
 
 		<div kendo-window="newUploadWindow" k-title="'Upload DST'"
 		           k-width="600" k-height="500" k-visible="false" k-options="newUploadWindowOptions">
+			<input kendo-upload  name="file"  type="file" k-options="newUploadOptions" />
 		           
 		    <form name="infoForm" ng-submit="" novalidate class="simple-form" >
 				<ul id="fieldlist">
@@ -61,7 +62,6 @@
 				 </ul>
 		    </form>
 		    
-			<input kendo-upload  name="file"  type="file" k-options="newUploadOptions" />
 		</div>			
 
 		<div kendo-window="queryWindow"			
@@ -499,6 +499,7 @@ designApp.controller("dmCtrl",
 		    
 		    $scope.updateColourway=function(){
 		    	var currentCell=cgw.grid.current();
+		  
 		    	if(currentCell){
 			    	var diCurrent=cgw.getCurrentDataItem();
 			    	var diPaint=getColorwayDiFromPaint();

@@ -22,10 +22,9 @@ public class QueryController {
 	
 	@RequestMapping(value="/",method=RequestMethod.GET)
 	public String getQueryMain(Model model,Principal principal){
-		String username=principal.getName();
-		EmployeeInfo employeeInfo=employeeInfoDao.findByUsername(username);
-		String theme=employeeInfo!=null?employeeInfo.getTheme():"default";
-		model.addAttribute("theme", theme!=null?theme:"default");
+		
+		model.addAttribute("theme", employeeInfoDao.getTheme(principal.getName()));
+
 		
 		return "query/query";
 	}

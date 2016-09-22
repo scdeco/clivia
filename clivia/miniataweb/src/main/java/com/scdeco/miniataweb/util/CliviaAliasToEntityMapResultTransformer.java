@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.transform.AliasedTupleSubsetResultTransformer;
+import org.hibernate.transform.ResultTransformer;
 
 /**
  * {@link ResultTransformer} implementation which builds a map for each "row",

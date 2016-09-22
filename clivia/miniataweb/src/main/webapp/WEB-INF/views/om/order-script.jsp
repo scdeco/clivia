@@ -964,34 +964,39 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util","dictTh
  			lineItemDi=lineItemDis[i];
 			service=idxServices[String(lineItemDi.id)];
 
- 			if(lineItemDi.styleNo!==group.itemNo||service.serviceKey!==group.serviceKey){
- 				groupChanged=true;
- 			}else{
-				group.qty+=lineItemDi.quantity;
-				group.lineItems.push(lineItemDi);
+			if(service){
+				
+	 			if(lineItemDi.styleNo!==group.itemNo||service.serviceKey!==group.serviceKey){
+	 				groupChanged=true;
+	 			}else{
+					group.qty+=lineItemDi.quantity;
+					group.lineItems.push(lineItemDi);
+					i++;
+	 			}
+	 			if(groupChanged|| i===lineItemDis.length){
+	 				
+					if(group.garmentId){
+		 				style=_order.createStyleGridModel(group.garmentId,group.lineItems,true);	//true-main colour only
+		 				group.data=style.data;
+		 				delete group.serviceKey;
+		 				delete group.lineItems;
+		 				delete group.garmentId,
+	 					printDis.push(group);
+					}
+	 				group={				//create a new group
+							itemNo:lineItemDi.styleNo,
+							garmentId:lineItemDi.garmentId,
+							desc:lineItemDi.description,
+							serviceKey:service.serviceKey,
+							qty:0,
+							lineItems:[],
+							data:[],
+							services:service.services
+					};
+	 			}
+			}else{
 				i++;
- 			}
- 			if(groupChanged|| i===lineItemDis.length){
- 				
-				if(group.garmentId){
-	 				style=_order.createStyleGridModel(group.garmentId,group.lineItems,true);	//true-main colour only
-	 				group.data=style.data;
-	 				delete group.serviceKey;
-	 				delete group.lineItems;
-	 				delete group.garmentId,
- 					printDis.push(group);
-				}
- 				group={				//create a new group
-						itemNo:lineItemDi.styleNo,
-						garmentId:lineItemDi.garmentId,
-						desc:lineItemDi.description,
-						serviceKey:service.serviceKey,
-						qty:0,
-						lineItems:[],
-						data:[],
-						services:service.services
-				};
- 			}
+			}
  		}
  		return printDis;
  	}

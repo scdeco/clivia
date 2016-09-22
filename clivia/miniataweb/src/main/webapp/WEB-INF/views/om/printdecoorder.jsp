@@ -490,7 +490,7 @@ window.onload = function (){
                                     + "<table width='700px' class = 'left'>"
                                     + "<tr style='background-color:silver;border-bottom:solid 1px;'>"
                                     + "<th width=120px> Service </th>"
-                                    + "<th width= 200px> description </th>"
+                                    + "<th width= 200px> Description </th>"
                                     + "<th width=30px class='right'>Qty</th>"
                                     + "<th width=30px class='right'>Unit</th>"
                                     + "<th width=40px class='right'>Price</th>"
@@ -605,24 +605,29 @@ window.onload = function (){
                 var subItemRows = garment.data;
                 for (var j = 0; j < subItemRows.length; j++) {
 
-                    var tOpen = "<tr><td class='left' width = 70px>";
+                    var tOpen = "<tr><td align='left' width = 200px>";
                     var tClose = "</td>";
                     var subItemCols = subItemRows[j];
 
                     for (var k = 0; k < subItemCols.length; k++) {
                         if(k == 0) item_table += tOpen + (subItemCols[k] ? subItemCols[k] : "") + tClose;
-                        else if(k < subItemCols.length - 1)
-                        item_table += "<td class = 'right' width = 40px>"
-                                    + (subItemCols[k] ? subItemCols[k] : "")
+                        else if(k < subItemCols.length - 1 && k < 7)
+                            item_table += "<td class = 'right' width = 25px>"
+                                       + (subItemCols[k] ? subItemCols[k] : "")
+                                       + tClose;
+                        else if(k < subItemCols.length - 1 && k >= 7)
+                            item_table += "<td class = 'right' width = 30px>"
+                                       + (subItemCols[k] ? subItemCols[k] : "")
                                     + tClose;
-                        else item_table += "<td class='right' width = '55px'>"
+
+                        else item_table += "<td class='right' width = '50px'>"
                                     + (subItemCols[k] ? subItemCols[k] : "")
                                     + tClose;
                     }
                     item_table += "</tr></td>";
                 }
 
-                output += "<td colspan='2' id='itemTable' align='left'><table class='left' width='410px' border = 1><tr height='5px'>"
+                output += "<td colspan='2' id='itemTable' align='right'><table class='left'><tr height='5px'>"
                         + "</tr>" + item_table + "</table></td>"
 
                 output += "</div>"; //--------------------------- Closes with listSpace
@@ -734,7 +739,7 @@ window.onload = function (){
     function getListDetail(id,deco,decoOutput,type,modifyId){
 
         if(type == "decoEmb"){
-            decoOutput+= "<tr><th class='centerUnderLine' style = 'border-left-style:hidden'>"
+            decoOutput+= "<tr><th class='centerUnderLine' style = 'border-left-style:hidden; font-size:1.5em;text-align:left'>"
                         + (deco.designNo?deco.designNo:"") + "</th>"
                         + "<td class='centerUnderLine'>" + (deco.description?deco.description:"")+"</td>"
                         + "<td class='centerUnderLine'>"
@@ -742,13 +747,13 @@ window.onload = function (){
                         + "<td class='centerUnderLine' width = '190px' >"
                         + "Steps: " + (deco.steps?deco.steps:"") + "</td>"
                         + "<td class='rightUnderLine' width = '70px' >"
-                        + "subtotal: " + (deco.totalQty?deco.totalQty:"") + "</td>"
+                        + "Subtotal: " + (deco.totalQty?deco.totalQty:"") + "</td>"
                         + "</tr>";
             decoEmbTotal += (deco.totalQty?deco.totalQty:"");
         }
 
         else if (type == "decoSp"){
-            decoOutput+= "<tr><th class='centerUnderLine' style = 'border-left-style:hidden' width=145px;>"
+            decoOutput+= "<tr><th class='centerUnderLine' style = 'border-left-style:hidden;font-size:1.5em;' width=145px;>"
                         + (deco.designNo?deco.designNo:"") + "</th>"
                         + "<td class='centerUnderLine'width=140px;>"
                         + (deco.description?deco.description:"")+"</td>"
@@ -757,7 +762,7 @@ window.onload = function (){
                         + "colours: "
                         + (deco.totalcolour?deco.totalcolour:"") + "</td>"
                         + "<td class='rightUnderLine' width = '70px' >"
-                        + "subtotal: "
+                        + "Subtotal: "
                         + (deco.totalQty?deco.totalQty:"") + "</td>"
                         + "</tr>";
              decoSpTotal += (deco.totalQty?deco.totalQty:"");
@@ -795,7 +800,7 @@ window.onload = function (){
             return decoOutput;
     }
 
- function getThreadsOrColours(colourway,output,type){
+    function getThreadsOrColours(colourway,output,type){
 
         if (type == "decoEmb"){
             output += "<tr><td colspan = 3 style='border-top-style:solid;border-width:1px;'><br><table>";
@@ -810,7 +815,7 @@ window.onload = function (){
         var cLineText = "";
         //read from the colour index array
 
-        for(var i = 0; i < elements.length; i++){
+     for(var i = 0; i < elements.length; i++){
 
             var element = elements[i];
 
@@ -846,14 +851,32 @@ window.onload = function (){
         output += "</tr></table>";
 
         if (type == "decoEmb"){
-            output += "<td class='left' colspan = 1'>" + ("&nbsp").repeat(5)
+            output += "<td class='left' colspan = 1 >" + ("&nbsp").repeat(5)
                     + "Running Step:" + "<br><br>"
-                    +"<div style='font-weight:bold'>" + ("&nbsp").repeat(10)
+                    +"<div style='font-weight:bold;font-size:1.2em'>" + ("&nbsp").repeat(10)
                     + (colourway.runningStep?colourway.runningStep:"") + "</div></td>"
                     +"</td>"
-                    +"<td class = 'right' style = 'vertical-align:bottom;'>subtotal: "
+                    +"<td class = 'right' style = 'vertical-align:bottom;'>Subtotal: "
                     +(colourway.totalQty?colourway.totalQty:"") + "</td>"
                     +"</tr>"
+        }
+        return output;
+    }
+
+    function getGarments(colourway,garmentOutput){
+
+        var garments = colourway.garments;
+        var bottomBorder = "border-bottom-style:solid; border-width:1px;";
+
+        for( i = 0; i < garments.length; i++){
+            var garment = garments[i];
+            garmentOutput += "<tr style='" + bottomBorder + "'>"
+                    +"<td>" + (garment.style?garment.style:"") + "</td>"
+                    +"<td>" +(garment.colour?garment.colour:"") +"</td>"
+                    + "<td width='120px' class='left'>" + (garment.position?garment.position:"") + "</td>"
+                    + "<td class='left' >" + (garment.sizes?garment.sizes:"") + "</td>"
+                    + "<td class='right'>" + (garment.totalQty?garment.totalQty:"") + "</td>"
+                    +"</tr>";
         }
         return output;
     }
@@ -868,7 +891,7 @@ window.onload = function (){
             garmentOutput += "<tr>"
                     +"<td style='"+ bottomBorder + "'>" + (garment.style?garment.style:"") + "</td>"
                     +"<td style='"+ bottomBorder + "'>" +(garment.colour?garment.colour:"") +"</td>"
-                    + "<td width='120px' class='left' style='"+ bottomBorder + "'>" + (garment.position?garment.position:"") + "</td>"
+                    + "<th width='120px' class='left' style='"+ bottomBorder + ";font-size:1.1em;'>" + (garment.position?garment.position:"") + "</th>"
                     + "<td class='left' style='"+ bottomBorder + "'>" + (garment.sizes?garment.sizes:"") + "</td>"
                     + "<td class='right' style='"+ bottomBorder + "'>" + (garment.totalQty?garment.totalQty:"") + "</td>"
                     +"</tr>";
@@ -1110,9 +1133,10 @@ window.onload = function (){
                     +"<tr>"
                     +"<td width='130px'>Invoice#</td>"
                     +"<td width='100px'>By:</td>"
-                    +"<td width='150px'>Date:</td>"
-                    +"<td >" + Date().substring(25,Date() - 1)+ "</td>"
-                    +"<td id = 'total" + currentPage+ "'> Page" + ("&nbsp;").repeat(2) + currentPage + " of " + totalPage+ ("&nbsp;").repeat(2) + (order.jobNo?order.jobNo:"") + "</td>"
+                    +"<td width='160px'>Date: </td>"
+                    + "<td width='130px'>" + Date().substring(25,Date() - 1)+ "</td>"
+                    +"<td id = 'total" + currentPage+ "' class='right'> Page" + ("&nbsp;").repeat(2) + currentPage + " of " + totalPage + "</td>"
+                    +"<td class='right'>#" + (order.jobNo?order.jobNo:"") + "</td>"
                     +"</tr>"
                     +"</table>"
                     +"</div>"
@@ -1147,7 +1171,7 @@ window.onload = function (){
                             $("#footer" + i).html("<table></table>");
                             $("#footer" + i).css("margin-top",margin);
                         }
-                        var	newFooter = "Page" + ("&nbsp;").repeat(2) + i + " of " + totalPage + ("&nbsp;").repeat(2) + (order.jobNo?order.jobNo:"");
+                        var	newFooter = "Page" + ("&nbsp;").repeat(2) + i + " of " + totalPage;
                         $("#total" + i).html(newFooter);
                     }
                 }

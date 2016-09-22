@@ -15,5 +15,11 @@ public class EmployeeInfoDao extends GenericDao<EmployeeInfo> {
 		
 		return list.isEmpty()?null:list.get(0);
 	}
+	
+	public String getTheme(String username){
+		EmployeeInfo employeeInfo=findByUsername(username);
+		String theme=employeeInfo!=null?employeeInfo.getTheme():"default";
+		return theme;
+	}
 
 }

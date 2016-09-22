@@ -36,16 +36,14 @@ public class OrderController {
 	
 	@Autowired
 	private EmployeeInfoDao employeeInfoDao;
+	
 
 	@RequestMapping(value="/",method=RequestMethod.GET)
 	public String order(Model model,Principal principal){
-		String username=principal.getName();
-		EmployeeInfo employeeInfo=employeeInfoDao.findByUsername(username);
-		String theme=employeeInfo!=null?employeeInfo.getTheme():"default";
-		model.addAttribute("theme", theme!=null?theme:"default");
+		model.addAttribute("theme", employeeInfoDao.getTheme(principal.getName()));
 		
 		List<DictOrderInsertableItem> orderInsertableItems=dictOrderInsertableItemDao.findList(); 
-		System.out.println("insertable:"+orderInsertableItems);
+
 		model.addAttribute("orderInsertableItems",orderInsertableItems);
 		
 		return "om/order";

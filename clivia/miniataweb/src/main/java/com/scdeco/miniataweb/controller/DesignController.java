@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.scdeco.miniataweb.dao.EmployeeInfoDao;
-import com.scdeco.miniataweb.model.EmployeeInfo;
 
 @Controller
 @RequestMapping("/dm/*")
@@ -22,12 +21,11 @@ public class DesignController {
 	@RequestMapping(value="/",method=RequestMethod.GET)
 	public String  dm(Model model,Principal principal){
 		
-		String username=principal.getName();
-		EmployeeInfo employeeInfo=employeeInfoDao.findByUsername(username);
-		String theme=employeeInfo!=null?employeeInfo.getTheme():"default";
-		model.addAttribute("theme", theme!=null?theme:"default");		
+		model.addAttribute("theme", employeeInfoDao.getTheme(principal.getName()));
+
 		return "dm/dm";
 	}
+	
 	@RequestMapping(value="{p}",method=RequestMethod.GET)
 	public String  dstpaint(@PathVariable String p){
 		return "dm/"+p;

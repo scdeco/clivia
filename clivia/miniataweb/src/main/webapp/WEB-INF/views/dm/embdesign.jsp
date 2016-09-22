@@ -251,6 +251,7 @@ factory("dictThread",["$http",function($http){		//service
 			    		d=data[i];
 			    		t={code:d.code,r:d.red,g:d.green,b:d.blue,name:d.name};
 			    		ts.push(t);
+			    		 
 			    		self.idxCode[d.code]=t;
 			    	}
 			    	self.threads=ts
@@ -272,6 +273,7 @@ factory("dictThread",["$http",function($http){		//service
 
 		//convert{r: ,g:, b:} to "#FFAABB"
 		convertRgbToHexColor:function(c){
+			c=c||{r:255,g:255,b:255};
 			return "#" + ((1 << 24) + (c.r << 16) + (c.g << 8) + c.b).toString(16).slice(1);
 		},
 		
@@ -1414,6 +1416,38 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 			
 			link:function(scope,element,attrs){
 				
+				scope.handlePaste=function(e) {
+					var items=e.originalEvent.clipboardData.items;
+				    for (var i = 0 ; i < items.length ; i++) {
+				        var item = items[i];
+			            if (item.kind === 'file' && item.type.match('^image/')) {
+		        		      var blob = item.getAsFile();
+		        		      var reader = new FileReader();
+		        		      reader.onload = function(event){
+		        		    	  var imageObj=new Image();
+		        		    	  imageObj.src=event.target.result;
+		        		        //console.log(event.target.result)}; // data url!
+		        		    	  scope.addImage(imageObj);
+		        		      }
+		        		    	 reader.readAsDataURL(blob);
+
+		        		      
+				        }
+				    }
+				}
+				
+				scope.addImage=function(imageObj){
+					var img=new Kinetic.Image({
+						x:0,
+						y:0,
+						draggable:true,
+						//width:$scope.embCanvas.getOriginalWidth(),
+						//height:$scope.embCanvas.getOriginalHeight(),
+						image:imageObj
+					});
+					scope.embStage.add(img);
+					img.moveToBottom();
+				}
 				
 				scope.getPrintModel=function(embMatcher,settings){
 					var model={};
