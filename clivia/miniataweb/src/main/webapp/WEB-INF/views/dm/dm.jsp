@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>test</title>
+	<title>DST</title>
 	<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
 	<shared:header/> 
 	
@@ -75,7 +75,7 @@
 			 	k-actions="['Minimiz','Maximize','Close']"
 			 	k-pinned="true"
 			 	k-modal="false">
-		
+		    <div kendo-toolbar id="queryToolbar" k-options="queryToolbarOptions"></div>
  			<div  query-grid="queryGrid"  c-grid-no="'401'" c-options="queryGridOptions"></div> 
 		</div>
 			
@@ -197,12 +197,39 @@ designApp.controller("dmCtrl",
  	            	template:'Choose Theme:<theme-chooser></theme-chooser>'
 			}]};
 			
+			$scope.queryToolbarOptions={
+					items: [{
+						        type: "button",
+						        text: "Export To Excel",
+						        id: "btnExcel",
+						        click: function(e){
+						        	$scope.queryGrid.saveAsExcel();
+						            }
+							}, {
+								type: "separator",
+						    }, {
+						        type: "button",
+						        text: "Choose Columns",
+						        id: "btnChooseColumns",
+						        click: function(e){
+						        	$scope.queryGrid.chooseColumn();
+						            }
+						    }, {
+						        type: "button",
+						        text: "Clear All Filters",
+						        id: "btnClearFilters",
+						        click: function(e){
+						        	$scope.queryGrid.clearAllFilters();
+						            }
+						    }, {
+				}]};
 			
 		    $scope.searchDesignNumberOptions={
 		        	dataSource:{data:[]},	//recent orders
 		        	//Fired when the value of the widget is changed by the user
 		        	change:function(e){
-		        		$scope.getDesign();
+		        		if($scope.searchDesignNumber)
+		        			$scope.loadDesignByNumber($scope.searchDesignNumber);
 		        	}
 		        }
 		    
@@ -417,21 +444,31 @@ designApp.controller("dmCtrl",
 		    	$scope.myDstPaint.clear();
 		    	$scope.myDstPaint.setBackgroundColour("#FFFFFF");
 		    }
-		    
-		    $scope.loadDesignById=function(id){
+			
+			$scope.loadDesign=function(url){
 		    	$scope.clear();
-		    	
-		    	var url="../lib/emb/get-embdesign?id="+id;
 				$http.get(url).then(
 					function(data, status, headers, config) {
-						if(data.data){
+						if(data.data&&data.data.info){
+					    	$scope.myDstPaint.loadDesignById(data.data.info.id);
 				    		populate(data.data);
+						}else{
+							alert("Can not find this design.");
 						}
+						
 					},function(data, status, headers, config) {
 				});
-
-		    	$scope.myDstPaint.loadDesignById(id);
-
+				
+			}
+			
+			$scope.loadDesignByNumber=function(designNumber){
+				//controller:LibEmbDesignController
+				$scope.loadDesign("../lib/emb/get-embdesign?number="+designNumber);
+			}
+		    
+		    $scope.loadDesignById=function(id){
+				//controller:LibEmbDesignController
+				$scope.loadDesign("../lib/emb/get-embdesign?id="+id);
 		    }
 		    
 		    $scope.saveDesign=function(){

@@ -50,7 +50,7 @@
 	 	k-actions="['Minimiz','Maximize','Close']"
 	 	k-pinned="true"
 	 	k-modal="false">
-
+	<div kendo-toolbar id="queryToolbar" k-options="queryToolbarOptions"></div>
 	<div  query-grid="queryGrid"  c-grid-no="'801'" c-options="queryGridOptions"></div>
 </div>
 

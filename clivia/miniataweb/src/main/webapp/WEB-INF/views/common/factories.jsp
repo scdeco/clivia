@@ -2448,9 +2448,9 @@ clivia.factory("serviceEmbGridWrapper",["GridWrapper","cliviaDDS","DataDict",fun
 				    width: 150
 				}, {
 					name:"stitchCount",
-				    field: "ks",
-				    title: "Ks",
-				    width: 60,
+				    field: "stitchCount",
+				    title: "Stitches",
+				    width: 70,
 				    attributes:{style:"text-align:right;"},
 				}, {
 					name:"colourCount",

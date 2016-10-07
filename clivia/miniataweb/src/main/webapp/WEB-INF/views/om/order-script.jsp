@@ -853,6 +853,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util","dictTh
  					cancelDate:info.cancelDate, 			//info.cancelDate,
  					remark:info.remark,
  					hideDiscount:hideDiscount,
+ 					currency:company.info.country==="USA"?"US$":"CA$",
 				},
 	 			items:[],
  			};
@@ -917,6 +918,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util","dictTh
  					poNo:info.customerPO,
  					buyer:info.buyer,
  					terms:info.term,
+ 					currency:company.info.country==="USA"?"US$":"CA$",
  					shipment:"",
  					phone:"",
  					fax:"",
@@ -1038,10 +1040,11 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util","dictTh
 			season=dictSeason.getLocalItem("id",3);	//general lineItem
 		}	
 		var sizeFields=season.sizeFields.split(",");
+		var sizeTitles=season.sizeTitles.split(",");
 		for(var i=0,q;i<sizeFields.length;i++){
 			q="qty"+("00"+i).slice(-2);
 			if(lineItemDi[q]){
-				sizes+=sizeFields[i]+":"+lineItemDi[q]+" ";
+				sizes+=sizeTitles[i]+":"+lineItemDi[q]+"   ";
 			}
 		}
 		return sizes;
@@ -1101,8 +1104,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util","dictTh
 				design={
 						designNo:serviceDi.designNo,
 						description:serviceDi.designName,
-						stitches:serviceDi.ks,
-						steps:2,	//serviceDi.stepCount,
+						stitches:serviceDi.stitchCount,
+						steps:"",				//serviceDi.stepCount,
 						totalQty:0,
 						colourways:[],
 						idxColourway:{},
@@ -1221,17 +1224,21 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util","dictTh
 		
 	}	 	
  	
- 	_order.printDecoOrder=function(file){
+ 	_order.printDecoOrder=function(){
  		var data=_order.createDecoOrderPrintModel();
- 		url="../om/print-order?file="+file;
+ 		url="../om/print-order?file=printdecoorder";
  		util.printUrl(url,{data:JSON.stringify(data)},true);	//false=no preview
  		return;
  	}
  	
- 	_order.printBill=function(billItems,lineItemOnly,mainColourOnly,hideDiscount,file){
+ 	_order.printBill=function(billItems,lineItemOnly,mainColourOnly,printTypeId){
+		var hideDiscount=printTypeId==="garmentConfirmationWithoutDsicount"; 
  		var data=_order.createGarmentPrintModel(billItems,lineItemOnly,mainColourOnly,hideDiscount);
- /* to get testing data of print model		_order.printModel=data; */
- 		url="../om/print-order?file="+file;
+ 		data.info.listType=printTypeId==="garmentPackingSlip"?"packing":"order";
+ // to get testing data of print model		
+ 	_order.printModel=data; 
+ 		url="../om/print-order?file=printgarmentorder";
+ 
  		util.printUrl(url,{data:JSON.stringify(data)},true);	//false=no preview
  		return;
  	}

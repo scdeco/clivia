@@ -93,8 +93,13 @@ public class LibraryController {
 		
 		Map<String, Object> result=cliviaLibrary.getEmbDesign(id);
 		return result;
-		
 	}
 	
+	@RequestMapping(value="{type}/getdesignbynumber",method=RequestMethod.GET)
+	public @ResponseBody Map<String, Object> getEmbDesignByNumber(@PathVariable String type, @RequestParam("number") String designNumber){
+		
+		Map<String, Object> result=cliviaLibrary.getEmbDesign(designNumber);
+		return result;
+	}
 	
 }

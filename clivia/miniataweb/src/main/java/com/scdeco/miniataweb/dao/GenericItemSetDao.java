@@ -36,6 +36,21 @@ public abstract class GenericItemSetDao<T> {
 	
 	protected abstract void initItemSet() throws NoSuchFieldException, SecurityException;
 	
+	public T getByKeyField(String keyFieldName,String keyFieldValue) 
+						throws IllegalArgumentException, IllegalAccessException, InstantiationException, NoSuchFieldException, SecurityException{
+		
+		return getByKeyField(keyFieldName,keyFieldValue,null);
+	}
+
+	public T getByKeyField(String keyFieldName,String keyFieldValue,String[] itemNames) 
+						throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException{
+		if(mainItem==null)
+			initItemSet();
+		Object infoEntity=mainItem.itemDao.findUniqueResult(keyFieldName, keyFieldValue);
+		int id=infoEntity!=null?(int)mainItem.idField.get(infoEntity):-1;
+		return getById(id,itemNames);
+		
+	}
 	
 	public T  getById(int id) throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException{
 		return getById(id,null);

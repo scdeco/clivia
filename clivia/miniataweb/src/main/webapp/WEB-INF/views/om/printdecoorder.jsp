@@ -171,7 +171,7 @@ td{
 
 window.onload = function (){
 
-	var printModel = ${data.data};
+    var printModel = ${data.data};
     var order = printModel;
     //use to count the size of the height
     var countPixel = 0;
@@ -192,6 +192,8 @@ window.onload = function (){
     var decoAreSp = false;
     var decoHpTotal = 0;
     var decoAreHp = false;
+    var garmentsTotalQty = 0;
+    var servicesTotalAmt = 0;
     var nextPage = 0;
     //-------------------all functions here--------------------------
 
@@ -350,9 +352,9 @@ window.onload = function (){
         }
         else if(!!garments){
             for( var i = 0; i < garments.length; i ++){
-                var garmentHeader = getSimilarHeader(i,garmentOutput,"garment");
-                var garmentFooter = getSimilarFooter(i, garments,garmentOutput , "garment");
+                var garmentHeader = getSimilarHeader(i,garmentOutput,"garment");    
                 var garmentList = getSimilarList(i,garments,garmentOutput,"garment");
+                var garmentFooter = getSimilarFooter(i, garments,garmentOutput , "garment");
                 display(garmentHeader + garmentList + garmentFooter);
                 needPageBreak(i,"garment","modifySpaceG");
             }
@@ -360,8 +362,8 @@ window.onload = function (){
         else if(!!lineGarments){
             for (var i = 0; i < lineGarments.length; i++){
                 var garmentHeader = getSimilarHeader(i,garmentOutput,"lineGarment");
-                var garmentFooter = getSimilarFooter(i, lineGarments,garmentOutput , "lineGarment");
                 var garmentList = getSimilarList(i,lineGarments,garmentOutput,"lineGarment");
+                var garmentFooter = getSimilarFooter(i, lineGarments,garmentOutput , "lineGarment");
                 display(garmentHeader + garmentList + garmentFooter);
                 needPageBreak(i,"garment","modifySpaceG");
             }
@@ -386,9 +388,9 @@ window.onload = function (){
         else
         for (var i = 0; i < services.length; i++){
 
-            var serviceHeader = getSimilarHeader(i,serviceOutput,"service");
-            var serviceFooter = getSimilarFooter(i,services,serviceOutput,"service");
+            var serviceHeader = getSimilarHeader(i,serviceOutput,"service");    
             var serviceList = getSimilarList(i,services,serviceOutput,"service");
+            var serviceFooter = getSimilarFooter(i,services,serviceOutput,"service");
             display(serviceHeader + serviceList + serviceFooter);
             needPageBreak(i,"service","modifySpaceS");
         }
@@ -517,7 +519,7 @@ window.onload = function (){
                 if (i == lists.length - 1){
                     output += "<table width=700px;  class = 'garmentTotal'><tr style='border-bottom:solid 1px;'>"
                                 + "<th width='488px' class='right'>" + "Total Qty: "+ "</th>"
-                                + "<th class='right' width='40px'>" + (order.totalQty?order.totalQty:"") + "</th>"
+                                + "<th class='right' width='40px'>" + garmentsTotalQty + "</th>"
                                 + ("<td></td>").repeat(2)
                                 + "</tr></table></div>";
                 }
@@ -527,8 +529,8 @@ window.onload = function (){
             case "lineGarment":
                 if (i == lists.length - 1){
                     output += "<table width=700px; class = 'garmentTotal'><tr style='border-bottom:solid 1px;'>"
-                                +"<th class='right' width = 445px'>" + "Total Qty:" + "</th>"
-                                + "<th class='right' width='25px'>" + (order.totalQty?order.totalQty:"") + "</th>"
+                                +"<th class='right' width = 440px'>" + "Total Qty:" + "</th>"
+                                + "<th class='right' width='35px'>" + garmentsTotalQty + "</th>"
                                 + ("<td></td>").repeat(2)
                                 + "</tr></table></div>";
                 }
@@ -537,11 +539,11 @@ window.onload = function (){
 
             case "service":
                 if (i == lists.length - 1){
-                    output += "<table width=700px;  class = 'serviceTable'>"
+                    output += "<table width=700px;  class = 'serviceTable' >"
                                     + "<tr>"
-                                    + "<td width = 365px colspan = 3></td>"
+                                    + "<td width = 331px colspan = 3></td>"
                                     + "<th width = 60px>Total Amt:</th>"
-                                    + "<th class='right' width = '42px'>" + (order.amt?order.amt:"") + "</th>"
+                                    + "<th class='right' width = '75px'>" + order.currency + " " + passToDecimal(servicesTotalAmt) + "</th>"
                                     + ("<td></td>").repeat(2)
                                     +"</tr></table><br></div>";
                 }
@@ -572,6 +574,8 @@ window.onload = function (){
 
                 output += "<td class='right' width=31px class='right'>" + (garment.other?garment.other:"") + "</td>"
                         +"<td class='right' width=31px class='right'>" + (garment.total?garment.total:"") + "</td>";
+        
+                garmentsTotalQty += parseInt((garment.total||0));
                 output += "<td class='left' width= 165px colspan = 3>";
                 var services = (garment.services?garment.services:"");
                 var positionList = getPositionList(services,type);
@@ -591,12 +595,14 @@ window.onload = function (){
                 var services = (garment.services?garment.services:"");
                 var positionList = getPositionList(services,type);
                 output += "<tr>"
-                        + "<td class = 'left' width = 69px>" + garment.itemNo + "</td>"
-                        + "<td class= 'left' width = 346px>" + garment.desc + "</td>"
-                        + "<td class = 'right' width = 60px>" + garment.qty + "</td>"
+                        + "<td class = 'left' width = 69px>" + (garment.itemNo||"") + "</td>"
+                        + "<td class= 'left' width = 346px>" + (garment.desc||"") + "</td>"
+                                              + "<td class = 'right' width = 60px>" + (garment.qty||"")+ "</td>"
                         + "<td rowspan = 2 colspan = 3 style='border-bottom:solid 1px;'>"
                         + positionList + "</table>"
                         + "</td></tr>";
+                garmentsTotalQty += parseInt((garment.qty||0));
+                console.log(garmentsTotalQty);
                 output += "<tr style='border-bottom:solid 1px;'>"
                         + "<td width ='50px'" + height + "class='image'style='background-image:url(&quot;"
                         + imageUrl
@@ -637,17 +643,21 @@ window.onload = function (){
 
             case ("service"):
                 var service = lists[i];
+            	var servicePrice = passToDecimal(service.price||0);
+          		var serviceAmt = passToDecimal(service.amt||0);
                 output += "<tr>"
                             +"<td class='left' width=120px>"+ (service.service?service.service:"") + "</td>"
                             +"<td class='left' width= 200px>"+ (service.description?service.description:"") + "</td>"
                             +"<td class='right' width=30px>"+ (service.qty?service.qty:"") + "</td>"
                             +"<td class='right' width=30px>"+ (service.unit?service.unit:"") + "</td>"
-                            +"<td class='right' width=40px >"+ (service.price?service.price:"") + "</td>"
-                            +"<td class='right' width=40px  >"+ (service.amt?service.amt:"") + "</td>"
+                            +"<td class='right' width=40px >"+ servicePrice + "</td>"
+                            +"<td class='right' width=40px  >"+ serviceAmt + "</td>"
                             +"<td width=50px class = 'center'>" + (service.disCount?service.disCount:"") + "</td>"
                             +"<td class='left'>"+ (service.remark?service.remark:"") + "</td>"
                             +"</tr>"
                             + "<tr style='border-bottom:solid 1px;'>" + ("<td></td>").repeat(8) + "<tr>";
+                            
+                servicesTotalAmt += parseInt((service.amt||0));
                 output +="</table>"
                 output += "<div id='modifySpaceS" + ((2*i)+1) + "'></div>";
                 return output;
@@ -656,6 +666,12 @@ window.onload = function (){
             default:
                 alert("type error!");
         }
+    }
+    
+    function passToDecimal(string){
+    	var num = parseInt(string);
+    	var decimalOutput = num.toFixed(2);
+    	return decimalOutput;
     }
 
     function getPositionList(lists,type){
@@ -863,23 +879,6 @@ window.onload = function (){
         return output;
     }
 
-    function getGarments(colourway,garmentOutput){
-
-        var garments = colourway.garments;
-        var bottomBorder = "border-bottom-style:solid; border-width:1px;";
-
-        for( i = 0; i < garments.length; i++){
-            var garment = garments[i];
-            garmentOutput += "<tr style='" + bottomBorder + "'>"
-                    +"<td>" + (garment.style?garment.style:"") + "</td>"
-                    +"<td>" +(garment.colour?garment.colour:"") +"</td>"
-                    + "<td width='120px' class='left'>" + (garment.position?garment.position:"") + "</td>"
-                    + "<td class='left' >" + (garment.sizes?garment.sizes:"") + "</td>"
-                    + "<td class='right'>" + (garment.totalQty?garment.totalQty:"") + "</td>"
-                    +"</tr>";
-        }
-        return output;
-    }
 
     function getGarments(colourway,garmentOutput){
 

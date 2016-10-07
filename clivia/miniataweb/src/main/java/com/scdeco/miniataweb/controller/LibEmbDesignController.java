@@ -38,14 +38,19 @@ public class LibEmbDesignController {
 	
 	
 	@RequestMapping(value="get-embdesign",method=RequestMethod.GET)
-	public @ResponseBody  LibEmbDesign getLibEmbDesign(@RequestParam("id") Integer id,
+	public @ResponseBody  LibEmbDesign getLibEmbDesign(
+											 @RequestParam(value="id",required=false) Integer id,
+											 @RequestParam(value="number",required=false) String number,
 											 @RequestParam(value="list",required=false) String[] list,
 											 @RequestParam(value="needStitches",required=false) boolean needStitches, 
 											 @RequestParam(value="needThumbnail",required=false) boolean needThumbnail) 
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
-		
-		return libEmbDesignDao.getById(id,list,needThumbnail);
+		if(id!=null)
+			return libEmbDesignDao.getById(id,list,needThumbnail);
+		else
+			return libEmbDesignDao.getByNumber(number, list, needThumbnail);
 	}	
+	
 	
 	@RequestMapping(value="save-embdesign",method=RequestMethod.POST)
 	public @ResponseBody  LibEmbDesign saveLibEmbDesign(@RequestBody LibEmbDesign design)

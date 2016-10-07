@@ -97,8 +97,36 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	                type: "separator",
  	            }, {
  	            	template:'Choose Theme:<theme-chooser></theme-chooser>'
-	       }]
-	    };	
+	       }]};
+    
+		$scope.queryToolbarOptions={
+			items: [{
+				        type: "button",
+				        text: "Export To Excel",
+				        id: "btnExcel",
+				        click: function(e){
+				        	$scope.queryGrid.saveAsExcel();
+				            }
+					}, {
+						type: "separator",
+				    }, {
+				        type: "button",
+				        text: "Choose Columns",
+				        id: "btnChooseColumns",
+				        click: function(e){
+				        	$scope.queryGrid.chooseColumn();
+				            }
+				    }, {
+				        type: "button",
+				        text: "Clear All Filters",
+				        id: "btnClearFilters",
+				        click: function(e){
+				        	$scope.queryGrid.clearAllFilters();
+				            }
+				    }, {
+		}]};
+    
+    
     $scope.saveResultOptions={
              position: {
                  pinned: true,
@@ -174,14 +202,13 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 							    
 				dataSource.fetch(function() {
 					  var billItems = dataSource.view();
-					  var file=(id==="garmentPackingSlip"?"printpackingslip":"printconfirmdd");
-					  SO.printBill(billItems,false,true,id==="garmentConfirmationWithoutDsicount",file);		//if true,print billItems that from lineitem(typeid===2) only
+					  SO.printBill(billItems,false,true,id);		//if true,print billItems that from lineitem(typeid===2) only
 					});
 			}
 		}
 		
 		if(id==="decoConfirmation"){
-			SO.printDecoOrder("printdecoorder");
+			SO.printDecoOrder();
 		}
 	}
 	
@@ -884,7 +911,7 @@ orderApp.directive("lineItem",function(SO){
 				    	$scope.$watch("seasonId",function(newValue,oldValue){
 				    		if(newValue && newValue!=oldValue){
 				    			$scope.season=SO.dds.season.getLocalItem("id",parseInt(newValue));
-				    			orderItem.spec=$scope.brand.id+":"+$scope.season.id;
+				    			$scope.orderItem.spec=$scope.brand.id+":"+$scope.season.id;
 				    		}
 				    	});
 				    	
@@ -943,7 +970,7 @@ orderApp.directive("decoService",function(SO,util){
 		    		scope.lineItemDi=lineItemDi;
    	 	    		scope.serviceEmbGrid.grid.setDataSource(scope.getServiceEmbGridDataSource());
    	 	    		scope.serviceSpGrid.grid.setDataSource(scope.getServiceSpGridDataSource());
-//		    		scope.$apply();
+
 		    	}
 		    	
 		    	scope.serviceEmbNewItemFunction=function(){
@@ -955,9 +982,22 @@ orderApp.directive("decoService",function(SO,util){
     			    }
 
 		    	}
+		    	scope.serviceSpNewItemFunction=function(){
+	    		    return {
+    			    	orderId:SO.dataSet.info.orderId,
+    			    	orderItemId:scope.lineItemDi.orderItemId, 
+    			    	lineItemId:scope.lineItemDi.id,
+    			    	isNewDi:true,
+    			    }
+
+		    	}
 		    	
 		    	scope.registerDeletedServiceEmbFunction=function(dataItem){
 		    		SO.registerDeletedItem("orderServiceEmb",dataItem);
+		    	}
+		    	
+		    	scope.registerDeletedServiceSpFunction=function(dataItem){
+		    		SO.registerDeletedItem("orderServiceSp",dataItem);
 		    	}
 		    	
 				scope.getServiceEmbGridDataSource=function(){
@@ -976,20 +1016,6 @@ orderApp.directive("decoService",function(SO,util){
 	    		        }); //end of dataSource,
 				}
 
-		    	scope.serviceSpNewItemFunction=function(){
-	    		    return {
-    			    	orderId:SO.dataSet.info.orderId,
-    			    	orderItemId:scope.lineItemDi.orderItemId, 
-    			    	lineItemId:scope.lineItemDi.id,
-    			    	isNewDi:true,
-    			    }
-
-		    	}
-		    	
-		    	scope.registerDeletedServiceSpFunction=function(dataItem){
-		    		SO.registerDeletedItem("orderServiceSp",dataItem);
-		    	}
-		    	
 				scope.getServiceSpGridDataSource=function(){
 					return new kendo.data.DataSource({
 	     		        	data:SO.dataSet.serviceSps, 
@@ -1007,7 +1033,7 @@ orderApp.directive("decoService",function(SO,util){
 				}
 				
 				
-				scope.duplicateDeco=function(){
+				scope.duplicateDeco=function(overwrite){
 	
 					
 					var fromDis=[];
@@ -1022,6 +1048,7 @@ orderApp.directive("decoService",function(SO,util){
  							designNo:di.designNo,
  							designName:di.designName,
  							detail:di.threadCode+"    "+di.runningStep,
+ 							serviceDi:di
  						});
  					}
  					
@@ -1035,11 +1062,13 @@ orderApp.directive("decoService",function(SO,util){
  						if(di.id!=scope.lineItemDi.id){
  							toDis.push({
  								id:di.id,
+ 								lineItemLineNo:di.lineNo,
  								style:(di.styleNo?di.styleNo:"")+" "+(di.description?di.description:""),
  								colour:di.colour,
  								sizes:SO.getLineItemSizes(di),
  								qty:di.quantity,
  								remark:di.remark,
+ 								lineItemDi:di,
  							});
  						}
  					}
@@ -1047,52 +1076,84 @@ orderApp.directive("decoService",function(SO,util){
  					scope.duplicateLineItemGrid.setDataSource(new kendo.data.DataSource({data:toDis}));
  					
 					scope.decoDuplicateWindow.open();
-
 				} 
 				
-				
-				
-/* 				scope.duplicateDecoToGarments=function(startLineNo,endLineNo){
-					if(!endLineNo) endLineNo=10000;
-					var garmentView=scope.$parent.garmentGridDataSource.view();
-					
-					for(var i=0,garDi;i<garmentView.length;i++){
-						garDi=garmentView[i];
-						if(garDi.lineNo>=startLineNo && garDi.lineNo<=endLineNo){
-							scope.duplicateDecoToGarment("serviceEmb",garDi);		
-							scope.duplicateDecoToGarment("serviceSp",garDi);		
-						}
-					}
-				}
-				
- 				scope.duplicateDecoToLineItem=function(service ,garmentDi){
+		        scope.getClick = function(item,grid){
+		        	  //var grid=scope.duplicateLineItemGrid;
+		              var selectedRows=grid.select();
+		              for(var i = 0,di; i<selectedRows.length; i++){
+		            	 var di=grid.dataItem(selectedRows[i]);
+		            	 if(di!=item){
+		            		 di.checkedItem=item.checkedItem;
+		            	 }
+		              }
+  		        	  calculateSelectedLineItemQuantity(grid);
+		          }
+		        
+		        scope.checkAll=function(checked,grid){
+		        	var dataItems=grid.dataSource.data();
+		        	for(var i=0;i<dataItems.length;i++){
+		        		dataItems[i].checkedItem=checked;
+		        	}
+		        	calculateSelectedLineItemQuantity(grid);
+		        }
+		        
+		        var calculateSelectedLineItemQuantity=function(grid){
+		        	var dataItems=grid.dataSource.data();
+		        	var sum=0;
+		        	for(var i=0,di;i<dataItems.length;i++){
+		        		di=dataItems[i];
+		        		if(di.checkedItem && di.qty)
+		        			sum+=di.qty;
+		        	}
+		        	
+		        	scope.selectedLineItemQuantity=sum;
+		        }
+		        
+ 				scope.duplicateSelectedDecoToLineItem=function(){
+ 					var serviceSet={};
+ 					serviceSet["Emb"]=scope["serviceEmbGrid"].grid.dataSource.data();
  					
+ 					var duplicateDecoGridDis=scope.duplicateDecoGrid.dataSource.data();
+ 					var duplicateLineItemDis=scope.duplicateLineItemGrid.dataSource.data();
+ 					var selectedLineItemId={};
+					var serviceEmbDis=serviceSet["Emb"];
+
+					//remove services of selectedLineItems
+ 					for(var i=0,liDi;i<duplicateLineItemDis.length;i++){
+ 						liDi=duplicateLineItemDis[i];
+ 						if(liDi.checkedItem){
+ 	 						for(var j=0;j<serviceEmbDis.length;j++){
+ 	 							if(serviceEmbDis[j].lineItemId===liDi.id){
+ 	 								scope.registerDeletedServiceEmbFunction(serviceEmbDis[j]);
+ 	 								serviceEmbDis.splice(j,1);
+ 	 							}
+ 	 						}
+ 						}
+ 					}
  					
-  					var decoDataSource=scope[service+"Grid"].grid.dataSource;
- 					var decoView=decoDataSource.view();
- 					
- 					
- 					
- 					
-					var newDis=[],newDi;
-					for(var i=0,di;i<decoView.length;i++){
-						di=decoView[i];
-						newDi=util.duplicateObject(di);
-						newDi.id=null;
-						newDi.lineItemId=garmentDi.id;
-						newDi.isNewDi=true;
-						newDi.isDirty=true;
-						newDis.push(newDi);
-					}
-					for(var i=0;i<newDis.length;i++)
-						decoDataSource.add(newDis[i]);
-					
-					scope.decoDuplicateWindow.open();
-				}
- 				
-*/
- 				
-		    	
+ 					var selectedServiceDi,selectedLineItemDi;
+		        	for(var i=0,di;i<duplicateDecoGridDis.length;i++){
+		        		di=duplicateDecoGridDis[i];
+		        		if(di.checkedItem){
+		        			selectedServiceDi=di.serviceDi;
+		        			serviceDis=serviceSet[di.serviceType];
+		        			
+		        			for(var j=0,newDi;j<duplicateLineItemDis.length;j++){
+		        				selectedLinteItemDi=duplicateLineItemDis[j];
+		        				if(selectedLinteItemDi.checkedItem){
+		        					
+		        					var newDi=util.duplicateObject(selectedServiceDi);
+	        					
+		        					newDi.lineItemId=selectedLinteItemDi.id;
+		        					newDi.isNewDi=true;
+		        					newDi.isDirty=true;
+		        					serviceDis.push(newDi);
+		        				}
+		        			}
+		        		}
+		        	}
+ 				}
 			},
 			controller: ["$scope","cliviaGridWrapperFactory",function($scope,cliviaGridWrapperFactory) {
 				
@@ -1106,6 +1167,10 @@ orderApp.directive("decoService",function(SO,util){
 					$scope.duplicateDecoGridOptions={
 						dataSource:[],
 						columns:[{
+							headerTemplate: '<input ng-model = "duplicateDecoGridCheckAll" type="checkbox" ng-change="checkAll(duplicateDecoGridCheckAll,duplicateDecoGrid)"></input>',
+							template: '<input ng-model = "dataItem.checkedItem" type="checkbox" ng-change="getClick(dataItem,duplicateDecoGrid)"></input>',
+							width:40,
+					    },{ 							
 							field:"serviceType",
 							title:"Service",
 							width:"80px",
@@ -1119,6 +1184,11 @@ orderApp.directive("decoService",function(SO,util){
 							width:"100px",
 							attributes:{style:"text-align:center;"},
 						},{
+							field:"quantity",
+							title:"Quantity",
+							width:"70px",
+							attributes:{style:"text-align:right;"},
+						},{
 							field:"designName",
 							title:"Design Name",
 							width:"150px",
@@ -1127,11 +1197,20 @@ orderApp.directive("decoService",function(SO,util){
 							title:"Detail",
 						}],
 						selectable: "multiple, row",
+						resizable:true,
 					}
 					
 					$scope.duplicateLineItemGridOptions={
 							dataSource:[],
 							columns:[{
+								headerTemplate: '<input ng-model = "duplicateLineItemGridCheckAll" type="checkbox" ng-change="checkAll(duplicateLineItemGridCheckAll,duplicateLineItemGrid)"></input>',
+								template: '<input ng-model = "dataItem.checkedItem" type="checkbox" ng-change="getClick(dataItem,duplicateLineItemGrid)"></input>',
+								width:40,
+							},{
+								field:"lineItemLineNo",
+								title:"#",
+								width:30,
+						    },{ 							
 								field:"style",
 								title:"Copy To Line Item",
 								width:"300px",
@@ -1153,6 +1232,7 @@ orderApp.directive("decoService",function(SO,util){
 								title:"Remark",
 							}],
 							selectable: "multiple, row",
+							resizable:true,
 						}
 
 			}]	//end of controller
@@ -1368,6 +1448,8 @@ orderApp.directive("designItem",function(SO,$sce){
 				    pageSize: 0,			//paging in pager
 
 			    }); //end of dataSource,
+			    
+			    
 			    
 				
 			}]	//end of controller

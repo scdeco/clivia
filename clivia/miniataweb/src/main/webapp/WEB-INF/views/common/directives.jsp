@@ -801,7 +801,7 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 					scope.styleNo="";
 					clearGrid();
 					if(styleNo){
-						scope.garment=scope.dictGarment.getGarment(scope.seasonId,styleNo);
+						scope.garment=scope.dictGarment.getGarment(scope.cSeasonId,styleNo);
 						createGrid();
 					}
 				};
@@ -836,7 +836,6 @@ directive("garmentInput",["GridWrapper",function(GridWrapper){
 		controller: ['$scope', function($scope) {
 			$scope.dictGarment=$scope.cDictGarment;
 			$scope.addFunction=$scope.cAddFunction;
-			$scope.seasonId=$scope.cSeasonId;
 		}]
 	}
 }]).
@@ -2130,12 +2129,12 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 				
 			},
 			
-			template:'<div kendo-grid="queryGrid" k-options="query.gridOptions" k-rebind="query.rebind" ></div>',
+			templateUrl:'../common/querygrid',
 			link:function(scope,element,attrs){	
 				
 				scope.gridName=scope.cName;
 				if(scope.cName)
-		        	scope.$parent[scope.cName+"Scope"]=scope;
+		        	scope.$parent[scope.cName]=scope;
 				
 				
 				scope.createGrid=function(gridNo){
@@ -2160,7 +2159,179 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 				};
 				
 				
+				scope.clearAllFilters=function(){
+					$("form.k-filter-menu button[type='reset']").trigger("click");
+				}
 				
+				scope.saveAsExcel=function(){
+					scope.queryGrid.saveAsExcel();
+				}
+				
+				scope.chooseAllColumns=function(chooseAll){
+					scope.choosedColumns.splice(0,scope.choosedColumns.length);
+					if(chooseAll){
+						for(var i=0;i<scope.columns.length;i++)
+							scope.choosedColumns.push(scope.columns[i]);
+					}
+				}
+				scope.chooseColumn=function(all){
+					scope.columns=[];
+					scope.choosedColumns=[];
+					
+					var columnItems=scope.dataSet.columnItems;
+					var gridColumns=scope.queryGrid.columns;
+					
+					for(var i=0,col;i<columnItems.length;i++){
+						if(columnItems[i].choosable){
+							col={
+								title:columnItems[i].title,
+								field:columnItems[i].name,
+							}
+							scope.columns.push(col);
+							for(var j=0;j<gridColumns.length;j++){
+								
+								if(gridColumns[j].field===col.field && !gridColumns[j].hidden){
+									scope.choosedColumns.push(col);
+									break;
+								}
+							}
+						}
+					}
+					scope.$apply();
+					scope.chooseColumnWindow.center().open();
+			 	}
+
+			 	scope.chooseColumnOk=function(){
+			 		var grid=scope.queryGrid;
+			 		var choosedColumns=scope.choosedColumns;
+			 		var gridColumns=grid.columns;
+					var options=grid.getOptions();
+			 		for(var i=0,choosed;i<gridColumns.length;i++){
+			 			choosed=false;
+			 			for(var j=0;j<choosedColumns.length;j++){
+			 				if(gridColumns[i].field===choosedColumns[j].field){
+			 					choosed=true;
+			 					break;
+			 				}
+			 			}
+			 			if(choosed){
+				 	 		if(gridColumns[i].hidden)
+				 	 			grid.showColumn(gridColumns[i].field);
+			 	 		}else{
+				 	 		if(!gridColumns[i].hidden)
+				 	 			grid.hideColumn(gridColumns[i].field);
+			 	 		}
+			 		}
+			 		
+			 	//	$scope.queryGridScope.queryGrid.
+				// 		$scope.queryGridScope.query.rebind++;
+			 		scope.chooseColumnWindow.close();
+			 	}
+			 	
+			 	scope.chooseColumnCancel=function(){
+			 		scope.chooseColumnWindow.close();
+			 	}	
+				
+			 	scope.getSqlExpression=function(filter){
+		 	 		var columnItems=scope.dataSet.columnItems;
+		 	 		var field=util.find(columnItems,"name",filter.field);
+		 	 		var value,likeValue;
+		 	 		
+		 	 		switch (field.dataType){
+		 	 			case "number":
+		 	 				value=String(filter.value);
+		 	 				break;
+		 	 			case "date":
+		 	 				value="'"+kendo.toString(filter.value,"yyyy-MM-dd")+"'";
+		 	 				
+		 	 				break;
+		 	 			case "boolean":
+		 	 				value=filter.value?"1":"0";
+		 	 				break;
+		 	 			default:
+		 	 				likeValue=filter.value.replace(/"/g,'\\"');
+		 	 				value="\""+likeValue+"\"";
+		 			}
+		 	 		
+		 	 		switch (filter.operator){
+		 	 			case "eq":
+		 	 				cond=field.name+"="+value;
+		 	 				break;
+		 	 			case "neq":
+		 	 				cond=field.name+"<>"+value;
+		 	 				break;
+		 	 			case "gt":
+		 	 				cond=field.name+">"+value;
+		 	 				break;
+		 	 			case "gte":
+		 	 				cond=field.name+">="+value;
+		 	 				break;
+		 	 			case "lt":
+		 	 				cond=field.name+"<"+value;
+		 	 				break;
+		 	 			case "lte":
+		 	 				cond=field.name+"<="+value;
+		 	 				break;
+		 	 			case "startswith":
+		 	 				cond=field.name+" like \""+likeValue+"%\"";
+		 	 				break;
+		 	 			case "endswith":
+		 	 				cond=field.name+" like \"%"+likeValue+"\"";
+		 	 				break;
+		 	 			case "contains":
+		 	 				cond=field.name+" like \"%"+likeValue+"%\"";
+		 	 				break;                
+		 	 			case "doesnotcontain":
+		 	 				cond=field.name+" not like \"%"+likeValue+"%\"";
+		 	 				break;
+		 	 				
+		 	 			case "isnull":
+		 	 				cond=field.name+" IS NULL";
+		 	 				break;
+		 	 			case "isnotnull":
+		 	 				cond=field.name+" IS NOT NULL";
+		 	 				break;
+		 	 			case "isempty":
+		 	 				cond=field.name+"=''";
+		 	 				break;
+		 	 			case "isnotempty":
+		 	 				cond=field.name+"<>=''";
+		 	 				break;
+		 	 		}
+		 	 		return "("+cond+")";
+		 	 		
+		 	 	} 	
+				
+			 	//get conditions from grid's filter
+			 	scope.getFilterCondition=function(){
+			 		var options=scope.queryGrid.getOptions();
+			 		var filter=options.dataSource.filter;
+			 		var cond=scope.getSqlCondition(filter);
+			 		return cond;
+			 	}
+		 	
+		 		scope.getSqlCondition=function(filter) {
+		 			var cond="",exp,logic;
+	
+		 			if (filter) {
+		 				if (filter.filters) {
+		 	 				logic=filter.logic?filter.logic:"and";
+		 				
+			 				for(var i=0,f;i<filter.filters.length;i++){
+			 					f=filter.filters[i];
+			 					exp=scope.getSqlCondition(f);
+			 					cond=cond+(!cond?"":(" "+logic+" "))+exp;
+			 				}
+			 				if(cond)
+			 					cond="("+cond+")";
+			 				
+			 			}else{
+			 				cond=scope.getSqlExpression(filter);
+			 			}
+			 		}
+		 			return cond;
+		 		}
+			 	
 				var getDataSource=function(){
 					var info=scope.dataSet.info;
 					if(info.daoName){
@@ -2296,7 +2467,7 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 			            },
 						
 					    pageable: {
-					    	pageSizes:["all",40,35,30,25,20,15,10,5],
+					    	pageSizes:[40,35,30,25,20,15,10,5],	//"all" is not allowed
 					        refresh: true,
 					        buttonCount: 5
 					    },
@@ -2311,6 +2482,8 @@ directive('queryGrid',["cliviaDDS","util",function(cliviaDDS,util){
 
 					return options;
 				};	//end of getGridOptions()
+				
+				
 			
 			},	//end of queryGrid:link
 			

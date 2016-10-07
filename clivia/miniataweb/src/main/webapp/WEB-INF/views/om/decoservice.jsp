@@ -51,12 +51,15 @@
 				 	
 				 	<div kendo-splitter  
       						k-orientation="'vertical'" 
-							k-panes="[{ collapsible:false,resizable: false,size:'30px'}
+							k-panes="[{ collapsible:false,resizable: false,size:'50px'}
 									,{ collapsible: true, resizable: true,size:'120px'}
 						 			,{ collapsible: true,resizable: true}]"
 	   	 					style="height:100%;">
 	   	 			<div>
-	   	 				Selected Services:{{scope.duplicateDecoGrid.select().length}}    Selected Line Items:{{selectedLineItems}} 
+	   	 				Selected Line Items:{{selectedLineItemQuantity}}
+	   	 				<br>
+	   	 				<button ng-click="duplicateSelectedDecoToLineItem()">Append</button> 
+	   	 				<button ng-click="">Overwrite</button>
 	   	 			</div>
 			   		<div>
 				   		<div kendo-grid="duplicateDecoGrid" k-options="duplicateDecoGridOptions"></div>

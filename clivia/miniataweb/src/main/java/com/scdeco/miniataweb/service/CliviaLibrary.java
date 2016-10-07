@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scdeco.miniataweb.dao.CliviaAutoNumberDao;
 import com.scdeco.miniataweb.dao.GenericDao;
+import com.scdeco.miniataweb.dao.LibEmbDesignInfoDao;
 import com.scdeco.miniataweb.dao.LibEmbDesignInfoViewDao;
 import com.scdeco.miniataweb.embdesign.EMBDesign;
 import com.scdeco.miniataweb.embdesign.EMBDesignM;
@@ -42,6 +43,9 @@ public class CliviaLibrary {
 
 	@Autowired 
 	private LibEmbDesignInfoViewDao libEmbDesignInfoViewDao;
+
+	@Autowired 
+	private LibEmbDesignInfoDao libEmbDesignInfoDao;
 	
 	private Library[] libs;
 	
@@ -194,6 +198,11 @@ public class CliviaLibrary {
 			result.put("data", "");					
 		}
 		return result;
+	}
+
+	public Map<String, Object> getEmbDesign(String designNumber){
+		LibEmbDesignInfo libEmbDesignInfo=libEmbDesignInfoDao.findByDesignNumber(designNumber);
+		return getEmbDesign(libEmbDesignInfo==null?-1:libEmbDesignInfo.getId());
 	}
 	
 	public Map<String, Object> getEmbDesign(int id){

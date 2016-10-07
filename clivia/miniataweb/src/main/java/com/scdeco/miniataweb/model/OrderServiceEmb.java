@@ -36,8 +36,8 @@ public class OrderServiceEmb extends CliviaSuperModel {
 	@Column(name="DesignName",length=50)
 	private String designName;
 	
-	@Column(name="Ks")
-	private int ks;
+	@Column(name="StitchCount")
+	private int stitchCount;
 	
 	@Column(name="ColourCount")
 	private int colourCount;
@@ -126,12 +126,12 @@ public class OrderServiceEmb extends CliviaSuperModel {
 		this.designName = designName;
 	}
 
-	public int getKs() {
-		return ks;
+	public int getStitchCount() {
+		return stitchCount;
 	}
 
-	public void setKs(int ks) {
-		this.ks = ks;
+	public void setStitchCount(int stitchCount) {
+		this.stitchCount = stitchCount;
 	}
 
 	public int getColourCount() {
@@ -173,6 +173,7 @@ public class OrderServiceEmb extends CliviaSuperModel {
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
-	
+
+
 	
 }

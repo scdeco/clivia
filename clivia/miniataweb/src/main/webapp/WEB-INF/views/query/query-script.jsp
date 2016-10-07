@@ -12,7 +12,7 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 		        text: "Export To Excel",
 		        id: "btnExcel",
 		        click: function(e){
-		        	$scope.queryGridScope.queryGrid.saveAsExcel();
+		        	$scope.queryGrid.saveAsExcel();
 		            }
 			}, {
         		type: "separator",
@@ -21,14 +21,14 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 		        text: "Choose Columns",
 		        id: "btnChooseColumns",
 		        click: function(e){
-		        	$scope.chooseColumn();
+		        	$scope.queryGrid.chooseColumn();
 		            }
 		    }, {
 		        type: "button",
-		        text: "Clear Filters",
+		        text: "Clear All Filters",
 		        id: "btnClearFilters",
 		        click: function(e){
-		        	 $("form.k-filter-menu button[type='reset']").trigger("click");
+		        	$scope.queryGrid.clearAllFilters();
 		            }
 		    }, {
 		        type: "separator",
@@ -54,182 +54,19 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
  	           	template:'Choose Theme:<theme-chooser></theme-chooser>'		    
 		}]};
 	
-	scope.chooseAllColumns=function(chooseAll){
-		scope.choosedColumns.splice(0,scope.choosedColumns.length);
-		if(chooseAll){
-			for(var i=0;i<scope.columns.length;i++)
-				scope.choosedColumns.push(scope.columns[i]);
-		}
-	}
- 	scope.chooseColumn=function(all){
-		scope.columns=[];
-		scope.choosedColumns=[];
-		
-		var columnItems=$scope.queryGridScope.dataSet.columnItems;
-		var gridColumns=$scope.queryGridScope.queryGrid.columns;
-		
-		for(var i=0,col;i<columnItems.length;i++){
-			if(columnItems[i].choosable){
-				col={
-					title:columnItems[i].title,
-					field:columnItems[i].name,
-				}
-				scope.columns.push(col);
-				for(var j=0;j<gridColumns.length;j++){
-					
-					if(gridColumns[j].field===col.field && !gridColumns[j].hidden){
-						scope.choosedColumns.push(col);
-						break;
-					}
-				}
-			}
-		}
-		$scope.$apply();
-		scope.chooseColumnWindow.center().open();
- 	}
- 	
- 	scope.chooseColumnOk=function(){
- 		var grid=$scope.queryGridScope.queryGrid;
- 		var choosedColumns=this.choosedColumns;
- 		var gridColumns=$scope.queryGridScope.queryGrid.columns;
-		var options=$scope.queryGridScope.queryGrid.getOptions();
- 		for(var i=0,choosed;i<gridColumns.length;i++){
- 			choosed=false;
- 			for(var j=0;j<choosedColumns.length;j++){
- 				if(gridColumns[i].field===choosedColumns[j].field){
- 					choosed=true;
- 					break;
- 				}
- 			}
- 			if(choosed){
-	 	 		if(gridColumns[i].hidden)
-	 	 			grid.showColumn(gridColumns[i].field);
- 	 		}else{
-	 	 		if(!gridColumns[i].hidden)
-	 	 			grid.hideColumn(gridColumns[i].field);
- 	 		}
- 		}
- 		
- 	//	$scope.queryGridScope.queryGrid.
-	// 		$scope.queryGridScope.query.rebind++;
- 		scope.chooseColumnWindow.close();
- 	}
- 	
- 	scope.chooseColumnCancel=function(){
- 		scope.chooseColumnWindow.close();
- 	}	
-	
+
  	scope.getSummary=function(){
- 		var options=$scope.queryGridScope.queryGrid.getOptions();
- 		var filter=options.dataSource.filter;
- 		var cond=scope.getSqlCondition(filter);
+ 		var cond=scope.queryGrid.getFilterCondition();
  		scope.summaryWindow.center().open();
  		scope.upcSummaryScope.load(cond);
  	}
 
  	scope.getCommission=function(){
- 		var options=$scope.queryGridScope.queryGrid.getOptions();
- 		var filter=options.dataSource.filter;
- 		var cond=scope.getSqlCondition(filter); 		
+ 		var cond=scope.queryGrid.getFilterCondition();
  		scope.analysisWindow.center().open();
  		scope.garAnalysisScope.load(cond);
  	}
- 	
- 	
- 	scope.getSqlExpression=function(filter){
- 	 		var columnItems=$scope.queryGridScope.dataSet.columnItems;
- 	 		var field=util.find(columnItems,"name",filter.field);
- 	 		var value,likeValue;
- 	 		
- 	 		switch (field.dataType){
- 	 			case "number":
- 	 				value=String(filter.value);
- 	 				break;
- 	 			case "date":
- 	 				value="'"+kendo.toString(filter.value,"yyyy-MM-dd")+"'";
- 	 				
- 	 				break;
- 	 			case "boolean":
- 	 				value=filter.value?"1":"0";
- 	 				break;
- 	 			default:
- 	 				likeValue=filter.value.replace(/"/g,'\\"');
- 	 				value="\""+likeValue+"\"";
- 			}
- 	 		
- 	 		switch (filter.operator){
- 	 			case "eq":
- 	 				cond=field.name+"="+value;
- 	 				break;
- 	 			case "neq":
- 	 				cond=field.name+"<>"+value;
- 	 				break;
- 	 			case "gt":
- 	 				cond=field.name+">"+value;
- 	 				break;
- 	 			case "gte":
- 	 				cond=field.name+">="+value;
- 	 				break;
- 	 			case "lt":
- 	 				cond=field.name+"<"+value;
- 	 				break;
- 	 			case "lte":
- 	 				cond=field.name+"<="+value;
- 	 				break;
- 	 			case "startswith":
- 	 				cond=field.name+" like \""+likeValue+"%\"";
- 	 				break;
- 	 			case "endswith":
- 	 				cond=field.name+" like \"%"+likeValue+"\"";
- 	 				break;
- 	 			case "contains":
- 	 				cond=field.name+" like \"%"+likeValue+"%\"";
- 	 				break;                
- 	 			case "doesnotcontain":
- 	 				cond=field.name+" not like \"%"+likeValue+"%\"";
- 	 				break;
- 	 				
- 	 			case "isnull":
- 	 				cond=field.name+" IS NULL";
- 	 				break;
- 	 			case "isnotnull":
- 	 				cond=field.name+" IS NOT NULL";
- 	 				break;
- 	 			case "isempty":
- 	 				cond=field.name+"=''";
- 	 				break;
- 	 			case "isnotempty":
- 	 				cond=field.name+"<>=''";
- 	 				break;
- 	 		}
- 	 		return "("+cond+")";
- 	 		
- 	 	} 	
-
- 	
- 	scope.getSqlCondition=function(filter) {
- 		var cond="",exp,logic;
-
- 		if (filter) {
- 			if (filter.filters) {
- 	 			logic=filter.logic?filter.logic:"and";
- 				
- 				for(var i=0,f;i<filter.filters.length;i++){
- 					f=filter.filters[i];
- 					exp=scope.getSqlCondition(f);
- 					cond=cond+(!cond?"":(" "+logic+" "))+exp;
- 				}
- 				if(cond)
- 					cond="("+cond+")";
- 				
- 			}else{
- 				cond=scope.getSqlExpression(filter);
- 			}
- 		}
- 		return cond;
- 	}
  		
- 	
 	$scope.queryGridNo="802";
 }]);
 
@@ -253,13 +90,13 @@ queryApp.directive("salesAnalysis",function(cliviaDDS,util){
 			    	var sql=" select rep,businessName, avg(discount) as avgDiscount,"+
 			    				"avg(commissionRate) as avgCommissionRate,sum(orderQty) as sumOrderQty,sum(orderAmt) as sumOrderAmt,sum(orderCommission) as sumOrderCommission,"+
 			    				"avg(getSMCommissionRate(discount)) as avgSMRate,"+
-			    				"sum(getSMCommissionRate(discount)*orderAmt) as sumOrderSMCommission"+
+			    				"sum(getSMCommissionRate(discount)*orderAmt) as sumOrderSMCommission "+
 	    					" from orderupcview"+
 	    					" group by repid,customerId"+
 	    					" order by rep,businessName";
 			    	
 		    		if (!!cond)
-		    			sql=sql.replace("group by"," where "+cond+" group by");
+		    			sql=sql.replace("group by"," where "+escape(cond)+" group by");
 	    					
 			    	var url="../data/generic/sql?map=true&cmd=";
 
@@ -484,14 +321,15 @@ queryApp.directive("upcSummary",function(cliviaDDS,util){
 		        	scope.$parent[scope.cName+"Scope"]=scope;
 		    	
 		    	scope.load=function(cond){
-			    	var sql="select upcId,garmentId,category,styleNo,styleName,colour,size,upcNo,sum(orderQty) as 'sumOrderQty'"+
-	    					"from orderupcview group by upcId order by category,styleNo,colour,upcNo";
+			    	var sql="select upcId,garmentId,category,styleNo,styleName,colour,size,upcNo,sum(orderQty) as 'sumOrderQty' "+
+	    					" from orderupcview group by upcId order by category,styleNo,colour,upcNo";
 	    			
 			    	var url="../data/generic/sql?map=true&cmd=";
 
 
 		    		if (!!cond)
-		    			sql=sql.replace("group by"," where "+cond+" group by");
+		    			sql=sql.replace("group by"," where "+escape(cond)+" group by");
+		    			
 		    		
 		    		url+=sql;
 		    		

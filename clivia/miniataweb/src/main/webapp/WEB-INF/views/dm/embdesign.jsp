@@ -413,7 +413,7 @@ factory("dictThread",["$http",function($http){		//service
 					else
 						c=threadColors[0];
 					
-					if(alpha)
+					if(alpha & c)
 						c={r:c.r,g:c.g,b:c.b,a:alphaSteps[i]==='1'?1:alpha}
 					colorModel.push(c);
 				}
@@ -470,9 +470,7 @@ factory("DstDesign",["$http","Event",function($http,Event){
 			this.designChanged.fireEvent([this]);
 		},
 		
-		loadDstById:function(designId){
-		
-			var url="/clivia/lib/emb/getdesign?id="+designId;
+		loadDst:function(url){
 			var self=this;
 			initDesign(this);
 			
@@ -493,18 +491,25 @@ factory("DstDesign",["$http","Event",function($http,Event){
 				});								
 		},
 		
+		loadDstById:function(designId){
+		
+			var url="/clivia/lib/emb/getdesign?id="+designId;
+			this.loadDst(url);
+		},
+		
 		loadDstByNumber:function(designNumber){
-			
+			var url="/clivia/lib/emb/getdesignbynumber?number="+designNumber;
+			this.loadDst(url);
 		},
 			
 		drawStep:function(ctx,colour,stepIndex,scale){
-		
+			colour=colour||{};
 			var stitchList=this.stitchList,
 				firstStitch=this.stepList[stepIndex].firstStitch,
 				lastStitch=this.stepList[stepIndex].lastStitch,
 				prevStitchIsJump=true;
-			
 			ctx.strokeStyle="rgba("+colour.r+","+colour.g+","+colour.b+","+(typeof colour.a==='undefined'?1:colour.a)+")";   //+",1)";
+			
 			ctx.beginPath();
 			
 			for(var i=firstStitch, currStitch; i<=lastStitch; i++){
@@ -1443,7 +1448,10 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 						draggable:true,
 						//width:$scope.embCanvas.getOriginalWidth(),
 						//height:$scope.embCanvas.getOriginalHeight(),
-						image:imageObj
+						//offset:{x:25,y:25},
+						//rotation:50,
+						image:imageObj,
+						
 					});
 					scope.embStage.add(img);
 					img.moveToBottom();
@@ -1818,6 +1826,10 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 				
 				scope.loadDesignById=function(designId){
 				    scope.dstDesign.loadDstById(designId);
+				}
+				
+				scope.loadDesignByNumber=function(designNumber){
+					scope.destDesign.loadDstByNumber(designNumber);
 				}
 
 				scope.onClick=function(){
