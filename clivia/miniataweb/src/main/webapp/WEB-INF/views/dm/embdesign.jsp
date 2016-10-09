@@ -1,224 +1,6 @@
 <script>
 angular.module("embdesign",	["kendo.directives","clivia"]).
 
-factory("Selector",function(){
-	var ANCHOR_HALF_SIZE=3,ANCHOR_SIZE=ANCHOR_HALF_SIZE*2+1;
-	var Anchor=function(x,y,id,name) {
-		var config={
-            x: x,
-            y: y,
-            width: ANCHOR_SIZE,
-			height: ANCHOR_SIZE,
-            stroke: 'black',
-           	fill: 'white',
-            strokeWidth: 1,
-            id:id,
-            name: name,
-            draggable: true,
-        };
-        this._initAnchor(config);
-		this.originalCursor='default';
-		this.curosr=name+"-resize";
-		
-        this.on('dragmove', function () { 
-        	this.getParent().update(this);
-        });
-        this.on('mousedown touchstart', function () {
-        	this.getParent().draggable(false);
-        });
-        this.on('dragend', function () {
-        	var p=this.getParent();
-        	p.draggable(p.selectedDraggable);
-            p.update(this);
-        });
-        
-        // add hover styling
-        this.on('mouseover', function () {
-        	this.originalCursor=document.body.style.cursor;
-            document.body.style.cursor =this.curosr;
-        });
-        this.on('mouseout', function () {
-            document.body.style.cursor = this.originalCursor;
-        });
-    };
-    
-    Anchor.prototype = {
-        _initAnchor: function(config) {
-            Kinetic.Rect.call(this, config);
-            },
-    };
-	Kinetic.Util.extend(Anchor, Kinetic.Rect);	
-	
-	
-	var Selector=function(){
-		
-		this.selected=null;
-		this.selectedDraggable=true;
-		this.anchors=[];
-		this.lines=[];
-		this.keepRatio=true;
-		this.ratio=1;
-		
-		var config={
-				visible:false
-				};
-		this._initSelector(config);
-	}
-	
-	Selector.prototype={
-			
-		_initSelector:function(config){
-			Kinetic.Group.call(this,config);
-			this.anchors.push(new Anchor(0,0,"nw","nwse"));
-			this.anchors.push(new Anchor(0,0,"w","ew"));
-			this.anchors.push(new Anchor(0,0,"sw","nesw"));
-			this.anchors.push(new Anchor(0,0,"n","ns"));
-			this.anchors.push(new Anchor(0,0,"s","ns"));
-			this.anchors.push(new Anchor(0,0,"ne","nesw"));
-			this.anchors.push(new Anchor(0,0,"e","ew"));
-			this.anchors.push(new Anchor(0,0,"se","nwse"));
-
-			var selector=this;
-			for(var i=0;i<8;i++){
-				anchor=this.anchors[i];
-				this.add(anchor);
-			}			
-		},
-			
-		setSelected:function(selected){
-			if(selected===this.selected) return;
-			if(this.selected!=null){
-				//remove this object from selector and put back into it's original parent. 
-				//ZIndex and draggable properties are recoverd as well.
-				var ap=this.getAbsolutePosition();
-				this.getParent().add(this.selected);
-				this.selected.setAbsolutePosition({x:ap.x+ANCHOR_HALF_SIZE,y:ap.y+ANCHOR_HALF_SIZE});
-				this.selected.setZIndex(this.getZIndex());
-				this.selected.draggable(this.selectedDraggable);
-				this.selected=null;
-			};
-			if(selected!=null){
-				this.selected=selected;
-				this.selectedDraggable=selected.draggable();
-				selected.draggable(false);
-				this.draggable(this.selectedDraggable);
-				
-				var parent=selected.getParent();
-				var zIndex=selected.getZIndex();
-				var ap=selected.getAbsolutePosition();
-							  
-				var w=selected.getWidth()+ANCHOR_HALF_SIZE*2;
-				var h=selected.getHeight()+ANCHOR_HALF_SIZE*2;
-				this.ratio=w/h;
-
-				parent.add(this);
-				this.setZIndex(zIndex);
-				this.add(selected);
-				selected.moveToBottom();
-
-				ap.x-=ANCHOR_HALF_SIZE;
-				ap.y-=ANCHOR_HALF_SIZE;
-
-				this.show();
-
-				this.adjust(ap,w,h);
-			}else{
-				
-				this.hide();
-			}
-			this.drawLayer();
-		},
-		
-		drawLayer:function(){
-			var layer=this.getLayer();
-			
-			//apply filters, otherwise image will not be resized
-			if(this.selected!=null){
-				var filters=this.selected.filters();
-				if(filters!=null && filters.length>0){
-					this.selected.cache();
-					this.selected.filters(filters);
-				}
-			}
-			
-			if(layer) layer.draw();
-		},
-		
-		update:function(anchor){
-				var ap,ap0,ap1;		//Absolute Position
-				var ow=this.getWidth(),oh=this.getHeight();		//width and height before adjusted
-		        switch (anchor.name()) {
-		            case 'nwse':
-		            	ap0=this.anchors[0].getAbsolutePosition();	//nw
-		            	ap1=this.anchors[7].getAbsolutePosition();	//se
-		            	w=Math.abs(ap1.x-ap0.x)+ANCHOR_SIZE;
-		            	h=Math.abs(ap1.y-ap0.y)+ANCHOR_SIZE;
-		            	ap=ap0;
-		            	break;
-		            case 'nesw':
-		            	ap0=this.anchors[2].getAbsolutePosition();	//sw
-		            	ap1=this.anchors[5].getAbsolutePosition();	//ne
-		            	w=Math.abs(ap1.x-ap0.x)+ANCHOR_SIZE;
-		            	h=Math.abs(ap1.y-ap0.y)+ANCHOR_SIZE;
-		            	ap={x:ap0.x,y:ap1.y};
-		            	break;
-		            case 'ns':
-		            	ap0=this.anchors[3].getAbsolutePosition();	//n
-		            	ap1=this.anchors[4].getAbsolutePosition();	//s
-		            	ap2=this.anchors[0].getAbsolutePosition();	//nw
-		            	w=this.getWidth();
-		            	h=Math.abs(ap1.y-ap0.y)+ANCHOR_SIZE;
-		            	ap={x:ap2.x,y:ap0.y};
-		            	break;
-		            case 'ew':
-		            	ap0=this.anchors[1].getAbsolutePosition();	//w
-		            	ap1=this.anchors[6].getAbsolutePosition();	//e
-		            	ap2=this.anchors[0].getAbsolutePosition();	//nw
-		            	w=Math.abs(ap1.x-ap0.x)+ANCHOR_SIZE;
-		            	h=this.getHeight();
-		            	ap={x:ap0.x,y:ap2.y};
-		            	break;
-		        }
-				
-				if(this.keepRatio)
-					if (Math.abs(w-ow)>=Math.abs(h-oh))
-						h=(w/this.ratio)|0;
-					else
-						w=(h*this.ratio)|0;
-				
-		        this.adjust(ap,w,h);
-		        
-		        this.drawLayer();
-		},
-		
-		adjust:function(ap,w,h){
-			this.setAbsolutePosition(ap);
-			this.setWidth(w);
-			this.setHeight(h);
-			
-			var selected=this.selected;
-			
-			selected.setPosition({x:ANCHOR_HALF_SIZE,y:ANCHOR_HALF_SIZE});
-			selected.setWidth(w-ANCHOR_HALF_SIZE*2);
-			selected.setHeight(h-ANCHOR_HALF_SIZE*2);
-			
-			var anchors=this.anchors;
-			
-			anchors[0].setPosition({x:0,            		y:0});
-			anchors[1].setPosition({x:0,					y:h/2-ANCHOR_HALF_SIZE});
-			anchors[2].setPosition({x:0,					y:h-ANCHOR_SIZE});
-			anchors[3].setPosition({x:w/2-ANCHOR_HALF_SIZE,	y:0});
-			anchors[4].setPosition({x:w/2-ANCHOR_HALF_SIZE,	y:h-ANCHOR_SIZE});
-			anchors[5].setPosition({x:w-ANCHOR_SIZE,		y:0});
-			anchors[6].setPosition({x:w-ANCHOR_SIZE,		y:h/2-ANCHOR_HALF_SIZE});
-			anchors[7].setPosition({x:w-ANCHOR_SIZE,		y:h-ANCHOR_SIZE});			
-		},
-	}
-	Kinetic.Util.extend(Selector, Kinetic.Group);	
-	
-	return Selector;
-}).
-
 
 factory("dictThread",["$http",function($http){		//service
 	var dictThread={
@@ -735,7 +517,11 @@ factory("EmbCanvas",["dictThread","Event","util",function(dictThread,Event,util)
 				this.colorModel=colorModel;
 				this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
 				this.embDesign.drawDesign(this.ctx,colorModel,SCREEN_DESIGN_RATIO);
-				this.imageChanged.fireEvent([this]);
+				var self = this;
+				fabric.util.loadImage(this.imageObj.toDataURL(), function(img) {
+					self.imageChanged.fireEvent([img]);
+				});
+				
 			}
 		},
 
@@ -743,7 +529,35 @@ factory("EmbCanvas",["dictThread","Event","util",function(dictThread,Event,util)
 	
 	return EmbCanvas; 
 }]).
-
+factory("DstImage",function(){
+	var dstImage=function(embCanvas){
+		this.embCanvas=embCanvas;
+		this.embCanvas.imageChanged.addListener(this,this.onImageChanged);
+		this.fabricImage = new fabric.Image();
+		this.fabricImage.set({
+			width:500,
+			height: 500,
+			lockRotation: true,
+			lockUniScaling: true,
+		});
+		this.fabricImage.setControlsVisibility({mtr: false});
+	}
+	
+	dstImage.prototype={		
+			onImageChanged: function(img){
+				this.fabricImage.setElement(img);
+			},
+			lockRoatation: function(lock){
+				this.fabricImage.set({lockRoation: lock});
+				this.fabricImage.setControlsVisibility({mtr: !lock});
+			},
+			lockUniScaling: function(lock){
+				this.fabricImage.set({lockUniScaling: lock});	
+			}
+	}
+	return dstImage;
+	
+}).
 
 factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread){
 	
@@ -1342,70 +1156,6 @@ directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThr
 	return directive;
 }]).
 
-factory("EmbStage",["Selector",function(Selector){
-	
-	var EmbStage=function(config){	//{container: 'container', width: 1024, height: 800}
-
-		this.stage=new Kinetic.Stage(config);
-		this.backGroundLayer=new Kinetic.Layer();
-		this.stage.add(this.backGroundLayer);
-		this.selector=new Selector();
-		this.currentLayer=this.backGroundLayer;
-		this.clickedOnObject=false;
-	}
-	
-	EmbStage.prototype={
-			createLayer:function(addToStage){
-				var newLayer=new Kinetic.Layer();
-				if(addToStage)
-					this.stage.add(newLayer);
-				this.currentLayer=newLayer;
-				return newLayer;
-			},
-			addLayer:function(layer){
-				this.stage.add(layer);
-			},
-			add:function(object){
-				var self=this;
-				object.on("mousedown",function(){
-					self.clickedOnObject=true;		//flag to indicates clicked on an object
-					self.selector.setSelected(object);
-				});
-				this.currentLayer.add(object);
-				this.currentLayer.draw();
-			},
-			
-			//remove current selected object from stage
-			remove:function(){
-				var object=this.selector.selected;
-				if(object){
-					this.select();
-					object.remove();
-					//this.currentLayer.draw();
-				}
-			},
-			
-			select:function(object){
-				this.selector.setSelected(object);
-			},
-			
-			onClick:function(){
-				if(!this.clickedOnObject){
-					this.selector.setSelected();
-				}else{
-					this.clickedOnObject=false;
-				}
-			},
-			
-			draw:function(){
-				this.currentLayer.draw();
-			},
-	}
-	
-	return EmbStage;
-	
-}]).
-
 directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 	
 	var templateUrl="../dm/dstpaint";
@@ -1434,27 +1184,19 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 		        		        //console.log(event.target.result)}; // data url!
 		        		    	  scope.addImage(imageObj);
 		        		      }
-		        		    	 reader.readAsDataURL(blob);
-
-		        		      
+		        		      reader.readAsDataURL(blob);
 				        }
 				    }
 				}
 				
 				scope.addImage=function(imageObj){
-					var img=new Kinetic.Image({
-						x:0,
-						y:0,
-						draggable:true,
-						//width:$scope.embCanvas.getOriginalWidth(),
-						//height:$scope.embCanvas.getOriginalHeight(),
-						//offset:{x:25,y:25},
-						//rotation:50,
-						image:imageObj,
-						
+					var img=new fabric.Image(imageObj,{
+						width: 640, 
+						height: 480
 					});
 					scope.embStage.add(img);
-					img.moveToBottom();
+					img.sendToBack();
+					scope.embStage.renderAll();
 				}
 				
 				scope.getPrintModel=function(embMatcher,settings){
@@ -1840,8 +1582,8 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 				
 			}, //end of link function
 			
-			controller:["$scope","util","DstDesign","EmbCanvas","EmbStage",
-			            	function($scope,util,DstDesign,EmbCanvas,EmbStage){
+			controller:["$scope","util","DstDesign","EmbCanvas", "DstImage",
+			            	function($scope,util,DstDesign,EmbCanvas, DstImage){
 				//{code:"S0561",r:255,g:0,b:0},{code:"S1011",r:125,g:125,b:125},{code:"S1043",r:0,g:0,b:255}
 				//var runningStepList=new kendo.data.ObservableArray([{code:"S1043",codeIndex:1}]);
 				
@@ -1853,31 +1595,24 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					
 			    $scope.dstDesign=new DstDesign();
 
-			    $scope.embStage=new EmbStage({container:'stagecontainer',
-			        width: 2000,
-			        height:2000});
+			    $scope.embStage=new fabric.Canvas('stagecontainer',{
+			    	width: 2000,
+			        height:2000,
+			        preserveObjectStacking: true,
+			        
+			    });
+			    
+			    $scope.embStage.onClick=function(){
+			    	
+			    }
 				
 				$scope.embCanvas=new EmbCanvas($scope.dstDesign);
+				$scope.dstImage = new DstImage($scope.embCanvas);
+				$scope.embStage.add($scope.dstImage.fabricImage);
+				$scope.embStage.renderAll();
 
-				$scope.embImage=new Kinetic.Image({
-					x:0,
-					y:0,
-					draggable:true,
-					width:$scope.embCanvas.getOriginalWidth(),
-					height:$scope.embCanvas.getOriginalHeight(),
-					image:$scope.embCanvas.imageObj
-				});
-				
-				$scope.embStage.add($scope.embImage);
-				
-				$scope.onImageChanged=function(e){
-					
-					$scope.embStage.draw();
-				}
-				
 				$scope.onDesignChanged=function(e){
-					//e is dstDesign
-					$scope.embStage.select();		//deselect all objects
+					
 					
 					if($scope.threadMatcher 
 							&&  $scope.threadMatcher.embCanvas 
@@ -1885,13 +1620,15 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 						
 						$scope.threadMatcher.initColourwayList();
 					}
-					$scope.embImage.setWidth($scope.embCanvas.getOriginalWidth());
-					$scope.embImage.setHeight($scope.embCanvas.getOriginalHeight());
+					$scope.dstImage.fabricImage.setWidth($scope.embCanvas.getOriginalWidth());
+					$scope.dstImage.fabricImage.setHeight($scope.embCanvas.getOriginalHeight());
 					$scope.embCanvas.drawDesign();
 				}
 				
 				$scope.dstDesign.designChanged.addListener($scope.embCanvas,$scope.onDesignChanged);
-				$scope.embCanvas.imageChanged.addListener($scope.embStage,$scope.onImageChanged);
+				$scope.embCanvas.imageChanged.addListener($scope.embStage,function(){
+					$scope.embStage.renderAll();
+				});
 				
 				$scope.setColourway=function(threads,runningSteps){
 					$scope.threadMatcher.setColourway(threads,runningSteps);
@@ -1931,204 +1668,6 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 	}
 	
 	return directive;
-}]).
-
-directive("dstEditor",["EmbMatcher","util","$http",function(EmbMatcher,util,$http){
-	
-	var templateUrl="../dm/dsteditor";
-	
-	var directive={
-			restrict:'EA',
-			replace:true,
-			scope:{
-				cName:'@dstEditor',
-				cEmbDataSource:'=',
-				cColourwayDataSource:'=',
-			},
-	
-			templateUrl:templateUrl,
-			
-			link:function(scope,element,attrs){
-			    var populate=function(data){
-					scope.dataSet.info=data.info;
-					var itemNames=["colourways","samples"];
-					for(var i=0,scopeItems,dataItems,itemName;i<itemNames.length;i++){
-						itemName=itemNames[i];
-						dataItems=data[itemName];
-						if(dataItems){
-							scopeItems=scope.dataSet[itemName];
-							for(var j=0;j<dataItems.length;j++){
-								scopeItems.push(dataItems[j]);
-							}
-						}
-					}
-			    }
-
-				var clearDataSet=function(){
-			    	scope.dataSet.info={};
-			    	scope.dataSet.colourways.splice(0,scope.dataSet.colourways.length);
-			    	scope.dataSet.samples.splice(0,scope.dataSet.samples.length);
-			    	scope.dataSet.deleteds=[];
-				}
-				
-			    scope.clear=function(){
-			    	scope.searchDesignNumber=null;
-			    	clearDataSet();
-			    	scope.myDstPaint.clear();
-			    	scope.myDstPaint.setBackgroundColour("#FFFFFF");
-			    	scope.$apply();
-			    }
-			    
-			    scope.loadDesignById=function(id){
-			    	scope.clear();
-			    	
-			    	var url="../lib/emb/get-embdesign?id="+id;
-					$http.get(url).then(
-						function(data, status, headers, config) {
-							if(data.data){
-					    		populate(data.data);
-							}
-						},function(data, status, headers, config) {
-					});
-
-			    	scope.myDstPaint.loadDesignById(id);
-
-			    }
-			    
-			    scope.saveDesign=function(){
-			    	//if(!validDesign()) return;
-					var url="../lib/emb/save-embdesign";
-					
-					$http.post(url,scope.dataSet).then(
-						  function(data, status, headers, config) {
-								if(data.data){
-									clearDataSet();
-						    		populate(data.data);
-								}else{
-									alert("failed to save:"+JSON.stringify(data));
-								}
-						  },function(data, status, headers, config) {
-							  alert( "failure message: " + JSON.stringify(data));
-						  });		
-			    }
-			    
-			    var getColorwayDiFromPaint=function(){
-			    	var colourway=scope.myDstPaint.getColourway();
-			    	var thumbnail=scope.myDstPaint.getThumbnail();
-			    	var bgColour=scope.myDstPaint.getBackgroundColour();
-			    	var pos=thumbnail.indexOf(",");
-			    	thumbnail=pos>0?thumbnail.substr(pos+1):"";
-			    	
-			    	var di={
-			    		threads:colourway.threads,
-			    		runningSteps:colourway.runningSteps,
-			    		backgroundColour:bgColour,
-			    		thumbnail:thumbnail,
-			    	}
-			    	return di;
-			    }
-			    
-			    scope.addColourway=function(){
-			    	var di=getColorwayDiFromPaint();
-			    	di.libEmbDesignId=scope.dataSet.info.id;
-			    	scope.cgw.addRow(di);
-			    }
-			    
-			    scope.newColourway=function(){
-			    	scope.myDstPaint.threadMatcher.embCanvas.setColourway("","");
-			    	scope.myDstPaint.threadMatcher.initColourwayList();
-			    	scope.myDstPaint.threadMatcher.embCanvas.drawDesign();
-			    }
-			    
-			    scope.removeColourway=function(){
-					var dataItem=scope.cgw.getCurrentDataItem();
-			    	var confirmed=true;
-				    if (dataItem) {
-				        if (dataItem.threads&&dataItem.runningSteps){
-				        	confirmed=confirm('Please confirm to delete the selected row.');	
-				        }
-				        if(confirmed){
-					    	if(dataItem.id){
-					    		var item= {entity:"libEmbDesignColourway",id:dataItem.id};
-								scope.dataSet.deleteds.push(item);				    	
-					    	}
-							scope.cgw.deleteRow(dataItem);
-				        }
-				    }else {
-			        	alert('Please select a  colorway  to delete.');
-			   		}
-			    	
-			    }
-			    
-			    scope.updateColourway=function(){
-			    	var currentCell=scope.cgw.grid.current();
-			    	if(currentCell){
-				    	var diCurrent=scope.cgw.getCurrentDataItem();
-				    	var diPaint=getColorwayDiFromPaint();
-				    	if(diCurrent&&diPaint){
-				    		diCurrent.threads=diPaint.threads;
-				    		diCurrent.runningSteps=diPaint.runningSteps;
-				    		diCurrent.backgroundColour=diPaint.backgroundColour;
-				    		diCurrent.thumbnail=diPaint.thumbnail;
-				    		diCurrent.isDirty=true;
-				    	}
-				    	scope.$apply();
-				    	var columnIndex=scope.cgw.getColumnIndex("thumbnail");
-		                var template = kendo.template(scope.cgw.gridColumns[columnIndex].template);
-		            	var cell = currentCell.parent().children('td').eq(columnIndex);
-		                cell.html(template(diCurrent));		                    
-			    	}else{
-			        	alert('Please select a  colorway  to update.');
-			    	}
-			    }
-			    
-			    scope.normalizeColourway=function(){
-			    	scope.myDstPaint.threadMatcher.embCanvas.normalizeColourway();
-			    	scope.myDstPaint.threadMatcher.parseColourway();
-			    }
-				
-
-				
-			},
-			controller:["$scope","ColourwayGridWrapper",function($scope,ColourwayGridWrapper){
-				
-				$scope.cgw=new ColourwayGridWrapper("colourwayGrid");	
-				$scope.cgw.setColumns();
-
-				var onColourwayGridDoubleClicked=function(e){
-					if(e.currentTarget){
-						var di=$scope.colourwayGrid.dataItem(e.currentTarget);
-						if(di&&di.threads&&di.runningSteps){
-							$scope.myDstPaint.setColourway(di.threads,di.runningSteps);
-							$scope.myDstPaint.setBackgroundColour(di.backgroundColour);
-						}
-					}
-				}
-				
-				$scope.$on("kendoWidgetCreated", function(event, widget){
-					if (widget ===$scope[$scope.cgw.name]) {
-			        	$scope.cgw.wrapGrid(widget);
-						widget.bind("dataBound",function(e){
-							this.tbody.find("tr").dblclick(onColourwayGridDoubleClicked);
-						});
-			        }
-			    });				
-				
-				$scope.colourwayGridOptions={
-						autoSync: true,
-				        columns: $scope.cgw.gridColumns,
-				        dataSource: $scope.cColourwayDataSource,
-				        pageable:false,
-				        selectable: "row",
-				        navigatable: true,
-				        resizable: true,
-				}
-						
-			}],
-	}
-	
-	return directive;
-
 }]);
 
 

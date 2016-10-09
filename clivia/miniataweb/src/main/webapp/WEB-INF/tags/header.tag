@@ -9,8 +9,8 @@
 
 
 	<script src="/clivia/resources/js/jquery/jquery.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.6.5/fabric.min.js"></script>	
 	<script src="/clivia/resources/js/kinetic/kinetic-v5.1.0.js"></script>	
-
 	<script src="/clivia/resources/js/angularjs/1.3.5/angular.js"></script>	
 <!--<script data-require="angular.js@*" data-semver="1.3.5" src="https://code.angularjs.org/1.3.5/angular.js"></script> -->
 

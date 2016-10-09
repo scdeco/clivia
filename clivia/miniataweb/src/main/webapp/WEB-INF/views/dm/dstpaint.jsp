@@ -9,9 +9,9 @@
       	
       		<div>
       			<input type="text" ng-paste="handlePaste($event)" value='Press "Ctrl+V" or right click here and choose "paste" to paste an image.'>
-   				<div id="stagecontainer" ng-style="{'background-color':threadMatcher.backgroundColour}" 
+   				<canvas id="stagecontainer"ng-style="{'background-color':threadMatcher.backgroundColour}" 
    					 				ng-click="onClick()">
-				</div>
+				</canvas>
 			</div>	<!-- first-pane-->
 			
       		<div>
