@@ -1,11 +1,10 @@
 <script>
 angular.module("embdesign",	["kendo.directives","clivia"]).
 
-
 factory("dictThread",["$http",function($http){		//service
 	var dictThread={
 		threads:[],
-		idxCode:{},
+		idxCode:{},					//index of threads[] on code 
 		defaultThreadColor:{r:100,g:100,b:100,a:0.05},
 		cursorThreadColor:{r:0,g:255,b:0,a:1},
 		defaultThreadColors:[{r:0,	g:255,	b:0 },
@@ -53,7 +52,7 @@ factory("dictThread",["$http",function($http){		//service
 			return c;
 		},
 
-		//convert{r: ,g:, b:} to "#FFAABB"
+		//convert{r: ,g:, b:} to Hex "#FFAABB"
 		convertRgbToHexColor:function(c){
 			c=c||{r:255,g:255,b:255};
 			return "#" + ((1 << 24) + (c.r << 16) + (c.g << 8) + c.b).toString(16).slice(1);
@@ -238,7 +237,6 @@ factory("DstDesign",["$http","Event",function($http,Event){
 		initDesign(this);
 		this.designChanged=new Event();
 		if(!!id) this.getDst(id);
-		
 	}
 	
 	DstDesign.prototype={
@@ -326,6 +324,7 @@ factory("DstDesign",["$http","Event",function($http,Event){
 		
 }]).
 
+//wrap a invisble canvas for actural desing drawing
 factory("EmbCanvas",["dictThread","Event","util",function(dictThread,Event,util){
 	
 	var SCREEN_PPM=1280/340,SCREEN_DESIGN_RATIO=SCREEN_PPM/10;
@@ -529,6 +528,7 @@ factory("EmbCanvas",["dictThread","Event","util",function(dictThread,Event,util)
 	
 	return EmbCanvas; 
 }]).
+
 factory("DstImage",function(){
 	var dstImage=function(embCanvas){
 		this.embCanvas=embCanvas;
@@ -559,7 +559,9 @@ factory("DstImage",function(){
 	
 }).
 
-factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread){
+directive("threadMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread){
+	
+	var templateUrl="../dm/threadmatcher";
 	
 	var MAX_THREAD_COUNT=15;
 	var paletteColors=[
@@ -580,7 +582,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			}, {			
 				name:"stitchCount",
 			    title: "St.",
-			    width: 45,
+			    width: 50,
 			    attributes:{style:"text-align:right;"},
 			    template:"<span>#= threadStitchCount #</span>"
 			}, {			
@@ -603,7 +605,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			}, {			
 				name:"stitchCount",
 			    title: "St.",
-			    width: 45,
+			    width: 50,
 			    attributes:{style:"text-align:right;"},
 			    template:"<span>#= stepStitchCount # </span>"
 			}, {			
@@ -621,474 +623,8 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			    attributes:{style:"text-align:right;"},
 			    template:"<span>#= threadIndex #</span>",
 			    width: 30
-			}];
+			}];	
 	
-	var embMatcher=function(){
-		
-		this.embCanvas={};
-
-		this.gwThread=new GridWrapper("embThreadGrid",threadGridColumns);
-		this.gwThread.enableEnterMoveDown();
-		
-		this.gwStep=new GridWrapper("embStepGrid",stepGridColumns);
-		this.gwStep.enableEnterMoveDown();
-		this.gwStep.dragSorted=function(){this.parseRunningSteps();};	//call back function
-
-		//as dataSource of 'dstThreadGrid' and 'dstStepGrid' which are wrapped by gwThread and gwStep respectfully
-		this.threadList=new kendo.data.ObservableArray([]);
-		this.runningStepList=new kendo.data.ObservableArray([]);
-	}
-	
-	embMatcher.prototype={
-			
-			//set design of this canvas to null and the designchanged event will be raised
-			clearDesign:function(){
-				this.embCanvas.embDesign.clearDesign();
-			},
-			
-			//clear contents(code,colour) of dataSource of threadGrid
-			clearThreadList:function(){			
-				for(var i=0;i<this.threadList.length;i++){
-					this.threadList[i].code="";
-					this.threadList[i].colour="";
-					this.threadList[i].threadStitchCount="";
-				}
-			},
-			
-			//clear contents(code,threadIndex) of dataSource of stepGrid
-			clearRunningStepList:function(){		
-				for(var i=0;i<this.runningStepList.length;i++){
-					this.runningStepList[i].code="";
-					this.runningStepList[i].threadIndex="";
-				}
-			},
-			
-			//initialize threadList(threadGrid) and runningStepList(stepGrid) for the design of this matcher
-			initColourwayList:function(){	
-				this.threadList.splice(0,this.threadList.length)
-				this.runningStepList.splice(0,this.runningStepList.length)
-				if(this.embCanvas.embDesign){
-					var design=this.embCanvas.embDesign,
-						stepList=design.stepList,
-						stepCount=design.stepCount,
-						threadCount=stepCount<MAX_THREAD_COUNT?stepCount:MAX_THREAD_COUNT;
-					
-					for(var i=0;i<threadCount;i++)
-						this.threadList.push({code:"",colour:"",threadStitchCount:""});
-					
-					for(var i=0,stepStitchCount;i<stepCount;i++){
-						stepStitchCount=(stepList[i].lastStitch-stepList[i].firstStitch).toString();
-						this.runningStepList.push({code:"",threadIndex:"",stepStitchCount:stepStitchCount});
-					}
-				}
-			},
-			
-			
-			//from this.threadList to this.embCanvas.threadCodes
-			composeThreads:function(){	
-				var threads=[],thread;
-				for(var i=0;i<this.threadList.length;i++){
-					thread=this.threadList[i];
-					if(!thread.code)
-						break;
-					threads.push(thread.code);
-				}
-				if(threads!==this.embCanvas.threadCodes){
-					this.embCanvas.threadCodes=threads.join();
-				}
-			},
-			
-			//from this.runningStepList to this.embCanvas.runningSteps
-			composeRunningSteps:function(){	
-				var steps=[],step;
-				for(var i=0;i<this.runningStepList.length;i++){
-					step=this.runningStepList[i];
-					if(parseInt(step.stepStitchCount)===0){
-						steps.push("0");
-					}else{
-						if(!step.code)
-							break;
-						steps.push(step.threadIndex);
-					}
-				}
-				if(steps!==this.embCanvas.runningSteps){
-					this.embCanvas.runningSteps=steps.join('-');
-				}
-			},
-
-			//from this.embCanvas.threadCodes to this.threadList
-			//threadCodes must be normalized before calling this method
-			parseThreads:function(){  
-				var codes=this.embCanvas.threadCodes;
-				
-				this.clearThreadList();
-				if(codes){
-					var codeList=codes.split(",");
-					
-					if(codeList.length<=this.threadList.length){
-						for(var i=0,code,c,t;i<codeList.length;i++){
-							code=codeList[i];
-							c=dictThread.getThreadColorHex(code);
-							t=this.threadList[i];
-							t.colour=c;
-							t.code=code;
-						}
-					}
-				}
-			},
-			
-			//from this.embCanvas.runningSteps to this.runningStepList
-			//runningSteps must be normalized before calling this method
-			parseRunningSteps:function(){	
-				var runningSteps=this.embCanvas.runningSteps;
-				this.clearRunningStepList();
-				if(runningSteps){
-					idxList=runningSteps.split('-');
-					if(idxList.length<=this.runningStepList.length){
-						for(var i=0,t;i<idxList.length;i++){
-							t=this.getThread(idxList[i]);
-							if(t){
-								step=this.runningStepList[i];
-								step.code=t.code;
-								step.threadIndex=idxList[i];
-							}
-						}
-					}
-				}
-			},
-			
-			
-			parseColourway:function(){
-				this.parseThreads();		//populate
-				this.parseRunningSteps();	//populate
-				this.setThreadStitchCount();
-                this.gwThread.grid.refresh();
-                this.gwStep.grid.refresh();
-                this.drawDesign();
-
-			},
-			
-			getThreadIndex:function(threadCode){
-				var index=-1;
-				if(threadCode)
-					for(var i=0;i<this.threadList.length;i++){
-						if(this.threadList[i].code===threadCode){
-							index=i;
-							break;
-						}
-					}
-				return index;
-			},
-			
-			getThread:function(threadIndex){
-				var index=isNaN(threadIndex)?0:parseInt(threadIndex);
-				var thread=(index>0 && index<=this.threadList.length)?this.threadList[--index]:"";
-				return thread;
-			},
-			
-			
-			getThreadColor:function(threadIndex){
-				var thread=this.getThread(threadIndex);
-				var	colour=thread?thread.colour:"";
-				return colour;
-			},
-
-			setThreadStitchCount:function(){
-				for(var i=0,thread,c,threadIndex;i<this.threadList.length;i++){
-					thread=this.threadList[i];
-					c=0;
-					threadIndex=i+1;
-					for(var j=0,step;j<this.runningStepList.length;j++){
-						step=this.runningStepList[j];
-						if(step.threadIndex==threadIndex && step.stepStitchCount){
-							c+=parseInt(step.stepStitchCount);
-						}
-					}
-					thread.threadStitchCount=c?c:"";
-				}
-			},
-			
-			setColourway:function(threads,runningSteps){
-				
-				this.embCanvas.setColourway(threads,runningSteps);
-
-				this.embCanvas.normalizeThreadCodes();
-				this.embCanvas.normalizeRunningSteps();
-				
-				this.parseColourway();
-			},
-			
-			getColourway:function(){
-				return this.embCanvas.getColourway();
-			},
-			
-			getThumbnail:function(){
-				return this.embCanvas.getThumbnail();
-			},
-			
-			setEmbCanvas:function(embCanvas){
-				this.embCanvas=embCanvas;
-				this.initColourwayList();
-			},
-			
-			//editing mode, called from events of gwStep.grid 
-			drawDesign:function(gw){
-
-				var colourway={};
-				if(!gw){
-					this.embCanvas.drawDesign(colourway);
-					return;
-				}
-				var isStepGrid=gw.gridName==="embStepGrid";
-					
-				var cell=gw.getEditingCell();
-				if(!cell)
-					cell=gw.getCurrentCell();
-				
-				
-				if (cell){
-					var cellIndex=cell.cellIndex;
-					
-					var row=gw.getRow(cell);						//cellIndex===3?this.gwStep.getEditingRow():this.gwStep.getCurrentRow();
-					if(!row)
-						return;
-					
-					var rowIndex=row.rowIndex+(isStepGrid?0:1);
-					
-					var steps="",alphaSteps="";
-					
-					stepList=this.runningStepList;
-					
-					for(var i=0,idx,a;i<stepList.length;i++){
-						idx=parseInt(stepList[i].threadIndex);
-						if(!idx)
-							idx=0;
-						a=1;
-						
-						var isSelected=(isStepGrid?i:idx)===rowIndex;
-							
-						switch(cellIndex){					
-							case 1:						//stitches column
-								if(isSelected){
-									idx=(idx>0)?idx:16;
-									a="1";
-								}else{
-									a="0";
-								}
-								break;
-							case 3:							//code column
-								if(isSelected){
-									idx=16;
-									a="1";
-								}else{
-									a=idx>0?'1':'0';
-								}
-								break;
-							case 2:							//colour column
-								if(isSelected){
-									idx=(idx>0)?idx:16;
-									a="1";
-								}else{
-									a="0";
-								}
-								break;
-							case 0:							//stepIndex
-								if(isSelected){
-									idx=16;
-									a="1";
-								}else{
-									a="0";
-								}
-								
-						};
-						
-						steps+="-"+idx;
-						alphaSteps+="-"+a;
-					}
-					colourway.runningSteps=steps.substring(1);
-					colourway.alphaSteps=alphaSteps.substring(1);
-					colourway.alpha=cellIndex==1?0.15:0.03;
-				
-					this.embCanvas.drawDesign(colourway);
-				}
-			}, //end of drawDesign()
-			
-			
-			getThreadGridOptions:function(scope){
-				var self=this;
-				return	{
-					columns:threadGridColumns,
-			        editable: true,
-			        selectable: "cell",
-			        navigatable: true,			
-			        autoSync:true,
-					dataSource:self.threadList,
-					
-					change:function(e){
-						console.log("step change:");
-						self.drawDesign(self.gwThread);
-					},
-					
-					edit:function(e){
-						console.log("step  edit:");
-						self.drawDesign(self.gwThread);
-				    },					
-					save:function(e){
-
-						if (typeof e.values=== 'undefined')
-				       			return;
-			       		if (typeof e.values.code=== 'undefined')
-			       			return;
-			       		
-			       		var code=dictThread.normalizeThreadCode(e.values.code);
-			       		if(code===e.model.code)
-			       			return;
-			       			
-	  	        		e.preventDefault();
-
-	  	        		var index=(self.gwThread.getDataItemIndex(e.model)+1).toString();
-	  	        		
-		          		e.model.set("code","");
-		          		e.model.set("colour","");
-	  	        		if(self.getThreadIndex(code)<0){	//code not exists in the threadList
-		  	        		var colour=dictThread.getThreadColorHex(code);
-		  	        		if(colour){
-		  	        			e.model.set("code",code);
-		  	        			e.model.set("colour",colour);
-		  	        		}
-	  	        		}
-	  	        		if(e.model.get("code")==""){
-	  	        			self.gwThread.enterKeyDown=false;
-	  	        		}
-	  	        		
-	  	        		self.gwThread.updateTemplateColumns(e);
-	                    
-	                    for(var i=0,steps=self.runningStepList;i<steps.length;i++){
-	                    	if(steps[i].threadIndex===index){
-	                    		steps[i].code=code;
-	                    		steps[i].colour=colour;
-	                    	}
-	                    }
-	                    self.gwStep.grid.refresh();
-	                    self.composeThreads();
-						self.drawDesign(self.gwThread);
-						scope.$apply();
-					}
-				} 
-			},//end of thread grid option
-			
-			getStepGridOptions:function(scope){
-				var self=this;
-				var saving=false; //prevent recusive calling saving event function;
-				return {
-					columns:stepGridColumns,
-			        editable: true,
-			        selectable: "cell",
-			        navigatable: true,	
-			        autoSync:true,
-					dataSource:self.runningStepList,
-
-					change:function(e){
-						self.drawDesign(self.gwStep);
-					},
-					
-					edit:function(e){
-						self.drawDesign(self.gwStep);
-				    },
-				    
-					save:function(e){
-						if(saving) return;
-						saving=true;
-						
-			       		if(typeof e.values.code!== 'undefined'){
-
-			       			var code=e.values.code;
-		  	        		if(code.trim()==="."){
-		  	        			self.gwStep.copyPreviousRow();
-		  	        			var di=self.gwStep.getCurrentDataItem();
-				          		e.model.set("code",di.code);
-				          		e.model.set("threadIndex",di.threadIndex);
-		  	        			
-		  	        		}else{
-				          		e.model.set("code","");
-				          		e.model.set("threadIndex","");
-
-			                	 console.log("step save3:");
-				          		
-			  	        		code=dictThread.normalizeThreadCode(code);
-			       				var thread=null;
-			  	        		var index=parseInt(code);
-			  	        		if(index>0 && index<=self.threadList.length){
-			  	        			index--;
-			  	        		}else{
-			  	        			index=self.getThreadIndex(code);
-			  	        		}
-			  	        		
-			  	        		if(index<0){
-			  	        			var colour=dictThread.getThreadColorHex(code);
-			  	        			if(colour){
-			  	        				for(index=0;index<self.threadList.length;index++)
-			  	        					if(!self.threadList[index].code)
-			  	        						break
-				  	        			if(index===self.threadList.length)	
-				  	        				index=-1;
-				  	        			else{
-				  	        				thread=self.threadList[index];
-				  	        				thread.code=code;
-				  	        				thread.colour=colour;
-				  	        				
-				  	        				//self.gwThread.grid.refresh();
-				  	        				self.composeThreads();
-				  	        			}
-			  	        			}
-			  	        		}
-			  	        		
-			  	        		if(index>=0){
-			  	        			thread=self.threadList[index];
-			  	        			e.model.set("code",thread.code);
-					          		e.model.set("threadIndex",(index+1).toString());
-			  	        		}
-		  	        		}
-		  	        		
-		  	        		self.setThreadStitchCount();
-
-		  	        		//The grid will not update templte column automatically when change data value in save event	
-		                	self.gwStep.updateTemplateColumns(e);
-		                	 
-		                    self.composeRunningSteps();
-		                    
-		                    //let model accept code value that set by above code
-		  	        		e.preventDefault();
-		  	        		
-							self.drawDesign(self.gwStep);
-							self.gwThread.grid.refresh();
-							scope.$apply();
-			          	}
-						saving=false;
-			       		
-					},	//end of save
-					
-		       		dataBinding:function(e){
-		       			//create a globle variable for template of the colour column to show step colour 
-		       			renderingPaint=self;
-		       		}
-
-				}
-			},//end of stepGridOptions
-			
-			getBackgroundColourPaletteOptions:function(){
-				return {
-				    palette: paletteColors
-				}
-			}
-	}
-	
-	return embMatcher;
-}]).
-
-directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThread){
-	
-	var templateUrl="../dm/threadmatcher";
 	
 	var directive={
 			restrict:'EA',
@@ -1102,20 +638,300 @@ directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThr
 			
 			link:function(scope){
 				
-				scope.parseThreads=function(){
-					scope.embMatcher.embCanvas.normalizeThreadCodes();
-					scope.embMatcher.parseColourway();
-				}
+				scope.clearDesign=function(){
+					scope.embCanvas.embDesign.clearDesign();
+				};
 				
-				scope.parseSteps=function(){
-					scope.embMatcher.embCanvas.normalizeRunningSteps();
-					scope.embMatcher.parseColourway();
-				}
+				//clear contents(code,colour) of dataSource of threadGrid
+				scope.clearThreadList=function(){			
+					for(var i=0;i<this.threadList.length;i++){
+						scope.threadList[i].code="";
+						scope.threadList[i].colour="";
+						scope.threadList[i].threadStitchCount="";
+					}
+				};
+				
+				//clear contents(code,threadIndex) of dataSource of stepGrid
+				scope.clearRunningStepList=function(){		
+					for(var i=0;i<scope.runningStepList.length;i++){
+						scope.runningStepList[i].code="";
+						scope.runningStepList[i].threadIndex="";
+					}
+				};
+				
+				
+				
+				//from this.threadList to this.embCanvas.threadCodes
+				scope.composeThreads=function(){	
+					var threads=[],thread;
+					for(var i=0;i<scope.threadList.length;i++){
+						thread=scope.threadList[i];
+						if(!thread.code)
+							break;
+						threads.push(thread.code);
+					}
+					if(threads!==scope.embCanvas.threadCodes){
+						scope.embCanvas.threadCodes=threads.join();
+					}
+				};
+				
+				//from this.runningStepList to this.embCanvas.runningSteps
+				scope.composeRunningSteps=function(){	
+					var steps=[],step;
+					for(var i=0;i<scope.runningStepList.length;i++){
+						step=scope.runningStepList[i];
+						if(parseInt(step.stepStitchCount)===0){
+							steps.push("0");
+						}else{
+							if(!step.code)
+								break;
+							steps.push(step.threadIndex);
+						}
+					}
+					if(steps!==acope.embCanvas.runningSteps){
+						scope.embCanvas.runningSteps=steps.join('-');
+					}
+				};
+
+				
+				//from this.embCanvas.threadCodes to this.threadList
+				//threadCodes must be normalized before calling this method
+				scope.parseThreads=function(){  
+					var codes=scope.embCanvas.threadCodes;
+					scope.clearThreadList();
+					if(codes){
+						var codeList=codes.split(",");
+						
+						if(codeList.length<=scope.threadList.length){
+							for(var i=0,code,c,t;i<codeList.length;i++){
+								code=codeList[i];
+								c=dictThread.getThreadColorHex(code);
+								t=scope.threadList[i];
+								t.colour=c;
+								t.code=code;
+							}
+						}
+					}
+				};
+				
+				//from this.embCanvas.runningSteps to this.runningStepList
+				//runningSteps must be normalized before calling this method
+				scope.parseRunningSteps=function(){	
+					var runningSteps=scope.embCanvas.runningSteps;
+					scope.clearRunningStepList();
+					if(runningSteps){
+						idxList=runningSteps.split('-');
+						if(idxList.length<=scope.runningStepList.length){
+							for(var i=0,t;i<idxList.length;i++){
+								t=scope.getThread(idxList[i]);
+								if(t){
+									step=scope.runningStepList[i];
+									step.code=t.code;
+									step.threadIndex=idxList[i];
+								}
+							}
+						}
+					}
+				};
+				
+				
+				scope.parseColourway=function(){
+					scope.embCanvas.normalizeThreadCodes();
+					scope.embCanvas.normalizeRunningSteps();
+					scope.parseThreads();		//populate
+					scope.parseRunningSteps();	//populate
+					scope.setThreadStitchCount();
+	                scope.gwThread.grid.refresh();
+	                scope.gwStep.grid.refresh();
+	                scope.drawDesign();
+				};
+				
+				scope.getThreadIndex=function(threadCode){
+					var index=-1;
+					if(threadCode)
+						for(var i=0;i<scope.threadList.length;i++){
+							if(scope.threadList[i].code===threadCode){
+								index=i;
+								break;
+							}
+						}
+					return index;
+				};
+				
+				scope.getThread=function(threadIndex){
+					var index=isNaN(threadIndex)?0:parseInt(threadIndex);
+					var thread=(index>0 && index<=scope.threadList.length)?scope.threadList[--index]:"";
+					return thread;
+				};
+				
+				
+				scope.getThreadColor=function(threadIndex){
+					var thread=scope.getThread(threadIndex);
+					var	colour=thread?thread.colour:"";
+					return colour;
+				};
+
+				scope.setThreadStitchCount=function(){
+					for(var i=0,thread,c,threadIndex;i<scope.threadList.length;i++){
+						thread=scope.threadList[i];
+						c=0;
+						threadIndex=i+1;
+						for(var j=0,step;j<scope.runningStepList.length;j++){
+							step=scope.runningStepList[j];
+							if(step.threadIndex==threadIndex && step.stepStitchCount){
+								c+=parseInt(step.stepStitchCount);
+							}
+						}
+						thread.threadStitchCount=c?c:"";
+					}
+				};
+				
+				scope.setColourway=function(threads,runningSteps){
+					
+					scope.embCanvas.setColourway(threads,runningSteps);
+
+					scope.embCanvas.normalizeThreadCodes();
+					scope.embCanvas.normalizeRunningSteps();
+					
+					scope.parseColourway();
+				};
+				
+				scope.getColourway=function(){
+					return scope.embCanvas.getColourway();
+				};
+				
+				scope.getThumbnail=function(){
+					return scope.embCanvas.getThumbnail();
+				};
+				
+				scope.setEmbCanvas=function(embCanvas){
+					scope.embCanvas=embCanvas;
+					scope.initColourwayList();
+				};
+				
+				//editing mode, called from events of gwStep.grid 
+				scope.drawDesign=function(gw){
+
+					var colourway={};
+					if(!gw){
+						scope.embCanvas.drawDesign(colourway);
+						return;
+					}
+					var isStepGrid=gw.gridName==="embStepGrid";
+						
+					var cell=gw.getEditingCell();
+					if(!cell)
+						cell=gw.getCurrentCell();
+					
+					
+					if (cell){
+						var cellIndex=cell.cellIndex;
+						
+						var row=gw.getRow(cell);						//cellIndex===3?this.gwStep.getEditingRow():this.gwStep.getCurrentRow();
+						if(!row)
+							return;
+						
+						var rowIndex=row.rowIndex+(isStepGrid?0:1);
+						
+						var steps="",alphaSteps="";
+						
+						stepList=scope.runningStepList;
+						
+						for(var i=0,idx,a;i<stepList.length;i++){
+							idx=parseInt(stepList[i].threadIndex);
+							if(!idx)
+								idx=0;
+							a=1;
+							
+							var isSelected=(isStepGrid?i:idx)===rowIndex;
+								
+							switch(cellIndex){					
+								case 1:						//stitches column
+									if(isSelected){
+										idx=(idx>0)?idx:16;
+										a="1";
+									}else{
+										a="0";
+									}
+									break;
+								case 3:							//code column
+									if(isSelected){
+										idx=16;
+										a="1";
+									}else{
+										a=idx>0?'1':'0';
+									}
+									break;
+								case 2:							//colour column
+									if(isSelected){
+										idx=(idx>0)?idx:16;
+										a="1";
+									}else{
+										a="0";
+									}
+									break;
+								case 0:							//stepIndex
+									if(isSelected){
+										idx=16;
+										a="1";
+									}else{
+										a="0";
+									}
+									
+							};
+							
+							steps+="-"+idx;
+							alphaSteps+="-"+a;
+						}
+						colourway.runningSteps=steps.substring(1);
+						colourway.alphaSteps=alphaSteps.substring(1);
+						colourway.alpha=cellIndex==1?0.15:0.03;
+					
+						scope.embCanvas.drawDesign(colourway);
+					}
+				}; //end of drawDesign()
+				
 
 			}, //end of link function
 			
 			controller:function($scope){
-				$scope.embMatcher=new EmbMatcher();
+				
+				
+				$scope.gwThread=new GridWrapper("embThreadGrid",threadGridColumns);
+				$scope.gwThread.enableEnterMoveDown();
+				
+				$scope.gwStep=new GridWrapper("embStepGrid",stepGridColumns);
+				$scope.gwStep.enableEnterMoveDown();
+				$scope.gwStep.dragSorted=function(){$scope.parseRunningSteps();};	//call back function
+
+				//as dataSource of 'dstThreadGrid' and 'dstStepGrid' which are wrapped by gwThread and gwStep respectfully
+				$scope.threadList=new kendo.data.ObservableArray([]);
+				$scope.runningStepList=new kendo.data.ObservableArray([]);
+				
+
+				//initialize threadList(threadGrid) and runningStepList(stepGrid) for the design of this matcher
+				$scope.initColourwayList=function(){	
+					$scope.threadList.splice(0,$scope.threadList.length)
+					$scope.runningStepList.splice(0,$scope.runningStepList.length)
+					if($scope.embCanvas.embDesign){
+						var design=$scope.embCanvas.embDesign,
+							stepList=design.stepList,
+							stepCount=design.stepCount,
+							threadCount=stepCount<MAX_THREAD_COUNT?stepCount:MAX_THREAD_COUNT;
+						
+						for(var i=0;i<threadCount;i++)
+							$scope.threadList.push({code:"",colour:"",threadStitchCount:""});
+						
+						for(var i=0,stepStitchCount;i<stepCount;i++){
+							stepStitchCount=(stepList[i].lastStitch-stepList[i].firstStitch).toString();
+							$scope.runningStepList.push({code:"",threadIndex:"",stepStitchCount:stepStitchCount});
+						}
+					}
+				};
+				
+				$scope.embCanvas=$scope.cEmbCanvas||{};
+				
+				$scope.initColourwayList();
 				
 				$scope.parseThreadsButtonOptions={
 					imageUrl:"../resources/images/i-parse.ico",
@@ -1131,32 +947,180 @@ directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThr
 				        // the event is emitted for every widget; if we have multiple
 				        // widgets in this controller, we need to check that the event
 				        // is for the one we're interested in.
-				        if (widget ===$scope[$scope.embMatcher.gwThread.gridName])
-				        	$scope.embMatcher.gwThread.wrapGrid(widget);
+				        if (widget ===$scope[$scope.gwThread.gridName])
+				        	$scope.gwThread.wrapGrid(widget);
 				        
-				        if (widget ===$scope[$scope.embMatcher.gwStep.gridName]) 
-				        	$scope.embMatcher.gwStep.wrapGrid(widget);
+				        if (widget ===$scope[$scope.gwStep.gridName]) 
+				        	$scope.gwStep.wrapGrid(widget);
 				    });	
 				
 				//expose this directive scope to parent directive
 				if($scope.cName) 
-					$scope.$parent[$scope.cName]=$scope.embMatcher;
+					$scope.$parent[$scope.cName]=$scope;
 
-				if($scope.cEmbCanvas)
-					$scope.embMatcher.setEmbCanvas($scope.cEmbCanvas);
 				
-				$scope.threadGridOptions=$scope.embMatcher.getThreadGridOptions($scope);
-				$scope.stepGridOptions=$scope.embMatcher.getStepGridOptions($scope);
-				
-				
-			}
+				$scope.threadGridOptions={
+						columns:threadGridColumns,
+				        editable: true,
+				        selectable: "cell",
+				        navigatable: true,			
+				        autoSync:true,
+						dataSource:$scope.threadList,
+						
+						change:function(e){
+							$scope.drawDesign($scope.gwThread);
+						},
+						
+						edit:function(e){
+							$scope.drawDesign($scope.gwThread);
+					    },					
+						save:function(e){
 
-		}
+							if (typeof e.values=== 'undefined')
+					       			return;
+				       		if (typeof e.values.code=== 'undefined')
+				       			return;
+				       		
+				       		var code=dictThread.normalizeThreadCode(e.values.code);
+				       		if(code===e.model.code)
+				       			return;
+				       			
+		  	        		e.preventDefault();
+
+		  	        		var index=($scope.gwThread.getDataItemIndex(e.model)+1).toString();
+		  	        		
+			          		e.model.set("code","");
+			          		e.model.set("colour","");
+		  	        		if($scope.getThreadIndex(code)<0){	//code not exists in the threadList
+			  	        		var colour=dictThread.getThreadColorHex(code);
+			  	        		if(colour){
+			  	        			e.model.set("code",code);
+			  	        			e.model.set("colour",colour);
+			  	        		}
+		  	        		}
+		  	        		if(e.model.get("code")==""){
+		  	        			$scope.gwThread.enterKeyDown=false;
+		  	        		}
+		  	        		
+		  	        		$scope.gwThread.updateTemplateColumns(e);
+		                    
+		                    for(var i=0,steps=$scope.runningStepList;i<steps.length;i++){
+		                    	if(steps[i].threadIndex===index){
+		                    		steps[i].code=code;
+		                    		steps[i].colour=colour;
+		                    	}
+		                    }
+		                    $scope.gwStep.grid.refresh();
+		                    $scope.composeThreads();
+		                    $scope.drawDesign($scope.gwThread);
+		                    $scope.$apply();
+						}
+					};
+				
+				var saving=false; //prevent recusive calling saving event function;
+				
+				$scope.stepGridOptions={
+						columns:stepGridColumns,
+				        editable: true,
+				        selectable: "cell",
+				        navigatable: true,	
+				        autoSync:true,
+						dataSource:$scope.runningStepList,
+
+						change:function(e){
+							$scope.drawDesign($scope.gwStep);
+						},
+						
+						edit:function(e){
+							$scope.drawDesign($scope.gwStep);
+					    },
+					    
+						save:function(e){
+							if(saving) return;
+							saving=true;
+							
+				       		if(typeof e.values.code!== 'undefined'){
+
+				       			var code=e.values.code;
+			  	        		if(code.trim()==="."){
+			  	        			$scope.gwStep.copyPreviousRow();
+			  	        			var di=$scope.gwStep.getCurrentDataItem();
+					          		e.model.set("code",di.code);
+					          		e.model.set("threadIndex",di.threadIndex);
+			  	        			
+			  	        		}else{
+					          		e.model.set("code","");
+					          		e.model.set("threadIndex","");
+
+				  	        		code=dictThread.normalizeThreadCode(code);
+				       				var thread=null;
+				  	        		var index=parseInt(code);
+				  	        		if(index>0 && index<=$scope.threadList.length){
+				  	        			index--;
+				  	        		}else{
+				  	        			index=$scope.getThreadIndex(code);
+				  	        		}
+				  	        		
+				  	        		if(index<0){
+				  	        			var colour=dictThread.getThreadColorHex(code);
+				  	        			if(colour){
+				  	        				for(index=0;index<$scope.threadList.length;index++)
+				  	        					if(!$scope.threadList[index].code)
+				  	        						break
+					  	        			if(index===$scope.threadList.length)	
+					  	        				index=-1;
+					  	        			else{
+					  	        				thread=$scope.threadList[index];
+					  	        				thread.code=code;
+					  	        				thread.colour=colour;
+					  	        				
+					  	        				//$scope.gwThread.grid.refresh();
+					  	        				$scope.composeThreads();
+					  	        			}
+				  	        			}
+				  	        		}
+				  	        		
+				  	        		if(index>=0){
+				  	        			thread=$scope.threadList[index];
+				  	        			e.model.set("code",thread.code);
+						          		e.model.set("threadIndex",(index+1).toString());
+				  	        		}
+			  	        		}
+			  	        		
+			  	        		$scope.setThreadStitchCount();
+
+			  	        		//The grid will not update templte column automatically when change data value in save event	
+			  	        		$scope.gwStep.updateTemplateColumns(e);
+			                	 
+			  	        		$scope.composeRunningSteps();
+			                    
+			                    //let model accept code value that set by above code
+			  	        		e.preventDefault();
+			  	        		
+			  	        		$scope.drawDesign($scope.gwStep);
+			  	        		$scope.gwThread.grid.refresh();
+								scope.$apply();
+				          	}
+							saving=false;
+				       		
+						},
+			       		dataBinding:function(e){
+			       			//create a globle variable for template of the colour column to show step colour 
+			       			renderingPaint=$scope;
+			       		}
+
+				}; //end of stepGridOptions
+				
+				$scope.backgroundColourPaletteOptions={ palette: paletteColors}
+				
+
+		}	//end of threadMatcher controller
+	}
 	
 	return directive;
 }]).
 
-directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
+directive("dstPaint",["util",function(util){
 	
 	var templateUrl="../dm/dstpaint";
 	
@@ -1199,11 +1163,11 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					scope.embStage.renderAll();
 				}
 				
-				scope.getPrintModel=function(embMatcher,settings){
+				scope.getPrintModel=function(threadMatcher,settings){
 					var model={};
-					if(!embMatcher) return model;
-					var embCanvas=embMatcher.embCanvas;
-					if(!embCanvas) return model;
+					if(!threadMatcher) return model;
+					var embCanvas=threadMatcher.embCanvas;
+					if(!threadMatcher) return model;
 					
 					
 					var dst=embCanvas.embDesign;
@@ -1211,8 +1175,8 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 						//embCanvas.drawDesign();
 						
 						var list=[],line,firstStepIndex;
-						var threadList=embMatcher.threadList;
-						var stepList=embMatcher.runningStepList;
+						var threadList=threadMatcher.threadList;
+						var stepList=threadMatcher.runningStepList;
 						var idxThreads={};
 						var emptyLine={
 								col0:"",
@@ -1287,7 +1251,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 								list:list,
 								firstStepIndex:firstStepIndex,
 								image:embCanvas.imageObj.toDataURL(),
-								bgColour:embMatcher.backgroundColour?embMatcher.backgroundColour:"#FFFFFF",
+								bgColour:threadMatcher.backgroundColour?threadMatcher.backgroundColour:"#FFFFFF",
 								settings:settings,
 						}
 						
