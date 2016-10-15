@@ -23,7 +23,7 @@ factory("dictThread",["$http",function($http){		//service
 		     				{r:28,	g:176,	b:193},
 		     				{r:112,	g:56,	b:56}],
 		loadThreads:function(){
-			var url="http:///192.6.2.108:8080/clivia/data/dictEmbroideryThreadDao/get"
+			var url="../data/dictEmbroideryThreadDao/get"
 			var self=this;
 			$http.get(url).
 				success(function(data, status, headers, config) {
@@ -194,7 +194,7 @@ factory("dictThread",["$http",function($http){		//service
 					else
 						c=threadColors[0];
 					
-					if(alpha & c)
+					if(alpha && c)
 						c={r:c.r,g:c.g,b:c.b,a:alphaSteps[i]==='1'?1:alpha}
 					colorModel.push(c);
 				}
@@ -333,7 +333,7 @@ factory("EmbCanvas",["dictThread","Event","util",function(dictThread,Event,util)
 		
 		this.canvas=document.createElement('canvas');
 		this.canvas.id=createElementId();
-		this.canvas.style.visibility='hidden';		//show or hide design's canvas--visible|hidden
+		this.canvas.style.visibility='visible';		//show or hide design's canvas--visible|hidden
 		document.body.appendChild(this.canvas);
 		this.imageObj=document.getElementById(this.canvas.id);
 		
@@ -558,7 +558,410 @@ factory("DstImage",function(){
 	return dstImage;
 	
 }).
+directive("dstStage",["DstImage",function(){
+	var templateUrl="../dm/dststage	";
+	var cornerSize = 5;
+	var directive={
+			restrict:'EA',
+			replace:false,
+			scope:{
+				cName:'@dstStage',
+				cWidth:'=',
+				cHeight:'=',
+			},
+	
+			templateUrl:templateUrl,
+			
+			link:function(scope){
+				scope.addTriangle = function(options){
+					options = options || { };	
+					var width = options.width||100;
+					var height = options.height||100;
+					var fill = options.fill||"red";
+					var strokeColor = options.stroke||"transparent";
+					var strokeWidth = options.strokeWidth||0;
+					var triangle = new fabric.Triangle({
+						width: width, 
+						height: height,
+						fill: fill,	
+						cornerSize: cornerSize,
+						stroke: strokeColor,
+						strokeWidth: strokeWidth,
+					});
+					triangle.on({
+						'scaling': function(e) {
+							var obj = this,
+								w = obj.width * obj.scaleX,
+								h = obj.height * obj.scaleY,
+								s = obj.strokeWidth;
+	
+							obj.set({
+								'height'     : h,
+								'width'      : w,
+								'scaleX'     : 1,
+								'scaleY'     : 1
+							});
+						}
+					});
+					scope.fabricCanvas.add(triangle);
+				}
+				scope.addRect = function(options){
+					options = options || { };	
+					var width = options.width||100;
+					var height = options.height||100;
+					var fill = options.fill||"red";
+					var strokeColor = options.stroke||"transparent";
+					var strokeWidth = options.strokeWidth||0;
+					var rectangle = new fabric.Rect({
+						width: width, 
+						height: height,
+						fill: fill,	
+						cornerSize: cornerSize,
+						stroke: strokeColor,
+						strokeWidth: strokeWidth,
+					});
+					rectangle.on({
+						'scaling': function(e) {
+							var obj = this,
+								w = obj.width * obj.scaleX,
+								h = obj.height * obj.scaleY,
+								s = obj.strokeWidth;
+	
+							obj.set({
+								'height'     : h,
+								'width'      : w,
+								'scaleX'     : 1,
+								'scaleY'     : 1
+							});
+						}
+					});
+					scope.fabricCanvas.add(rectangle);
+				}
+				scope.addCircle = function(options){
+					options = options || { };	
+					var radius = options.radius||25;
+					var fill = options.fill||"red";
+					var strokeColor = options.stroke||"transparent";
+					var strokeWidth = options.strokeWidth||0;
+					var circle = new fabric.Circle({ 
+							radius: radius,
+							fill: fill,
+							cornerSize: cornerSize,
+							stroke: strokeColor,
+							strokeWidth: strokeWidth, 
+					});
+					scope.fabricCanvas.add(circle);
+				}
+				scope.addText = function(options){
+					options = options || { };	
+					var fontType = options.fontType||"arial black";
+					var fontSize = options.fontSize||50;
+					var fill = options.fill||"black";
+					var strokeColor = options.stroke||"transparent";
+					var strokeWidth = options.strokeWidth||0;
+					var text = new fabric.IText('Tap and Type', { 
+						  fontFamily: fontType,
+						  fontSize: fontSize,
+						  fill: fill,
+						  cornerSize: cornerSize,
+						  stroke: strokeColor,
+						  strokeWidth: strokeWidth,
+						  
+					});
+					text.on({
+						'scaling': function(e) {
+							var obj = this,
+								w = obj.width * obj.scaleX,
+								h = obj.height * obj.scaleY,
+								s = obj.strokeWidth;
 
+							obj.set({
+								'height'     : h,
+								'width'      : w,
+								'scaleX'     : 1,
+								'scaleY'     : 1
+							});
+						}
+				    });
+					scope.fabricCanvas.add(text);
+				}
+				scope.group = function(){
+					var activeGroup = scope.fabricCanvas.getActiveGroup();	
+					if(activeGroup != null){
+						var objectsInGroup = activeGroup.getObjects();
+						activeGroup.clone(function(newGroup){
+							scope.fabricCanvas.discardActiveGroup();
+							objectsInGroup.forEach(function(object){
+								scope.fabricCanvas.remove(object);
+							});
+							scope.fabricCanvas.setActiveObject(newGroup);
+							scope.fabricCanvas.add(newGroup);	
+						});	
+					}			
+				}
+				scope.ungroup = function(){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type = "group"){
+							var item = activeObject.getObjects();
+							activeObject._restoreObjectsState();
+							scope.fabricCanvas.remove(activeObject);
+							for(var i = 0; i < item.length; i++){
+								scope.fabricCanvas.add(item[i]);
+								scope.fabricCanvas.item(scope.fabricCanvas.size()-1).hasControls = true;
+							}
+							
+							scope.fabricCanvas.renderAll();
+						}
+					}
+				}
+				scope.clearAll = function(){
+					scope.fabricCanvas.clear();
+					scope.fabricCanvas.setBackgroundColor("yellow");
+					scope.fabricCanvas.renderAll();
+				}
+				scope.renderAll = function(){
+					scope.fabricCanvas.renderAll();
+				}
+				scope.imageFromURL = function(dataURL){
+					if(dataURL.substring(0,10)=='data:image'){
+						fabric.Image.fromURL(dataURL,function(img){
+							
+							scope.fabricCanvas.add(img);
+						})
+					}
+				}
+				scope.clear = function(){
+					var activeGroup = scope.fabricCanvas.getActiveGroup();
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type == "group"){
+							var item = activeObject.getObjects();
+							for(var i = 0; i < item.length; i++){
+								scope.fabricCanvas.remove(item[i]);
+							}
+						}
+						scope.fabricCanvas.remove(activeObject);	
+					}
+					if(activeGroup != null){
+						var objectsInGroup = activeGroup.getObjects();
+						scope.fabricCanvas.discardActiveGroup();
+						objectsInGroup.forEach(function(object){
+							scope.fabricCanvas.remove(object);
+						});
+					}
+				}
+				scope.bringToFront = function(){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					var activeGroup = scope.fabricCanvas.getActiveGroup();
+					
+					if(activeGroup != null){
+						activeGroup.bringToFront();
+					}
+					else{
+						activeObject.bringToFront();
+					}
+				}
+				scope.sendToBack = function(){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					var activeGroup = scope.fabricCanvas.getActiveGroup();
+					
+					if(activeGroup != null){
+						activeGroup.sendToBack();
+					}
+					else{
+						activeObject.sendToBack();
+					}
+				}
+				scope.setFontSize = function(fontSize){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type == "i-text"){
+							activeObject.set({fontSize:fontSize});
+						}
+					}
+				}
+				scope.setFontFamily = function(fontFamily){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type == "i-text"){
+							activeObject.set({fontFamily:fontFamily});
+						}
+					}
+				}
+				scope.setFill = function(fill){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type != "group"){
+							activeObject.set({fill:fill});
+						}
+					}
+				}
+				scope.setStrokeWidth = function(strokeWidth){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type != "group"){
+							activeObject.set({strokeWidth:strokeWidth});
+						}
+					}
+				}
+				scope.setStrokeWidth = function(strokeColor){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type != "group"){
+							activeObject.set({stroke:strokeColor});
+						}
+					}
+				}
+				scope.setHeight = function(newHeight){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type != "group"&&activeObject.type != "circle"){
+							activeObject.set({height:newHeight});
+						}
+					}
+				}
+				scope.setWidth = function(newWidth){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type != "group"&&activeObject.type != "circle"){
+							activeObject.set({width:newWidth});
+						}
+					}
+				}
+				scope.setRadius = function(newRadius){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type == "circle"){
+							activeObject.set({radius:newRadius});
+						}
+					}
+				}
+			},
+			controller:function($scope){
+				$scope.width = $scope.cWidth||1000;
+				$scope.height = $scope.cHeight||1000;	
+				$scope.fabricCanvas = new fabric.Canvas("stage",{
+				    	width: $scope.width,
+				        height: $scope.height,
+				        preserveObjectStacking: true,  
+				        backgroundColor: "yellow"
+				});
+				$scope.shapeToolbarOptions={items: [{
+					template: "<span><label>Design:</label></span>",
+				},{
+			        type: "button",
+			        text: "Add Circle",
+			        id:"btnCircle",
+			        click: function(e) {
+			        	$scope.addCircle({radius:100});
+
+			       	}
+			    }, {
+			        type: "button",
+			        text: "Add Rectangle",
+			        id:"btnRect",
+			        click: function(e) {
+			        	$scope.addRect();
+				    }
+	            },{
+			        type: "button",
+			        text: "Add Triangle",
+			        id:"btnTriangle",
+			        click: function(e) {
+			        	$scope.addTriangle();
+			        }
+				},{
+			        type: "button",
+			        text: "Add Text",
+			        id:"btnText",
+			        click: function(e) {
+			        	$scope.addText();
+			        }
+				},{        
+	            	type: "button",
+				    text: "Insert from File",
+				    id:"btnFromFile",
+				    click: function(e) {
+				    	document.getElementById("file").click(); 
+					}
+	            },{
+				    type: "button",
+				    text: "Group",
+				    id:"btnGroup",
+				    click: function(e) {
+				       	$scope.group();
+					}
+	            },{
+				    type: "button",
+				    text: "Ungroup",
+				    id:"btnUngroup",
+				    click: function(e) {
+				       	$scope.ungroup();
+					}
+	            },{
+				    type: "button",
+				    text: "Delete",
+				    id: "btnDelete",
+				    click: function(e){
+				    	$scope.clear();
+				    }
+	            },{
+	            	type: "button",
+				    text: "Clear All",
+				    id:"btnClearAll",
+				    click: function(e) {
+				       	$scope.clearAll();
+					}
+	            },{
+	            	type: "button",
+				    text: "Bring to Front",
+				    id:"btnBringToFront",
+				    click: function(e) {
+				       	$scope.bringToFront();
+				    }
+	            },{
+	            	type: "button",
+				    text: "Send to Back",
+				    id:"btnSendToBack",
+				    click: function(e) {
+				       	$scope.sendToBack();
+				    }
+	            }]};
+
+			}	
+	
+	};
+	return directive;
+				
+}]).
+directive("fileRead", [function () {
+    return {
+        scope: {
+            fileRead: "&"
+        },
+        link: function (scope, element, attributes) {
+            element.bind("change", function (changeEvent) {
+
+                for(var i = 0; i < changeEvent.target.files.length; i++){
+                	if(changeEvent.target.files[i]!=null){
+                        var reader = new FileReader();
+                        reader.onload = function (loadEvent) {
+                            scope.$apply(function () {
+                                if(scope.fileRead){
+                                	scope.fileRead({dataURL:loadEvent.target.result});
+                                }//scope.fileRead = loadEvent.target.result;
+                            });
+                        }
+                		reader.readAsDataURL(changeEvent.target.files[i]);
+                	}
+                	
+                }
+                
+            });
+        }
+    }
+}]).
 directive("threadMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread){
 	
 	var templateUrl="../dm/threadmatcher";
