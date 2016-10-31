@@ -24,18 +24,12 @@
 	<script src="/clivia/resources/js/kendo/2016.1.217/jszip.min.js"></script>
 <!--<script src="http://kendo.cdn.telerik.com/2016.1.112/js/jszip.min.js"></script>  -->
 
+ 	<link href="/clivia/resources/cliviastyles.css" rel="stylesheet" /> 
 
+	<%@include file="../views/common/factories.jsp"%>
+	<%@include file="../views/common/directives.jsp"%>
+	<%@include file="../views/common/gridwrappers.jsp"%>
 
-	<style>
-		html {font-family: Arial, Helvetica, sans-serif; }	
-		
- 	@media only screen and (min-device-width: 800px){
-		html
-		{
-		   font-size: 12px;
-		}
-	}
-	</style>
 	
     		
 

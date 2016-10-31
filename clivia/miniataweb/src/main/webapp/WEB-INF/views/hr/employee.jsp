@@ -84,6 +84,7 @@
 		</div>	<!--end of first pane -->
 		
 		<div>	<!--second pane -->
+		
 		 	<div kendo-tabstrip="detailTabStrip" k-options="detailTabStripOptions">
               <ul>
                 <li class="k-state-active">Contact Info</li>
@@ -93,6 +94,8 @@
               </ul>
           
               <div style="padding: 1em">
+              
+			<form name="contactForm" ng-submit="" novalidate class="simple-form">              
               	<ul class="fieldlist">
 					<li>
 						<label for="address">Address:</label>
@@ -144,21 +147,24 @@
 							ng-model="dataSet.info.email"/>
 					</li>
 				</ul>
+			</form>
               </div>
           
               <div style="padding: 1em">
-              	<ul class="fieldlist">
-              		<li>
-				    	<label for="username">Username:</label>
-						<input type="text" id="username" name="username" class="k-textbox" style="width:100px;"   
-							ng-model="dataSet.info.username"  ng-trim="true" />
-					</li>
-              		<li>
-				    	<label for="password">Password:</label>
-						<input type="text" id="password" name="password" class="k-textbox" style="width:100px;"   
-							ng-model="dataSet.info.password"  ng-trim="true" />
-					</li>
-				</ul>
+              	<form name="appUserForm" ng-submit="" novalidate class="simple-form">  
+		              	<ul class="fieldlist">
+		              		<li>
+						    	<label for="username">Username:</label>
+								<input type="text" id="username" name="username" class="k-textbox" style="width:100px;"   
+									ng-model="dataSet.info.username"  ng-trim="true" />
+							</li>
+		              		<li>
+						    	<label for="password">Password:</label>
+								<input type="text" id="password" name="password" class="k-textbox" style="width:100px;"   
+									ng-model="dataSet.info.password"  ng-trim="true" />
+							</li>
+						</ul>
+					</form>
               </div>
               
               <div style="padding: 1em">	<!-- notes -->

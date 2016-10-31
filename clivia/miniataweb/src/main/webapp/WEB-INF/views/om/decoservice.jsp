@@ -14,7 +14,7 @@
 			          <div style="padding: 1em">
 			          
 			          	   	<div clivia-grid="serviceEmbGrid"
-			   					c-grid-wrapper-name="'serviceEmbGridWrapper'"
+			   					c-grid-wrapper-name="'ServiceEmbGridWrapper'"
 			   					c-editable="true" 
 			   					c-pageable="false" 
 			   					c-new-item-function="serviceEmbNewItemFunction"
@@ -24,7 +24,7 @@
 			      
 			          <div style="padding: 1em">
 			          	   	<div clivia-grid="serviceSpGrid"
-			   					c-grid-wrapper-name="'serviceSpGridWrapper'"
+			   					c-grid-wrapper-name="'ServiceSpGridWrapper'"
 			   					c-editable="true" 
 			   					c-pageable="false" 
 			   					c-new-item-function="serviceSpNewItemFunction"

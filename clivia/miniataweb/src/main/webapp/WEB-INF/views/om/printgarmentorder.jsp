@@ -156,7 +156,7 @@ window.onload = function main (){
         if(!!adjustOrder.province)
             info += ",&nbsp;" + adjustOrder.province;
         if(!!adjustOrder.postalCode)
-            info += ",&nbsp;" + adjustOrder.postalCode;
+            info += "&nbsp;&nbsp;" + adjustOrder.postalCode;
         if(info)
             info = info.substring(7);
 

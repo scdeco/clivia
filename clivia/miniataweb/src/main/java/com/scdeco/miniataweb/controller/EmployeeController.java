@@ -39,25 +39,31 @@ public class EmployeeController {
 	}
 
 	@RequestMapping(value="get-employee",method=RequestMethod.GET)
-	public @ResponseBody  Employee getEmployee(@RequestParam("id") Integer id){
-		return employeeDao.getEmployeeById(id);
+	public @ResponseBody  Employee getEmployee(@RequestParam("id") Integer id) 
+			throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException{
+		
+		return employeeDao.getById(id);
 	}
 
 	@RequestMapping(value="save-employee",method=RequestMethod.POST)
-	public @ResponseBody  Employee saveEmployee(@RequestBody Employee employee){
+	public @ResponseBody  Employee saveEmployee(@RequestBody Employee employee) 
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
+		
 		employeeDao.save(employee);
 		return employee;
 	}
 	
 	@RequestMapping(value="delete-employee",method=RequestMethod.GET)
-	public @ResponseBody  String deleteEmployee(@RequestParam("id") Integer id){
+	public @ResponseBody  String deleteEmployee(@RequestParam("id") Integer id) 
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
+		
 		String result="";
 		
 		int employeeId=id;
 		if(employeeId>0){
-			result=employeeDao.delete(employeeId);
+			employeeDao.delete(employeeId);
 		}else{
-			result="Not a saved employee.";
+			result="Can not find the employee.";
 		}
 		return result;
 	}

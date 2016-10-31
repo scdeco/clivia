@@ -77,13 +77,13 @@ public class OrderDao extends GenericItemSetDao<OrderClivia>{
 
 	}
 
-	public OrderClivia getByOrderNumber(String orderNumber) 
+	public OrderClivia getByOrderNumber(String orderNumber, String[] list) 
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
 		
 		OrderClivia order=null;
 		OrderInfo orderInfo=orderInfoDao.findByOrderNumber(orderNumber);
 		if (orderInfo!=null){
-			order=super.getById(orderInfo.getId());
+			order=super.getById(orderInfo.getId(),list);
 		}
 		
 		return order;

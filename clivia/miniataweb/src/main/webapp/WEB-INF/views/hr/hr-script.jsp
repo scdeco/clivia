@@ -26,9 +26,6 @@ hrApp.directive("employee",["$http","cliviaDDS","util",function($http,cliviaDDS,
  						itemName=scope.employeeItemNames[i];
  						items=scope.dataSet[itemName+'Items'];
  						items.splice(0,items.length);
- 						
- 						items=scope.dataSet[itemName+'DeletedItems'];
- 						items.splice(0,items.length);
  					}
 				}			    
 			    
@@ -63,8 +60,10 @@ hrApp.directive("employee",["$http","cliviaDDS","util",function($http,cliviaDDS,
 
 			    scope.save=function(){
 			    	if(!validEmployee()) return;
-			    	
 					var url=baseUrl+"save-employee";
+					
+					if(scope.employeeForm.$dirty||scope.contactForm.$dirty||scope.appUserForm.$dirty)
+						scope.dataSet.info.isDirty=true;
 					
 					$http.post(url,scope.dataSet).
 						  success(function(data, status, headers, config) {
@@ -93,6 +92,9 @@ hrApp.directive("employee",["$http","cliviaDDS","util",function($http,cliviaDDS,
 							}
 						}
 					}
+					scope.employeeForm.$setPristine();
+					scope.contactForm.$setPristine();
+					scope.appUserForm.$setPristine();
 				}
 				
 			 	var validEmployee=function(){
@@ -159,7 +161,7 @@ hrApp.directive("employee",["$http","cliviaDDS","util",function($http,cliviaDDS,
 				
 				$scope.employeeItemNames=[];
 				
-				$scope.dataSet={info:{}};
+				$scope.dataSet={info:{},deleteds:[]};
 				
 				for(var i=0,itemName;i<$scope.employeeItemNames.length;i++){
 					

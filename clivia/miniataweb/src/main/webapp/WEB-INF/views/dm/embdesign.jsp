@@ -23,7 +23,7 @@ factory("dictThread",["$http",function($http){		//service
 		     				{r:28,	g:176,	b:193},
 		     				{r:112,	g:56,	b:56}],
 		loadThreads:function(){
-			var url="http:///192.6.2.108:8080/clivia/data/dictEmbroideryThreadDao/get"
+			var url="../data/dictEmbroideryThreadDao/get"
 			var self=this;
 			$http.get(url).
 				success(function(data, status, headers, config) {
@@ -194,7 +194,7 @@ factory("dictThread",["$http",function($http){		//service
 					else
 						c=threadColors[0];
 					
-					if(alpha & c)
+					if(alpha && c)
 						c={r:c.r,g:c.g,b:c.b,a:alphaSteps[i]==='1'?1:alpha}
 					colorModel.push(c);
 				}

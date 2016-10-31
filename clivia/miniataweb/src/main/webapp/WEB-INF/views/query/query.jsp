@@ -7,8 +7,12 @@
 
 	<shared:header/> 
 	
+<%--included in header tag 	
 	<%@include file="../common/factories.jsp"%>
 	<%@include file="../common/directives.jsp"%>
+	<%@include file="../common/gridwrappers.jsp"%> 
+--%>	
+
 	<%@include file="query-script.jsp"%>
 	
 </head>

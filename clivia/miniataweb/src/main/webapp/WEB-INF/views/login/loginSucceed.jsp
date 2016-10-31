@@ -35,8 +35,8 @@
 	            <kendo:dataSource-transport-read url="${readUrl}"  type="post" dataType="json" contentType="application/json"/>
                 <kendo:dataSource-transport-parameterMap>
                 	function(options){return JSON.stringify(options);}
-                </kendo:dataSource-transport-parameterMap>             	            
-	        </kendo:dataSource-transport>      
+                </kendo:dataSource-transport-parameterMap>  
+           </kendo:dataSource-transport>      
             
         </kendo:dataSource>
     </kendo:grid>

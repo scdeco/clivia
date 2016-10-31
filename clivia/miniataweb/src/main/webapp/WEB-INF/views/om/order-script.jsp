@@ -778,62 +778,6 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util","dictTh
 
  	}
  	
- 	var createAddressPrintModel=function(isBilling){
- 		var address,c;
- 		var addresses=_order.dataSet.addressItems;
- 		for(var i=0,f;i<addresses.length;i++){
- 			c=addresses[i];
- 			f=isBilling?c.billing:c.shipping;
- 			if(f){
- 				address=c;
- 				break;
- 			}
- 		}
- 		
- 		if(!address){
-	 		addresses=_order.company.addresses;
-	 		for(var i=0,f;i<addresses.length;i++){
-	 			c=addresses[i];
-	 			f=isBilling?c.billing:c.shipping;
-	 			if(f){
-	 				address=c;
-	 				break;
-	 			}
-	 		}
- 		}
- 		
- 		if(address){
-			address={
-				receiver:address.receiver,
-				addr1:address.addr1,
-				addr2:address.addr2,
-				city:address.city,
-				province:address.province,
-				country:address.country,
-				postalCode:address.postalCode,
-				attn:address.attn,
-			};
- 		}else{
-			address={
-					receiver:"",
-					addr1:"",
-					addr2:"",
-					city:"",
-					province:"",
-					country:"",
-					postalCode:"",
-					attn:"",
-				};
- 		}
- 		if(!address.receiver){
- 			address.receiver="";
- 			if(isBilling||(c.billing && c.shipping))	
- 	 			address.receiver=_order.company.info.businessName;
- 		}
- 		
-		return address;
- 		
- 	}
  	
  	//print garment confirmation
  	_order.createGarmentPrintModel=function(billItems,lineItemOnly,mainColorOnly,hideDiscount){
@@ -859,8 +803,8 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util","dictTh
  			};
  		
  		model.info.contact=createContactPrintModel();
-		model.info.billTo=createAddressPrintModel(true);
-		model.info.shipTo=createAddressPrintModel(false);
+		model.info.billTo=util.createAddress(company.info,_order.dataSet.addressItems,_order.company.addresses,true);
+		model.info.shipTo=util.createAddress(company.info,_order.dataSet.addressItems,_order.company.addresses,false);
 		
 		model.showDiscount=false;
  		

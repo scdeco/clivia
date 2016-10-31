@@ -7,8 +7,12 @@
 
 	<shared:header/> 
 
+<%--included in header tag 	
 	<%@include file="../common/factories.jsp"%>
 	<%@include file="../common/directives.jsp"%>
+	<%@include file="../common/gridwrappers.jsp"%> 
+--%>
+	
 	<%@include file="../crm/crm-script.jsp"%>
 	<%@include file="order-script.jsp"%>
 	<%@include file="aconsts.jsp"%>
@@ -25,62 +29,7 @@
 
 <style>
 
-	.k-dirty {
-  		border-width:0;
-	}
-	
-	.k-splitter {
-		border-width: 0;
-	}
-	
-	.k-listview {
-		border-width: 0;
-	}
-	
- 	.k-toolbar{
-		border-width: 0;
-		padding: 0;
-		margin: 0;
-		height:36px;	//default 36px
-		}
-		
-	.k-grid{
-        margin: 0;
-        padding: 0;
-        border-width: 0;
-        height: 100%; /* DO NOT USE !important for setting the Grid height! */
-      	}
 
-	/* 	do not show background color of grid editing cell */
-	.k-grid .k-edit-cell { 
-		background: transparent; 
-		}
-		
-	/*highlight line number of editing row, might not be the first column 	td:first-child  */
-	.k-grid .k-grid-edit-row td.gridLineNumber{
-		color:blue;
-		font-weight: bold;
-		
-	}
-
-	/* show horizontal grid line		 */
-	.k-grid-content tr:not(:last-child) td{
- 	   border-bottom: 1px dotted gray;
-		}		
-/*  	.k-grid-content tr:last-child td{
- 	   border-bottom: 1px solid gray;
-		}  */
-				
-	/* 	grid coloumn header */
- 	.k-grid-header tr:last-child th{ 
-	   font-weight: bold; 
-  	   text-align: center;
-		}
-		
-	.k-grid .gridLineNumber{
-		text-align: right;
-	}		 
-	
 	/* 	the grid in garmentInput Window	 */
 	#styleGrid .k-grid-content tr td:not(:last-child){
  	   text-align: right;
@@ -101,40 +50,18 @@
         font-weight: bold;
         }
 		
+	#billitemdetail table, th, td {
+	    border: 1px dotted gray;
+	    border-collapse: collapse;
+	}
+	#billitemdetail table, th, td {
+	    padding: 5px;
+	}
 	
-/* 	orderinfo */
-     #fieldlist {
-        margin: 10px;
-        padding: 0;
-     }
-      
-     #fieldlist li {
-         list-style: none;
-         padding-top: .7em;
-         text-align: left;
-     }
-     
-     #fieldlist label {
-          display: block;
-      }
-      
-     
-      textarea { 
-      	resize: vertical; 
-      }
-
-#billitemdetail table, th, td {
-    border: 1px dotted gray;
-    border-collapse: collapse;
-}
-#billitemdetail table, th, td {
-    padding: 5px;
-}
-
-
-.billDetailQty{
-	width:40px;
-}      
+	
+	.billDetailQty{
+		width:40px;
+	}      
 	
 /* 	image item styles */
 	#imageItemToolbar, #lineItemToolbar{

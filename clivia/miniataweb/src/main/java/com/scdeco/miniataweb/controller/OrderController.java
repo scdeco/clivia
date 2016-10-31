@@ -66,11 +66,12 @@ public class OrderController {
 	}*/
 
 	@RequestMapping(value="get-order",method=RequestMethod.GET)
-	public @ResponseBody  OrderClivia getOrder(@RequestParam("number") String orderNumber)
+	public @ResponseBody  OrderClivia getOrder(@RequestParam("number") String orderNumber,
+											   @RequestParam(value="list",required=false) String[] list)
 				throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException{
 		
 		System.out.println("Order#:"+orderNumber);
-		return orderDao.getByOrderNumber(orderNumber);
+		return orderDao.getByOrderNumber(orderNumber,list);
 	}
 
 	@RequestMapping(value="save-order",method=RequestMethod.POST)

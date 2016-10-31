@@ -20,6 +20,20 @@ directive('capitalize', function() {
 	   };
 }).
 
+directive('onEnterKeyPressed', function () {
+    return function (scope, element, attrs) {
+        element.bind("keydown keypress", function (event) {
+            if(event.which === 13) {
+                scope.$apply(function (){
+                    scope.$eval(attrs.onEnterKeyPressed);
+                });
+
+                event.preventDefault();
+            }
+        });
+    };
+}).
+
 directive('changeOnBlur', function() {
     return {
         restrict: 'A',

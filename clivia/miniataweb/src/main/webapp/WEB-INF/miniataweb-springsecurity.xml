@@ -11,9 +11,9 @@
     
     	<security:csrf disabled="true"/>
     
-    	<!-- <security:intercept-url pattern="/miniataweb/login*" access="IS_AUTHENTICATED_ANONYMOUSLY"/> -->
+<!--     	<security:intercept-url pattern="../login*" access="IS_AUTHENTICATED_ANONYMOUSLY"/>  -->
         <security:intercept-url pattern="/**" access="hasRole('USER')" />  
-		<!-- <security:form-login login-page='/miniataweb/login'/> -->
+<!-- 		<security:form-login login-page="../login/login"/>  -->
     </security:http>  
   
   <security:authentication-manager>

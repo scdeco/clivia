@@ -6,8 +6,11 @@
 	<%@taglib prefix="shared" tagdir="/WEB-INF/tags"%>
 
 	<shared:header/> 
+<%--included in header tag 	
 	<%@include file="../common/factories.jsp"%>
 	<%@include file="../common/directives.jsp"%>
+	<%@include file="../common/gridwrappers.jsp"%> 
+--%>
 	<%@include file="im-script.jsp"%>
 	
 </head>
@@ -85,72 +88,11 @@
 
 </body>
 <style>
-	.k-dirty {
-  		border-width:0;
-	}
-	
-	html,body{
-	    margin:0;
-	    padding:0;
-	    height:100%;
-	}
-
-	.k-splitter {
-		border-width: 0;
-		height: 100%;
-	}
-	
-	
- 	.k-toolbar{
- 		border-width:0;
-		padding: 0;
-		margin: 0;
-		height:36px;
-        border-bottom:1px solid silver;
-		}
-		
-	.k-grid{
-		font-size: 12px;
-        margin: 0;
-        padding: 0;
-        border-width: 0;
-      	}
-
-	/* 	do not show background color of grid editing cell */
-	.k-grid .k-edit-cell { 
-		background: transparent; 
-		
-		}
-		
-	/*highlight line number of editing row, might not be the first column 	td:first-child  */
-	.k-grid .k-grid-edit-row td.gridLineNumber{
-		color:blue;
-		font-weight: bold;
-		
-	}
-
- 	/* show horizontal grid line		 */
-
-	.k-grid-content tr:not(:last-child) td{
- 	   border-bottom: 1px dotted gray;
-		}		
-	.k-grid-content tr:last-child td{
- 	   border-bottom: 1px solid silver;
-		}		
-		
-	.k-grid .gridLineNumber{
-	}		 
-
 	.k-grid td
 	{
 		white-space: nowrap;
 	}
 
-	.k-grid .numberColumn,.gridLineNumber{
-		text-align: right;
-	}
-	
-	
 	/*re-size TabStrip to 100% of the Pane width/height.*/
 	.k-tabstrip{
 	   	position: absolute;
@@ -208,25 +150,7 @@
          display: inline;
      }	
      
-     #fieldlist {
-        margin: 10px;
-        padding: 0;
-     }
-     #fieldlist li {
-         list-style: none;
-         padding-bottom: .7em;
-         text-align: left;
-     }
-     
-     #fieldlist label {
-          display: block;
-          padding-bottom: .2em;
-      }
-      
-      textarea { 
-      	resize: vertical; 
-      }     
-     
+ 
 	
 
 </style>
