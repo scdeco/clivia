@@ -157,6 +157,12 @@
 				icon: "insert-n",
 				model:"orderServiceLaser",
 				name:"serviceLaser",
+			},{
+				id:14,
+				text: "Digitizing", 
+				icon: "insert-n",
+				model:"orderDigitizing",
+				name:"serviceDigitizing",
 			}],
 			
 	});

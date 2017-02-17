@@ -6,7 +6,7 @@ var queryApp = angular.module("queryApp",
 
 queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cliviaDDS,util){
 	var scope=$scope;
-	
+	var backHome='<a href="http://192.6.2.204:8080/admin/login.php"><button class="k-button">Home</button></a>';
 	$scope.queryToolbarOptions={items: [{
 		        type: "button",
 		        text: "Export To Excel",
@@ -51,8 +51,12 @@ queryApp.controller("queryCtrl",["$scope","cliviaDDS","util",function($scope,cli
 		    }, {
 		        type: "separator",
 	        }, {
- 	           	template:'Choose Theme:<theme-chooser></theme-chooser>'		    
-		}]};
+ 	           	template:'Choose Theme:<theme-chooser></theme-chooser>',		    
+			}, {
+		        type: "separator",
+	        }, {
+            	template:backHome,
+    }]};
 	
 
  	scope.getSummary=function(){

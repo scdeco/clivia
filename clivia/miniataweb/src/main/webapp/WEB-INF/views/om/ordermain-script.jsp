@@ -1,5 +1,5 @@
 <script>
-
+var backHome='<a href="http://192.6.2.204:8080/admin/login.php"><button class="k-button">Home</button></a>' //../../admin/main.php
 orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function($scope,$state, $filter, SO) {
 	$scope.SO=SO;
 	
@@ -97,7 +97,7 @@ orderApp.controller("orderMainCtrl", ["$scope","$state", "$filter","SO",function
 	                type: "separator",
  	            }, {
  	            	template:'Choose Theme:<theme-chooser></theme-chooser>'
-	       }]};
+	      		}]};
     
 		$scope.queryToolbarOptions={
 			items: [{

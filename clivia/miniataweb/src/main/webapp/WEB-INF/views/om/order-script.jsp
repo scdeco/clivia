@@ -854,6 +854,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util","dictTh
  	_order.createDecoOrderPrintModel=function(){
  		var info=_order.dataSet.info;
  		var company=_order.company;
+		
  		var model={
 					customer:company.info.businessName,
 					jobNo:info.orderNumber,
@@ -865,16 +866,16 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util","dictTh
  					currency:company.info.country==="USA"?"US$":"CA$",
  					shipment:"",
  					phone:"",
- 					fax:"",
+ 					email:"",
  					issued:_order.csrName,
- 					require:(info.requireDate+(info.requireTime?"  "+info.requireTime:"")).trim(),
- 					
+ 					require:info.requireDate,
+ 					note:info.note,
+ 					special:info.remark,
  		};
  		
  		model.ddLineItems=_order.createGarmentServicePrintModel();
  		model.services=_order.createPricingPrintModel();
  		model.decoEmbs=_order.createServiceEmbPrintModel();
-
  		_order.printModel=model; //for testing data
  		
  		return model;
@@ -1180,7 +1181,7 @@ orderApp.factory("SO",["$http","$q","$state","consts","cliviaDDS","util","dictTh
  		var data=_order.createGarmentPrintModel(billItems,lineItemOnly,mainColourOnly,hideDiscount);
  		data.info.listType=printTypeId==="garmentPackingSlip"?"packing":"order";
  // to get testing data of print model		
- 	_order.printModel=data; 
+ 	_order.printModel=data;
  		url="../om/print-order?file=printgarmentorder";
  
  		util.printUrl(url,{data:JSON.stringify(data)},true);	//false=no preview

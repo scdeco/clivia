@@ -1,6 +1,6 @@
-<div style="height:800px;">     	
+<div style="height:800px;width:100%">     	
 
-    <div kendo-tab-strip k-animation="false" style="height:100%;">
+    <div kendo-tab-strip k-animation="false" style="height:100%;width:100%">
 		<ul>
 			<li>Info</li>
 			<li class="k-state-active">Colourway</li>
@@ -34,7 +34,7 @@
 	      		 k-orientation="'vertical'" 
 				 k-panes="[{ collapsible: true, resizable: true, size: '250px'},
 	                  	   { collapsible: true, resizable: true }]"
-	             style="height:600px;"> 
+	             style="height:600px"> 
 			       <div>
 			       		<span style="vertical-align:-3px;">Threads:&nbsp;</span> <kendo-button ng-hide="true" ng-disabled="!embCanvas.threadCodes" style="height:20px;margin-top:2px;" k-options="parseThreadsButtonOptions"></kendo-button>
 	

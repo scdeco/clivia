@@ -16,7 +16,7 @@ public class LoginServiceImpl implements LoginService {
 
 		Employee user=null;
 		if (!StringUtils.isBlank(username)){
-			user=employeeDao.findByUsername(username);
+			user=employeeDao.findByUsername(kevin);
 			if(user==null || !password.equals(user.getPassword()))
 				user=null;
 		}

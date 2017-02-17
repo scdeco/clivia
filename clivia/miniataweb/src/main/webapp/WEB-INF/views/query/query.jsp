@@ -25,7 +25,7 @@
                   { collapsible: false,size:'550px'},
                   { collapsible: true, resizable: true}]"
         k-options="query.splitterOptions"
-		style="height:900px;">
+		style="height:600px;">
 		 
 	<div id="top-pane">
 		
@@ -33,11 +33,11 @@
 	
 	<div id="middle-pane">
 		<div kendo-toolbar id="queryToolbar" k-options="queryToolbarOptions"></div>
-		<div  query-grid="queryGrid"  c-grid-no="queryGridNo"></div>
+		<div  query-grid="queryGrid"  c-grid-no="queryGridNo" style="height:913px"></div>
 	</div> <!-- middle pane of outter splitter -->
 	
-	<div id="bottom-pane" style="height:300px;">
-	</div> <!-- bottom pane of outter splitter -->
+	<!-- <div id="bottom-pane" style="height:300px;">
+	</div> bottom pane of outter splitter -->
 	
 	
 </div>	<!-- end of querySplitter -->

@@ -5,8 +5,9 @@ var hrApp = angular.module("hrApp",
 		
 hrApp.directive("employee",["$http","cliviaDDS","util",function($http,cliviaDDS,util){
 	
-	var searchTemplate='Select:<auto-combobox  style="width:200px;" c-options="search.options" ng-model="search.employeeId"></auto-combobox>'+
-	'<span ng-click="getEmployee()" class="k-icon k-i-search"></span>';
+	var searchTemplate='<span class="k-textbox k-space-right" style="width: 200px;" >'+
+	'<input type="text" name="searchEmployee" class="k-textbox" placeholder="Employee ID" ng-model="search.employeeId" capitalize ng-trim="true"/>'+
+	'<span ng-click="getEmployee()" class="k-icon k-i-search"></span>' 
 
 	var baseUrl="";	
 
@@ -62,7 +63,7 @@ hrApp.directive("employee",["$http","cliviaDDS","util",function($http,cliviaDDS,
 			    	if(!validEmployee()) return;
 					var url=baseUrl+"save-employee";
 					
-					if(scope.employeeForm.$dirty||scope.contactForm.$dirty||scope.appUserForm.$dirty)
+					if(scope.employeeForm.$dirty||scope.contactForm.$dirty||scope.appUserForm.$dirty||scope.salaryForm.$dirty||scope.permissionForm.$dirty)
 						scope.dataSet.info.isDirty=true;
 					
 					$http.post(url,scope.dataSet).
@@ -95,6 +96,8 @@ hrApp.directive("employee",["$http","cliviaDDS","util",function($http,cliviaDDS,
 					scope.employeeForm.$setPristine();
 					scope.contactForm.$setPristine();
 					scope.appUserForm.$setPristine();
+					scope.salaryForm.$setPristine();
+					scope.permissionForm.$setPristine();
 				}
 				
 			 	var validEmployee=function(){
@@ -251,6 +254,15 @@ hrApp.directive("employee",["$http","cliviaDDS","util",function($http,cliviaDDS,
 					dataSource:["Canada","USA"]	
 				}
 				
+				
+				$scope.workTypeOptions={
+					dataSource:["Monthly","Hourly"]	
+				}
+				
+				$scope.apTypeOptions={
+						dataSource:["AM","PM"]	
+				}
+				
 				cliviaDDS.getDict("city").getItems()
 					.then(function(items){
 						$scope.cityOptions={
@@ -274,11 +286,24 @@ hrApp.directive("employee",["$http","cliviaDDS","util",function($http,cliviaDDS,
 				$scope.departmentOptions={
 					dataSource:['Deco','Garment','Production','Admin']
 				}
+				
+				$scope.premissionOptions={
+					dataSource:['0','1','2']		
+				}
 
 				$scope.positionOptions={
 					dataSource:['Sales','Operator','QC']
 				}						    
 				
+				$scope.startTimeOptions={
+						format: "hh:mm tt",
+						parseFormats:["HH:mm:ss"],
+				}
+				
+				$scope.endTimeOptions={
+						format: "hh:mm tt",
+						parseFormats:["HH:mm:ss"],
+				}
 				
 			}]};
 	return directive 
@@ -417,6 +442,8 @@ hrApp.factory("EmployeeGridWrapper",["GridWrapper",function(GridWrapper){
 
 hrApp.controller("hrCtrl",["$scope","EmployeeGridWrapper",function($scope,EmployeeGridWrapper){
 	
+	var backHome='<a href="http://192.6.2.204:8080/admin/login.php"><button class="k-button">Home</button></a>' //../../admin/main.php
+	
 	$scope.$on("kendoWidgetCreated", function(event, widget){
 		if (widget ===$scope.hrEmployeeGrid) {
 				$scope.employeeGW.wrapGrid(widget);
@@ -424,8 +451,6 @@ hrApp.controller("hrCtrl",["$scope","EmployeeGridWrapper",function($scope,Employ
 
 	});	
 
-	
-	
 	$scope.hrToolbarOptions={items: [{
 			        type: "button",
 			        text: "New",
@@ -462,7 +487,16 @@ hrApp.controller("hrCtrl",["$scope","EmployeeGridWrapper",function($scope,Employ
 			        click: function(e){
 			        	$scope.employeeGW.grid.saveAsExcel();
 			            }			
-			    }]};
+			    }, {
+			        type: "separator",
+				}, {
+	 	            	template:'Choose Theme:<theme-chooser></theme-chooser>'
+				}, {
+			        type: "separator",
+			    },{
+			    	template:backHome,	
+			      	}			
+			    ]};
 	
 	$scope.employeeGW=new EmployeeGridWrapper("hrEmployeeGrid");
 	$scope.employeeGW.doubleClickEvent=function(e) {

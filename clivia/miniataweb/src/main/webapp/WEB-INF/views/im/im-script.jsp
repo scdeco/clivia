@@ -345,12 +345,6 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 							}, {
 								type: "separator",
 							}, {
-								type: "button",
-								text: "Print",
-								id:"btnPrint"
-							}, {
-								type: "separator",
-							}, {
 						        type: "buttonGroup",
 	                            buttons: [
 	                                 {  text: "UPC", togglable: true, group:"changeView", toggle:changeView, selected: true},
@@ -373,7 +367,6 @@ imApp.directive('garmentProduct',["$http","cliviaDDS","util",function($http,cliv
 								type: "button",
 								text: "Generate UPC#",
 								id: "btnGenUpc",
-								enable:false,
 								click: function(e){
 									var cell=$scope.ugw.getCurrentCell();
 									var item=$scope.ugw.getCurrentDataItem();
@@ -1155,13 +1148,7 @@ imApp.controller("inventoryCtrl",["$scope","inventory","cliviaDDS",function($sco
 		            }
 		    }, {
 		        type: "separator",
-		    }, {
-		        type: "button",
-		        text: "Print",
-		        id:"btnPrint"
-		    }, {
-		        type: "separator",
-		    }, {	
+		    },{	
 		        type: "button",
 		        text: "Transaction",
 		        id: "btnTransaction",
@@ -1204,7 +1191,7 @@ imApp.controller("inventoryCtrl",["$scope","inventory","cliviaDDS",function($sco
 	$scope.$watch("inventory.brandId",function(newValue,oldValue){
 		var i=0;
 		inventory.brand=$scope.brandInput.dict.getLocalItem("id",inventory.brnadId);
-		//inventory.load();
+		inventory.load();
 	});
 	
 	$scope.openTransaction=function(){

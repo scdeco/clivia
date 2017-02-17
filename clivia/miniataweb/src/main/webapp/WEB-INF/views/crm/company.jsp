@@ -61,6 +61,7 @@
 						<input type="text" id="website" name="remark" class="k-textbox" style="width:100%;"  
 							ng-model="dataSet.info.website"/>
 					</li>
+				
 					
 					<li>
 		    			<label for="rep">Sales Rep.:</label>
@@ -84,6 +85,8 @@
 							ng-model="dataSet.info.term" k-options="termOptions"/>
 					</li>
 
+				
+					
 					<li> 
 						<label for="useWsp">
         				<input type="checkbox" name="useWsp"   
@@ -118,6 +121,7 @@
                 <li>Address</li>
                 <li>Instructions</li>
                 <li>Journal</li>
+                <li>Account</li>
               </ul>
           
               <div style="padding: 1em">
@@ -161,13 +165,40 @@
     					c-register-deleted-item-function="registerDeletedJournalItemFunction">
     				</div>
               </div>
+              
+              <div style="padding: 1em">	<!-- notes -->
+				  <form name="accountsForm" ng-submit="" novalidate class="simple-form">   
+ 
+	                 <label>Tax Code:</label>
+	                 <input kendo-dropdownlist name="taxCode" style="width:100%;"  
+							 k-options="taxOptions" ng-model="dataSet.info.taxCode"/><br/><br/>
+							 
+					<label for="gstExempt">GST Exempt:</label>
+					<input type="text" id="gstExempt" name="gstExempt" class="k-textbox" style="width:20%;" 
+	           	 	 		 ng-model="dataSet.info.gstExempt" /><br><br>
+						
+					<label for="pstExempt">PST Exempt:</label>
+					<input type="text" id="pstExempt" name="pstExempt" class="k-textbox" style="width:20%;" 
+	           	 	 		 ng-model="dataSet.info.pstExempt" /><br><br>		 
+							 
+	           	 	<label>Card Number:</label>
+	           	 	<input type="text" id="cardNum" name="cardNum" class="k-textbox" style="width:100%;" 
+	           	 	 		 ng-model="dataSet.info.cardNum" /><br><br>
+	           	 	 		 
+	           	 	<label>Expiry Date:</label>
+	           	 	<input type="text" id="expiryDate" name="expiryDate" class="k-textbox" style="width:100%;" 
+	           	 	 		 ng-model="dataSet.info.expiryDate" />
+	           	 	 		
+      			</form>
+	          </div>
+	          
             </div><!--end of tabstrip-->
 	 	</div> 	<!--end of second pane-->
 
 	</div>  <!--end of mainSplitter -->
  		
-<pre>
-dataSet:{{dataSet|json}}
-</pre> 		
+<!-- <pre>
+dataSet:{{dataSet|json}}//display the dataset
+</pre> 	 -->	
  		
  		

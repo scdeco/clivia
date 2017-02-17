@@ -28,12 +28,12 @@
 	<div id="top-pane">
 	</div>	<!-- top pane of outter splitter -->
 	
-	<div id="middle-pane">
+	<div id="middle-pane" style="height:905px">
 		<div kendo-toolbar id="hrToolbar" k-options="hrToolbarOptions"></div>
 		<div  kendo-grid="hrEmployeeGrid"  k-options="hrEmployeeGridOptions"></div>
 	</div> <!-- middle pane of outter splitter -->
 	
-	<div id="bottom-pane" style="height:200px;">
+	<div id="bottom-pane" style="height:0px;">
 	</div> <!-- bottom pane of outter splitter -->
 	
 </div>	<!-- end of hrSplitter -->

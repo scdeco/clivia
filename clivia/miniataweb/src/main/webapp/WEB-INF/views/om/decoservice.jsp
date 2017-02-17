@@ -8,7 +8,7 @@
 			            <li class="k-state-active">Embroidery</li>
 			            <li>Screen Printing</li>
 			            <li>Heat Transfer</li>
-			            <li>Laser Etching</li>
+			            <li>Ditigizing</li>
 			          </ul>
 			      
 			          <div style="padding: 1em">

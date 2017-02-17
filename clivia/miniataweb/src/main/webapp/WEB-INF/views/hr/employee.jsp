@@ -3,7 +3,7 @@
 	</form>
 
 	<h3> 
-		&nbsp{{dataSet.info.firstName}}&nbsp;&nbsp;{{dataSet.info.lastName}}
+		&nbsp{{dataSet.info.firstName}}&nbsp;&nbsp;{{dataSet.info.lastName}}&nbsp;&nbsp;ID: {{dataSet.info.id}}
 	</h3>
 
 	<div kendo-splitter="mainSplitter"  
@@ -27,6 +27,13 @@
 				    	<label for="lastName" class="required">Last Name:</label>
 						<input type="text" id="lastName" name="lastName" class="k-textbox" style="width:100%;"   
 							ng-model="dataSet.info.lastName" 
+							ng-trim="true"/>
+					</li>
+					
+					<li>
+				    	<label for="empNum" class="required">Emplyee No:</label>
+						<input type="text" id="empNum" name="empNum" class="k-textbox" style="width:100%;"   
+							ng-model="dataSet.info.empNum" 
 							ng-trim="true"/>
 					</li>
 					
@@ -64,7 +71,7 @@
 							ng-model="dataSet.info.isCsr"/>CSR
 						</label>
 					</li>
-					
+								
 					<li>
 						<label for="isActive">
         				<input type="checkbox" name="isActive"   
@@ -90,7 +97,8 @@
                 <li class="k-state-active">Contact Info</li>
                 <li>App User</li>
                 <li>Notes</li>
-                <li>Journal</li>
+                <li>Salary</li>
+                <li>Permission</li>
               </ul>
           
               <div style="padding: 1em">
@@ -168,18 +176,132 @@
               </div>
               
               <div style="padding: 1em">	<!-- notes -->
-           	 	<textarea name="note" style="width:100%;height:300px;" ng-model="dataSet.info.note"></textarea>			<!-- kendo-editor="noteEditor" -->
+           	 	<textarea id="note" name="note" style="width:100%;height:300px;" ng-model="dataSet.info.note"></textarea>			<!-- kendo-editor="noteEditor" -->
               </div>
               
+              
               <div style="padding: 1em">
-				<div kendo-grid="journalGrid" id="journalGrid" k-options="journalGridOptions"></div>
-			  	<ul kendo-context-menu k-options="journalGridContextMenuOptions">
-				  	<li id="journalAdd">Add</li>
-				  	<li id="journalInsert">Insert</li>
-				  	<li id="journalDelete">Delete</li>
-				</ul>
-              </div>
-            </div><!--end of tabstrip-->
+				<form name="salaryForm" ng-submit="" novalidate class="simple-form">
+			  		<ul class="fieldlist">
+				  		<li>
+				  			<label for="workType">Work Type:</label>
+				  			<kendo-combobox id="workType" name="workType" style="width:100px;"   
+									ng-model="dataSet.info.workType"  ng-trim="true" k-options="workTypeOptions"/>
+				  		</li>
+				  	
+				  		<li>
+						    <label for="salaryAmount">Amount:</label>
+							<input type="text" id="salaryAmount" name="salaryAmount" class="k-textbox" style="width:100px;"   
+									ng-model="dataSet.info.salaryAmount"  ng-trim="true" />
+							<p style=" display:inline">/Hour <b>Or</b> /Month</p>
+						</li>
+						
+						<li>
+						    <label for="startWork">Working Time:</label>
+							<input kendo-timepicker id="startWorkTime" name="startWrokTime" style="width:100px;" 
+							k-options="startTimeOptions" ng-model="dataSet.info.startWorkTime"/>		
+							<p style="display: inline">&nbsp To &nbsp</p>
+							<input kendo-timepicker id="endWorkTime" name="endWrokTime" style="width:100px;" 
+							k-options="endTimeOptions" ng-model="dataSet.info.endWorkTime"/>					
+						</li>
+						
+						<li>
+						    <label for="breakTime">Break Time:</label>
+							<input type="text" id="breakTime" name="breakTime" class="k-textbox" style="width:100px;text-align: right;"   
+									ng-model="dataSet.info.breakTime"  ng-trim="true" />
+							<p style="display: inline"> Mins </p>
+						</li>
+				  	
+					</ul>
+            	</form>
+            </div>
+            		
+            <div style="padding: 1em">
+				<form name="permissionForm" ng-submit="" novalidate class="simple-form">
+			  		<ul class="fieldlist">
+			  			<li>
+            		  		<label for="permissionExp0">0: Disable</label>
+            				<label for="permissionExp1">1: Read</label>
+            				<label for="permissionExp2">2: Edit/Delete</label>
+            			</li>
+            			<li>
+            				<table width='100%'>
+            					<tr>
+            						<td>Customer Management:</td>
+            						<td>
+            							<kendo-combobox id="crmPremission" name="crmPremission" style="width:60px;"   
+									ng-model="dataSet.info.crmPremission"  ng-trim="true" k-options="premissionOptions"/>
+									</td>
+				  				</tr>
+				  				<tr>
+				  					<td>Order Management:</td>
+				  					<td>
+				  						<kendo-combobox id="omPremission" name="omPremission" style="width:60px;"   
+									ng-model="dataSet.info.omPremission"  ng-trim="true" k-options="premissionOptions"/>
+				  					</td>
+				  				</tr>
+				  				<tr>
+				  					<td>Item Management:</td>
+				  					<td>
+				  						<kendo-combobox id="imPremission" name="imPremission" style="width:60px;"   
+									ng-model="dataSet.info.imPremission"  ng-trim="true" k-options="premissionOptions"/>
+									</td>
+				  				</tr>
+				  				<tr>
+				  					<td>Design Management:</td>
+				  					<td>
+				  						<kendo-combobox id="dstPremission" name="dstPremission" style="width:60px;"   
+									ng-model="dataSet.info.dstPremission"  ng-trim="true" k-options="premissionOptions"/>
+									</td>
+				  				</tr>
+				  				<tr>
+				  					<td>Employee Management:</td>
+				  					<td>
+				  						<kendo-combobox id="hrPremission" name="hrPremission" style="width:60px;"   
+									ng-model="dataSet.info.hrPremission"  ng-trim="true" k-options="premissionOptions"/>
+									</td>
+				  				</tr>
+				  				<tr>
+				  					<td>Invoice Management:</td>
+				  					<td>
+				  						<kendo-combobox id="ivPremission" name="ivPremission" style="width:60px;"   
+									ng-model="dataSet.info.ivPremission"  ng-trim="true" k-options="premissionOptions"/>
+									</td>
+				  				</tr>
+				  				<tr>
+				  					<td>Shipping Management:</td>
+				  					<td>
+				  						<kendo-combobox id="spiPremission" name="spiPremission" style="width:60px;"   
+									ng-model="dataSet.info.spiPremission"  ng-trim="true" k-options="premissionOptions"/>
+									</td>
+				  				</tr>
+				  				<tr>
+				  					<td>Production Management:</td>
+				  					<td>
+				  						<kendo-combobox id="pduPremission" name="pduPremission" style="width:60px;"   
+									ng-model="dataSet.info.pduPremission"  ng-trim="true" k-options="premissionOptions"/>
+									</td>
+				  				</tr>
+				  				<tr>
+				  					<td>Salary Management:</td>
+				  					<td>
+				  						<kendo-combobox id="salPremission" name="salPremission" style="width:60px;"   
+									ng-model="dataSet.info.salPremission"  ng-trim="true" k-options="premissionOptions"/>
+				  					</td>
+				  				</tr>
+				  				<tr>
+				  					<td>Company Summary:</td>
+				  					<td>
+				  						<kendo-combobox id="querryPremission" name="querryPremission" style="width:60px;"   
+									ng-model="dataSet.info.querryPremission"  ng-trim="true" k-options="premissionOptions"/>
+									</td>
+				  				</tr>
+				  			</table>
+				  		</li>
+				  	</ul>
+            	</form>
+           	</div> 
+           	
 	 	</div> 	<!--end of second pane-->
 
 	</div>  <!--end of mainSplitter -->

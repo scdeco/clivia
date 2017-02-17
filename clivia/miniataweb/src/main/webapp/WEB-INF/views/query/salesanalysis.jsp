@@ -4,7 +4,7 @@
                   { collapsible: true, resizable: true}]"
         k-options="analysisSplitterOptions"
 
-		style="height:900px;">
+		style="height:450px;">
 		<div id="first-pane">
 			<div kendo-toolbar id="analysisToolbar" k-options="analysisToolbarOptions"></div>
 	  		<div kendo-grid="analysisGrid" k-options="analysisGridOptions" k-rebind="analysisGridOptions"></div>

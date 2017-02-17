@@ -15,7 +15,6 @@ public class LoginServiceImpl implements LoginService {
 
 	@Override
 	public EmployeeInfo authenticate(String username, String password){
-
 		EmployeeInfo user=null;
 		if (!CliviaUtils.isBlank(username)){
 			user=employeeDao.findByUsername(username);

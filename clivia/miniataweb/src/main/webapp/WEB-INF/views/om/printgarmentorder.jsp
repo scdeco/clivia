@@ -93,7 +93,7 @@ window.onload = function main (){
 
 
         var output = "<div class='header' id='header'>";
-        var logo = "<img src='http://192.6.2.108:8080/clivia/resources/images/DD LOGO.jpg' alt='logo' style='height:auto;width:180px;'></img>";
+        var logo = "<img src='../resources/images/DD LOGO.jpg' alt='logo' style='height:auto;width:180px;'></img>";
         var innerTable = "<table class='left'>"
                         + "<tr><th>STITCHES CREATION INC.</th></tr>"
                         + "<tr><td>3889 Keith Street, Unit D</td></tr>"

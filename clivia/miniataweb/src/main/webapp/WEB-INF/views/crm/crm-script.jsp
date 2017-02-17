@@ -66,7 +66,7 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 			    	if(!validCompany()) return;
 					var url=baseUrl+"save-company";
 					
-					if(scope.companyForm.$dirty||scope.instructionsForm.$dirty)
+					if(scope.companyForm.$dirty||scope.instructionsForm.$dirty||scope.accountsForm.$dirty)
 						scope.dataSet.info.isDirty=true;
 
 					
@@ -100,6 +100,7 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 					
 					scope.companyForm.$setPristine();
 					scope.instructionsForm.$setPristine();
+					scope.accountsForm.$setPristine();
 				}
 				
 			 	var validCompany=function(){
@@ -221,6 +222,12 @@ crmApp.directive("company",["$http","cliviaDDS","util",function($http,cliviaDDS,
 				$scope.termOptions={
 						dataSource:util.getTerms()
 				}
+				
+				
+				$scope.taxOptions={
+						dataSource:["No tax","E-GST exempt","G-GST 5.00%","I-GST 7.00%, included","P-PST 7.00%","B-PST 7.00%, GST 5.00%","H-HST 12.0%","H-HST 13%"]	
+				}
+				
 				
 				$scope.mainSplitterOptions={
 						resize:function(e){
@@ -411,14 +418,14 @@ crmApp.factory("CompanyGridWrapper",["GridWrapper",function(GridWrapper){
 
 
 crmApp.controller("crmCtrl",["$scope","CompanyGridWrapper",function($scope,CompanyGridWrapper){
-	
+	var backHome='<a href="http://192.6.2.204:8080/admin/login.php"><button class="k-button">Home</button></a>' //../../admin/main.php
 	$scope.$on("kendoWidgetCreated", function(event, widget){
 		if (widget ===$scope.crmCompanyGrid) {
 				$scope.cgw.wrapGrid(widget);
 		}
 		
 		if ($scope.companyCard){
-			if(widget ===$scope.companyCard.regularEditor)
+			if(widget ===$scope.companyCard.regularEditor)1
 		        $("[data-role='editor']").each(function () {
 		            $(this).getKendoEditor().refresh();
 		        });
@@ -467,6 +474,15 @@ crmApp.controller("crmCtrl",["$scope","CompanyGridWrapper",function($scope,Compa
 			        click: function(e){
 			        	$scope.clearFilter();
 			        }
+			    }, {
+				        type: "separator",
+				}, {
+	 	            	template:'Choose Theme:<theme-chooser></theme-chooser>'
+				}, {
+			        type: "separator",
+				}, {
+				    	template:backHome,	
+			     
 	}]};
 	
 	$scope.cgw=new CompanyGridWrapper("crmCompanyGrid");

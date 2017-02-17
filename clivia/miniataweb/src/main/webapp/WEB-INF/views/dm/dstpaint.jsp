@@ -1,5 +1,5 @@
 
-    <div class="k-header wide" style="height:800px;">
+    <div class="k-header wide" style="height:855px;">
       	<div 	kendo-splitter="DstSplitter"  
       			k-orientation="'horizontal'" 
 				k-panes="[ { collapsible: false},

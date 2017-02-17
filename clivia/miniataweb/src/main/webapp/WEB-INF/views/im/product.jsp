@@ -13,7 +13,7 @@
 			k-panes="[{ collapsible: true, resizable: true, size: '300px'},
             	      { collapsible: true, resizable: true}]"
             k-options="mainSplitterOptions"
-			style="height:720px;">
+			style="height:680px;">
 			
 		<div>		<!-- first pane -->
 			<form name="productForm" ng-submit="" novalidate class="simple-form">
@@ -106,7 +106,7 @@
 	 	</div> 	<!--end of second pane-->
 
 	</div>  <!--end of mainSplitter -->
-<pre>
+ <pre>
 dataSet:{{dataSet|json}}
 </pre> 		
  		

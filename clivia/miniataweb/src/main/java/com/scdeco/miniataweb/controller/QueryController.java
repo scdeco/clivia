@@ -1,8 +1,11 @@
 package com.scdeco.miniataweb.controller;
 
-import java.security.Principal;
+/*have get name and already changed*/
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,9 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.scdeco.miniataweb.dao.EmployeeInfoDao;
-import com.scdeco.miniataweb.model.EmployeeInfo;
+
 
 @Controller
+@Scope("session")
 @RequestMapping("/query/*")
 public class QueryController {
 	
@@ -21,11 +25,12 @@ public class QueryController {
 	private EmployeeInfoDao employeeInfoDao;	
 	
 	@RequestMapping(value="/",method=RequestMethod.GET)
-	public String getQueryMain(Model model,Principal principal){
-		
-		model.addAttribute("theme", employeeInfoDao.getTheme(principal.getName()));
-
-		
+	public String getQueryMain(Model model,HttpServletRequest request){
+		String username = (String) request.getSession().getAttribute("loginuser");
+		System.out.println("-------------------------->>>>QueryController------" + username);
+		model.addAttribute("theme", employeeInfoDao.getTheme(username));
+		if(username == null)
+			return "login/login";
 		return "query/query";
 	}
 	

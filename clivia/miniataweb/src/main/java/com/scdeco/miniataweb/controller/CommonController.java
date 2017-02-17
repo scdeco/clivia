@@ -1,5 +1,7 @@
 package com.scdeco.miniataweb.controller;
 
+/*no get name need to be changed*/
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

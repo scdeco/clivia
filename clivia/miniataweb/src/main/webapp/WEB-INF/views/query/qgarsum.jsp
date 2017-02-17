@@ -20,7 +20,7 @@
                   { collapsible: false,size:'550px'},
                   { collapsible: true, resizable: true}]"
         k-options="query.splitterOptions"
-		style="height:900px;">
+		style="height:960px;">
 		 
 	<div id="top-pane">
 		
@@ -31,8 +31,8 @@
 		<div  kendo-grid="garsum"  k-options="garSumGridOptions"></div>
 	</div> <!-- middle pane of outter splitter -->
 	
-	<div id="bottom-pane" style="height:300px;">
-	</div> <!-- bottom pane of outter splitter -->
+	<!-- <div id="bottom-pane" style="height:300px;">
+	</div> bottom pane of outter splitter -->
 	
 </div>	<!-- end of querySplitter -->
 

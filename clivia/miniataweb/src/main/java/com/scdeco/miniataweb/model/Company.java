@@ -29,6 +29,7 @@ public class Company {
 	public void setAddresses(List<CompanyAddress> addresses) {
 		this.addresses = addresses;
 	}
+
 	public List<CompanyJournal> getJournals() {
 		return journals;
 	}

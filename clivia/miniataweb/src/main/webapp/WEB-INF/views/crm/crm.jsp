@@ -24,13 +24,13 @@
 	<div id="top-pane">
 	</div>	<!-- top pane of outter splitter -->
 	
-	<div id="middle-pane">
+	<div id="middle-pane" style="height:914px">
 		<div kendo-toolbar id="crmToolbar" k-options="crmToolbarOptions"></div>
 		<div  kendo-grid="crmCompanyGrid"  k-options="crmCompanyGridOptions"></div>
 	</div> <!-- middle pane of outter splitter -->
 	
-	<div id="bottom-pane" style="height:200px;">
-	</div> <!-- bottom pane of outter splitter -->
+<!-- 	<div id="bottom-pane" style="height:200px;">
+	</div> bottom pane of outter splitter -->
 	
 </div>	<!-- end of crmSplitter -->
 

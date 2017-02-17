@@ -1,5 +1,7 @@
 package com.scdeco.miniataweb.controller;
 
+/*no get name need to be changed*/
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

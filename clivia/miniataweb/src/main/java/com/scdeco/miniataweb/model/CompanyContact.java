@@ -50,6 +50,7 @@ public class CompanyContact  extends CliviaSuperModel{
 	@Column(name="Remark",length=200)
 	private String  remark;
 
+
 	public int getId() {
 		return id;
 	}
@@ -153,6 +154,7 @@ public class CompanyContact  extends CliviaSuperModel{
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
+
 
 
 }

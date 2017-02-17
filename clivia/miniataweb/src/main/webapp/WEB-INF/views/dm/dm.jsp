@@ -17,12 +17,12 @@
 <body ng-app="embDesignApp" spellcheck="false">
 	<div ng-controller="dmCtrl">
 	   	<div kendo-toolbar id="dstToolbar" k-options="dstToolbarOptions"></div>
-	   	<br>
+	 	<div kendo-toolbar id="endFrom" style="top:0px;width:100%;position:relative;height:25px;display:block;"></div>
      	<div 	kendo-splitter="dmSplitter"  
       			k-orientation="'horizontal'" 
 				k-panes="[{ collapsible: true, resizable: true,size:'700px'}
 						 ,{ collapsible: true,resizable: true}]"
-	   	 		style="height:800px;">
+	   	 		style="height:860px;">
 		    	 
 		   	<div>
 		   		<div kendo-grid="colourwayGrid" k-options="colourwayGridOptions">	</div>
@@ -91,12 +91,12 @@
  			<div  query-grid="queryGrid"  c-grid-no="'401'" c-options="queryGridOptions"></div> 
 		</div>
 			
-<pre>
-<!-- printModel={{myDstPaint.printModel|json}} -->
+<!-- <pre>
+printModel={{myDstPaint.printModel|json}}
  
-<!--  	dataSet:{{dataSet|json}}  -->
-</pre>
- 
+ 	dataSet:{{dataSet|json}} 
+</pre> -->
+ <div kendo-toolbar id="endFrom" style="top:921px;width:100%;position:fixed;height:15px;display:block;"></div>
 
 	</div>
 </body>
@@ -116,7 +116,7 @@ designApp.controller("dmCtrl",
 			
 			
 			var imgUrl="../resources/images/";
-
+			var backHome='<a href="http://192.6.2.204:8080/admin/login.php"><button class="k-button">Home</button></a>' //../../admin/main.php
 			var searchTemplate='<kendo-combobox name="searchDesignNumber" k-placeholder="\'Search Design#\'" ng-model="searchDesignNumber"  k-options="searchDesignNumberOptions" style="width: 140px;" />';
 			
 			$scope.dstToolbarOptions={items: [{
@@ -207,6 +207,10 @@ designApp.controller("dmCtrl",
 	                type: "separator",
  	            }, {
  	            	template:'Choose Theme:<theme-chooser></theme-chooser>'
+				},{
+	                type: "separator",
+ 	            },{
+			    	template:backHome,	
 			}]};
 			
 			$scope.queryToolbarOptions={
@@ -575,8 +579,6 @@ designApp.controller("dmCtrl",
 </script>
 <style>
 
-
-				
 
 	.k-grid td
 	{

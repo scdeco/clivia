@@ -1,5 +1,7 @@
 package com.scdeco.miniataweb.controller;
 
+/*no get name dont need to change*/
+
 import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

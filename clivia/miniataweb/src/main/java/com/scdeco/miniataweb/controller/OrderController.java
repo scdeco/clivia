@@ -1,11 +1,14 @@
 package com.scdeco.miniataweb.controller;
 
+/*have get name and already changed*/
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +28,7 @@ import com.scdeco.miniataweb.model.OrderInfo;
 
 
 @Controller
+@Scope("session")
 @RequestMapping("/om/*")
 public class OrderController {
 	
@@ -36,11 +40,22 @@ public class OrderController {
 	
 	@Autowired
 	private EmployeeInfoDao employeeInfoDao;
-	
+	EmployeeInfo employee;
 
 	@RequestMapping(value="/",method=RequestMethod.GET)
-	public String order(Model model,Principal principal){
-		model.addAttribute("theme", employeeInfoDao.getTheme(principal.getName()));
+	public String order(Model model, HttpServletRequest request){
+		
+		String loginuser = (String) request.getSession().getAttribute("loginuser");
+		System.out.println("-------------------------->>>>OrderController------" + loginuser);
+		if(loginuser == null){
+			
+			model.addAttribute("theme", employeeInfoDao.getTheme(loginuser));
+		}else{
+			model.addAttribute("theme", employeeInfoDao.getTheme(loginuser));
+		}
+		
+		if (loginuser == null)
+			return "login/login";
 		
 		List<DictOrderInsertableItem> orderInsertableItems=dictOrderInsertableItemDao.findList(); 
 
@@ -75,9 +90,9 @@ public class OrderController {
 	}
 
 	@RequestMapping(value="save-order",method=RequestMethod.POST)
-	public @ResponseBody  OrderClivia saveOrder(@RequestBody OrderClivia order,Principal principal) 
+	public @ResponseBody  OrderClivia saveOrder(@RequestBody OrderClivia order,HttpServletRequest request) 
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
-		String username=principal.getName();
+		String username= (String) request.getSession().getAttribute("loginuser");
 		EmployeeInfo employeeInfo=employeeInfoDao.findByUsername(username);
 		OrderInfo orderInfo=order.getInfo();
 		orderInfo.setCreateBy(employeeInfo.getId());

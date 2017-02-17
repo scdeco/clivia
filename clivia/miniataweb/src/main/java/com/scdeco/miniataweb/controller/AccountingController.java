@@ -1,7 +1,9 @@
-package com.scdeco.miniataweb.controller;
+/*package com.scdeco.miniataweb.controller;
 
 import java.security.Principal;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -29,7 +31,8 @@ public class AccountingController {
 	private InvoiceDao invoiceDao;
 
 	@RequestMapping(value="/",method=RequestMethod.GET)
-	public String getAccuntingPage(Model model,Principal principal){
+	public String getAccuntingPage(Model model,HttpServletRequest request){
+		
 		model.addAttribute("theme", employeeInfoDao.getTheme(principal.getName()));
 		
 		return "ac/ac";
@@ -83,3 +86,4 @@ public class AccountingController {
 
 
 }
+*/

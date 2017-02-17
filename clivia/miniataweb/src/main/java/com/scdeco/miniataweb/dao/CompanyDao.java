@@ -22,7 +22,6 @@ public class CompanyDao extends GenericItemSetDao<Company>{
 		mainItem.dependentItems.add(contact);
 		mainItem.dependentItems.add(address);
 		mainItem.dependentItems.add(journal);
-		
 		super.setMainItem(mainItem);
 	}
 	

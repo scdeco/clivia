@@ -23,10 +23,11 @@
                   { collapsible: false,size:'550px'},
                   { collapsible: true, resizable: true}]"
         k-options="inventory.splitterOptions"
-		style="height:900px;">
+		style="height:950px;">
 		 
 	<div id="top-pane">
 			Brand: <brand-dropdownlist c-options="{name:'brandInput'}"  ng-model="inventory.brandId" ></brand-dropdownlist>
+			<a href="http://192.6.2.204:8080/admin/login.php"><button class="k-button">Home</button></a>
 	</div>	<!-- top pane of outter splitter -->
 	
 	<div id="middle-pane">
@@ -36,7 +37,7 @@
 		
 	</div> <!-- middle pane of outter splitter -->
 	
-	<div id="bottom-pane" style="height:300px;">
+	<div id="bottom-pane">
 		<div kendo-tab-strip k-animation="false">
    			<ul>
    				<li class="k-state-active">UPC</li>
@@ -56,7 +57,7 @@
 
 <div kendo-window="transactionEntryWindow"
 		k-width="850"
-	 	k-height="810"
+	 	k-height="720"
 	 	k-position="{top: 50, left: 100 }"	
 	 	k-resizable="true"
 		k-draggable="true"
@@ -71,7 +72,7 @@
 
 <div kendo-window="garmentProductWindow"
 		k-width="1200"
-	 	k-height="900"
+	 	k-height="790"
 	 	k-position="{top: 50, left: 100 }"	
 	 	k-resizable="true"
 		k-draggable="true"
@@ -84,8 +85,7 @@
 
 	<div garment-product="garmentProduct" c-brand-id="inventory.brandId" ></div>
 </div>
-
-
+<div kendo-toolbar id="endFrom" style="top:960px;width:100%;position:fixed;height:25px;display:block;"></div> 
 </body>
 <style>
 	.k-grid td

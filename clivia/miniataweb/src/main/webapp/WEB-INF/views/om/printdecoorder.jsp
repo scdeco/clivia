@@ -288,8 +288,8 @@ window.onload = function (){
                     + "<tr>"
                     + "<th width= 20px class='left'>Phone:</th>"
                     + "<td width= 188px class='left'>" + (order.phone?order.phone:"") + "</td>"
-                    + "<th width= 15px class='left'>Fax:</th>"
-                    + "<td width= 130px class='left'>" + (order.fax?order.fax:"") + "</td>"
+                    + "<th width= 15px class='left'>Email:</th>"
+                    + "<td width= 130px class='left'>" + (order.email?order.email:"") + "</td>"
                     + "<th width= 20px class='left'>Issued:</th>"
                     + "<td width= 45px; class='left'>" + (order.issued?order.issued:"")  + "</td>"
                     + "</tr>"
@@ -319,14 +319,14 @@ window.onload = function (){
     //----------------------regular instructions part--------------------
     function regularIns(){
 
-        var instructions = (order.instructions?order.instructions:"");
+        var instructions = (order.note?order.note:"");
         //every list is in this div, this div holds the position for all tables, close before </html>.
         var regularIns = "";
 
         regularIns += "<div class='regularIns' id='regularIns' style='border-style: groove;'>"
                         + "Regular Instructions:";
         regularIns +="<table width = 700px>"
-                    + "<tr><td>" + ("&nbsp").repeat(12)+ (order.instructions?order.instructions:"") + "</td></tr></table><br>"
+                    + "<tr><td>" + ("&nbsp").repeat(12)+ instructions + "</td></tr></table><br>"
         regularIns += "</div>"
         display(regularIns);
         var regularInsHeight = $("#regularIns").outerHeight();
@@ -602,7 +602,6 @@ window.onload = function (){
                         + positionList + "</table>"
                         + "</td></tr>";
                 garmentsTotalQty += parseInt((garment.qty||0));
-                console.log(garmentsTotalQty);
                 output += "<tr style='border-bottom:solid 1px;'>"
                         + "<td width ='50px'" + height + "class='image'style='background-image:url(&quot;"
                         + imageUrl

@@ -1,8 +1,11 @@
 package com.scdeco.miniataweb.controller;
 
-import java.security.Principal;
+/*have get name and already changed*/
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +19,7 @@ import com.scdeco.miniataweb.dao.GridDao;
 import com.scdeco.miniataweb.model.Grid;
 
 @Controller
+@Scope("session")
 @RequestMapping("/gd/*")
 public class GridController {
 
@@ -26,9 +30,13 @@ public class GridController {
 	private EmployeeInfoDao employeeInfoDao;
 	
 	@RequestMapping(value="/",method=RequestMethod.GET)
-	public String list(Model model,Principal principal){
-		model.addAttribute("theme", employeeInfoDao.getTheme(principal.getName()));
-
+	public String list(Model model,HttpServletRequest request){
+		
+		String loginuser = (String) request.getSession().getAttribute("loginuser");
+		System.out.println("-------------------------->>>>GridController------" + loginuser);
+		model.addAttribute("theme", employeeInfoDao.getTheme(loginuser));
+		if(loginuser == null)
+			return "login/login";
 		return "gd/gd";
 	}
 	

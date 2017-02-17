@@ -1,10 +1,14 @@
 package com.scdeco.miniataweb.controller;
 
-import java.security.Principal;
+/*have get name and already changed*/
+
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,6 +26,7 @@ import com.scdeco.miniataweb.model.EmployeeInfo;
 import com.scdeco.miniataweb.service.CliviaLibrary;
 
 @Controller
+@Scope("session")
 @RequestMapping("/lib/*")
 public class LibraryController {
 	
@@ -37,12 +42,12 @@ public class LibraryController {
 	@RequestMapping(value = "{type}/upload", method = RequestMethod.POST)
 	public  @ResponseBody Map<String, Object> uploadFile( @RequestParam("file") MultipartFile file,
 														  @RequestParam(value="data",required=false) String data, 
-														  @PathVariable String type, Principal principal){
-
-		String username=principal.getName();
+														  @PathVariable String type,HttpServletRequest request){
+		String loginuser = (String) request.getSession().getAttribute("loginuser");
+		String username=loginuser;
 		EmployeeInfo employeeInfo=employeeInfoDao.findByUsername(username);
 		String uploadBy=employeeInfo.getFirstName();
-
+		System.out.println("-------------------------->>>>DesignController------" + username);
 	    Map<String, Object> result=cliviaLibrary.saveFileToLib(type,file,uploadBy, data);
 	    
 	    return result;

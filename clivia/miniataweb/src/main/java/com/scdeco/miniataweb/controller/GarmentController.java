@@ -1,8 +1,11 @@
 package com.scdeco.miniataweb.controller;
 
-import java.security.Principal;
+/*have get name and already changed*/
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +21,7 @@ import com.scdeco.miniataweb.model.Garment;
 import com.scdeco.miniataweb.model.GarmentTrans;
 
 @Controller
+@Scope("session")
 @RequestMapping("/im/*")
 public class GarmentController {
 	
@@ -27,14 +31,21 @@ public class GarmentController {
 	@Autowired
 	GarmentTransDao garmentTransDao;
 	
+	
 	@Autowired
 	private EmployeeInfoDao employeeInfoDao;
 	
 	@RequestMapping(value="/",method=RequestMethod.GET)
-	public String  inventory(Model model,Principal principal){
+	public String  inventory(Model model, HttpServletRequest request){
+		String loginuser = (String) request.getSession().getAttribute("loginuser");
+		System.out.println("-------------------------->>>>GarmentController------" + loginuser);
 		
-		model.addAttribute("theme", employeeInfoDao.getTheme(principal.getName()));
+		model.addAttribute("theme", employeeInfoDao.getTheme(loginuser));
+		//model.addAttribute("theme", "blueopal");
 
+		if(loginuser == null)
+			return "login/login";
+		
 		return "im/im";
 	}
 	
@@ -95,5 +106,7 @@ public class GarmentController {
 		garmentTransDao.deleteGarmentTransDetailByTransId( transId);
 		return "";
 	}
+	
+
 		
 }

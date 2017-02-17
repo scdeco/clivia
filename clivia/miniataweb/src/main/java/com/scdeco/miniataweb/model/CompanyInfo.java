@@ -51,6 +51,7 @@ public class CompanyInfo  extends CliviaSuperModel{
 	@Column(name="Term",length=50)
 	private String term;
 	
+
 	//peecentage off
 	@Column(name="Discount")
 	private BigDecimal discount;
@@ -65,6 +66,21 @@ public class CompanyInfo  extends CliviaSuperModel{
 	@Column(name="PricingInstructions",columnDefinition="TEXT")
 	private String pricingInstructions;
 
+	@Column(name="cardNum",length=20)
+	private String cardNum;
+
+	@Column(name="taxCode",length=60)
+	private String taxCode;
+
+	@Column(name="expiryDate",length=10)
+	private String expiryDate;
+	
+	@Column(name="pstExempt",length=60)
+	private String pstExempt;
+	
+	@Column(name="gstExempt",length=60)
+	private String gstExempt;
+	
 	public int getId() {
 		return id;
 	}
@@ -168,6 +184,7 @@ public class CompanyInfo  extends CliviaSuperModel{
 	public void setTerm(String term) {
 		this.term = term;
 	}
+	
 
 	public BigDecimal getDiscount() {
 		return discount;
@@ -199,6 +216,46 @@ public class CompanyInfo  extends CliviaSuperModel{
 
 	public void setPricingInstructions(String pricingInstructions) {
 		this.pricingInstructions = pricingInstructions;
+	}
+
+	public String getCardNum() {
+		return cardNum;
+	}
+
+	public void setCardNum(String cardNum) {
+		this.cardNum = cardNum;
+	}
+
+	public String getTaxCode() {
+		return taxCode;
+	}
+
+	public void setTaxCode(String taxCode) {
+		this.taxCode = taxCode;
+	}
+
+	public String getExpiryDate() {
+		return expiryDate;
+	}
+
+	public void setExpiryDate(String expiryDate) {
+		this.expiryDate = expiryDate;
+	}
+
+	public String getPstExempt() {
+		return pstExempt;
+	}
+
+	public void setPstExempt(String pstExempt) {
+		this.pstExempt = pstExempt;
+	}
+
+	public String getGstExempt() {
+		return gstExempt;
+	}
+
+	public void setGstExempt(String gstExempt) {
+		this.gstExempt = gstExempt;
 	}
 
 

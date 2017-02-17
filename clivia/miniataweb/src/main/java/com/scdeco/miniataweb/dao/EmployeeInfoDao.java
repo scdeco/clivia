@@ -12,7 +12,6 @@ public class EmployeeInfoDao extends GenericDao<EmployeeInfo> {
 
 	public EmployeeInfo findByUsername(String username) {
 		List<EmployeeInfo> list=this.findList(super.createCriteria().add(Restrictions.eq("username", username)));
-		
 		return list.isEmpty()?null:list.get(0);
 	}
 	

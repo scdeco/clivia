@@ -1,8 +1,13 @@
 package com.scdeco.miniataweb.controller;
 
+/*have get name and already changed*/
+
 import java.security.Principal;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +22,7 @@ import com.scdeco.miniataweb.model.EmployeeInfo;
 import com.scdeco.miniataweb.model.LibEmbDesign;
 
 @Controller
+@Scope("session")
 @RequestMapping("/lib/emb/*")
 public class LibEmbDesignController {
 	
@@ -27,10 +33,11 @@ public class LibEmbDesignController {
 	private EmployeeInfoDao employeeInfoDao;
 	
 	@RequestMapping(value="/",method=RequestMethod.GET)
-	public String  dm(Model model,Principal principal){
-		
-		String username=principal.getName();
+	public String  dm(Model model,Principal principal,HttpServletRequest request){
+		String loginuser = (String) request.getSession().getAttribute("loginuser");
+		String username=loginuser;
 		EmployeeInfo employeeInfo=employeeInfoDao.findByUsername(username);
+		System.out.println("-------------------------->>>>LibEmbController------" + username);
 		String theme=employeeInfo!=null?employeeInfo.getTheme():"default";
 		model.addAttribute("theme", theme!=null?theme:"default");		
 		return "dm/dm";

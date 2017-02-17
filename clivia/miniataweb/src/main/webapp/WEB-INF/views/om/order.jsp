@@ -24,21 +24,26 @@
 </head>
 
 <body  class="k-content" ng-controller="orderCtrl" spellcheck="false">
+	
   <div ui-view="main"></div>
 </body>
 
 <style>
 
-
+	html {
+  		height: 100%;
+	}
+	body {
+ 		 min-height: 100%;
+	}
 	/* 	the grid in garmentInput Window	 */
 	#styleGrid .k-grid-content tr td:not(:last-child){
  	   text-align: right;
 	  }		
 	#styleGrid .k-grid-content tr td:first-child{
  	   font-weight: bold;
-	  }		
-				
-	
+	  }	
+		
 	/* no wrap */	
 	.k-grid td{
    		white-space: nowrap;

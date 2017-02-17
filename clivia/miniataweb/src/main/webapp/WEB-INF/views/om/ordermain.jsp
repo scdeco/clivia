@@ -30,18 +30,21 @@
 			
 		</div>
 		
- <pre>
+ <pre> 
 <!-- to get testing data of print model	  printModel={{SO.printModel}}  -->
- printModel={{SO.printModel|json}}
+  printModel={{SO.printModel|json}}
  	dataSet:{{SO.dataSet|json}} 
 <!-- 	instance:{{SO.instance|json}} -->
 <!-- 	dds:{{SO.dds|json}} -->
-<!-- 	company:{{SO.company|json}} -->
-</pre> 
+	company:{{SO.company|json}}
+<!-- <form name="endForm" ng-submit="" novalidate> -->
+	<div kendo-toolbar id="endFrom" style="top:920px;width:100%;position:fixed;height:20px;display:block;"></div>
+<!-- </form> -->
+</pre>  
 
 <div kendo-window="queryWindow"			
 		k-width="1000"
-	 	k-height="680"
+	 	k-height="690"
 	 	k-position="{top: 45, left: 320 }"	
 	 	k-resizable="true"
 		k-draggable="true"
@@ -56,7 +59,7 @@
 
 <div kendo-window="companyWindow"
 		k-width="1200"
-	 	k-height="700"
+	 	k-height="710"
 	 	k-position="{top: 50, left: 100 }"	
 	 	k-resizable="true"
 		k-draggable="true"
