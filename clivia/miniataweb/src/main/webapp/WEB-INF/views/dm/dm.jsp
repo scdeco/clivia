@@ -9,7 +9,7 @@
 	<%@include file="../common/factories.jsp"%>
 	<%@include file="../common/directives.jsp"%>
 </head>
-<body ng-app="embDesignApp" spellcheck="false">
+<body  class="k-content" ng-app="embDesignApp" spellcheck="false">
 	<div ng-controller="dmCtrl">
 	   	<div kendo-toolbar id="dstToolbar" k-options="dstToolbarOptions"></div>
      	<div 	kendo-splitter="dmSplitter"  
@@ -28,6 +28,7 @@
 			
 		</div>      		   	
 
+        <div dst-stage="myStage"></div>
 		<div kendo-window="newUploadWindow" k-title="'Upload DST'"
 		           k-width="600" k-height="500" k-visible="false" k-options="newUploadWindowOptions">
 			<input kendo-upload  name="file"  type="file" k-options="newUploadOptions" />
@@ -82,7 +83,7 @@
 <pre>
 <!-- printModel={{myDstPaint.printModel|json}} -->
  
- 	dataSet:{{dataSet|json}} 
+ 	<!-- dataSet:{{dataSet|json}} --> 
 </pre>
  
 

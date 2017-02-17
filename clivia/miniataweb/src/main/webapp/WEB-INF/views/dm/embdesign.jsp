@@ -1,229 +1,10 @@
 <script>
 angular.module("embdesign",	["kendo.directives","clivia"]).
 
-factory("Selector",function(){
-	var ANCHOR_HALF_SIZE=3,ANCHOR_SIZE=ANCHOR_HALF_SIZE*2+1;
-	var Anchor=function(x,y,id,name) {
-		var config={
-            x: x,
-            y: y,
-            width: ANCHOR_SIZE,
-			height: ANCHOR_SIZE,
-            stroke: 'black',
-           	fill: 'white',
-            strokeWidth: 1,
-            id:id,
-            name: name,
-            draggable: true,
-        };
-        this._initAnchor(config);
-		this.originalCursor='default';
-		this.curosr=name+"-resize";
-		
-        this.on('dragmove', function () { 
-        	this.getParent().update(this);
-        });
-        this.on('mousedown touchstart', function () {
-        	this.getParent().draggable(false);
-        });
-        this.on('dragend', function () {
-        	var p=this.getParent();
-        	p.draggable(p.selectedDraggable);
-            p.update(this);
-        });
-        
-        // add hover styling
-        this.on('mouseover', function () {
-        	this.originalCursor=document.body.style.cursor;
-            document.body.style.cursor =this.curosr;
-        });
-        this.on('mouseout', function () {
-            document.body.style.cursor = this.originalCursor;
-        });
-    };
-    
-    Anchor.prototype = {
-        _initAnchor: function(config) {
-            Kinetic.Rect.call(this, config);
-            },
-    };
-	Kinetic.Util.extend(Anchor, Kinetic.Rect);	
-	
-	
-	var Selector=function(){
-		
-		this.selected=null;
-		this.selectedDraggable=true;
-		this.anchors=[];
-		this.lines=[];
-		this.keepRatio=true;
-		this.ratio=1;
-		
-		var config={
-				visible:false
-				};
-		this._initSelector(config);
-	}
-	
-	Selector.prototype={
-			
-		_initSelector:function(config){
-			Kinetic.Group.call(this,config);
-			this.anchors.push(new Anchor(0,0,"nw","nwse"));
-			this.anchors.push(new Anchor(0,0,"w","ew"));
-			this.anchors.push(new Anchor(0,0,"sw","nesw"));
-			this.anchors.push(new Anchor(0,0,"n","ns"));
-			this.anchors.push(new Anchor(0,0,"s","ns"));
-			this.anchors.push(new Anchor(0,0,"ne","nesw"));
-			this.anchors.push(new Anchor(0,0,"e","ew"));
-			this.anchors.push(new Anchor(0,0,"se","nwse"));
-
-			var selector=this;
-			for(var i=0;i<8;i++){
-				anchor=this.anchors[i];
-				this.add(anchor);
-			}			
-		},
-			
-		setSelected:function(selected){
-			if(selected===this.selected) return;
-			if(this.selected!=null){
-				//remove this object from selector and put back into it's original parent. 
-				//ZIndex and draggable properties are recoverd as well.
-				var ap=this.getAbsolutePosition();
-				this.getParent().add(this.selected);
-				this.selected.setAbsolutePosition({x:ap.x+ANCHOR_HALF_SIZE,y:ap.y+ANCHOR_HALF_SIZE});
-				this.selected.setZIndex(this.getZIndex());
-				this.selected.draggable(this.selectedDraggable);
-				this.selected=null;
-			};
-			if(selected!=null){
-				this.selected=selected;
-				this.selectedDraggable=selected.draggable();
-				selected.draggable(false);
-				this.draggable(this.selectedDraggable);
-				
-				var parent=selected.getParent();
-				var zIndex=selected.getZIndex();
-				var ap=selected.getAbsolutePosition();
-							  
-				var w=selected.getWidth()+ANCHOR_HALF_SIZE*2;
-				var h=selected.getHeight()+ANCHOR_HALF_SIZE*2;
-				this.ratio=w/h;
-
-				parent.add(this);
-				this.setZIndex(zIndex);
-				this.add(selected);
-				selected.moveToBottom();
-
-				ap.x-=ANCHOR_HALF_SIZE;
-				ap.y-=ANCHOR_HALF_SIZE;
-
-				this.show();
-
-				this.adjust(ap,w,h);
-			}else{
-				
-				this.hide();
-			}
-			this.drawLayer();
-		},
-		
-		drawLayer:function(){
-			var layer=this.getLayer();
-			
-			//apply filters, otherwise image will not be resized
-			if(this.selected!=null){
-				var filters=this.selected.filters();
-				if(filters!=null && filters.length>0){
-					this.selected.cache();
-					this.selected.filters(filters);
-				}
-			}
-			
-			if(layer) layer.draw();
-		},
-		
-		update:function(anchor){
-				var ap,ap0,ap1;		//Absolute Position
-				var ow=this.getWidth(),oh=this.getHeight();		//width and height before adjusted
-		        switch (anchor.name()) {
-		            case 'nwse':
-		            	ap0=this.anchors[0].getAbsolutePosition();	//nw
-		            	ap1=this.anchors[7].getAbsolutePosition();	//se
-		            	w=Math.abs(ap1.x-ap0.x)+ANCHOR_SIZE;
-		            	h=Math.abs(ap1.y-ap0.y)+ANCHOR_SIZE;
-		            	ap=ap0;
-		            	break;
-		            case 'nesw':
-		            	ap0=this.anchors[2].getAbsolutePosition();	//sw
-		            	ap1=this.anchors[5].getAbsolutePosition();	//ne
-		            	w=Math.abs(ap1.x-ap0.x)+ANCHOR_SIZE;
-		            	h=Math.abs(ap1.y-ap0.y)+ANCHOR_SIZE;
-		            	ap={x:ap0.x,y:ap1.y};
-		            	break;
-		            case 'ns':
-		            	ap0=this.anchors[3].getAbsolutePosition();	//n
-		            	ap1=this.anchors[4].getAbsolutePosition();	//s
-		            	ap2=this.anchors[0].getAbsolutePosition();	//nw
-		            	w=this.getWidth();
-		            	h=Math.abs(ap1.y-ap0.y)+ANCHOR_SIZE;
-		            	ap={x:ap2.x,y:ap0.y};
-		            	break;
-		            case 'ew':
-		            	ap0=this.anchors[1].getAbsolutePosition();	//w
-		            	ap1=this.anchors[6].getAbsolutePosition();	//e
-		            	ap2=this.anchors[0].getAbsolutePosition();	//nw
-		            	w=Math.abs(ap1.x-ap0.x)+ANCHOR_SIZE;
-		            	h=this.getHeight();
-		            	ap={x:ap0.x,y:ap2.y};
-		            	break;
-		        }
-				
-				if(this.keepRatio)
-					if (Math.abs(w-ow)>=Math.abs(h-oh))
-						h=(w/this.ratio)|0;
-					else
-						w=(h*this.ratio)|0;
-				
-		        this.adjust(ap,w,h);
-		        
-		        this.drawLayer();
-		},
-		
-		adjust:function(ap,w,h){
-			this.setAbsolutePosition(ap);
-			this.setWidth(w);
-			this.setHeight(h);
-			
-			var selected=this.selected;
-			
-			selected.setPosition({x:ANCHOR_HALF_SIZE,y:ANCHOR_HALF_SIZE});
-			selected.setWidth(w-ANCHOR_HALF_SIZE*2);
-			selected.setHeight(h-ANCHOR_HALF_SIZE*2);
-			
-			var anchors=this.anchors;
-			
-			anchors[0].setPosition({x:0,            		y:0});
-			anchors[1].setPosition({x:0,					y:h/2-ANCHOR_HALF_SIZE});
-			anchors[2].setPosition({x:0,					y:h-ANCHOR_SIZE});
-			anchors[3].setPosition({x:w/2-ANCHOR_HALF_SIZE,	y:0});
-			anchors[4].setPosition({x:w/2-ANCHOR_HALF_SIZE,	y:h-ANCHOR_SIZE});
-			anchors[5].setPosition({x:w-ANCHOR_SIZE,		y:0});
-			anchors[6].setPosition({x:w-ANCHOR_SIZE,		y:h/2-ANCHOR_HALF_SIZE});
-			anchors[7].setPosition({x:w-ANCHOR_SIZE,		y:h-ANCHOR_SIZE});			
-		},
-	}
-	Kinetic.Util.extend(Selector, Kinetic.Group);	
-	
-	return Selector;
-}).
-
-
 factory("dictThread",["$http",function($http){		//service
 	var dictThread={
 		threads:[],
-		idxCode:{},
+		idxCode:{},					//index of threads[] on code 
 		defaultThreadColor:{r:100,g:100,b:100,a:0.05},
 		cursorThreadColor:{r:0,g:255,b:0,a:1},
 		defaultThreadColors:[{r:0,	g:255,	b:0 },
@@ -242,7 +23,7 @@ factory("dictThread",["$http",function($http){		//service
 		     				{r:28,	g:176,	b:193},
 		     				{r:112,	g:56,	b:56}],
 		loadThreads:function(){
-			var url="http:///192.6.2.108:8080/clivia/data/dictEmbroideryThreadDao/get"
+			var url="../data/dictEmbroideryThreadDao/get"
 			var self=this;
 			$http.get(url).
 				success(function(data, status, headers, config) {
@@ -271,7 +52,7 @@ factory("dictThread",["$http",function($http){		//service
 			return c;
 		},
 
-		//convert{r: ,g:, b:} to "#FFAABB"
+		//convert{r: ,g:, b:} to Hex "#FFAABB"
 		convertRgbToHexColor:function(c){
 			c=c||{r:255,g:255,b:255};
 			return "#" + ((1 << 24) + (c.r << 16) + (c.g << 8) + c.b).toString(16).slice(1);
@@ -413,7 +194,7 @@ factory("dictThread",["$http",function($http){		//service
 					else
 						c=threadColors[0];
 					
-					if(alpha & c)
+					if(alpha && c)
 						c={r:c.r,g:c.g,b:c.b,a:alphaSteps[i]==='1'?1:alpha}
 					colorModel.push(c);
 				}
@@ -456,7 +237,6 @@ factory("DstDesign",["$http","Event",function($http,Event){
 		initDesign(this);
 		this.designChanged=new Event();
 		if(!!id) this.getDst(id);
-		
 	}
 	
 	DstDesign.prototype={
@@ -544,6 +324,7 @@ factory("DstDesign",["$http","Event",function($http,Event){
 		
 }]).
 
+//wrap a invisble canvas for actural desing drawing
 factory("EmbCanvas",["dictThread","Event","util",function(dictThread,Event,util){
 	
 	var SCREEN_PPM=1280/340,SCREEN_DESIGN_RATIO=SCREEN_PPM/10;
@@ -552,7 +333,7 @@ factory("EmbCanvas",["dictThread","Event","util",function(dictThread,Event,util)
 		
 		this.canvas=document.createElement('canvas');
 		this.canvas.id=createElementId();
-		this.canvas.style.visibility='hidden';		//show or hide design's canvas--visible|hidden
+		this.canvas.style.visibility='visible';		//show or hide design's canvas--visible|hidden
 		document.body.appendChild(this.canvas);
 		this.imageObj=document.getElementById(this.canvas.id);
 		
@@ -735,7 +516,11 @@ factory("EmbCanvas",["dictThread","Event","util",function(dictThread,Event,util)
 				this.colorModel=colorModel;
 				this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
 				this.embDesign.drawDesign(this.ctx,colorModel,SCREEN_DESIGN_RATIO);
-				this.imageChanged.fireEvent([this]);
+				var self = this;
+				fabric.util.loadImage(this.imageObj.toDataURL(), function(img) {
+					self.imageChanged.fireEvent([img]);
+				});
+				
 			}
 		},
 
@@ -744,8 +529,442 @@ factory("EmbCanvas",["dictThread","Event","util",function(dictThread,Event,util)
 	return EmbCanvas; 
 }]).
 
+factory("DstImage",function(){
+	var dstImage=function(embCanvas){
+		this.embCanvas=embCanvas;
+		this.embCanvas.imageChanged.addListener(this,this.onImageChanged);
+		this.fabricImage = new fabric.Image();
+		this.fabricImage.set({
+			width:500,
+			height: 500,
+			lockRotation: true,
+			lockUniScaling: true,
+		});
+		this.fabricImage.setControlsVisibility({mtr: false});
+	}
+	
+	dstImage.prototype={		
+			onImageChanged: function(img){
+				this.fabricImage.setElement(img);
+			},
+			lockRoatation: function(lock){
+				this.fabricImage.set({lockRoation: lock});
+				this.fabricImage.setControlsVisibility({mtr: !lock});
+			},
+			lockUniScaling: function(lock){
+				this.fabricImage.set({lockUniScaling: lock});	
+			}
+	}
+	return dstImage;
+	
+}).
+directive("dstStage",["DstImage",function(){
+	var templateUrl="../dm/dststage	";
+	var cornerSize = 5;
+	var directive={
+			restrict:'EA',
+			replace:false,
+			scope:{
+				cName:'@dstStage',
+				cWidth:'=',
+				cHeight:'=',
+			},
+	
+			templateUrl:templateUrl,
+			
+			link:function(scope){
+				scope.addTriangle = function(options){
+					options = options || { };	
+					var width = options.width||100;
+					var height = options.height||100;
+					var fill = options.fill||"red";
+					var strokeColor = options.stroke||"transparent";
+					var strokeWidth = options.strokeWidth||0;
+					var triangle = new fabric.Triangle({
+						width: width, 
+						height: height,
+						fill: fill,	
+						cornerSize: cornerSize,
+						stroke: strokeColor,
+						strokeWidth: strokeWidth,
+					});
+					triangle.on({
+						'scaling': function(e) {
+							var obj = this,
+								w = obj.width * obj.scaleX,
+								h = obj.height * obj.scaleY,
+								s = obj.strokeWidth;
+	
+							obj.set({
+								'height'     : h,
+								'width'      : w,
+								'scaleX'     : 1,
+								'scaleY'     : 1
+							});
+						}
+					});
+					scope.fabricCanvas.add(triangle);
+				}
+				scope.addRect = function(options){
+					options = options || { };	
+					var width = options.width||100;
+					var height = options.height||100;
+					var fill = options.fill||"red";
+					var strokeColor = options.stroke||"transparent";
+					var strokeWidth = options.strokeWidth||0;
+					var rectangle = new fabric.Rect({
+						width: width, 
+						height: height,
+						fill: fill,	
+						cornerSize: cornerSize,
+						stroke: strokeColor,
+						strokeWidth: strokeWidth,
+					});
+					rectangle.on({
+						'scaling': function(e) {
+							var obj = this,
+								w = obj.width * obj.scaleX,
+								h = obj.height * obj.scaleY,
+								s = obj.strokeWidth;
+	
+							obj.set({
+								'height'     : h,
+								'width'      : w,
+								'scaleX'     : 1,
+								'scaleY'     : 1
+							});
+						}
+					});
+					scope.fabricCanvas.add(rectangle);
+				}
+				scope.addCircle = function(options){
+					options = options || { };	
+					var radius = options.radius||25;
+					var fill = options.fill||"red";
+					var strokeColor = options.stroke||"transparent";
+					var strokeWidth = options.strokeWidth||0;
+					var circle = new fabric.Circle({ 
+							radius: radius,
+							fill: fill,
+							cornerSize: cornerSize,
+							stroke: strokeColor,
+							strokeWidth: strokeWidth, 
+					});
+					scope.fabricCanvas.add(circle);
+				}
+				scope.addText = function(options){
+					options = options || { };	
+					var fontType = options.fontType||"arial black";
+					var fontSize = options.fontSize||50;
+					var fill = options.fill||"black";
+					var strokeColor = options.stroke||"transparent";
+					var strokeWidth = options.strokeWidth||0;
+					var text = new fabric.IText('Tap and Type', { 
+						  fontFamily: fontType,
+						  fontSize: fontSize,
+						  fill: fill,
+						  cornerSize: cornerSize,
+						  stroke: strokeColor,
+						  strokeWidth: strokeWidth,
+						  
+					});
+					text.on({
+						'scaling': function(e) {
+							var obj = this,
+								w = obj.width * obj.scaleX,
+								h = obj.height * obj.scaleY,
+								s = obj.strokeWidth;
 
-factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread){
+							obj.set({
+								'height'     : h,
+								'width'      : w,
+								'scaleX'     : 1,
+								'scaleY'     : 1
+							});
+						}
+				    });
+					scope.fabricCanvas.add(text);
+				}
+				scope.group = function(){
+					var activeGroup = scope.fabricCanvas.getActiveGroup();	
+					if(activeGroup != null){
+						var objectsInGroup = activeGroup.getObjects();
+						activeGroup.clone(function(newGroup){
+							scope.fabricCanvas.discardActiveGroup();
+							objectsInGroup.forEach(function(object){
+								scope.fabricCanvas.remove(object);
+							});
+							scope.fabricCanvas.setActiveObject(newGroup);
+							scope.fabricCanvas.add(newGroup);	
+						});	
+					}			
+				}
+				scope.ungroup = function(){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type = "group"){
+							var item = activeObject.getObjects();
+							activeObject._restoreObjectsState();
+							scope.fabricCanvas.remove(activeObject);
+							for(var i = 0; i < item.length; i++){
+								scope.fabricCanvas.add(item[i]);
+								scope.fabricCanvas.item(scope.fabricCanvas.size()-1).hasControls = true;
+							}
+							
+							scope.fabricCanvas.renderAll();
+						}
+					}
+				}
+				scope.clearAll = function(){
+					scope.fabricCanvas.clear();
+					scope.fabricCanvas.setBackgroundColor("yellow");
+					scope.fabricCanvas.renderAll();
+				}
+				scope.renderAll = function(){
+					scope.fabricCanvas.renderAll();
+				}
+				scope.imageFromURL = function(dataURL){
+					if(dataURL.substring(0,10)=='data:image'){
+						fabric.Image.fromURL(dataURL,function(img){
+							
+							scope.fabricCanvas.add(img);
+						})
+					}
+				}
+				scope.clear = function(){
+					var activeGroup = scope.fabricCanvas.getActiveGroup();
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type == "group"){
+							var item = activeObject.getObjects();
+							for(var i = 0; i < item.length; i++){
+								scope.fabricCanvas.remove(item[i]);
+							}
+						}
+						scope.fabricCanvas.remove(activeObject);	
+					}
+					if(activeGroup != null){
+						var objectsInGroup = activeGroup.getObjects();
+						scope.fabricCanvas.discardActiveGroup();
+						objectsInGroup.forEach(function(object){
+							scope.fabricCanvas.remove(object);
+						});
+					}
+				}
+				scope.bringToFront = function(){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					var activeGroup = scope.fabricCanvas.getActiveGroup();
+					
+					if(activeGroup != null){
+						activeGroup.bringToFront();
+					}
+					else{
+						activeObject.bringToFront();
+					}
+				}
+				scope.sendToBack = function(){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					var activeGroup = scope.fabricCanvas.getActiveGroup();
+					
+					if(activeGroup != null){
+						activeGroup.sendToBack();
+					}
+					else{
+						activeObject.sendToBack();
+					}
+				}
+				scope.setFontSize = function(fontSize){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type == "i-text"){
+							activeObject.set({fontSize:fontSize});
+						}
+					}
+				}
+				scope.setFontFamily = function(fontFamily){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type == "i-text"){
+							activeObject.set({fontFamily:fontFamily});
+						}
+					}
+				}
+				scope.setFill = function(fill){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type != "group"){
+							activeObject.set({fill:fill});
+						}
+					}
+				}
+				scope.setStrokeWidth = function(strokeWidth){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type != "group"){
+							activeObject.set({strokeWidth:strokeWidth});
+						}
+					}
+				}
+				scope.setStrokeWidth = function(strokeColor){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type != "group"){
+							activeObject.set({stroke:strokeColor});
+						}
+					}
+				}
+				scope.setHeight = function(newHeight){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type != "group"&&activeObject.type != "circle"){
+							activeObject.set({height:newHeight});
+						}
+					}
+				}
+				scope.setWidth = function(newWidth){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type != "group"&&activeObject.type != "circle"){
+							activeObject.set({width:newWidth});
+						}
+					}
+				}
+				scope.setRadius = function(newRadius){
+					var activeObject = scope.fabricCanvas.getActiveObject();
+					if(activeObject != null){
+						if(activeObject.type == "circle"){
+							activeObject.set({radius:newRadius});
+						}
+					}
+				}
+			},
+			controller:function($scope){
+				$scope.width = $scope.cWidth||1000;
+				$scope.height = $scope.cHeight||1000;	
+				$scope.fabricCanvas = new fabric.Canvas("stage",{
+				    	width: $scope.width,
+				        height: $scope.height,
+				        preserveObjectStacking: true,  
+				        backgroundColor: "yellow"
+				});
+				$scope.shapeToolbarOptions={items: [{
+					template: "<span><label>Design:</label></span>",
+				},{
+			        type: "button",
+			        text: "Add Circle",
+			        id:"btnCircle",
+			        click: function(e) {
+			        	$scope.addCircle({radius:100});
+
+			       	}
+			    }, {
+			        type: "button",
+			        text: "Add Rectangle",
+			        id:"btnRect",
+			        click: function(e) {
+			        	$scope.addRect();
+				    }
+	            },{
+			        type: "button",
+			        text: "Add Triangle",
+			        id:"btnTriangle",
+			        click: function(e) {
+			        	$scope.addTriangle();
+			        }
+				},{
+			        type: "button",
+			        text: "Add Text",
+			        id:"btnText",
+			        click: function(e) {
+			        	$scope.addText();
+			        }
+				},{        
+	            	type: "button",
+				    text: "Insert from File",
+				    id:"btnFromFile",
+				    click: function(e) {
+				    	document.getElementById("file").click(); 
+					}
+	            },{
+				    type: "button",
+				    text: "Group",
+				    id:"btnGroup",
+				    click: function(e) {
+				       	$scope.group();
+					}
+	            },{
+				    type: "button",
+				    text: "Ungroup",
+				    id:"btnUngroup",
+				    click: function(e) {
+				       	$scope.ungroup();
+					}
+	            },{
+				    type: "button",
+				    text: "Delete",
+				    id: "btnDelete",
+				    click: function(e){
+				    	$scope.clear();
+				    }
+	            },{
+	            	type: "button",
+				    text: "Clear All",
+				    id:"btnClearAll",
+				    click: function(e) {
+				       	$scope.clearAll();
+					}
+	            },{
+	            	type: "button",
+				    text: "Bring to Front",
+				    id:"btnBringToFront",
+				    click: function(e) {
+				       	$scope.bringToFront();
+				    }
+	            },{
+	            	type: "button",
+				    text: "Send to Back",
+				    id:"btnSendToBack",
+				    click: function(e) {
+				       	$scope.sendToBack();
+				    }
+	            }]};
+
+			}	
+	
+	};
+	return directive;
+				
+}]).
+directive("fileRead", [function () {
+    return {
+        scope: {
+            fileRead: "&"
+        },
+        link: function (scope, element, attributes) {
+            element.bind("change", function (changeEvent) {
+
+                for(var i = 0; i < changeEvent.target.files.length; i++){
+                	if(changeEvent.target.files[i]!=null){
+                        var reader = new FileReader();
+                        reader.onload = function (loadEvent) {
+                            scope.$apply(function () {
+                                if(scope.fileRead){
+                                	scope.fileRead({dataURL:loadEvent.target.result});
+                                }//scope.fileRead = loadEvent.target.result;
+                            });
+                        }
+                		reader.readAsDataURL(changeEvent.target.files[i]);
+                	}
+                	
+                }
+                
+            });
+        }
+    }
+}]).
+directive("threadMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread){
+	
+	var templateUrl="../dm/threadmatcher";
 	
 	var MAX_THREAD_COUNT=15;
 	var paletteColors=[
@@ -766,7 +985,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			}, {			
 				name:"stitchCount",
 			    title: "St.",
-			    width: 45,
+			    width: 50,
 			    attributes:{style:"text-align:right;"},
 			    template:"<span>#= threadStitchCount #</span>"
 			}, {			
@@ -789,7 +1008,7 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			}, {			
 				name:"stitchCount",
 			    title: "St.",
-			    width: 45,
+			    width: 50,
 			    attributes:{style:"text-align:right;"},
 			    template:"<span>#= stepStitchCount # </span>"
 			}, {			
@@ -807,474 +1026,8 @@ factory("EmbMatcher",["GridWrapper","dictThread",function(GridWrapper,dictThread
 			    attributes:{style:"text-align:right;"},
 			    template:"<span>#= threadIndex #</span>",
 			    width: 30
-			}];
+			}];	
 	
-	var embMatcher=function(){
-		
-		this.embCanvas={};
-
-		this.gwThread=new GridWrapper("embThreadGrid",threadGridColumns);
-		this.gwThread.enableEnterMoveDown();
-		
-		this.gwStep=new GridWrapper("embStepGrid",stepGridColumns);
-		this.gwStep.enableEnterMoveDown();
-		this.gwStep.dragSorted=function(){this.parseRunningSteps();};	//call back function
-
-		//as dataSource of 'dstThreadGrid' and 'dstStepGrid' which are wrapped by gwThread and gwStep respectfully
-		this.threadList=new kendo.data.ObservableArray([]);
-		this.runningStepList=new kendo.data.ObservableArray([]);
-	}
-	
-	embMatcher.prototype={
-			
-			//set design of this canvas to null and the designchanged event will be raised
-			clearDesign:function(){
-				this.embCanvas.embDesign.clearDesign();
-			},
-			
-			//clear contents(code,colour) of dataSource of threadGrid
-			clearThreadList:function(){			
-				for(var i=0;i<this.threadList.length;i++){
-					this.threadList[i].code="";
-					this.threadList[i].colour="";
-					this.threadList[i].threadStitchCount="";
-				}
-			},
-			
-			//clear contents(code,threadIndex) of dataSource of stepGrid
-			clearRunningStepList:function(){		
-				for(var i=0;i<this.runningStepList.length;i++){
-					this.runningStepList[i].code="";
-					this.runningStepList[i].threadIndex="";
-				}
-			},
-			
-			//initialize threadList(threadGrid) and runningStepList(stepGrid) for the design of this matcher
-			initColourwayList:function(){	
-				this.threadList.splice(0,this.threadList.length)
-				this.runningStepList.splice(0,this.runningStepList.length)
-				if(this.embCanvas.embDesign){
-					var design=this.embCanvas.embDesign,
-						stepList=design.stepList,
-						stepCount=design.stepCount,
-						threadCount=stepCount<MAX_THREAD_COUNT?stepCount:MAX_THREAD_COUNT;
-					
-					for(var i=0;i<threadCount;i++)
-						this.threadList.push({code:"",colour:"",threadStitchCount:""});
-					
-					for(var i=0,stepStitchCount;i<stepCount;i++){
-						stepStitchCount=(stepList[i].lastStitch-stepList[i].firstStitch).toString();
-						this.runningStepList.push({code:"",threadIndex:"",stepStitchCount:stepStitchCount});
-					}
-				}
-			},
-			
-			
-			//from this.threadList to this.embCanvas.threadCodes
-			composeThreads:function(){	
-				var threads=[],thread;
-				for(var i=0;i<this.threadList.length;i++){
-					thread=this.threadList[i];
-					if(!thread.code)
-						break;
-					threads.push(thread.code);
-				}
-				if(threads!==this.embCanvas.threadCodes){
-					this.embCanvas.threadCodes=threads.join();
-				}
-			},
-			
-			//from this.runningStepList to this.embCanvas.runningSteps
-			composeRunningSteps:function(){	
-				var steps=[],step;
-				for(var i=0;i<this.runningStepList.length;i++){
-					step=this.runningStepList[i];
-					if(parseInt(step.stepStitchCount)===0){
-						steps.push("0");
-					}else{
-						if(!step.code)
-							break;
-						steps.push(step.threadIndex);
-					}
-				}
-				if(steps!==this.embCanvas.runningSteps){
-					this.embCanvas.runningSteps=steps.join('-');
-				}
-			},
-
-			//from this.embCanvas.threadCodes to this.threadList
-			//threadCodes must be normalized before calling this method
-			parseThreads:function(){  
-				var codes=this.embCanvas.threadCodes;
-				
-				this.clearThreadList();
-				if(codes){
-					var codeList=codes.split(",");
-					
-					if(codeList.length<=this.threadList.length){
-						for(var i=0,code,c,t;i<codeList.length;i++){
-							code=codeList[i];
-							c=dictThread.getThreadColorHex(code);
-							t=this.threadList[i];
-							t.colour=c;
-							t.code=code;
-						}
-					}
-				}
-			},
-			
-			//from this.embCanvas.runningSteps to this.runningStepList
-			//runningSteps must be normalized before calling this method
-			parseRunningSteps:function(){	
-				var runningSteps=this.embCanvas.runningSteps;
-				this.clearRunningStepList();
-				if(runningSteps){
-					idxList=runningSteps.split('-');
-					if(idxList.length<=this.runningStepList.length){
-						for(var i=0,t;i<idxList.length;i++){
-							t=this.getThread(idxList[i]);
-							if(t){
-								step=this.runningStepList[i];
-								step.code=t.code;
-								step.threadIndex=idxList[i];
-							}
-						}
-					}
-				}
-			},
-			
-			
-			parseColourway:function(){
-				this.parseThreads();		//populate
-				this.parseRunningSteps();	//populate
-				this.setThreadStitchCount();
-                this.gwThread.grid.refresh();
-                this.gwStep.grid.refresh();
-                this.drawDesign();
-
-			},
-			
-			getThreadIndex:function(threadCode){
-				var index=-1;
-				if(threadCode)
-					for(var i=0;i<this.threadList.length;i++){
-						if(this.threadList[i].code===threadCode){
-							index=i;
-							break;
-						}
-					}
-				return index;
-			},
-			
-			getThread:function(threadIndex){
-				var index=isNaN(threadIndex)?0:parseInt(threadIndex);
-				var thread=(index>0 && index<=this.threadList.length)?this.threadList[--index]:"";
-				return thread;
-			},
-			
-			
-			getThreadColor:function(threadIndex){
-				var thread=this.getThread(threadIndex);
-				var	colour=thread?thread.colour:"";
-				return colour;
-			},
-
-			setThreadStitchCount:function(){
-				for(var i=0,thread,c,threadIndex;i<this.threadList.length;i++){
-					thread=this.threadList[i];
-					c=0;
-					threadIndex=i+1;
-					for(var j=0,step;j<this.runningStepList.length;j++){
-						step=this.runningStepList[j];
-						if(step.threadIndex==threadIndex && step.stepStitchCount){
-							c+=parseInt(step.stepStitchCount);
-						}
-					}
-					thread.threadStitchCount=c?c:"";
-				}
-			},
-			
-			setColourway:function(threads,runningSteps){
-				
-				this.embCanvas.setColourway(threads,runningSteps);
-
-				this.embCanvas.normalizeThreadCodes();
-				this.embCanvas.normalizeRunningSteps();
-				
-				this.parseColourway();
-			},
-			
-			getColourway:function(){
-				return this.embCanvas.getColourway();
-			},
-			
-			getThumbnail:function(){
-				return this.embCanvas.getThumbnail();
-			},
-			
-			setEmbCanvas:function(embCanvas){
-				this.embCanvas=embCanvas;
-				this.initColourwayList();
-			},
-			
-			//editing mode, called from events of gwStep.grid 
-			drawDesign:function(gw){
-
-				var colourway={};
-				if(!gw){
-					this.embCanvas.drawDesign(colourway);
-					return;
-				}
-				var isStepGrid=gw.gridName==="embStepGrid";
-					
-				var cell=gw.getEditingCell();
-				if(!cell)
-					cell=gw.getCurrentCell();
-				
-				
-				if (cell){
-					var cellIndex=cell.cellIndex;
-					
-					var row=gw.getRow(cell);						//cellIndex===3?this.gwStep.getEditingRow():this.gwStep.getCurrentRow();
-					if(!row)
-						return;
-					
-					var rowIndex=row.rowIndex+(isStepGrid?0:1);
-					
-					var steps="",alphaSteps="";
-					
-					stepList=this.runningStepList;
-					
-					for(var i=0,idx,a;i<stepList.length;i++){
-						idx=parseInt(stepList[i].threadIndex);
-						if(!idx)
-							idx=0;
-						a=1;
-						
-						var isSelected=(isStepGrid?i:idx)===rowIndex;
-							
-						switch(cellIndex){					
-							case 1:						//stitches column
-								if(isSelected){
-									idx=(idx>0)?idx:16;
-									a="1";
-								}else{
-									a="0";
-								}
-								break;
-							case 3:							//code column
-								if(isSelected){
-									idx=16;
-									a="1";
-								}else{
-									a=idx>0?'1':'0';
-								}
-								break;
-							case 2:							//colour column
-								if(isSelected){
-									idx=(idx>0)?idx:16;
-									a="1";
-								}else{
-									a="0";
-								}
-								break;
-							case 0:							//stepIndex
-								if(isSelected){
-									idx=16;
-									a="1";
-								}else{
-									a="0";
-								}
-								
-						};
-						
-						steps+="-"+idx;
-						alphaSteps+="-"+a;
-					}
-					colourway.runningSteps=steps.substring(1);
-					colourway.alphaSteps=alphaSteps.substring(1);
-					colourway.alpha=cellIndex==1?0.15:0.03;
-				
-					this.embCanvas.drawDesign(colourway);
-				}
-			}, //end of drawDesign()
-			
-			
-			getThreadGridOptions:function(scope){
-				var self=this;
-				return	{
-					columns:threadGridColumns,
-			        editable: true,
-			        selectable: "cell",
-			        navigatable: true,			
-			        autoSync:true,
-					dataSource:self.threadList,
-					
-					change:function(e){
-						console.log("step change:");
-						self.drawDesign(self.gwThread);
-					},
-					
-					edit:function(e){
-						console.log("step  edit:");
-						self.drawDesign(self.gwThread);
-				    },					
-					save:function(e){
-
-						if (typeof e.values=== 'undefined')
-				       			return;
-			       		if (typeof e.values.code=== 'undefined')
-			       			return;
-			       		
-			       		var code=dictThread.normalizeThreadCode(e.values.code);
-			       		if(code===e.model.code)
-			       			return;
-			       			
-	  	        		e.preventDefault();
-
-	  	        		var index=(self.gwThread.getDataItemIndex(e.model)+1).toString();
-	  	        		
-		          		e.model.set("code","");
-		          		e.model.set("colour","");
-	  	        		if(self.getThreadIndex(code)<0){	//code not exists in the threadList
-		  	        		var colour=dictThread.getThreadColorHex(code);
-		  	        		if(colour){
-		  	        			e.model.set("code",code);
-		  	        			e.model.set("colour",colour);
-		  	        		}
-	  	        		}
-	  	        		if(e.model.get("code")==""){
-	  	        			self.gwThread.enterKeyDown=false;
-	  	        		}
-	  	        		
-	  	        		self.gwThread.updateTemplateColumns(e);
-	                    
-	                    for(var i=0,steps=self.runningStepList;i<steps.length;i++){
-	                    	if(steps[i].threadIndex===index){
-	                    		steps[i].code=code;
-	                    		steps[i].colour=colour;
-	                    	}
-	                    }
-	                    self.gwStep.grid.refresh();
-	                    self.composeThreads();
-						self.drawDesign(self.gwThread);
-						scope.$apply();
-					}
-				} 
-			},//end of thread grid option
-			
-			getStepGridOptions:function(scope){
-				var self=this;
-				var saving=false; //prevent recusive calling saving event function;
-				return {
-					columns:stepGridColumns,
-			        editable: true,
-			        selectable: "cell",
-			        navigatable: true,	
-			        autoSync:true,
-					dataSource:self.runningStepList,
-
-					change:function(e){
-						self.drawDesign(self.gwStep);
-					},
-					
-					edit:function(e){
-						self.drawDesign(self.gwStep);
-				    },
-				    
-					save:function(e){
-						if(saving) return;
-						saving=true;
-						
-			       		if(typeof e.values.code!== 'undefined'){
-
-			       			var code=e.values.code;
-		  	        		if(code.trim()==="."){
-		  	        			self.gwStep.copyPreviousRow();
-		  	        			var di=self.gwStep.getCurrentDataItem();
-				          		e.model.set("code",di.code);
-				          		e.model.set("threadIndex",di.threadIndex);
-		  	        			
-		  	        		}else{
-				          		e.model.set("code","");
-				          		e.model.set("threadIndex","");
-
-			                	 console.log("step save3:");
-				          		
-			  	        		code=dictThread.normalizeThreadCode(code);
-			       				var thread=null;
-			  	        		var index=parseInt(code);
-			  	        		if(index>0 && index<=self.threadList.length){
-			  	        			index--;
-			  	        		}else{
-			  	        			index=self.getThreadIndex(code);
-			  	        		}
-			  	        		
-			  	        		if(index<0){
-			  	        			var colour=dictThread.getThreadColorHex(code);
-			  	        			if(colour){
-			  	        				for(index=0;index<self.threadList.length;index++)
-			  	        					if(!self.threadList[index].code)
-			  	        						break
-				  	        			if(index===self.threadList.length)	
-				  	        				index=-1;
-				  	        			else{
-				  	        				thread=self.threadList[index];
-				  	        				thread.code=code;
-				  	        				thread.colour=colour;
-				  	        				
-				  	        				//self.gwThread.grid.refresh();
-				  	        				self.composeThreads();
-				  	        			}
-			  	        			}
-			  	        		}
-			  	        		
-			  	        		if(index>=0){
-			  	        			thread=self.threadList[index];
-			  	        			e.model.set("code",thread.code);
-					          		e.model.set("threadIndex",(index+1).toString());
-			  	        		}
-		  	        		}
-		  	        		
-		  	        		self.setThreadStitchCount();
-
-		  	        		//The grid will not update templte column automatically when change data value in save event	
-		                	self.gwStep.updateTemplateColumns(e);
-		                	 
-		                    self.composeRunningSteps();
-		                    
-		                    //let model accept code value that set by above code
-		  	        		e.preventDefault();
-		  	        		
-							self.drawDesign(self.gwStep);
-							self.gwThread.grid.refresh();
-							scope.$apply();
-			          	}
-						saving=false;
-			       		
-					},	//end of save
-					
-		       		dataBinding:function(e){
-		       			//create a globle variable for template of the colour column to show step colour 
-		       			renderingPaint=self;
-		       		}
-
-				}
-			},//end of stepGridOptions
-			
-			getBackgroundColourPaletteOptions:function(){
-				return {
-				    palette: paletteColors
-				}
-			}
-	}
-	
-	return embMatcher;
-}]).
-
-directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThread){
-	
-	var templateUrl="../dm/threadmatcher";
 	
 	var directive={
 			restrict:'EA',
@@ -1288,20 +1041,300 @@ directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThr
 			
 			link:function(scope){
 				
-				scope.parseThreads=function(){
-					scope.embMatcher.embCanvas.normalizeThreadCodes();
-					scope.embMatcher.parseColourway();
-				}
+				scope.clearDesign=function(){
+					scope.embCanvas.embDesign.clearDesign();
+				};
 				
-				scope.parseSteps=function(){
-					scope.embMatcher.embCanvas.normalizeRunningSteps();
-					scope.embMatcher.parseColourway();
-				}
+				//clear contents(code,colour) of dataSource of threadGrid
+				scope.clearThreadList=function(){			
+					for(var i=0;i<this.threadList.length;i++){
+						scope.threadList[i].code="";
+						scope.threadList[i].colour="";
+						scope.threadList[i].threadStitchCount="";
+					}
+				};
+				
+				//clear contents(code,threadIndex) of dataSource of stepGrid
+				scope.clearRunningStepList=function(){		
+					for(var i=0;i<scope.runningStepList.length;i++){
+						scope.runningStepList[i].code="";
+						scope.runningStepList[i].threadIndex="";
+					}
+				};
+				
+				
+				
+				//from this.threadList to this.embCanvas.threadCodes
+				scope.composeThreads=function(){	
+					var threads=[],thread;
+					for(var i=0;i<scope.threadList.length;i++){
+						thread=scope.threadList[i];
+						if(!thread.code)
+							break;
+						threads.push(thread.code);
+					}
+					if(threads!==scope.embCanvas.threadCodes){
+						scope.embCanvas.threadCodes=threads.join();
+					}
+				};
+				
+				//from this.runningStepList to this.embCanvas.runningSteps
+				scope.composeRunningSteps=function(){	
+					var steps=[],step;
+					for(var i=0;i<scope.runningStepList.length;i++){
+						step=scope.runningStepList[i];
+						if(parseInt(step.stepStitchCount)===0){
+							steps.push("0");
+						}else{
+							if(!step.code)
+								break;
+							steps.push(step.threadIndex);
+						}
+					}
+					if(steps!==acope.embCanvas.runningSteps){
+						scope.embCanvas.runningSteps=steps.join('-');
+					}
+				};
+
+				
+				//from this.embCanvas.threadCodes to this.threadList
+				//threadCodes must be normalized before calling this method
+				scope.parseThreads=function(){  
+					var codes=scope.embCanvas.threadCodes;
+					scope.clearThreadList();
+					if(codes){
+						var codeList=codes.split(",");
+						
+						if(codeList.length<=scope.threadList.length){
+							for(var i=0,code,c,t;i<codeList.length;i++){
+								code=codeList[i];
+								c=dictThread.getThreadColorHex(code);
+								t=scope.threadList[i];
+								t.colour=c;
+								t.code=code;
+							}
+						}
+					}
+				};
+				
+				//from this.embCanvas.runningSteps to this.runningStepList
+				//runningSteps must be normalized before calling this method
+				scope.parseRunningSteps=function(){	
+					var runningSteps=scope.embCanvas.runningSteps;
+					scope.clearRunningStepList();
+					if(runningSteps){
+						idxList=runningSteps.split('-');
+						if(idxList.length<=scope.runningStepList.length){
+							for(var i=0,t;i<idxList.length;i++){
+								t=scope.getThread(idxList[i]);
+								if(t){
+									step=scope.runningStepList[i];
+									step.code=t.code;
+									step.threadIndex=idxList[i];
+								}
+							}
+						}
+					}
+				};
+				
+				
+				scope.parseColourway=function(){
+					scope.embCanvas.normalizeThreadCodes();
+					scope.embCanvas.normalizeRunningSteps();
+					scope.parseThreads();		//populate
+					scope.parseRunningSteps();	//populate
+					scope.setThreadStitchCount();
+	                scope.gwThread.grid.refresh();
+	                scope.gwStep.grid.refresh();
+	                scope.drawDesign();
+				};
+				
+				scope.getThreadIndex=function(threadCode){
+					var index=-1;
+					if(threadCode)
+						for(var i=0;i<scope.threadList.length;i++){
+							if(scope.threadList[i].code===threadCode){
+								index=i;
+								break;
+							}
+						}
+					return index;
+				};
+				
+				scope.getThread=function(threadIndex){
+					var index=isNaN(threadIndex)?0:parseInt(threadIndex);
+					var thread=(index>0 && index<=scope.threadList.length)?scope.threadList[--index]:"";
+					return thread;
+				};
+				
+				
+				scope.getThreadColor=function(threadIndex){
+					var thread=scope.getThread(threadIndex);
+					var	colour=thread?thread.colour:"";
+					return colour;
+				};
+
+				scope.setThreadStitchCount=function(){
+					for(var i=0,thread,c,threadIndex;i<scope.threadList.length;i++){
+						thread=scope.threadList[i];
+						c=0;
+						threadIndex=i+1;
+						for(var j=0,step;j<scope.runningStepList.length;j++){
+							step=scope.runningStepList[j];
+							if(step.threadIndex==threadIndex && step.stepStitchCount){
+								c+=parseInt(step.stepStitchCount);
+							}
+						}
+						thread.threadStitchCount=c?c:"";
+					}
+				};
+				
+				scope.setColourway=function(threads,runningSteps){
+					
+					scope.embCanvas.setColourway(threads,runningSteps);
+
+					scope.embCanvas.normalizeThreadCodes();
+					scope.embCanvas.normalizeRunningSteps();
+					
+					scope.parseColourway();
+				};
+				
+				scope.getColourway=function(){
+					return scope.embCanvas.getColourway();
+				};
+				
+				scope.getThumbnail=function(){
+					return scope.embCanvas.getThumbnail();
+				};
+				
+				scope.setEmbCanvas=function(embCanvas){
+					scope.embCanvas=embCanvas;
+					scope.initColourwayList();
+				};
+				
+				//editing mode, called from events of gwStep.grid 
+				scope.drawDesign=function(gw){
+
+					var colourway={};
+					if(!gw){
+						scope.embCanvas.drawDesign(colourway);
+						return;
+					}
+					var isStepGrid=gw.gridName==="embStepGrid";
+						
+					var cell=gw.getEditingCell();
+					if(!cell)
+						cell=gw.getCurrentCell();
+					
+					
+					if (cell){
+						var cellIndex=cell.cellIndex;
+						
+						var row=gw.getRow(cell);						//cellIndex===3?this.gwStep.getEditingRow():this.gwStep.getCurrentRow();
+						if(!row)
+							return;
+						
+						var rowIndex=row.rowIndex+(isStepGrid?0:1);
+						
+						var steps="",alphaSteps="";
+						
+						stepList=scope.runningStepList;
+						
+						for(var i=0,idx,a;i<stepList.length;i++){
+							idx=parseInt(stepList[i].threadIndex);
+							if(!idx)
+								idx=0;
+							a=1;
+							
+							var isSelected=(isStepGrid?i:idx)===rowIndex;
+								
+							switch(cellIndex){					
+								case 1:						//stitches column
+									if(isSelected){
+										idx=(idx>0)?idx:16;
+										a="1";
+									}else{
+										a="0";
+									}
+									break;
+								case 3:							//code column
+									if(isSelected){
+										idx=16;
+										a="1";
+									}else{
+										a=idx>0?'1':'0';
+									}
+									break;
+								case 2:							//colour column
+									if(isSelected){
+										idx=(idx>0)?idx:16;
+										a="1";
+									}else{
+										a="0";
+									}
+									break;
+								case 0:							//stepIndex
+									if(isSelected){
+										idx=16;
+										a="1";
+									}else{
+										a="0";
+									}
+									
+							};
+							
+							steps+="-"+idx;
+							alphaSteps+="-"+a;
+						}
+						colourway.runningSteps=steps.substring(1);
+						colourway.alphaSteps=alphaSteps.substring(1);
+						colourway.alpha=cellIndex==1?0.15:0.03;
+					
+						scope.embCanvas.drawDesign(colourway);
+					}
+				}; //end of drawDesign()
+				
 
 			}, //end of link function
 			
 			controller:function($scope){
-				$scope.embMatcher=new EmbMatcher();
+				
+				
+				$scope.gwThread=new GridWrapper("embThreadGrid",threadGridColumns);
+				$scope.gwThread.enableEnterMoveDown();
+				
+				$scope.gwStep=new GridWrapper("embStepGrid",stepGridColumns);
+				$scope.gwStep.enableEnterMoveDown();
+				$scope.gwStep.dragSorted=function(){$scope.parseRunningSteps();};	//call back function
+
+				//as dataSource of 'dstThreadGrid' and 'dstStepGrid' which are wrapped by gwThread and gwStep respectfully
+				$scope.threadList=new kendo.data.ObservableArray([]);
+				$scope.runningStepList=new kendo.data.ObservableArray([]);
+				
+
+				//initialize threadList(threadGrid) and runningStepList(stepGrid) for the design of this matcher
+				$scope.initColourwayList=function(){	
+					$scope.threadList.splice(0,$scope.threadList.length)
+					$scope.runningStepList.splice(0,$scope.runningStepList.length)
+					if($scope.embCanvas.embDesign){
+						var design=$scope.embCanvas.embDesign,
+							stepList=design.stepList,
+							stepCount=design.stepCount,
+							threadCount=stepCount<MAX_THREAD_COUNT?stepCount:MAX_THREAD_COUNT;
+						
+						for(var i=0;i<threadCount;i++)
+							$scope.threadList.push({code:"",colour:"",threadStitchCount:""});
+						
+						for(var i=0,stepStitchCount;i<stepCount;i++){
+							stepStitchCount=(stepList[i].lastStitch-stepList[i].firstStitch).toString();
+							$scope.runningStepList.push({code:"",threadIndex:"",stepStitchCount:stepStitchCount});
+						}
+					}
+				};
+				
+				$scope.embCanvas=$scope.cEmbCanvas||{};
+				
+				$scope.initColourwayList();
 				
 				$scope.parseThreadsButtonOptions={
 					imageUrl:"../resources/images/i-parse.ico",
@@ -1317,96 +1350,180 @@ directive("threadMatcher",["EmbMatcher","dictThread",function(EmbMatcher,dictThr
 				        // the event is emitted for every widget; if we have multiple
 				        // widgets in this controller, we need to check that the event
 				        // is for the one we're interested in.
-				        if (widget ===$scope[$scope.embMatcher.gwThread.gridName])
-				        	$scope.embMatcher.gwThread.wrapGrid(widget);
+				        if (widget ===$scope[$scope.gwThread.gridName])
+				        	$scope.gwThread.wrapGrid(widget);
 				        
-				        if (widget ===$scope[$scope.embMatcher.gwStep.gridName]) 
-				        	$scope.embMatcher.gwStep.wrapGrid(widget);
+				        if (widget ===$scope[$scope.gwStep.gridName]) 
+				        	$scope.gwStep.wrapGrid(widget);
 				    });	
 				
 				//expose this directive scope to parent directive
 				if($scope.cName) 
-					$scope.$parent[$scope.cName]=$scope.embMatcher;
+					$scope.$parent[$scope.cName]=$scope;
 
-				if($scope.cEmbCanvas)
-					$scope.embMatcher.setEmbCanvas($scope.cEmbCanvas);
 				
-				$scope.threadGridOptions=$scope.embMatcher.getThreadGridOptions($scope);
-				$scope.stepGridOptions=$scope.embMatcher.getStepGridOptions($scope);
-				
-				
-			}
+				$scope.threadGridOptions={
+						columns:threadGridColumns,
+				        editable: true,
+				        selectable: "cell",
+				        navigatable: true,			
+				        autoSync:true,
+						dataSource:$scope.threadList,
+						
+						change:function(e){
+							$scope.drawDesign($scope.gwThread);
+						},
+						
+						edit:function(e){
+							$scope.drawDesign($scope.gwThread);
+					    },					
+						save:function(e){
 
-		}
+							if (typeof e.values=== 'undefined')
+					       			return;
+				       		if (typeof e.values.code=== 'undefined')
+				       			return;
+				       		
+				       		var code=dictThread.normalizeThreadCode(e.values.code);
+				       		if(code===e.model.code)
+				       			return;
+				       			
+		  	        		e.preventDefault();
+
+		  	        		var index=($scope.gwThread.getDataItemIndex(e.model)+1).toString();
+		  	        		
+			          		e.model.set("code","");
+			          		e.model.set("colour","");
+		  	        		if($scope.getThreadIndex(code)<0){	//code not exists in the threadList
+			  	        		var colour=dictThread.getThreadColorHex(code);
+			  	        		if(colour){
+			  	        			e.model.set("code",code);
+			  	        			e.model.set("colour",colour);
+			  	        		}
+		  	        		}
+		  	        		if(e.model.get("code")==""){
+		  	        			$scope.gwThread.enterKeyDown=false;
+		  	        		}
+		  	        		
+		  	        		$scope.gwThread.updateTemplateColumns(e);
+		                    
+		                    for(var i=0,steps=$scope.runningStepList;i<steps.length;i++){
+		                    	if(steps[i].threadIndex===index){
+		                    		steps[i].code=code;
+		                    		steps[i].colour=colour;
+		                    	}
+		                    }
+		                    $scope.gwStep.grid.refresh();
+		                    $scope.composeThreads();
+		                    $scope.drawDesign($scope.gwThread);
+		                    $scope.$apply();
+						}
+					};
+				
+				var saving=false; //prevent recusive calling saving event function;
+				
+				$scope.stepGridOptions={
+						columns:stepGridColumns,
+				        editable: true,
+				        selectable: "cell",
+				        navigatable: true,	
+				        autoSync:true,
+						dataSource:$scope.runningStepList,
+
+						change:function(e){
+							$scope.drawDesign($scope.gwStep);
+						},
+						
+						edit:function(e){
+							$scope.drawDesign($scope.gwStep);
+					    },
+					    
+						save:function(e){
+							if(saving) return;
+							saving=true;
+							
+				       		if(typeof e.values.code!== 'undefined'){
+
+				       			var code=e.values.code;
+			  	        		if(code.trim()==="."){
+			  	        			$scope.gwStep.copyPreviousRow();
+			  	        			var di=$scope.gwStep.getCurrentDataItem();
+					          		e.model.set("code",di.code);
+					          		e.model.set("threadIndex",di.threadIndex);
+			  	        			
+			  	        		}else{
+					          		e.model.set("code","");
+					          		e.model.set("threadIndex","");
+
+				  	        		code=dictThread.normalizeThreadCode(code);
+				       				var thread=null;
+				  	        		var index=parseInt(code);
+				  	        		if(index>0 && index<=$scope.threadList.length){
+				  	        			index--;
+				  	        		}else{
+				  	        			index=$scope.getThreadIndex(code);
+				  	        		}
+				  	        		
+				  	        		if(index<0){
+				  	        			var colour=dictThread.getThreadColorHex(code);
+				  	        			if(colour){
+				  	        				for(index=0;index<$scope.threadList.length;index++)
+				  	        					if(!$scope.threadList[index].code)
+				  	        						break
+					  	        			if(index===$scope.threadList.length)	
+					  	        				index=-1;
+					  	        			else{
+					  	        				thread=$scope.threadList[index];
+					  	        				thread.code=code;
+					  	        				thread.colour=colour;
+					  	        				
+					  	        				//$scope.gwThread.grid.refresh();
+					  	        				$scope.composeThreads();
+					  	        			}
+				  	        			}
+				  	        		}
+				  	        		
+				  	        		if(index>=0){
+				  	        			thread=$scope.threadList[index];
+				  	        			e.model.set("code",thread.code);
+						          		e.model.set("threadIndex",(index+1).toString());
+				  	        		}
+			  	        		}
+			  	        		
+			  	        		$scope.setThreadStitchCount();
+
+			  	        		//The grid will not update templte column automatically when change data value in save event	
+			  	        		$scope.gwStep.updateTemplateColumns(e);
+			                	 
+			  	        		$scope.composeRunningSteps();
+			                    
+			                    //let model accept code value that set by above code
+			  	        		e.preventDefault();
+			  	        		
+			  	        		$scope.drawDesign($scope.gwStep);
+			  	        		$scope.gwThread.grid.refresh();
+								scope.$apply();
+				          	}
+							saving=false;
+				       		
+						},
+			       		dataBinding:function(e){
+			       			//create a globle variable for template of the colour column to show step colour 
+			       			renderingPaint=$scope;
+			       		}
+
+				}; //end of stepGridOptions
+				
+				$scope.backgroundColourPaletteOptions={ palette: paletteColors}
+				
+
+		}	//end of threadMatcher controller
+	}
 	
 	return directive;
 }]).
 
-factory("EmbStage",["Selector",function(Selector){
-	
-	var EmbStage=function(config){	//{container: 'container', width: 1024, height: 800}
-
-		this.stage=new Kinetic.Stage(config);
-		this.backGroundLayer=new Kinetic.Layer();
-		this.stage.add(this.backGroundLayer);
-		this.selector=new Selector();
-		this.currentLayer=this.backGroundLayer;
-		this.clickedOnObject=false;
-	}
-	
-	EmbStage.prototype={
-			createLayer:function(addToStage){
-				var newLayer=new Kinetic.Layer();
-				if(addToStage)
-					this.stage.add(newLayer);
-				this.currentLayer=newLayer;
-				return newLayer;
-			},
-			addLayer:function(layer){
-				this.stage.add(layer);
-			},
-			add:function(object){
-				var self=this;
-				object.on("mousedown",function(){
-					self.clickedOnObject=true;		//flag to indicates clicked on an object
-					self.selector.setSelected(object);
-				});
-				this.currentLayer.add(object);
-				this.currentLayer.draw();
-			},
-			
-			//remove current selected object from stage
-			remove:function(){
-				var object=this.selector.selected;
-				if(object){
-					this.select();
-					object.remove();
-					//this.currentLayer.draw();
-				}
-			},
-			
-			select:function(object){
-				this.selector.setSelected(object);
-			},
-			
-			onClick:function(){
-				if(!this.clickedOnObject){
-					this.selector.setSelected();
-				}else{
-					this.clickedOnObject=false;
-				}
-			},
-			
-			draw:function(){
-				this.currentLayer.draw();
-			},
-	}
-	
-	return EmbStage;
-	
-}]).
-
-directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
+directive("dstPaint",["util",function(util){
 	
 	var templateUrl="../dm/dstpaint";
 	
@@ -1434,34 +1551,26 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 		        		        //console.log(event.target.result)}; // data url!
 		        		    	  scope.addImage(imageObj);
 		        		      }
-		        		    	 reader.readAsDataURL(blob);
-
-		        		      
+		        		      reader.readAsDataURL(blob);
 				        }
 				    }
 				}
 				
 				scope.addImage=function(imageObj){
-					var img=new Kinetic.Image({
-						x:0,
-						y:0,
-						draggable:true,
-						//width:$scope.embCanvas.getOriginalWidth(),
-						//height:$scope.embCanvas.getOriginalHeight(),
-						//offset:{x:25,y:25},
-						//rotation:50,
-						image:imageObj,
-						
+					var img=new fabric.Image(imageObj,{
+						width: 640, 
+						height: 480
 					});
 					scope.embStage.add(img);
-					img.moveToBottom();
+					img.sendToBack();
+					scope.embStage.renderAll();
 				}
 				
-				scope.getPrintModel=function(embMatcher,settings){
+				scope.getPrintModel=function(threadMatcher,settings){
 					var model={};
-					if(!embMatcher) return model;
-					var embCanvas=embMatcher.embCanvas;
-					if(!embCanvas) return model;
+					if(!threadMatcher) return model;
+					var embCanvas=threadMatcher.embCanvas;
+					if(!threadMatcher) return model;
 					
 					
 					var dst=embCanvas.embDesign;
@@ -1469,8 +1578,8 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 						//embCanvas.drawDesign();
 						
 						var list=[],line,firstStepIndex;
-						var threadList=embMatcher.threadList;
-						var stepList=embMatcher.runningStepList;
+						var threadList=threadMatcher.threadList;
+						var stepList=threadMatcher.runningStepList;
 						var idxThreads={};
 						var emptyLine={
 								col0:"",
@@ -1545,7 +1654,7 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 								list:list,
 								firstStepIndex:firstStepIndex,
 								image:embCanvas.imageObj.toDataURL(),
-								bgColour:embMatcher.backgroundColour?embMatcher.backgroundColour:"#FFFFFF",
+								bgColour:threadMatcher.backgroundColour?threadMatcher.backgroundColour:"#FFFFFF",
 								settings:settings,
 						}
 						
@@ -1840,8 +1949,8 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 				
 			}, //end of link function
 			
-			controller:["$scope","util","DstDesign","EmbCanvas","EmbStage",
-			            	function($scope,util,DstDesign,EmbCanvas,EmbStage){
+			controller:["$scope","util","DstDesign","EmbCanvas", "DstImage",
+			            	function($scope,util,DstDesign,EmbCanvas, DstImage){
 				//{code:"S0561",r:255,g:0,b:0},{code:"S1011",r:125,g:125,b:125},{code:"S1043",r:0,g:0,b:255}
 				//var runningStepList=new kendo.data.ObservableArray([{code:"S1043",codeIndex:1}]);
 				
@@ -1853,31 +1962,24 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 					
 			    $scope.dstDesign=new DstDesign();
 
-			    $scope.embStage=new EmbStage({container:'stagecontainer',
-			        width: 2000,
-			        height:2000});
+			    $scope.embStage=new fabric.Canvas('stagecontainer',{
+			    	width: 2000,
+			        height:2000,
+			        preserveObjectStacking: true,
+			        
+			    });
+			    
+			    $scope.embStage.onClick=function(){
+			    	
+			    }
 				
 				$scope.embCanvas=new EmbCanvas($scope.dstDesign);
+				$scope.dstImage = new DstImage($scope.embCanvas);
+				$scope.embStage.add($scope.dstImage.fabricImage);
+				$scope.embStage.renderAll();
 
-				$scope.embImage=new Kinetic.Image({
-					x:0,
-					y:0,
-					draggable:true,
-					width:$scope.embCanvas.getOriginalWidth(),
-					height:$scope.embCanvas.getOriginalHeight(),
-					image:$scope.embCanvas.imageObj
-				});
-				
-				$scope.embStage.add($scope.embImage);
-				
-				$scope.onImageChanged=function(e){
-					
-					$scope.embStage.draw();
-				}
-				
 				$scope.onDesignChanged=function(e){
-					//e is dstDesign
-					$scope.embStage.select();		//deselect all objects
+					
 					
 					if($scope.threadMatcher 
 							&&  $scope.threadMatcher.embCanvas 
@@ -1885,13 +1987,15 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 						
 						$scope.threadMatcher.initColourwayList();
 					}
-					$scope.embImage.setWidth($scope.embCanvas.getOriginalWidth());
-					$scope.embImage.setHeight($scope.embCanvas.getOriginalHeight());
+					$scope.dstImage.fabricImage.setWidth($scope.embCanvas.getOriginalWidth());
+					$scope.dstImage.fabricImage.setHeight($scope.embCanvas.getOriginalHeight());
 					$scope.embCanvas.drawDesign();
 				}
 				
 				$scope.dstDesign.designChanged.addListener($scope.embCanvas,$scope.onDesignChanged);
-				$scope.embCanvas.imageChanged.addListener($scope.embStage,$scope.onImageChanged);
+				$scope.embCanvas.imageChanged.addListener($scope.embStage,function(){
+					$scope.embStage.renderAll();
+				});
 				
 				$scope.setColourway=function(threads,runningSteps){
 					$scope.threadMatcher.setColourway(threads,runningSteps);
@@ -1931,204 +2035,6 @@ directive("dstPaint",["EmbMatcher","util",function(EmbMatcher,util){
 	}
 	
 	return directive;
-}]).
-
-directive("dstEditor",["EmbMatcher","util","$http",function(EmbMatcher,util,$http){
-	
-	var templateUrl="../dm/dsteditor";
-	
-	var directive={
-			restrict:'EA',
-			replace:true,
-			scope:{
-				cName:'@dstEditor',
-				cEmbDataSource:'=',
-				cColourwayDataSource:'=',
-			},
-	
-			templateUrl:templateUrl,
-			
-			link:function(scope,element,attrs){
-			    var populate=function(data){
-					scope.dataSet.info=data.info;
-					var itemNames=["colourways","samples"];
-					for(var i=0,scopeItems,dataItems,itemName;i<itemNames.length;i++){
-						itemName=itemNames[i];
-						dataItems=data[itemName];
-						if(dataItems){
-							scopeItems=scope.dataSet[itemName];
-							for(var j=0;j<dataItems.length;j++){
-								scopeItems.push(dataItems[j]);
-							}
-						}
-					}
-			    }
-
-				var clearDataSet=function(){
-			    	scope.dataSet.info={};
-			    	scope.dataSet.colourways.splice(0,scope.dataSet.colourways.length);
-			    	scope.dataSet.samples.splice(0,scope.dataSet.samples.length);
-			    	scope.dataSet.deleteds=[];
-				}
-				
-			    scope.clear=function(){
-			    	scope.searchDesignNumber=null;
-			    	clearDataSet();
-			    	scope.myDstPaint.clear();
-			    	scope.myDstPaint.setBackgroundColour("#FFFFFF");
-			    	scope.$apply();
-			    }
-			    
-			    scope.loadDesignById=function(id){
-			    	scope.clear();
-			    	
-			    	var url="../lib/emb/get-embdesign?id="+id;
-					$http.get(url).then(
-						function(data, status, headers, config) {
-							if(data.data){
-					    		populate(data.data);
-							}
-						},function(data, status, headers, config) {
-					});
-
-			    	scope.myDstPaint.loadDesignById(id);
-
-			    }
-			    
-			    scope.saveDesign=function(){
-			    	//if(!validDesign()) return;
-					var url="../lib/emb/save-embdesign";
-					
-					$http.post(url,scope.dataSet).then(
-						  function(data, status, headers, config) {
-								if(data.data){
-									clearDataSet();
-						    		populate(data.data);
-								}else{
-									alert("failed to save:"+JSON.stringify(data));
-								}
-						  },function(data, status, headers, config) {
-							  alert( "failure message: " + JSON.stringify(data));
-						  });		
-			    }
-			    
-			    var getColorwayDiFromPaint=function(){
-			    	var colourway=scope.myDstPaint.getColourway();
-			    	var thumbnail=scope.myDstPaint.getThumbnail();
-			    	var bgColour=scope.myDstPaint.getBackgroundColour();
-			    	var pos=thumbnail.indexOf(",");
-			    	thumbnail=pos>0?thumbnail.substr(pos+1):"";
-			    	
-			    	var di={
-			    		threads:colourway.threads,
-			    		runningSteps:colourway.runningSteps,
-			    		backgroundColour:bgColour,
-			    		thumbnail:thumbnail,
-			    	}
-			    	return di;
-			    }
-			    
-			    scope.addColourway=function(){
-			    	var di=getColorwayDiFromPaint();
-			    	di.libEmbDesignId=scope.dataSet.info.id;
-			    	scope.cgw.addRow(di);
-			    }
-			    
-			    scope.newColourway=function(){
-			    	scope.myDstPaint.threadMatcher.embCanvas.setColourway("","");
-			    	scope.myDstPaint.threadMatcher.initColourwayList();
-			    	scope.myDstPaint.threadMatcher.embCanvas.drawDesign();
-			    }
-			    
-			    scope.removeColourway=function(){
-					var dataItem=scope.cgw.getCurrentDataItem();
-			    	var confirmed=true;
-				    if (dataItem) {
-				        if (dataItem.threads&&dataItem.runningSteps){
-				        	confirmed=confirm('Please confirm to delete the selected row.');	
-				        }
-				        if(confirmed){
-					    	if(dataItem.id){
-					    		var item= {entity:"libEmbDesignColourway",id:dataItem.id};
-								scope.dataSet.deleteds.push(item);				    	
-					    	}
-							scope.cgw.deleteRow(dataItem);
-				        }
-				    }else {
-			        	alert('Please select a  colorway  to delete.');
-			   		}
-			    	
-			    }
-			    
-			    scope.updateColourway=function(){
-			    	var currentCell=scope.cgw.grid.current();
-			    	if(currentCell){
-				    	var diCurrent=scope.cgw.getCurrentDataItem();
-				    	var diPaint=getColorwayDiFromPaint();
-				    	if(diCurrent&&diPaint){
-				    		diCurrent.threads=diPaint.threads;
-				    		diCurrent.runningSteps=diPaint.runningSteps;
-				    		diCurrent.backgroundColour=diPaint.backgroundColour;
-				    		diCurrent.thumbnail=diPaint.thumbnail;
-				    		diCurrent.isDirty=true;
-				    	}
-				    	scope.$apply();
-				    	var columnIndex=scope.cgw.getColumnIndex("thumbnail");
-		                var template = kendo.template(scope.cgw.gridColumns[columnIndex].template);
-		            	var cell = currentCell.parent().children('td').eq(columnIndex);
-		                cell.html(template(diCurrent));		                    
-			    	}else{
-			        	alert('Please select a  colorway  to update.');
-			    	}
-			    }
-			    
-			    scope.normalizeColourway=function(){
-			    	scope.myDstPaint.threadMatcher.embCanvas.normalizeColourway();
-			    	scope.myDstPaint.threadMatcher.parseColourway();
-			    }
-				
-
-				
-			},
-			controller:["$scope","ColourwayGridWrapper",function($scope,ColourwayGridWrapper){
-				
-				$scope.cgw=new ColourwayGridWrapper("colourwayGrid");	
-				$scope.cgw.setColumns();
-
-				var onColourwayGridDoubleClicked=function(e){
-					if(e.currentTarget){
-						var di=$scope.colourwayGrid.dataItem(e.currentTarget);
-						if(di&&di.threads&&di.runningSteps){
-							$scope.myDstPaint.setColourway(di.threads,di.runningSteps);
-							$scope.myDstPaint.setBackgroundColour(di.backgroundColour);
-						}
-					}
-				}
-				
-				$scope.$on("kendoWidgetCreated", function(event, widget){
-					if (widget ===$scope[$scope.cgw.name]) {
-			        	$scope.cgw.wrapGrid(widget);
-						widget.bind("dataBound",function(e){
-							this.tbody.find("tr").dblclick(onColourwayGridDoubleClicked);
-						});
-			        }
-			    });				
-				
-				$scope.colourwayGridOptions={
-						autoSync: true,
-				        columns: $scope.cgw.gridColumns,
-				        dataSource: $scope.cColourwayDataSource,
-				        pageable:false,
-				        selectable: "row",
-				        navigatable: true,
-				        resizable: true,
-				}
-						
-			}],
-	}
-	
-	return directive;
-
 }]);
 
 
